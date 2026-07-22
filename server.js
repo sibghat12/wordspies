@@ -65,11 +65,73 @@ const PORT = process.env.PORT || 3000;
 // ---------------------------------------------------------------------------
 const rooms = new Map(); // code -> room
 
+// ---------------------------------------------------------------------------
+// Optional persistence (Redis / Render Key Value): rooms survive restarts and
+// deploys. Enabled when REDIS_URL is set. After a restart, players walk right
+// back into their game — their saved session token rejoins them automatically.
+// ---------------------------------------------------------------------------
+let redis = null;
+if (process.env.REDIS_URL) {
+  try {
+    const Redis = require('ioredis');
+    redis = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 2 });
+    redis.on('error', e => console.error('redis:', e.message));
+    console.log('redis persistence: on');
+  } catch (e) { console.error('redis init failed:', e.message); redis = null; }
+}
+
 const ROOM_TTL_MS = 1000 * 60 * 60 * 6; // clean up rooms idle for 6 hours
+const saveTimers = new Map();
+function saveRoom(room) {
+  if (!redis || saveTimers.has(room.code)) return;
+  saveTimers.set(room.code, setTimeout(() => {
+    saveTimers.delete(room.code);
+    if (!rooms.has(room.code)) return;
+    const data = {
+      code: room.code, hostId: room.hostId, state: room.state, settings: room.settings,
+      board: room.board, turn: room.turn, clue: room.clue, winner: room.winner,
+      winReason: room.winReason, log: room.log, score: room.score,
+      lastActivity: room.lastActivity,
+      players: [...room.players.entries()].map(([id, p]) => [id, { ...p }])
+    };
+    redis.set('ws:room:' + room.code, JSON.stringify(data), 'EX', Math.floor(ROOM_TTL_MS / 1000))
+      .catch(e => console.error('redis save:', e.message));
+  }, 400));
+}
+
+function dropRoom(code) {
+  rooms.delete(code);
+  if (redis) redis.del('ws:room:' + code).catch(() => {});
+}
+
+async function restoreRooms() {
+  if (!redis) return;
+  try {
+    const keys = await redis.keys('ws:room:*');
+    for (const k of keys) {
+      const raw = await redis.get(k);
+      if (!raw) continue;
+      const d = JSON.parse(raw);
+      const room = {
+        code: d.code, hostId: d.hostId, players: new Map(),
+        state: d.state, settings: d.settings || { pack: 'easy', timer: 0 },
+        board: d.board, turn: d.turn, clue: d.clue, winner: d.winner,
+        winReason: d.winReason, log: d.log || [], score: d.score || { red: 0, blue: 0 },
+        timerEnd: null, timerHandle: null, lastActivity: Date.now()
+      };
+      for (const [id, p] of d.players || []) room.players.set(id, { ...p, connected: false });
+      rooms.set(room.code, room);
+      if (room.state === 'playing' && room.settings.timer) armTimer(room);
+    }
+    if (keys.length) console.log(`restored ${keys.length} room(s) from redis`);
+  } catch (e) { console.error('redis restore:', e.message); }
+}
+restoreRooms();
+
 setInterval(() => {
   const now = Date.now();
   for (const [code, room] of rooms) {
-    if (now - room.lastActivity > ROOM_TTL_MS) rooms.delete(code);
+    if (now - room.lastActivity > ROOM_TTL_MS) dropRoom(code);
   }
 }, 1000 * 60 * 10);
 
@@ -188,6 +250,7 @@ function broadcast(room) {
     const sock = io.sockets.sockets.get(sockId);
     if (sock) sock.emit('state', publicState(room, player));
   }
+  saveRoom(room);
 }
 
 function clearTimer(room) {
@@ -446,7 +509,7 @@ io.on('connection', (socket) => {
     if (r.hostId === sockId) {
       const next = [...r.players.keys()][0];
       r.hostId = next || null;
-      if (!next) { clearTimer(r); rooms.delete(r.code); return; }
+      if (!next) { clearTimer(r); dropRoom(r.code); return; }
     }
     broadcast(r);
   }));
@@ -464,7 +527,7 @@ io.on('connection', (socket) => {
         if (r.hostId === sockId) {
           const next = [...r.players.keys()][0];
           r.hostId = next || null;
-          if (!next) { clearTimer(r); rooms.delete(r.code); return; }
+          if (!next) { clearTimer(r); dropRoom(r.code); return; }
         }
         broadcast(r);
       }
