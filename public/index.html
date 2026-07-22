@@ -58,7 +58,6 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 /* ---------- logo ---------- */
 .logo{font-family:'Fredoka',sans-serif;font-weight:700;letter-spacing:.5px}
 .logo .r{color:var(--red)} .logo .b{color:var(--blue)}
-.logo svg.spy{width:1.3em;height:1.3em;vertical-align:-22%;transform:rotate(-6deg);margin-right:2px;filter:drop-shadow(0 3px 6px rgba(35,41,70,.2))}
 
 /* ---------- home ---------- */
 .home{max-width:410px;margin:0 auto;padding-top:7vh;text-align:center}
@@ -294,7 +293,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 <div id="home">
   <div class="wrap">
     <div class="home">
-      <div class="logo"><svg viewBox="0 0 120 120" class="spy" aria-label="WordSpies spy girl"><path d="M25 62 a35 35 0 0 1 70 0 v18 a8 8 0 0 1 -8 8 h-54 a8 8 0 0 1 -8 -8 z" fill="#4a2f17"/><circle cx="60" cy="62" r="26" fill="#ffd9b3"/><path d="M34 60 a26 26 0 0 1 52 0 q0 -6 -8 -9 q-14 6 -30 0 q-10 2 -14 9z" fill="#5b3a1e"/><ellipse cx="60" cy="41" rx="34" ry="7.5" fill="#20263b"/><path d="M38 39 q0 -21 22 -21 q22 0 22 21 q0 4 -22 4 q-22 0 -22 -4z" fill="#2b3350"/><path d="M38 36 h44 v6 q-22 5 -44 0 z" fill="#e63956"/><circle cx="50" cy="64" r="3.4" fill="#20263b"/><path d="M66 64 q4 -4 8 0" stroke="#20263b" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="45" cy="72" r="3" fill="#ffb1a8" opacity=".8"/><circle cx="75" cy="72" r="3" fill="#ffb1a8" opacity=".8"/><path d="M55 76 q5 5 12 1" stroke="#c96b4a" stroke-width="2.6" fill="none" stroke-linecap="round"/><g transform="rotate(18 88 84)"><line x1="88" y1="92" x2="97" y2="108" stroke="#8a5a2b" stroke-width="7" stroke-linecap="round"/><circle cx="85" cy="82" r="14" fill="#cfe6ff" opacity=".55"/><circle cx="85" cy="82" r="14" fill="none" stroke="#3d7bff" stroke-width="5"/><path d="M79 76 q3 -3 7 -2" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".9"/></g></svg><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></div>
+      <div class="logo"><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></div>
       <div class="card homecard">
         <label class="lbl">Your name</label>
         <input class="fld" id="nameInput" maxlength="20" placeholder="Type your name" autocomplete="off">
@@ -317,10 +316,9 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 <div id="app" class="hidden">
   <div class="wrap">
     <div class="top">
-      <div class="logo"><svg viewBox="0 0 120 120" class="spy" aria-label="WordSpies spy girl"><path d="M25 62 a35 35 0 0 1 70 0 v18 a8 8 0 0 1 -8 8 h-54 a8 8 0 0 1 -8 -8 z" fill="#4a2f17"/><circle cx="60" cy="62" r="26" fill="#ffd9b3"/><path d="M34 60 a26 26 0 0 1 52 0 q0 -6 -8 -9 q-14 6 -30 0 q-10 2 -14 9z" fill="#5b3a1e"/><ellipse cx="60" cy="41" rx="34" ry="7.5" fill="#20263b"/><path d="M38 39 q0 -21 22 -21 q22 0 22 21 q0 4 -22 4 q-22 0 -22 -4z" fill="#2b3350"/><path d="M38 36 h44 v6 q-22 5 -44 0 z" fill="#e63956"/><circle cx="50" cy="64" r="3.4" fill="#20263b"/><path d="M66 64 q4 -4 8 0" stroke="#20263b" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="45" cy="72" r="3" fill="#ffb1a8" opacity=".8"/><circle cx="75" cy="72" r="3" fill="#ffb1a8" opacity=".8"/><path d="M55 76 q5 5 12 1" stroke="#c96b4a" stroke-width="2.6" fill="none" stroke-linecap="round"/><g transform="rotate(18 88 84)"><line x1="88" y1="92" x2="97" y2="108" stroke="#8a5a2b" stroke-width="7" stroke-linecap="round"/><circle cx="85" cy="82" r="14" fill="#cfe6ff" opacity=".55"/><circle cx="85" cy="82" r="14" fill="none" stroke="#3d7bff" stroke-width="5"/><path d="M79 76 q3 -3 7 -2" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".9"/></g></svg><span class="r">Word</span><span class="b">Spies</span></div>
+      <div class="logo"><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp">Copy invite link</span></div>
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="helpbtn" id="muteBtn" title="Sound on/off">🔊</button>
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
@@ -675,12 +673,7 @@ function renderFeed(){
 function toggleHelp(on){ document.getElementById('helpOv').classList.toggle('hidden', !on); }
 
 // ---------- sounds ----------
-let muted = false;
-try { muted = localStorage.getItem('ws_mute') === '1'; } catch(e){}
-const muteBtn = $('muteBtn');
-function renderMute(){ muteBtn.textContent = muted ? '🔇' : '🔊'; }
-muteBtn.onclick = () => { muted = !muted; try{localStorage.setItem('ws_mute', muted?'1':'0');}catch(e){} renderMute(); };
-renderMute();
+const muted = false;
 let AC = null;
 function beep(freq, dur, type, delay, vol){
   if (muted) return;
