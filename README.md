@@ -1,12 +1,14 @@
 # WordSpies 🕵️ (beta)
 
+**Play now → https://wordspies.onrender.com**
+
 An online, real-time word-spy party game (Codenames-style) you can play with friends in any browser. No accounts, no database — create a room, share the 4-letter code or invite link, and play.
 
 > 🚧 **Beta** — play it, test it, and help improve it before the full launch. Thanks to Sibi 💛
 
 ## Features
 
-Online rooms with 4-letter codes and one-click invite links, red vs blue teams with spymaster and operative roles, a 25-word board where only spymasters see the key, clue giving with guess limits, the assassin word, pass/turn logic, a live game log + chat, optional turn timers (60s–3min), 4 word packs (Classic, Easy/Family, Pop Culture, Hard — 700+ words), running score across rematches, reconnect grace (a refresh won't kick you for 60 seconds), and a mobile-friendly dark UI. Everything is in memory — no database needed. Idle rooms clean themselves up after 6 hours.
+Online rooms with 4-letter codes and one-click invite links, red vs blue teams with spymaster and operative roles, a 25-word board where only spymasters see the key, clue giving with guess limits, the assassin word, pass/turn logic, a live game log + chat, optional turn timers (60s–3min), 5 curated word packs (Easy/Family, Pop Culture, Animals & Nature, Food & Drink, Travel & Places — 780+ words), running score across rematches, reconnect grace (a refresh won't kick you for 60 seconds), an in-game How-to-play guide, and a clean mobile-friendly light UI. Everything is in memory — no database needed. Idle rooms clean themselves up after 6 hours.
 
 ## Run it locally
 
