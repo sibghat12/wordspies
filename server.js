@@ -89,7 +89,9 @@ function shuffle(arr) {
 
 function createBoard() {
   // every game: 25 random words drawn from ALL packs combined (deduped)
-  const pool = [...new Set(Object.values(PACKS).flatMap(p => p.words))];
+  // best-quality boards: single words only, max 11 letters (fits tiles perfectly)
+  const pool = [...new Set(Object.values(PACKS).flatMap(p => p.words))]
+    .filter(w => !w.includes(' ') && !w.includes('-') && w.length <= 11);
   const words = shuffle(pool).slice(0, 25);
   const startingTeam = Math.random() < 0.5 ? 'red' : 'blue';
   const otherTeam = startingTeam === 'red' ? 'blue' : 'red';
@@ -155,6 +157,7 @@ function publicState(room, forPlayer) {
       cards: room.board.cards.map(c => ({
         word: c.word,
         revealed: c.revealed,
+        by: c.revealed ? (c.by || null) : null,
         color: (c.revealed || isSpymaster || revealAll) ? c.color : null
       }))
     } : null,
@@ -334,6 +337,7 @@ io.on('connection', (socket) => {
     if (!card || card.revealed) return;
 
     card.revealed = true;
+    card.by = player.name;
     const team = player.team;
     addLog(room, { type: 'guess', team, name: player.name, word: card.word, color: card.color });
 
