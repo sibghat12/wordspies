@@ -307,9 +307,15 @@ io.on('connection', (socket) => {
       const taken = [...room.players.values()].some(p => p !== player && p.team === team && p.role === 'spymaster');
       if (taken) { socket.emit('errorMsg', 'That team already has a spymaster.'); return; }
     }
-    // Can't become spymaster mid-game if you were an operative (you'd have seen nothing, it's fine actually — but switching teams mid-game is not allowed)
+    // Can't switch teams during a game
     if (room.state === 'playing' && player.team && player.team !== team) {
       socket.emit('errorMsg', 'You can\'t switch teams during a game.');
+      return;
+    }
+    // No new spymasters mid-game: the original spymaster saw the colors and can
+    // rejoin their seat at any time — replacing them would compromise the round.
+    if (room.state === 'playing' && role === 'spymaster' && player.role !== 'spymaster') {
+      socket.emit('errorMsg', 'Spymasters can\'t be changed mid-game. Finish this round or start a new game.');
       return;
     }
     player.team = team;
