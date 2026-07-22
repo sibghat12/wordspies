@@ -468,6 +468,8 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+const qp = new URLSearchParams(location.search);
+const DEMO = qp.has('test') || qp.has('demo');
 const socket = io();
 let S = null, myId = null, tick = null, selCount = 1;
 const $ = id => document.getElementById(id);
@@ -486,10 +488,10 @@ function avSVG(p, size){
   return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><circle cx="50" cy="54" r="30" fill="${skin}"/><ellipse cx="50" cy="30" rx="30" ry="7" fill="${hat}"/><path d="M31 28 q0 -17 19 -17 q19 0 19 17 q0 4 -19 4 q-19 0 -19 -4z" fill="${hat}" opacity=".88"/><circle cx="41" cy="55" r="3.2" fill="#20263b"/>${eye2}<circle cx="35" cy="63" r="3.4" fill="#ffb1a8" opacity=".8"/><circle cx="65" cy="63" r="3.4" fill="#ffb1a8" opacity=".8"/><path d="M43 66 q7 6 14 0" stroke="#c96b4a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
 }
 
-socket.on('connect', () => { myId = socket.id; });
+socket.on('connect', () => { if (!DEMO) myId = socket.id; });
 socket.on('errorMsg', toast);
 socket.on('disconnect', () => toast('Connection lost — reconnecting…'));
-socket.on('state', st => { S = st; render(); soundAndTitle(); });
+socket.on('state', st => { if (DEMO) return; S = st; render(); soundAndTitle(); });
 
 // ---------- home ----------
 try { const n = sessionStorage.getItem('ws_name'); if (n) $('nameInput').value = n; } catch(e){}
@@ -813,6 +815,44 @@ function toast(msg){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
+
+// ---------- DEMO MODE (?test): dummy players + board preview ----------
+if (DEMO) {
+  const DW = ['TIGER','MOON','PIZZA','ROBOT','PARIS','HONEY','CLOUD','KING','OCEAN','TRAIN','APPLE','GHOST','PIANO','RIVER','CROWN','SNOW','DRAGON','BEACH','STAR','BRIDGE','CANDY','WOLF','ROCKET','ISLAND','MAGIC'];
+  const KEY = ['red','blue','neutral','red','blue','neutral','assassin','blue','red','neutral','red','blue','neutral','red','blue','red','neutral','blue','red','neutral','blue','red','neutral','blue','red'];
+  const REV = { 0:true, 4:true, 9:true, 13:true };
+  const players = [
+    { id:'p1', name:'You', team:'red', role:'spymaster', connected:true },
+    { id:'p2', name:'Ayesha', team:'red', role:'operative', connected:true },
+    { id:'p3', name:'Hamza', team:'blue', role:'spymaster', connected:true },
+    { id:'p4', name:'Zara', team:'blue', role:'operative', connected:true },
+    { id:'p5', name:'Bilal', team:'blue', role:'operative', connected:true }
+  ];
+  const cards = DW.map((w,i)=>({ word:w, revealed:!!REV[i], color:KEY[i] }));
+  myId = 'p1';
+  S = {
+    code:'DEMO', state:'playing', hostId:'p1', settings:{timer:0}, players,
+    board:{ startingTeam:'red', cards },
+    remaining:{ red: cards.filter(c=>c.color==='red'&&!c.revealed).length, blue: cards.filter(c=>c.color==='blue'&&!c.revealed).length },
+    turn:{ team:'red', phase:'guess' },
+    clue:{ word:'OCEAN', count:2, guessesLeft:2 },
+    winner:null, winReason:null, score:{red:1,blue:2}, timerEnd:null,
+    log:[
+      { type:'start', team:'red' },
+      { type:'clue', team:'red', name:'You', word:'OCEAN', count:2 },
+      { type:'guess', team:'red', name:'Ayesha', word:'RIVER', color:'red' },
+      { type:'chat', team:'blue', name:'Zara', text:'no way you get both 😄' },
+      { type:'guess', team:'red', name:'Ayesha', word:'MOON', color:'blue' },
+      { type:'turnend', team:'red', reason:'wrong' },
+      { type:'clue', team:'blue', name:'Hamza', word:'SKY', count:2 },
+      { type:'guess', team:'blue', name:'Zara', word:'CLOUD', color:'blue' },
+      { type:'chat', team:'red', name:'Ayesha', text:'this board is cursed' }
+    ]
+  };
+  render();
+  toast('👀 Demo preview — this is how a live game looks');
+}
+
 </script>
 </body>
 </html>
