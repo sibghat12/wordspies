@@ -19,6 +19,16 @@ app.use((req, res, next) => {
   res.set('X-Frame-Options', 'SAMEORIGIN');
   next();
 });
+const landing = require('./landing');
+app.get('/', (req, res) => {
+  if (req.query.room) return res.redirect('/play?room=' + encodeURIComponent(String(req.query.room).slice(0, 8)));
+  res.type('html').send(landing.page());
+});
+app.get('/play', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
   setHeaders(res, filePath) {
