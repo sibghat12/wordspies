@@ -173,7 +173,8 @@ article a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline
 .cta:hover{background:#0b5a00}
 .backrow{margin-top:26px;font-size:15px}
 .backrow a{color:#374151;text-decoration:none;font-weight:600}
-footer{margin-top:44px;padding-top:18px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px;line-height:1.6}
+footer{margin-top:44px;padding:36px 0 44px;border-top:1px solid #e5e7eb;text-align:center;color:#6b7280;font-size:13.5px;font-weight:700;line-height:2;font-family:'Inter',sans-serif}
+footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 .post{padding:26px 0;border-bottom:1px solid #e5e7eb}
 .post h2{font-size:21px;margin:0 0 8px;letter-spacing:-.3px}
 .post h2 a{color:#1c1e21;text-decoration:none}
@@ -197,7 +198,11 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid #e5e7eb;color:#6b72
 </div></header>
 <div class="wrap">
 ${body}
-<footer>© 2026 Sibi — all rights reserved.</footer>
+<footer>
+<a href="/play">Play</a> · <a href="/blog">Blog</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
+🚧 Beta — we're playing, testing and improving it.<br>
+© 2026 Sibi — all rights reserved.
+</footer>
 </div></body></html>`;
 }
 
