@@ -1,5 +1,11 @@
 // WordSpies marketing landing page — server-rendered at "/"
 const SITE = 'https://wordspies.co.uk';
+const GA_ID = 'G-JTH809Z8NH';
+const GA = `<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');</script>`;
+module.exports.GA = GA;
+module.exports.GA_ID = GA_ID;
 
 function avatar(hat, skin, blushOpacity = '.8') {
   return `<svg viewBox="0 0 100 100" width="52" height="52" aria-hidden="true">
@@ -22,16 +28,40 @@ function page() {
   }).join('');
   return `<!DOCTYPE html>
 <html lang="en"><head>
+${GA}
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WordSpies — Play a Free Codenames-Style Word Game Online With Friends</title>
 <meta name="description" content="WordSpies is a free online Codenames-style word game. Create a room in seconds, share a 4-letter code, and play with 4–10+ friends on any phone or laptop. No sign-up, no download.">
+<meta name="keywords" content="codenames online, codenames game, free codenames, word game online, play codenames with friends, online party game, codenames style game, spymaster game, word guessing game">
+<meta name="author" content="WordSpies">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${SITE}/">
 <link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:site_name" content="WordSpies">
+<meta property="og:locale" content="en_GB">
 <meta property="og:title" content="WordSpies — Free Codenames-Style Word Game Online">
 <meta property="og:description" content="Two teams. Secret words. One assassin. Play free with friends — no sign-up.">
 <meta property="og:url" content="${SITE}/"><meta property="og:type" content="website">
-<meta property="og:image" content="${SITE}/icon-512.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WordSpies","url":"${SITE}/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"Free Codenames-style online word game for friends. No sign-up.","offers":{"@type":"Offer","price":"0"}}</script>
+<meta property="og:image" content="${SITE}/icon-512.png"><meta property="og:image:alt" content="WordSpies word game board">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WordSpies — Free Codenames-Style Word Game Online">
+<meta name="twitter:description" content="Two teams. Secret words. One assassin. Play free with friends — no sign-up.">
+<meta name="twitter:image" content="${SITE}/icon-512.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"WebApplication","@id":"${SITE}/#app","name":"WordSpies","url":"${SITE}/","applicationCategory":"GameApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free Codenames-style online word game for friends. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone or laptop. No sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
+{"@type":"Organization","@id":"${SITE}/#org","name":"WordSpies","url":"${SITE}/","logo":"${SITE}/icon-512.png","email":"contact@wordspies.co.uk"},
+{"@type":"WebSite","@id":"${SITE}/#website","url":"${SITE}/","name":"WordSpies","publisher":{"@id":"${SITE}/#org"}},
+{"@type":"FAQPage","@id":"${SITE}/#faq","mainEntity":[
+{"@type":"Question","name":"Is WordSpies really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. WordSpies is completely free to play with no sign-up, no downloads and no account required."}},
+{"@type":"Question","name":"How many players do I need?","acceptedAnswer":{"@type":"Answer","text":"You need at least 4 players — one spymaster and one guesser on each team — and it scales up to 10 or more."}},
+{"@type":"Question","name":"Is it like Codenames?","acceptedAnswer":{"@type":"Answer","text":"Yes — if you enjoy Codenames-style games, WordSpies plays the same way with spymasters, one-word clues and a hidden assassin. WordSpies is an independent game, not affiliated with Codenames or Czech Games Edition."}},
+{"@type":"Question","name":"Can we play remotely on a video call?","acceptedAnswer":{"@type":"Answer","text":"Absolutely. Everyone joins from their own phone or laptop using the room code, so it is perfect for Zoom, Google Meet and Teams game nights."}},
+{"@type":"Question","name":"Do you store my data?","acceptedAnswer":{"@type":"Answer","text":"No accounts and no personal data. Game rooms live only while you play."}}
+]}
+]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>

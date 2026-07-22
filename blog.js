@@ -1,5 +1,10 @@
 // Blog articles for WordSpies — server-rendered for SEO.
 const SITE = 'https://wordspies.co.uk';
+const GA_ID = 'G-JTH809Z8NH';
+const GA = `<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');</script>`;
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 const articles = {
   'games-like-codenames': {
@@ -140,15 +145,22 @@ const articles = {
   }
 };
 
-function layout(title, desc, body, path, banner) {
+function layout(title, desc, body, path, banner, schema) {
   return `<!DOCTYPE html>
 <html lang="en"><head>
+${GA}
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${title}</title>
 <meta name="description" content="${desc}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${SITE}${path}">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="article">
+<meta property="og:site_name" content="WordSpies"><meta property="og:locale" content="en_GB">
+<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
+<meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${SITE}/icon-512.png">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${SITE}/icon-512.png">
+${schema || ''}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -221,7 +233,14 @@ function articlePage(slug) {
   <div class="relh">Related articles</div>
   <div class="relgrid">${related}</div>
   <div class="backrow"><a href="/blog">&larr; All articles</a></div>`;
-  return layout(a.title, a.desc, body, '/blog/' + slug);
+  const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}","dateModified":"${a.date}","inLanguage":"en","author":{"@type":"Organization","name":"WordSpies"},"publisher":{"@type":"Organization","name":"WordSpies","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"${SITE}/blog/${slug}"}},
+{"@type":"BreadcrumbList","itemListElement":[
+{"@type":"ListItem","position":1,"name":"Home","item":"${SITE}/"},
+{"@type":"ListItem","position":2,"name":"Blog","item":"${SITE}/blog"},
+{"@type":"ListItem","position":3,"name":"${esc(a.title)}","item":"${SITE}/blog/${slug}"}]}
+]}</script>`;
+  return layout(a.title, a.desc, body, '/blog/' + slug, null, schema);
 }
 
 function indexPage() {
@@ -229,7 +248,10 @@ function indexPage() {
     `<div class="post"><h2><a href="/blog/${slug}">${a.title}</a></h2><p>${a.desc}</p><a class="more" href="/blog/${slug}">Read article &rarr;</a></div>`).join('');
   const body = items;
   const banner = `<div class="bband"><div class="hwrap"><h1>WordSpies Blog</h1><p>Guides, strategies and tips for word games with friends.</p></div></div>`;
-  return layout('WordSpies Blog — Word Game Guides & Tips', 'Guides, strategies and tips for Codenames-style word games and online party games with friends.', body, '/blog', banner);
+  const blogItems = Object.entries(articles).map(([slug, a]) =>
+    `{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}"}`).join(',');
+  const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"${SITE}/blog","name":"WordSpies Blog","description":"Guides, strategies and tips for Codenames-style word games and online party games.","url":"${SITE}/blog","publisher":{"@type":"Organization","name":"WordSpies","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"blogPost":[${blogItems}]}</script>`;
+  return layout('WordSpies Blog — Word Game Guides & Tips', 'Guides, strategies and tips for Codenames-style word games and online party games with friends.', body, '/blog', banner, schema);
 }
 
 module.exports = { articles, articlePage, indexPage };
