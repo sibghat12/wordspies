@@ -8,14 +8,14 @@
 <meta name="theme-color" content="#f6f7fc">
 <meta property="og:title" content="WordSpies — Free Online Word Game Like Codenames">
 <meta property="og:description" content="A free Codenames-style word game for friends. Create a room, share the code, play instantly — no sign-up.">
-<meta property="og:url" content="https://wordspies.onrender.com/">
+<meta property="og:url" content="https://wordspies.onrender.com/play">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://wordspies.onrender.com/icon-512.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="WordSpies — Free Word Game Like Codenames">
 <meta name="twitter:description" content="Free Codenames-style word game. No sign-up — create a room and play with friends.">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="canonical" href="https://wordspies.onrender.com/">
+<link rel="canonical" href="https://wordspies.onrender.com/play">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WordSpies","url":"https://wordspies.onrender.com/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"Free Codenames-style online word team game. Create a room, share the code, play with friends. No sign-up.","offers":{"@type":"Offer","price":"0"}}</script>
@@ -290,6 +290,27 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .hline .n{flex-shrink:0;width:30px;height:30px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px}
 .hline b.red{color:var(--red)} .hline b.blue{color:var(--blue)}
 
+/* player strip header */
+.pstrip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:9px 14px;box-shadow:var(--sh-sm);margin-bottom:14px}
+.mepill{display:flex;align-items:center;gap:8px;font-weight:900;font-size:14px;padding-right:12px;border-right:2px solid var(--line)}
+.mepill .lab{font-size:10.5px;letter-spacing:1px;color:var(--muted);display:block}
+.pchip{display:flex;align-items:center;gap:7px;padding:4px 12px 4px 5px;border-radius:99px;font-size:13px;font-weight:800;border:2px solid var(--line);background:#f7f8fc;transition:transform .12s var(--spring)}
+.pchip:hover{transform:translateY(-2px)}
+.pchip.redp{border-color:#ffb9c6;background:#fff5f7}
+.pchip.bluep{border-color:#b9d1ff;background:#f4f8ff}
+.pchip.off{opacity:.4}
+.av svg,.pchip svg{display:block;border-radius:50%}
+#startBtn:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.4);transform:none}
+/* interactive log */
+.feed .ev{display:flex;gap:8px;align-items:flex-start;padding:2px 0}
+.feed .evic{flex-shrink:0;width:24px;height:24px;border-radius:8px;background:#f1f3fa;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px}
+.feed .clueev{background:#f4f8ff;border-left:3px solid var(--blue);border-radius:0 12px 12px 0;padding:8px 11px;margin:3px 0}
+.feed .clueev.redb{border-left-color:var(--red);background:#fff5f7}
+.feed .roundsep{display:flex;align-items:center;gap:9px;color:var(--faint);font-size:11px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;margin:8px 0 4px;white-space:nowrap}
+.feed .roundsep::before,.feed .roundsep::after{content:'';flex:1;height:1.5px;background:var(--line);border-radius:2px}
+.feed .thin{border:none;height:1px;background:var(--line);margin:5px 0;opacity:.7}
+.feed .mini{width:17px;height:17px;vertical-align:-4px;margin-right:2px;border-radius:50%}
+
 /* ad slots — paste your ad network tag inside when ready; empty = invisible */
 .ad-slot{margin-top:16px;text-align:center}
 </style>
@@ -331,6 +352,8 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
     </div>
+
+    <div id="pstrip" class="pstrip hidden"></div>
 
     <!-- lobby -->
     <div id="lobby">
@@ -451,6 +474,18 @@ const $ = id => document.getElementById(id);
 const show = (el, on) => el.classList.toggle('hidden', !on);
 const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
 
+// ---------- cute vector avatars (deterministic per player) ----------
+const HATS = ['#20263b','#7c3aed','#e63956','#0f7500','#b45309','#0e7490','#be185d','#4338ca','#9d174d','#166534'];
+const SKINS = ['#ffd9b3','#f3c39a','#e8b088','#d9986b'];
+function hashStr(str){ let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); }
+function avSVG(p, size){
+  const h = hashStr((p.id || '') + (p.name || ''));
+  const hat = HATS[h % HATS.length], skin = SKINS[(h >> 3) % SKINS.length];
+  const wink = (h >> 5) % 3 === 0;
+  const eye2 = wink ? `<path d="M55 54 q4 -3.5 8 0" stroke="#20263b" stroke-width="3" fill="none" stroke-linecap="round"/>` : `<circle cx="59" cy="55" r="3.2" fill="#20263b"/>`;
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><circle cx="50" cy="54" r="30" fill="${skin}"/><ellipse cx="50" cy="30" rx="30" ry="7" fill="${hat}"/><path d="M31 28 q0 -17 19 -17 q19 0 19 17 q0 4 -19 4 q-19 0 -19 -4z" fill="${hat}" opacity=".88"/><circle cx="41" cy="55" r="3.2" fill="#20263b"/>${eye2}<circle cx="35" cy="63" r="3.4" fill="#ffb1a8" opacity=".8"/><circle cx="65" cy="63" r="3.4" fill="#ffb1a8" opacity=".8"/><path d="M43 66 q7 6 14 0" stroke="#c96b4a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+}
+
 socket.on('connect', () => { myId = socket.id; });
 socket.on('errorMsg', toast);
 socket.on('disconnect', () => toast('Connection lost — reconnecting…'));
@@ -487,7 +522,7 @@ $('timerChips').querySelectorAll('button').forEach(b => {
   b.onclick = () => socket.emit('setSettings', { timer: parseInt(b.dataset.t, 10) });
 });
 $('codePill').onclick = () => {
-  const link = location.origin + '/?room=' + S.code;
+  const link = location.origin + '/play?room=' + S.code;
   (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
     .then(() => toast('Invite link copied ✓'))
     .catch(() => toast(link));
@@ -538,10 +573,24 @@ function render(){
   show($('game'), playing || over);
   show($('winOv'), over);
 
+  renderStrip();
   if (S.state === 'lobby') renderLobby();
   if (playing || over) { renderBoard(); renderStatus(); renderCounts(); }
   renderFeed();
   if (over) renderWin(); else stopTick();
+}
+
+function renderStrip(){
+  const el = $('pstrip');
+  const m = me();
+  const inGame = S.state === 'playing' || S.state === 'over';
+  show(el, inGame);
+  if (!inGame || !m) return;
+  const roleTxt = m.role === 'spymaster' ? '🕵️ Spymaster' : 'Guesser';
+  const chips = S.players.map(p =>
+    `<span class="pchip ${p.team === 'red' ? 'redp' : p.team === 'blue' ? 'bluep' : ''}${p.connected ? '' : ' off'}" title="${esc(p.name)}">` +
+    avSVG(p, 24) + `${esc(p.name)}${p.role === 'spymaster' ? ' 🕵️' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>`).join('');
+  el.innerHTML = `<span class="mepill">${avSVG(m, 32)}<span><span class="lab">PLAYING AS</span>${esc(m.name)} · ${roleTxt}</span></span>` + chips;
 }
 
 function renderLobby(){
@@ -555,14 +604,20 @@ function renderLobby(){
     for (const p of members) {
       const d = document.createElement('div');
       d.className = 'pp' + (p.connected ? '' : ' dim');
-      d.innerHTML = `<span class="av">${p.avatar || '🙂'}</span><span>${esc(p.name)}${p.id === myId ? ' (you)' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>` +
+      d.innerHTML = `<span class="av">${avSVG(p, 34)}</span><span>${esc(p.name)}${p.id === myId ? ' (you)' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>` +
         `<span class="role${p.role === 'spymaster' ? ' spy' : ''}">${p.role === 'spymaster' ? '🕵️‍♀️ Spymaster' : 'Guesser'}</span>`;
       el.appendChild(d);
     }
   }
   $('timerChips').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.t === S.settings.timer));
   $('timerChips').classList.toggle('locked', !isHost);
-  show($('startBtn'), isHost);
+  const ready = ['red', 'blue'].every(t =>
+    S.players.some(p => p.team === t && p.role === 'spymaster') &&
+    S.players.some(p => p.team === t && p.role === 'operative'));
+  const sb = $('startBtn');
+  sb.disabled = !ready;
+  sb.textContent = ready ? 'Start game' : 'Waiting for 4 players (1 spymaster + 1 guesser per team)…';
+  show(sb, isHost);
   show($('waitMsg'), !isHost);
 }
 
@@ -667,25 +722,25 @@ function renderWin(){
 
 function renderFeed(){
   const el = $('feed');
+  const mini = name => { const pl = S.players.find(x => x.name === name); return pl ? `<span class="mini">${avSVG(pl, 17)}</span>` : ''; };
   el.innerHTML = S.log.map(e => {
     const tc = e.team === 'red' ? 'r' : e.team === 'blue' ? 'b' : 'm';
-    const av = p => { const pl = S.players.find(x => x.name === p); return pl && pl.avatar ? pl.avatar + ' ' : ''; };
     switch (e.type) {
-      case 'join': return `<div class="m">${esc(e.name)} joined</div>`;
-      case 'leave': return `<div class="m">${esc(e.name)} left</div>`;
-      case 'start': return `<div class="m">New game — <span class="${tc}">${e.team}</span> goes first</div>`;
-      case 'clue': return `<div>${av(e.name)}<span class="${tc}">${esc(e.name)}</span>: clue <b>${esc(e.word)} · ${e.count}</b></div>`;
+      case 'join': return `<div class="ev"><span class="evic">👋</span><span class="m">${esc(e.name)} joined the room</span></div>`;
+      case 'leave': return `<div class="ev"><span class="evic">🚪</span><span class="m">${esc(e.name)} left</span></div>`;
+      case 'start': return `<div class="roundsep">🎬 New game — <span class="${tc}">${e.team}</span> first</div>`;
+      case 'clue': return `<div class="clueev${e.team === 'red' ? ' redb' : ''}">${mini(e.name)}<span class="${tc}">${esc(e.name)}</span> · clue <b style="font-size:15px">${esc(e.word)} · ${e.count}</b></div>`;
       case 'guess': {
         const icon = e.color === 'assassin' ? '💀' : e.color === 'neutral' ? '⬜' : e.color === e.team ? '✅' : '❌';
-        return `<div>${av(e.name)}<span class="${tc}">${esc(e.name)}</span> ${icon} ${esc(e.word)}</div>`;
+        return `<div class="ev"><span class="evic">${icon}</span><span>${mini(e.name)}<span class="${tc}">${esc(e.name)}</span> picked <b>${esc(e.word)}</b></span></div>`;
       }
       case 'turnend': {
-        const why = e.reason === 'pass' ? 'ended their turn' : e.reason === 'wrong' ? 'turn over' : 'no guesses left';
-        return `<div class="m"><span class="${tc}">${e.team}</span> — ${why}</div>`;
+        const why = e.reason === 'pass' ? 'passed' : e.reason === 'wrong' ? 'wrong pick — turn over' : 'out of guesses';
+        return `<div class="ev"><span class="evic">🔁</span><span class="m"><span class="${tc}">${e.team}</span> ${why}</span></div><hr class="thin">`;
       }
-      case 'timeout': return `<div class="m">⏱ Time's up for <span class="${tc}">${e.team}</span></div>`;
-      case 'gameover': return `<div class="m">🏆 <span class="${tc}">${e.team}</span> wins!</div>`;
-      case 'chat': return `<div>${av(e.name)}<span class="${tc}">${esc(e.name)}</span>: ${esc(e.text)}</div>`;
+      case 'timeout': return `<div class="ev"><span class="evic">⏱</span><span class="m">Time's up for <span class="${tc}">${e.team}</span></span></div><hr class="thin">`;
+      case 'gameover': return `<div class="roundsep">🏆 <span class="${tc}">${e.team}</span> wins!</div>`;
+      case 'chat': return `<div class="ev"><span class="evic">💬</span><span>${mini(e.name)}<span class="${tc}">${esc(e.name)}</span>: ${esc(e.text)}</span></div>`;
       default: return '';
     }
   }).join('');
