@@ -9,6 +9,10 @@
 <meta property="og:title" content="WordSpies — play with friends">
 <meta property="og:description" content="A free online word team game. Create a room, share the code, play. No sign-up.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%2320263b%22/><text x=%2250%22 y=%2268%22 font-size=%2252%22 text-anchor=%22middle%22>🕵️‍♀️</text></svg>">
+<link rel="canonical" href="https://wordspies.onrender.com/">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WordSpies","url":"https://wordspies.onrender.com/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"Free online word team game. Create a room, share the code, play with friends. No sign-up.","offers":{"@type":"Offer","price":"0"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -17,7 +21,7 @@
   --red:#ff4d6b; --red-deep:#e63956; --red-soft:#ffe9ed; --red-ink:#d22e4c;
   --blue:#3d7bff; --blue-deep:#2b62e0; --blue-soft:#e9f0ff; --blue-ink:#2258d8;
   --tan:#ead9b0; --tan-deep:#d4bf8d; --tan-soft:#faf6ec; --tan-ink:#a08b58;
-  --green:#12ce84; --green-deep:#0daf6f; --gold:#ffb830;
+  --green:#0f7500; --green-deep:#084d00; --gold:#ffb830;
   --sh-sm:0 1px 2px rgba(35,41,70,.06), 0 4px 12px rgba(35,41,70,.06);
   --sh:0 2px 4px rgba(35,41,70,.06), 0 10px 28px rgba(35,41,70,.09);
   --sh-lg:0 6px 16px rgba(35,41,70,.1), 0 24px 60px rgba(35,41,70,.16);
@@ -55,9 +59,9 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .btn-dark:active{box-shadow:0 2px 0 #000,0 6px 14px rgba(17,19,24,.3)}
 .btn-light{background:#fff;box-shadow:0 3px 0 var(--line),var(--sh-sm)}
 .btn-light:active{box-shadow:0 1px 0 var(--line),var(--sh-sm)}
-.btn-green{background:linear-gradient(180deg,#17e094,var(--green));color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.15);box-shadow:0 4px 0 var(--green-deep),0 12px 28px rgba(18,206,132,.35)}
-.btn-green:hover{filter:brightness(1.05);box-shadow:0 5px 0 var(--green-deep),0 16px 34px rgba(18,206,132,.45)}
-.btn-green:active{box-shadow:0 2px 0 var(--green-deep),0 8px 16px rgba(18,206,132,.3)}
+.btn-green{background:linear-gradient(180deg,#159f07,var(--green));color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2);box-shadow:0 4px 0 var(--green-deep),0 12px 28px rgba(15,117,0,.35)}
+.btn-green:hover{filter:brightness(1.08);box-shadow:0 5px 0 var(--green-deep),0 16px 34px rgba(15,117,0,.45)}
+.btn-green:active{box-shadow:0 2px 0 var(--green-deep),0 8px 16px rgba(15,117,0,.3)}
 
 /* ---------- logo ---------- */
 .logo{font-family:'Fredoka',sans-serif;font-weight:700;letter-spacing:.5px}
@@ -311,7 +315,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
         </div>
       </div>
       <div style="margin-top:18px"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button></div>
-      <p style="margin-top:22px;font-size:13px;font-weight:700;color:var(--faint);line-height:1.6">🚧 This is a beta version — we're playing, testing and improving it.<br>© 2026 Sibi 💛 — all rights reserved</p>
+      <p style="margin-top:22px;font-size:13px;font-weight:700;color:var(--faint);line-height:1.6">🚧 This is a beta version — we're playing, testing and improving it.<br><span style="color:var(--ink)">© 2026 Sibi — all rights reserved</span></p>
       <div class="ad-slot" id="ad-home"><!-- ad code goes here --></div>
     </div>
   </div>
@@ -324,6 +328,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
       <div class="logo"><span class="spy">🕵️‍♀️</span><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp">Copy invite link</span></div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="helpbtn" id="muteBtn" title="Sound on/off">🔊</button>
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
@@ -419,6 +424,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
       <div class="cnt blue"><span>Blue</span><b id="winBlue">0</b></div>
     </div>
     <button class="btn btn-green" id="againBtn" style="width:100%;max-width:260px">Play again</button>
+    <div style="margin-top:12px"><button class="helpbtn" id="shareBtn">📤 Invite friends</button></div>
     <div class="waitmsg hidden" id="againWait">Waiting for the host…</div>
   </div>
 </div>
@@ -436,7 +442,7 @@ const esc = s => { const d = document.createElement('div'); d.textContent = s; r
 socket.on('connect', () => { myId = socket.id; });
 socket.on('errorMsg', toast);
 socket.on('disconnect', () => toast('Connection lost — reconnecting…'));
-socket.on('state', st => { S = st; render(); });
+socket.on('state', st => { S = st; render(); soundAndTitle(); });
 
 // ---------- home ----------
 try { const n = sessionStorage.getItem('ws_name'); if (n) $('nameInput').value = n; } catch(e){}
@@ -675,6 +681,66 @@ function renderFeed(){
 }
 
 function toggleHelp(on){ document.getElementById('helpOv').classList.toggle('hidden', !on); }
+
+// ---------- sounds ----------
+let muted = false;
+try { muted = localStorage.getItem('ws_mute') === '1'; } catch(e){}
+const muteBtn = $('muteBtn');
+function renderMute(){ muteBtn.textContent = muted ? '🔇' : '🔊'; }
+muteBtn.onclick = () => { muted = !muted; try{localStorage.setItem('ws_mute', muted?'1':'0');}catch(e){} renderMute(); };
+renderMute();
+let AC = null;
+function beep(freq, dur, type, delay, vol){
+  if (muted) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime + (delay || 0);
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || .12, t);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(t); o.stop(t + dur + .02);
+  } catch(e){}
+}
+const SFX = {
+  clue(){ beep(880,.14); beep(1175,.16,'sine',.1); },
+  good(){ beep(660,.1); beep(990,.14,'sine',.09); },
+  bad(){ beep(170,.22,'square',0,.08); },
+  boom(){ beep(120,.5,'sawtooth',0,.14); beep(80,.6,'sawtooth',.1,.12); },
+  win(){ [523,659,784,1047].forEach((f,i)=>beep(f,.18,'sine',i*.12)); },
+  turn(){ beep(740,.12); }
+};
+let lastLogLen = 0, wasMyTurn = false;
+function soundAndTitle(){
+  // sounds for new log events
+  if (S.log.length > lastLogLen && lastLogLen > 0) {
+    for (const e of S.log.slice(lastLogLen)) {
+      if (e.type === 'clue') SFX.clue();
+      else if (e.type === 'guess') {
+        if (e.color === 'assassin') SFX.boom();
+        else if (e.color === e.team) SFX.good();
+        else SFX.bad();
+      }
+      else if (e.type === 'gameover') SFX.win();
+    }
+  }
+  lastLogLen = S.log.length;
+  // my-turn alert + tab title
+  const m = me();
+  const myTurn = S.state === 'playing' && m && m.team === S.turn.team &&
+    ((S.turn.phase === 'clue' && m.role === 'spymaster') || (S.turn.phase === 'guess' && m.role === 'operative'));
+  if (myTurn && !wasMyTurn) SFX.turn();
+  wasMyTurn = myTurn;
+  document.title = myTurn ? '🔔 Your turn! — WordSpies' : 'WordSpies — play with friends';
+}
+
+// ---------- share ----------
+$('shareBtn').onclick = () => {
+  const data = { title: 'WordSpies', text: 'Play WordSpies with me — free online word game!', url: location.origin };
+  if (navigator.share) navigator.share(data).catch(()=>{});
+  else { navigator.clipboard?.writeText(data.url).then(()=>toast('Link copied ✓')); }
+};
 
 let toastTimer = null;
 function toast(msg){
