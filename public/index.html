@@ -36,10 +36,11 @@ body{
 body::before{
   content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:
-    radial-gradient(700px 500px at -5% -5%, rgba(255,77,107,.07), transparent 60%),
-    radial-gradient(700px 500px at 105% -5%, rgba(61,123,255,.08), transparent 60%),
-    radial-gradient(circle at 1px 1px, #dde1ef 1px, transparent 1.6px);
-  background-size:auto,auto,26px 26px;
+    radial-gradient(760px 540px at -5% -5%, rgba(255,77,107,.09), transparent 62%),
+    radial-gradient(760px 540px at 105% -5%, rgba(61,123,255,.1), transparent 62%),
+    radial-gradient(700px 600px at 50% 112%, rgba(15,117,0,.07), transparent 62%),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22380%22%20height%3D%22380%22%3E%0A%3Cg%20fill%3D%22none%22%20stroke%3D%22%23c7cee6%22%20stroke-width%3D%223.2%22%20stroke-linecap%3D%22round%22%20opacity%3D%22.5%22%3E%0A%20%20%3Cg%20transform%3D%22translate%2852%2C62%29%20rotate%28-18%29%22%3E%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2217%22%2F%3E%3Cline%20x1%3D%2212%22%20y1%3D%2212%22%20x2%3D%2230%22%20y2%3D%2230%22%2F%3E%3C%2Fg%3E%0A%20%20%3Cg%20transform%3D%22translate%28240%2C60%29%20rotate%289%29%22%3E%3Crect%20x%3D%22-24%22%20y%3D%22-16%22%20width%3D%2248%22%20height%3D%2232%22%20rx%3D%227%22%2F%3E%3Crect%20x%3D%22-16%22%20y%3D%22-26%22%20width%3D%2248%22%20height%3D%2232%22%20rx%3D%227%22%20opacity%3D%22.55%22%2F%3E%3C%2Fg%3E%0A%20%20%3Cg%20transform%3D%22translate%2888%2C240%29%20rotate%28-7%29%22%3E%3Cpath%20d%3D%22M-24%2C-14%20h48%20a8%2C8%200%200%201%208%2C8%20v14%20a8%2C8%200%200%201%20-8%2C8%20h-28%20l-12%2C10%20v-10%20h-8%20a8%2C8%200%200%201%20-8%2C-8%20v-14%20a8%2C8%200%200%201%208%2C-8%20z%22%2F%3E%3C%2Fg%3E%0A%20%20%3Cg%20transform%3D%22translate%28320%2C180%29%20rotate%2814%29%22%3E%3Cpath%20d%3D%22M0%2C-16%20l4.7%2C9.6%2010.6%2C1.5%20-7.7%2C7.5%201.8%2C10.5%20-9.4%2C-5%20-9.4%2C5%201.8%2C-10.5%20-7.7%2C-7.5%2010.6%2C-1.5%20z%22%2F%3E%3C%2Fg%3E%0A%20%20%3Cg%20transform%3D%22translate%28190%2C320%29%20rotate%28-11%29%22%3E%3Crect%20x%3D%22-19%22%20y%3D%22-19%22%20width%3D%2238%22%20height%3D%2238%22%20rx%3D%229%22%2F%3E%3C%2Fg%3E%0A%20%20%3Ccircle%20cx%3D%22330%22%20cy%3D%22330%22%20r%3D%224%22%20fill%3D%22%23c7cee6%22%20stroke%3D%22none%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22150%22%20cy%3D%22140%22%20r%3D%224%22%20fill%3D%22%23c7cee6%22%20stroke%3D%22none%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%2230%22%20cy%3D%22330%22%20r%3D%224%22%20fill%3D%22%23c7cee6%22%20stroke%3D%22none%22%2F%3E%0A%3C%2Fg%3E%0A%3Cg%20opacity%3D%22.55%22%20fill%3D%22%23c3cae2%22%20font-family%3D%22Verdana%2Csans-serif%22%20font-weight%3D%22bold%22%3E%0A%20%20%3Ctext%20x%3D%22292%22%20y%3D%22272%22%20font-size%3D%2240%22%20transform%3D%22rotate%2810%20292%20272%29%22%3E%3F%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22178%22%20y%3D%22330%22%20font-size%3D%2221%22%20transform%3D%22rotate%28-11%20190%20320%29%22%3EA%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22110%22%20y%3D%2242%22%20font-size%3D%2219%22%20transform%3D%22rotate%286%20110%2042%29%22%3Eshh%E2%80%A6%3C%2Ftext%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E");
+  background-size:auto,auto,auto,380px 380px;
 }
 button{font-family:inherit;font-weight:800;cursor:pointer;border:none;color:inherit;background:none}
 input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:none}
@@ -59,9 +60,9 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .btn-dark:active{box-shadow:0 2px 0 #000,0 6px 14px rgba(17,19,24,.3)}
 .btn-light{background:#fff;box-shadow:0 3px 0 var(--line),var(--sh-sm)}
 .btn-light:active{box-shadow:0 1px 0 var(--line),var(--sh-sm)}
-.btn-green{background:linear-gradient(180deg,#159f07,var(--green));color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2);box-shadow:0 4px 0 var(--green-deep),0 12px 28px rgba(15,117,0,.35)}
-.btn-green:hover{filter:brightness(1.08);box-shadow:0 5px 0 var(--green-deep),0 16px 34px rgba(15,117,0,.45)}
-.btn-green:active{box-shadow:0 2px 0 var(--green-deep),0 8px 16px rgba(15,117,0,.3)}
+.btn-green{background:linear-gradient(180deg,#159f07,var(--green));color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+.btn-green:hover{filter:brightness(1.08)}
+.btn-green:active{filter:brightness(.95)}
 
 /* ---------- logo ---------- */
 .logo{font-family:'Fredoka',sans-serif;font-weight:700;letter-spacing:.5px}
