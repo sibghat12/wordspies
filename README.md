@@ -1,6 +1,6 @@
 # WordSpies 🕵️ (beta)
 
-**Play now → https://wordspies.onrender.com**
+**Play now → https://wordspies.co.uk**
 
 An online, real-time word-spy party game (Codenames-style) you can play with friends in any browser. No accounts, no database — create a room, share the 4-letter code or invite link, and play.
 

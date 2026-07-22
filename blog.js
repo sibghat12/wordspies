@@ -1,5 +1,5 @@
 // Blog articles for WordSpies — server-rendered for SEO.
-const SITE = 'https://wordspies.onrender.com';
+const SITE = 'https://wordspies.co.uk';
 
 const articles = {
   'games-like-codenames': {
@@ -150,14 +150,18 @@ function layout(title, desc, body, path) {
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="article">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 body{font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:#1c1e21;margin:0}
-.wrap{max-width:700px;margin:0 auto;padding:26px 20px 70px}
-.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px}
-.logo{font-weight:800;font-size:22px;text-decoration:none;letter-spacing:-.3px}
+.sitehead{background:#fff;border-bottom:1.5px solid #e6e8ef;position:sticky;top:0;z-index:50}
+.hwrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.wrap{max-width:760px;margin:0 auto;padding:34px 20px 70px}
+.logo{font-family:'Fredoka',sans-serif;font-weight:700;font-size:23px;text-decoration:none}
 .logo .r{color:#ff4d6b}.logo .b{color:#3d7bff}
+.navlinks{display:flex;gap:20px;align-items:center;font-weight:700;font-size:14.5px;color:#5f6675}
+.navlinks a:hover{color:#1c1e21}
 .play{background:#0f7500;color:#fff;text-decoration:none;font-weight:700;padding:10px 20px;border-radius:10px;font-size:14px}
 .play:hover{background:#0b5a00}
 h1{font-size:30px;line-height:1.25;letter-spacing:-.5px;margin:0 0 10px;font-weight:800}
@@ -187,10 +191,13 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid #e5e7eb;color:#6b72
 .rel b{color:#1c1e21;font-size:15.5px;line-height:1.4;display:block;margin-bottom:8px}
 .rel span{color:#0f7500;font-weight:700;font-size:13.5px}
 </style></head>
-<body><div class="wrap">
-<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><a class="play" href="/">&#9654; Play free</a></div>
+<body>
+<header class="sitehead"><div class="hwrap">
+<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a href="/blog">Blog</a><a class="play" href="/play">&#9654; Play free</a></div></div>
+</div></header>
+<div class="wrap">
 ${body}
-<footer>© 2026 Sibi — WordSpies is an independent game, not affiliated with Codenames or Czech Games Edition.</footer>
+<footer>© 2026 Sibi — all rights reserved.</footer>
 </div></body></html>`;
 }
 

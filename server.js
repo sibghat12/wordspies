@@ -2,6 +2,7 @@
 // Node.js + Express + Socket.IO. All game state lives in memory (no database).
 
 const path = require('path');
+const crypto = require('crypto');
 const http = require('http');
 const express = require('express');
 const compression = require('compression');
@@ -13,6 +14,15 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(compression());
+// Canonical domain: send onrender + www traffic to https://wordspies.co.uk
+app.use((req, res, next) => {
+  const host = (req.headers.host || '').toLowerCase();
+  if ((host === 'wordspies.onrender.com' || host === 'www.wordspies.co.uk') &&
+      req.path !== '/healthz' && !req.path.startsWith('/socket.io')) {
+    return res.redirect(301, 'https://wordspies.co.uk' + req.originalUrl);
+  }
+  next();
+});
 app.use((req, res, next) => {
   res.set('X-Content-Type-Options', 'nosniff');
   res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -241,10 +251,11 @@ io.on('connection', (socket) => {
     if (room) return;
     name = String(name || '').trim().slice(0, 20) || 'Player';
     room = createRoom(name);
-    player = { id: socket.id, name, team: null, role: 'operative', connected: true, avatar: pickAvatar(room) };
+    player = { id: socket.id, name, team: null, role: 'operative', connected: true, avatar: pickAvatar(room), token: crypto.randomUUID() };
     room.hostId = socket.id;
     room.players.set(socket.id, player);
     socket.join(room.code);
+    socket.emit('session', { code: room.code, token: player.token, name: player.name });
     addLog(room, { type: 'join', name });
     broadcast(room);
   }));
@@ -260,11 +271,31 @@ io.on('connection', (socket) => {
     let finalName = name; let n = 2;
     while (names.has(finalName)) finalName = `${name} ${n++}`;
     room = r;
-    player = { id: socket.id, name: finalName, team: null, role: 'operative', connected: true, avatar: pickAvatar(room) };
+    player = { id: socket.id, name: finalName, team: null, role: 'operative', connected: true, avatar: pickAvatar(room), token: crypto.randomUUID() };
     room.players.set(socket.id, player);
     socket.join(room.code);
+    socket.emit('session', { code: room.code, token: player.token, name: player.name });
     addLog(room, { type: 'join', name: finalName });
     broadcast(room);
+  }));
+
+  socket.on('rejoin', guard(({ code, token }) => {
+    if (room) return;
+    code = String(code || '').trim().toUpperCase();
+    const r = rooms.get(code);
+    if (!r) { socket.emit('sessionExpired'); return; }
+    const entry = [...r.players.entries()].find(([, p]) => p.token === token);
+    if (!entry) { socket.emit('sessionExpired'); return; }
+    const [oldId, p] = entry;
+    r.players.delete(oldId);
+    p.id = socket.id;
+    p.connected = true;
+    r.players.set(socket.id, p);
+    if (r.hostId === oldId) r.hostId = socket.id;
+    room = r; player = p;
+    socket.join(r.code);
+    socket.emit('session', { code: r.code, token: p.token, name: p.name });
+    broadcast(r);
   }));
 
   socket.on('setTeamRole', guard(({ team, role }) => {
@@ -397,6 +428,21 @@ io.on('connection', (socket) => {
     if (!text) return;
     addLog(room, { type: 'chat', name: player.name, team: player.team, text });
     broadcast(room);
+  }));
+
+  socket.on('leaveRoom', guard(() => {
+    if (!room || !player) return;
+    const r = room, p = player, sockId = socket.id;
+    r.players.delete(sockId);
+    addLog(r, { type: 'leave', name: p.name });
+    room = null; player = null;
+    socket.leave(r.code);
+    if (r.hostId === sockId) {
+      const next = [...r.players.keys()][0];
+      r.hostId = next || null;
+      if (!next) { clearTimer(r); rooms.delete(r.code); return; }
+    }
+    broadcast(r);
   }));
 
   socket.on('disconnect', guard(() => {
