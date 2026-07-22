@@ -27,6 +27,14 @@ app.use(express.static(path.join(__dirname, 'public'), {
 }));
 app.get('/healthz', (req, res) => res.send('ok'));
 
+const blog = require('./blog');
+app.get('/blog', (req, res) => res.type('html').send(blog.indexPage()));
+app.get('/blog/:slug', (req, res) => {
+  const page = blog.articlePage(req.params.slug);
+  if (!page) return res.redirect('/blog');
+  res.type('html').send(page);
+});
+
 process.on('uncaughtException', err => console.error('uncaught:', err));
 process.on('unhandledRejection', err => console.error('unhandled:', err));
 
