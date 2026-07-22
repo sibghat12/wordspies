@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f6f7fc">
 <meta property="og:title" content="WordSpies — play with friends">
 <meta property="og:description" content="A free online word team game. Create a room, share the code, play. No sign-up.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%2320263b%22/><text x=%2250%22 y=%2268%22 font-size=%2252%22 text-anchor=%22middle%22>🕵️</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%2320263b%22/><text x=%2250%22 y=%2268%22 font-size=%2252%22 text-anchor=%22middle%22>🕵️‍♀️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -298,7 +298,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 <div id="home">
   <div class="wrap">
     <div class="home">
-      <div class="logo"><span class="spy">🕵️</span><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></div>
+      <div class="logo"><span class="spy">🕵️‍♀️</span><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></div>
       <div class="card homecard">
         <label class="lbl">Your name</label>
         <input class="fld" id="nameInput" maxlength="20" placeholder="Type your name" autocomplete="off">
@@ -311,7 +311,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
         </div>
       </div>
       <div style="margin-top:18px"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button></div>
-      <p style="margin-top:22px;font-size:13px;font-weight:700;color:var(--faint);line-height:1.6">🚧 This is a beta version — we're playing, testing and improving it.</p>
+      <p style="margin-top:22px;font-size:13px;font-weight:700;color:var(--faint);line-height:1.6">🚧 This is a beta version — we're playing, testing and improving it.<br>© 2026 Sibi 💛 — all rights reserved</p>
       <div class="ad-slot" id="ad-home"><!-- ad code goes here --></div>
     </div>
   </div>
@@ -321,7 +321,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 <div id="app" class="hidden">
   <div class="wrap">
     <div class="top">
-      <div class="logo"><span class="spy">🕵️</span><span class="r">Word</span><span class="b">Spies</span></div>
+      <div class="logo"><span class="spy">🕵️‍♀️</span><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp">Copy invite link</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
@@ -538,7 +538,7 @@ function renderLobby(){
       const d = document.createElement('div');
       d.className = 'pp' + (p.connected ? '' : ' dim');
       d.innerHTML = `<span class="av">${p.avatar || '🙂'}</span><span>${esc(p.name)}${p.id === myId ? ' (you)' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>` +
-        `<span class="role${p.role === 'spymaster' ? ' spy' : ''}">${p.role === 'spymaster' ? '🕵️ Spymaster' : 'Guesser'}</span>`;
+        `<span class="role${p.role === 'spymaster' ? ' spy' : ''}">${p.role === 'spymaster' ? '🕵️‍♀️ Spymaster' : 'Guesser'}</span>`;
       el.appendChild(d);
     }
   }
