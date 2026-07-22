@@ -1,0 +1,24 @@
+{
+  "name": "wordspies",
+  "version": "0.1.0-beta",
+  "description": "WordSpies — online word-spy party game (Codenames-style), beta",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/e2e.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.3",
+    "playwright": "^1.61.1"
+  }
+}
