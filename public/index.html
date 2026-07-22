@@ -507,12 +507,21 @@ socket.on('connect', () => {
     const roomParam = new URLSearchParams(location.search).get('room');
     if (sess && sess.code && sess.token && (!roomParam || roomParam.toUpperCase() === sess.code) && !S) {
       socket.emit('rejoin', { code: sess.code, token: sess.token });
+      rejoinNotice = sess.code;
     }
   } catch(e){}
 });
 socket.on('errorMsg', toast);
 socket.on('disconnect', () => toast('Connection lost — reconnecting…'));
-socket.on('state', st => { if (DEMO) return; S = st; render(); soundAndTitle(); });
+let rejoinNotice = null;
+socket.on('state', st => {
+  if (DEMO) return;
+  S = st; render(); soundAndTitle();
+  if (rejoinNotice && S && S.code === rejoinNotice) {
+    toast('👋 Welcome back! Rejoined room ' + S.code + ' — tap 🚪 to leave');
+    rejoinNotice = null;
+  }
+});
 socket.on('session', sess => { try { localStorage.setItem('ws_sess', JSON.stringify(sess)); } catch(e){} });
 socket.on('sessionExpired', () => { try { localStorage.removeItem('ws_sess'); } catch(e){} });
 
@@ -546,8 +555,7 @@ $('leaveBtn').onclick = () => {
   location.href = '/play';
 };
 function confirmLeave(){
-  // playing mid-game? double-check; in lobby just leave
-  return !(S && S.state === 'playing') || window.confirm('Leave this game? Your team keeps playing without you.');
+  return window.confirm('Are you sure you want to leave this game?' + (S && S.state === 'playing' ? ' Your team keeps playing without you.' : ''));
 }
 $('createBtn').onclick = () => { const n = getName(); if (n) socket.emit('create', { name: n }); };
 $('joinBtn').onclick = doJoin;
