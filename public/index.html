@@ -612,31 +612,20 @@ document.querySelectorAll('.teambtns button').forEach(b => {
   b.onclick = () => socket.emit('setTeamRole', { team: b.dataset.team, role: b.dataset.role });
 });
 
-// Mid-game helper bar: lets late joiners pick a team, and lets a teammate
-// take over spymaster if theirs never came back. Keeps games from getting stuck.
+// Mid-game helper bar: lets late joiners pick a team (as guessers only —
+// spymasters are never replaced mid-game, since the original already saw the colors
+// and can rejoin their seat at any time).
 function renderMidJoin(playing){
   const el = $('midJoin'), m = me();
-  if (!playing || !m) { show(el, false); return; }
-  const spyFree = t => !S.players.some(p => p.team === t && p.role === 'spymaster');
-  let html = '';
-  if (!m.team) {
-    html = `<b>👋 You're watching — pick a team to jump in:</b><div class="midjoinbtns">` +
-      `<button class="btn mjr" data-team="red" data-role="operative">❤️ Join Red</button>` +
-      (spyFree('red') ? `<button class="btn mjr" data-team="red" data-role="spymaster">🕵️ Red spymaster</button>` : '') +
-      `<button class="btn mjb" data-team="blue" data-role="operative">💙 Join Blue</button>` +
-      (spyFree('blue') ? `<button class="btn mjb" data-team="blue" data-role="spymaster">🕵️ Blue spymaster</button>` : '') +
-      `</div>`;
-  } else if (m.role !== 'spymaster' && spyFree(m.team)) {
-    html = `<b>🕵️ Your team has no spymaster!</b><div class="midjoinbtns">` +
-      `<button class="btn ${m.team === 'red' ? 'mjr' : 'mjb'}" data-team="${m.team}" data-role="spymaster">Become ${m.team} spymaster</button></div>`;
-  }
-  show(el, !!html);
-  if (html) {
-    el.innerHTML = html;
-    el.querySelectorAll('button').forEach(b => {
-      b.onclick = () => socket.emit('setTeamRole', { team: b.dataset.team, role: b.dataset.role });
-    });
-  }
+  if (!playing || !m || m.team) { show(el, false); return; }
+  el.innerHTML = `<b>👋 You're watching — pick a team to jump in:</b><div class="midjoinbtns">` +
+    `<button class="btn mjr" data-team="red" data-role="operative">❤️ Join Red</button>` +
+    `<button class="btn mjb" data-team="blue" data-role="operative">💙 Join Blue</button>` +
+    `</div>`;
+  show(el, true);
+  el.querySelectorAll('button').forEach(b => {
+    b.onclick = () => socket.emit('setTeamRole', { team: b.dataset.team, role: b.dataset.role });
+  });
 }
 $('startBtn').onclick = () => socket.emit('start');
 $('againBtn').onclick = () => socket.emit('rematch');
