@@ -53,9 +53,10 @@ function shuffle(arr) {
   return a;
 }
 
-function createBoard(packKey) {
-  const pack = PACKS[packKey] || PACKS.easy;
-  const words = shuffle(pack.words).slice(0, 25);
+function createBoard() {
+  // every game: 25 random words drawn from ALL packs combined (deduped)
+  const pool = [...new Set(Object.values(PACKS).flatMap(p => p.words))];
+  const words = shuffle(pool).slice(0, 25);
   const startingTeam = Math.random() < 0.5 ? 'red' : 'blue';
   const otherTeam = startingTeam === 'red' ? 'blue' : 'red';
   const colors = shuffle([
@@ -112,7 +113,6 @@ function publicState(room, forPlayer) {
     state: room.state,
     hostId: room.hostId,
     settings: room.settings,
-    packs: Object.fromEntries(Object.entries(PACKS).map(([k, p]) => [k, p.name])),
     players: [...room.players.values()].map(p => ({
       id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar
     })),
@@ -178,7 +178,7 @@ function endGame(room, winner, reason) {
 }
 
 function startGame(room) {
-  room.board = createBoard(room.settings.pack);
+  room.board = createBoard();
   room.state = 'playing';
   room.winner = null;
   room.winReason = null;
@@ -249,9 +249,8 @@ io.on('connection', (socket) => {
     broadcast(room);
   }));
 
-  socket.on('setSettings', guard(({ pack, timer }) => {
+  socket.on('setSettings', guard(({ timer }) => {
     if (!room || socket.id !== room.hostId || room.state === 'playing') return;
-    if (pack && PACKS[pack]) room.settings.pack = pack;
     if (typeof timer === 'number' && [0, 60, 90, 120, 180].includes(timer)) room.settings.timer = timer;
     broadcast(room);
   }));
