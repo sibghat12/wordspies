@@ -496,7 +496,7 @@ function avSVG(p, size){
   const initial = esc((p.name || '?')[0].toUpperCase());
   return `<span class="avwrap" style="width:${size}px;height:${size}px">` +
     `<i class="avfb" style="background:${bg};font-size:${Math.round(size * .5)}px">${initial}</i>` +
-    `<img src="https://api.dicebear.com/9.x/big-smile/svg?seed=${seed}&backgroundColor=ffdfbf,ffd5dc,d1d4f9,c0f0dd,b6e3f4&radius=50" width="${size}" height="${size}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+    `<img src="https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=ffdfbf,ffd5dc,d1d4f9,c0f0dd,b6e3f4&radius=50" width="${size}" height="${size}" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 
 socket.on('connect', () => {
