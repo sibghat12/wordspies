@@ -311,14 +311,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
           <button class="btn btn-light" id="joinBtn" style="flex:1">Join game</button>
         </div>
       </div>
-      <div style="margin-top:18px"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button></div>
-      <section style="text-align:left;margin-top:34px;background:#fff;border-radius:18px;padding:22px;box-shadow:var(--sh-sm)">
-        <h2 style="font-family:'Fredoka';font-size:18px;margin-bottom:8px">What is WordSpies?</h2>
-        <p style="font-size:14.5px;line-height:1.65;margin-bottom:14px">WordSpies is a free online word game you play with friends in real time. Two teams — red and blue — race to find their secret words on a 5×5 board using one-word clues from their spymaster. No downloads, no accounts: create a room, share the 4-letter code or invite link, and play on any phone or laptop.</p>
-        <details style="margin-bottom:8px"><summary style="font-weight:900;font-size:14px;cursor:pointer">How many players do you need?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">At least 4 — one spymaster and one guesser per team. It's even better with 6–10 players in the room.</p></details>
-        <details style="margin-bottom:8px"><summary style="font-weight:900;font-size:14px;cursor:pointer">Is WordSpies free?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">Yes — completely free, no sign-up, no install. Open the site, share your room code, and start playing.</p></details>
-        <details><summary style="font-weight:900;font-size:14px;cursor:pointer">Can I play on my phone?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">Yes, WordSpies works on any modern phone, tablet or computer browser — and friends can mix devices in the same game.</p></details>
-      </section>
+      <div style="margin-top:18px;display:flex;gap:10px;justify-content:center"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button><button class="helpbtn" onclick="toggleAbout(true)">ℹ️ About</button></div>
       <p style="margin-top:22px;font-size:13px;font-weight:700;color:var(--faint);line-height:1.6"><span style="color:var(--ink)">🚧 Beta — send improvement ideas to <a href="mailto:contact@wordspies.co.uk" style="color:var(--ink);font-weight:900;text-decoration:underline">contact@wordspies.co.uk</a></span><br><span style="color:var(--ink)">© 2026 Sibi — all rights reserved</span></p>
       <div class="ad-slot" id="ad-home"><!-- ad code goes here --></div>
     </div>
@@ -413,6 +406,20 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
     <div class="hline"><span class="n">👆</span><span>Guessers tap words. Right word = keep guessing. Wrong word = turn over.</span></div>
     <div class="hline"><span class="n">💀</span><span>Never tap the <b>assassin</b> word — instant loss! Find all your words first to win.</span></div>
     <div style="text-align:center;margin-top:20px"><button class="btn btn-dark" onclick="toggleHelp(false)" style="min-width:160px">Got it!</button></div>
+  </div>
+</div>
+
+<!-- about overlay -->
+<div id="aboutOv" class="ov helpov hidden" onclick="if(event.target===this)toggleAbout(false)">
+  <div class="card" style="max-width:480px;width:100%;padding:28px;text-align:left;max-height:84vh;overflow-y:auto">
+      <section >
+        <h2 style="font-family:'Fredoka';font-size:18px;margin-bottom:8px">What is WordSpies?</h2>
+        <p style="font-size:14.5px;line-height:1.65;margin-bottom:14px">WordSpies is a free online word game you play with friends in real time. Two teams — red and blue — race to find their secret words on a 5×5 board using one-word clues from their spymaster. No downloads, no accounts: create a room, share the 4-letter code or invite link, and play on any phone or laptop.</p>
+        <details style="margin-bottom:8px"><summary style="font-weight:900;font-size:14px;cursor:pointer">How many players do you need?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">At least 4 — one spymaster and one guesser per team. It's even better with 6–10 players in the room.</p></details>
+        <details style="margin-bottom:8px"><summary style="font-weight:900;font-size:14px;cursor:pointer">Is WordSpies free?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">Yes — completely free, no sign-up, no install. Open the site, share your room code, and start playing.</p></details>
+        <details><summary style="font-weight:900;font-size:14px;cursor:pointer">Can I play on my phone?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">Yes, WordSpies works on any modern phone, tablet or computer browser — and friends can mix devices in the same game.</p></details>
+      </section>
+    <div style="text-align:center;margin-top:18px"><button class="btn btn-dark" onclick="toggleAbout(false)" style="min-width:150px">Close</button></div>
   </div>
 </div>
 
@@ -684,6 +691,7 @@ function renderFeed(){
 }
 
 function toggleHelp(on){ document.getElementById('helpOv').classList.toggle('hidden', !on); }
+function toggleAbout(on){ document.getElementById('aboutOv').classList.toggle('hidden', !on); }
 
 // ---------- sounds ----------
 const muted = false;
