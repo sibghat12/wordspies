@@ -329,7 +329,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 <div id="home">
   <div class="wrap">
     <div class="home">
-      <h1 class="logo" style="margin:0"><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></h1>
+      <h1 class="logo" style="margin:0;cursor:pointer" onclick="location.href='/'" title="WordSpies home"><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></h1>
       <p style="margin:6px 0 0;font-size:15px;font-weight:800;color:var(--muted)">The free online Codenames-style word game</p>
       <div class="card homecard">
         <label class="lbl">Your name</label>
@@ -353,7 +353,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 <div id="app" class="hidden">
   <div class="wrap">
     <div class="top">
-      <div class="logo"><span class="r">Word</span><span class="b">Spies</span></div>
+      <div class="logo" style="cursor:pointer" onclick="location.href='/'" title="WordSpies home"><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp">Copy invite link</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
