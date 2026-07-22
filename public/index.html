@@ -8,17 +8,17 @@
 <meta name="theme-color" content="#f6f7fc">
 <meta property="og:title" content="WordSpies — Free Online Word Game Like Codenames">
 <meta property="og:description" content="A free Codenames-style word game for friends. Create a room, share the code, play instantly — no sign-up.">
-<meta property="og:url" content="https://wordspies.onrender.com/play">
+<meta property="og:url" content="https://wordspies.co.uk/play">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://wordspies.onrender.com/icon-512.png">
+<meta property="og:image" content="https://wordspies.co.uk/icon-512.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="WordSpies — Free Word Game Like Codenames">
 <meta name="twitter:description" content="Free Codenames-style word game. No sign-up — create a room and play with friends.">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="canonical" href="https://wordspies.onrender.com/play">
+<link rel="canonical" href="https://wordspies.co.uk/play">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WordSpies","url":"https://wordspies.onrender.com/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"Free Codenames-style online word team game. Create a room, share the code, play with friends. No sign-up.","offers":{"@type":"Offer","price":"0"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WordSpies","url":"https://wordspies.co.uk/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"Free Codenames-style online word team game. Create a room, share the code, play with friends. No sign-up.","offers":{"@type":"Offer","price":"0"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -188,6 +188,8 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .tile.rev.neutral{background:linear-gradient(170deg,#f0e3c0,var(--tan-deep));color:#7c6a3e;text-shadow:none;box-shadow:0 3px 0 #bfa877,var(--sh-sm)}
 .tile.rev.assassin{background:linear-gradient(170deg,#2a2d36,#0a0b0e);box-shadow:0 3px 0 #000,0 12px 30px rgba(20,23,42,.55)}
 .tile.rev span{opacity:.92;font-size:.85em}
+.tile .picker{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.tile .picker svg{width:18px;height:18px}
 /* spymaster key tints */
 .tile.sred{background:linear-gradient(180deg,#fff0f2,var(--red-soft));color:var(--red-ink);box-shadow:0 2px 0 #f6c1cb,inset 0 0 0 2px #ffccd5,var(--sh-sm)}
 .tile.sblue{background:linear-gradient(180deg,#f0f5ff,var(--blue-soft));color:var(--blue-ink);box-shadow:0 2px 0 #c2d4fb,inset 0 0 0 2px #c8d9ff,var(--sh-sm)}
@@ -294,12 +296,17 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .pstrip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:9px 14px;box-shadow:var(--sh-sm);margin-bottom:14px}
 .mepill{display:flex;align-items:center;gap:8px;font-weight:900;font-size:14px;padding-right:12px;border-right:2px solid var(--line)}
 .mepill .lab{font-size:10.5px;letter-spacing:1px;color:var(--muted);display:block}
+.side{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.vsx{font-family:'Fredoka';font-weight:700;color:var(--faint);font-size:13px;margin:0 auto;padding:0 6px}
 .pchip{display:flex;align-items:center;gap:7px;padding:4px 12px 4px 5px;border-radius:99px;font-size:13px;font-weight:800;border:2px solid var(--line);background:#f7f8fc;transition:transform .12s var(--spring)}
 .pchip:hover{transform:translateY(-2px)}
 .pchip.redp{border-color:#ffb9c6;background:#fff5f7}
 .pchip.bluep{border-color:#b9d1ff;background:#f4f8ff}
 .pchip.off{opacity:.4}
 .av svg,.pchip svg{display:block;border-radius:50%}
+.avwrap{display:inline-flex;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative}
+.avwrap img{display:block;border-radius:50%;position:relative;z-index:1}
+.avfb{position:absolute;inset:0;border-radius:50%;color:#fff;font-style:normal;font-weight:900;display:flex;align-items:center;justify-content:center}
 #startBtn:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.4);transform:none}
 /* interactive log */
 .feed .ev{display:flex;gap:8px;align-items:flex-start;padding:2px 0}
@@ -348,6 +355,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
       <div class="logo"><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp">Copy invite link</span></div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="helpbtn" id="leaveBtn" title="Leave game">🚪</button>
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
@@ -481,32 +489,70 @@ const HATS = ['#20263b','#7c3aed','#e63956','#0f7500','#b45309','#0e7490','#be18
 const SKINS = ['#ffd9b3','#f3c39a','#e8b088','#d9986b'];
 function hashStr(str){ let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); }
 function avSVG(p, size){
+  const seed = encodeURIComponent((p.name || 'spy') + '-' + String(p.id || '').slice(0, 5));
   const h = hashStr((p.id || '') + (p.name || ''));
-  const hat = HATS[h % HATS.length], skin = SKINS[(h >> 3) % SKINS.length];
-  const wink = (h >> 5) % 3 === 0;
-  const eye2 = wink ? `<path d="M55 54 q4 -3.5 8 0" stroke="#20263b" stroke-width="3" fill="none" stroke-linecap="round"/>` : `<circle cx="59" cy="55" r="3.2" fill="#20263b"/>`;
-  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><circle cx="50" cy="54" r="30" fill="${skin}"/><ellipse cx="50" cy="30" rx="30" ry="7" fill="${hat}"/><path d="M31 28 q0 -17 19 -17 q19 0 19 17 q0 4 -19 4 q-19 0 -19 -4z" fill="${hat}" opacity=".88"/><circle cx="41" cy="55" r="3.2" fill="#20263b"/>${eye2}<circle cx="35" cy="63" r="3.4" fill="#ffb1a8" opacity=".8"/><circle cx="65" cy="63" r="3.4" fill="#ffb1a8" opacity=".8"/><path d="M43 66 q7 6 14 0" stroke="#c96b4a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+  const bg = HATS[h % HATS.length];
+  const initial = esc((p.name || '?')[0].toUpperCase());
+  return `<span class="avwrap" style="width:${size}px;height:${size}px">` +
+    `<i class="avfb" style="background:${bg};font-size:${Math.round(size * .5)}px">${initial}</i>` +
+    `<img src="https://api.dicebear.com/9.x/big-smile/svg?seed=${seed}&backgroundColor=ffdfbf,ffd5dc,d1d4f9,c0f0dd,b6e3f4&radius=50" width="${size}" height="${size}" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 
-socket.on('connect', () => { if (!DEMO) myId = socket.id; });
+socket.on('connect', () => {
+  if (DEMO) return;
+  myId = socket.id;
+  // refresh-proof: auto-rejoin the room you were in
+  try {
+    const sess = JSON.parse(localStorage.getItem('ws_sess') || 'null');
+    const roomParam = new URLSearchParams(location.search).get('room');
+    if (sess && sess.code && sess.token && (!roomParam || roomParam.toUpperCase() === sess.code) && !S) {
+      socket.emit('rejoin', { code: sess.code, token: sess.token });
+    }
+  } catch(e){}
+});
 socket.on('errorMsg', toast);
 socket.on('disconnect', () => toast('Connection lost — reconnecting…'));
 socket.on('state', st => { if (DEMO) return; S = st; render(); soundAndTitle(); });
+socket.on('session', sess => { try { localStorage.setItem('ws_sess', JSON.stringify(sess)); } catch(e){} });
+socket.on('sessionExpired', () => { try { localStorage.removeItem('ws_sess'); } catch(e){} });
 
 // ---------- home ----------
-try { const n = sessionStorage.getItem('ws_name'); if (n) $('nameInput').value = n; } catch(e){}
+try { const n = localStorage.getItem('ws_name') || sessionStorage.getItem('ws_name'); if (n) $('nameInput').value = n; } catch(e){}
 const urlRoom = new URLSearchParams(location.search).get('room');
-if (urlRoom) $('codeInput').value = urlRoom.toUpperCase();
+if (urlRoom && !DEMO) {
+  // Invite-link mode: joining becomes the primary action so friends can't miss it
+  const code = urlRoom.toUpperCase().slice(0, 4);
+  $('codeInput').value = code;
+  const jb = $('joinBtn'), cb = $('createBtn');
+  jb.classList.remove('btn-light'); jb.classList.add('btn-green');
+  jb.textContent = '🎮 Join room ' + code;
+  cb.classList.remove('btn-green'); cb.classList.add('btn-light');
+  cb.textContent = 'Start my own game instead';
+  cb.style.fontSize = '14.5px'; cb.style.padding = '12px';
+  const card = cb.parentNode, jr = document.querySelector('.joinrow'), sp = document.querySelector('.split');
+  card.insertBefore(jr, cb); card.insertBefore(sp, cb);
+}
 
 function getName(){
   const n = $('nameInput').value.trim();
   if (!n) { toast('Type your name first'); $('nameInput').focus(); return null; }
-  try { sessionStorage.setItem('ws_name', n); } catch(e){}
+  try { localStorage.setItem('ws_name', n); } catch(e){}
   return n;
+}
+$('leaveBtn').onclick = () => {
+  if (!confirmLeave()) return;
+  try { localStorage.removeItem('ws_sess'); } catch(e){}
+  socket.emit('leaveRoom');
+  location.href = '/play';
+};
+function confirmLeave(){
+  // playing mid-game? double-check; in lobby just leave
+  return !(S && S.state === 'playing') || window.confirm('Leave this game? Your team keeps playing without you.');
 }
 $('createBtn').onclick = () => { const n = getName(); if (n) socket.emit('create', { name: n }); };
 $('joinBtn').onclick = doJoin;
 $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') doJoin(); });
+$('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') { if (urlRoom) doJoin(); else $('createBtn').click(); } });
 function doJoin(){
   const n = getName(); if (!n) return;
   const code = $('codeInput').value.trim().toUpperCase();
@@ -589,10 +635,12 @@ function renderStrip(){
   show(el, inGame);
   if (!inGame || !m) return;
   const roleTxt = m.role === 'spymaster' ? '🕵️ Spymaster' : 'Guesser';
-  const chips = S.players.map(p =>
-    `<span class="pchip ${p.team === 'red' ? 'redp' : p.team === 'blue' ? 'bluep' : ''}${p.connected ? '' : ' off'}" title="${esc(p.name)}">` +
-    avSVG(p, 24) + `${esc(p.name)}${p.role === 'spymaster' ? ' 🕵️' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>`).join('');
-  el.innerHTML = `<span class="mepill">${avSVG(m, 32)}<span><span class="lab">PLAYING AS</span>${esc(m.name)} · ${roleTxt}</span></span>` + chips;
+  const chip = p => `<span class="pchip ${p.team === 'red' ? 'redp' : p.team === 'blue' ? 'bluep' : ''}${p.connected ? '' : ' off'}" title="${esc(p.name)}">` +
+    avSVG(p, 24) + `${esc(p.name)}${p.role === 'spymaster' ? ' 🕵️' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>`;
+  const reds = S.players.filter(p => p.team === 'red').map(chip).join('');
+  const blues = S.players.filter(p => p.team === 'blue').map(chip).join('');
+  el.innerHTML = `<span class="mepill">${avSVG(m, 32)}<span><span class="lab">PLAYING AS</span>${esc(m.name)} · ${roleTxt}</span></span>` +
+    `<span class="side">${reds}</span><span class="vsx">VS</span><span class="side">${blues}</span>`;
 }
 
 function renderLobby(){
@@ -634,7 +682,10 @@ function renderBoard(){
     t.className = 'tile';
     if (c.revealed) {
       t.classList.add('rev', c.color);
-      t.innerHTML = `<span>${c.color === 'assassin' ? '💀 ' : ''}${esc(c.word)}</span>`;
+      const pk = c.by ? S.players.find(p => p.name === c.by) : null;
+      const badge = pk ? `<span class="picker" title="picked by ${esc(pk.name)}">${avSVG(pk, 18)}</span>` : '';
+      t.innerHTML = `<span>${c.color === 'assassin' ? '💀 ' : ''}${esc(c.word)}</span>` + badge;
+      if (c.by) t.title = 'Picked by ' + c.by;
     } else {
       t.textContent = c.word;
       if (c.word.length >= 8) t.classList.add('long');
@@ -828,7 +879,8 @@ if (DEMO) {
     { id:'p4', name:'Zara', team:'blue', role:'operative', connected:true },
     { id:'p5', name:'Bilal', team:'blue', role:'operative', connected:true }
   ];
-  const cards = DW.map((w,i)=>({ word:w, revealed:!!REV[i], color:KEY[i] }));
+  const PICKERS = { 0:'Ayesha', 4:'Zara', 9:'Ayesha', 13:'Zara' };
+  const cards = DW.map((w,i)=>({ word:w, revealed:!!REV[i], color:KEY[i], by:PICKERS[i]||null }));
   myId = 'p1';
   S = {
     code:'DEMO', state:'playing', hostId:'p1', settings:{timer:0}, players,
