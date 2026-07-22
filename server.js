@@ -4,6 +4,7 @@
 const path = require('path');
 const http = require('http');
 const express = require('express');
+const compression = require('compression');
 const { Server } = require('socket.io');
 const { PACKS } = require('./words');
 
@@ -11,8 +12,23 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(compression());
+app.use((req, res, next) => {
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.set('X-Frame-Options', 'SAMEORIGIN');
+  next();
+});
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '7d',
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
+  }
+}));
 app.get('/healthz', (req, res) => res.send('ok'));
+
+process.on('uncaughtException', err => console.error('uncaught:', err));
+process.on('unhandledRejection', err => console.error('unhandled:', err));
 
 const PORT = process.env.PORT || 3000;
 

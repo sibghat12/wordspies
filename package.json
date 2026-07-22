@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "compression": "^1.8.1",
     "express": "^5.2.1",
     "socket.io": "^4.8.3"
   },
@@ -18,7 +19,7 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "socket.io-client": "^4.8.3",
-    "playwright": "^1.61.1"
+    "playwright": "^1.61.1",
+    "socket.io-client": "^4.8.3"
   }
 }
