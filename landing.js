@@ -15,7 +15,11 @@ function avatar(hat, skin, blushOpacity = '.8') {
 const DEMO_WORDS = ['TIGER','MOON','PIZZA','ROBOT','PARIS','HONEY','CLOUD','KING','OCEAN','TRAIN','APPLE','GHOST','PIANO','RIVER','CROWN','SNOW','DRAGON','BEACH','STAR','BRIDGE','CANDY','WOLF','ROCKET','ISLAND','MAGIC'];
 
 function page() {
-  const demoTiles = DEMO_WORDS.map((w, i) => `<div class="t t${i % 7}" style="animation-delay:${(i * 0.9) % 9}s">${w}</div>`).join('');
+  const ASSASSIN_IDX = 12; // exactly one black assassin tile, like a real game
+  const demoTiles = DEMO_WORDS.map((w, i) => {
+    const cls = i === ASSASSIN_IDX ? 'tk' : 't' + (i % 7);
+    return `<div class="t ${cls}" style="animation-delay:${(i * 0.9) % 9}s">${w}</div>`;
+  }).join('');
   return `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +38,12 @@ function page() {
 :root{--ink:#111318;--muted:#5f6675;--line:#e6e8ef;--red:#ff4d6b;--blue:#3d7bff;--green:#0f7500;--bg:#f7f8fb;
 --sh:0 2px 4px rgba(35,41,70,.06),0 10px 28px rgba(35,41,70,.09);--spring:cubic-bezier(.34,1.56,.64,1)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+body{font-family:'Nunito',system-ui,sans-serif;color:var(--ink);
+background:
+  radial-gradient(1100px 520px at 82% -8%, rgba(61,123,255,.13), transparent 60%),
+  radial-gradient(900px 500px at 2% -4%, rgba(255,77,107,.12), transparent 58%),
+  var(--bg);
+background-repeat:no-repeat}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 a{text-decoration:none;color:inherit}
 .sitehead{background:#fff;border-bottom:1.5px solid var(--line);position:sticky;top:0;z-index:50}
@@ -60,14 +69,26 @@ a{text-decoration:none;color:inherit}
 .hero p{font-size:18px;color:var(--muted);font-weight:700;line-height:1.65;margin-bottom:26px;max-width:480px}
 @media(max-width:860px){.hero p{margin-inline:auto}}
 .herometa{margin-top:14px;color:var(--muted);font-weight:800;font-size:13.5px}
+.playersrow{display:flex;align-items:center;gap:12px;margin-top:22px}
+@media(max-width:860px){.playersrow{justify-content:center}}
+.avstack{display:flex}
+.avstack svg{width:40px;height:40px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(35,41,70,.18);margin-left:-12px;border:2.5px solid #fff}
+.avstack svg:first-child{margin-left:0}
+.playersrow .cap{color:var(--muted);font-weight:800;font-size:13.5px;line-height:1.35}
+.playersrow .cap b{color:var(--ink)}
 /* animated demo board */
 .demo{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-width:430px;margin-inline:auto;transform:rotate(2deg)}
 .t{aspect-ratio:16/11;border-radius:9px;background:#fff;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;
 font-weight:900;font-size:clamp(8px,1.15vw,11.5px);letter-spacing:.3px;color:var(--ink);animation:flip 9s infinite}
 .t1{animation-name:flipred}.t3{animation-name:flipblue}.t5{animation-name:flipred}.t6{animation-name:flipblue}
+.tk{animation-name:flipblack}
 @keyframes flip{0%,100%{background:#fff;color:#111318}}
 @keyframes flipred{0%,38%,100%{background:#fff;color:#111318}44%,86%{background:var(--red);color:#fff}}
 @keyframes flipblue{0%,52%,100%{background:#fff;color:#111318}58%,90%{background:var(--blue);color:#fff}}
+@keyframes flipblack{0%,44%,100%{background:#fff;color:#111318}50%,92%{background:#111318;color:#fff}}
+.tk::after{content:'💀';position:absolute;top:2px;right:3px;font-size:9px;opacity:0;animation:skull 9s infinite;animation-delay:inherit}
+@keyframes skull{0%,44%,100%{opacity:0}50%,92%{opacity:.9}}
+.t{position:relative}
 /* sections */
 
 .sec-h{font-family:'Fredoka';font-size:30px;text-align:center;margin-bottom:8px}
@@ -119,6 +140,10 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
       <p>Two teams. Twenty-five words. One deadly assassin. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone — no sign-up, no download.</p>
       <a class="btn" href="/play">🎮 Play free — takes 10 seconds</a>
       <div class="herometa">✓ 100% free &nbsp; ✓ No account needed &nbsp; ✓ Works on every phone</div>
+      <div class="playersrow">
+        <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>
+        <div class="cap"><b>Friends & families</b> play WordSpies<br>at game nights and on video calls.</div>
+      </div>
     </div>
     <div class="demo" aria-hidden="true">${demoTiles}</div>
   </div>
