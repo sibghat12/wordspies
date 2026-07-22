@@ -512,7 +512,23 @@ socket.on('connect', () => {
     }
   } catch(e){}
 });
-socket.on('errorMsg', toast);
+socket.on('errorMsg', msg => {
+  toast(msg);
+  // Friend opened an invite link to a room that no longer exists → offer a fresh game
+  if (urlRoom && /Room not found/i.test(msg) && !document.getElementById('deadRoomNote')) {
+    const jb = $('joinBtn'), cb = $('createBtn');
+    const jr = document.querySelector('.joinrow');
+    if (jr) jr.style.display = 'none';
+    const note = document.createElement('p');
+    note.id = 'deadRoomNote';
+    note.style.cssText = 'margin:4px 0 12px;font-weight:800;color:#c22;font-size:14.5px;text-align:center';
+    note.textContent = '😕 That game has ended or expired — start a fresh one below!';
+    cb.parentNode.insertBefore(note, cb);
+    cb.classList.remove('btn-light'); cb.classList.add('btn-green');
+    cb.textContent = '▶  Start a new game';
+    cb.style.cssText = 'width:100%;font-size:16px;padding:14px;opacity:1';
+  }
+});
 socket.on('disconnect', () => toast('Connection lost — reconnecting…'));
 let rejoinNotice = null;
 socket.on('state', st => {
