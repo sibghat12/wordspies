@@ -66,7 +66,8 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .logo .r{color:var(--red)} .logo .b{color:var(--blue)}
 
 /* ---------- home ---------- */
-.home{max-width:410px;margin:0 auto;padding-top:7vh;text-align:center}
+.home{max-width:410px;margin:0 auto;padding-top:7vh;text-align:center;display:flex;flex-direction:column;min-height:calc(100vh - 80px)}
+.home .foot{margin-top:auto;padding-top:40px;padding-bottom:30px}
 .home .logo{font-size:52px;margin-bottom:4px;animation:drop .6s var(--spring)}
 @keyframes drop{0%{opacity:0;transform:translateY(-18px) scale(.96)}100%{opacity:1}}
 .betachip{display:inline-block;font-size:11px;font-weight:900;letter-spacing:1.5px;color:var(--ink);background:#eceef4;border-radius:99px;padding:5px 12px;vertical-align:18px;margin-left:4px}
@@ -300,6 +301,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
   <div class="wrap">
     <div class="home">
       <h1 class="logo" style="margin:0"><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></h1>
+      <p style="margin:6px 0 0;font-size:15px;font-weight:800;color:var(--muted)">The free online Codenames-style word game</p>
       <div class="card homecard">
         <label class="lbl">Your name</label>
         <input class="fld" id="nameInput" maxlength="20" placeholder="Type your name" autocomplete="off">
@@ -312,7 +314,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
         </div>
       </div>
       <div style="margin-top:18px;display:flex;gap:10px;justify-content:center"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button><button class="helpbtn" onclick="toggleAbout(true)">ℹ️ About</button><a class="helpbtn" href="/blog" style="text-decoration:none">📰 Blog</a></div>
-      <p style="margin-top:22px;font-size:13px;font-weight:700;color:var(--faint);line-height:1.6"><span style="color:var(--ink)">🚧 Beta — send improvement ideas to <a href="mailto:contact@wordspies.co.uk" style="color:var(--ink);font-weight:900;text-decoration:underline">contact@wordspies.co.uk</a></span><br><span style="color:var(--ink)">© 2026 Sibi — all rights reserved</span></p>
+      <p class="foot" style="font-size:13px;font-weight:700;color:var(--faint);line-height:1.6"><span style="color:var(--ink)">🚧 Beta — send improvement ideas to <a href="mailto:contact@wordspies.co.uk" style="color:var(--ink);font-weight:900;text-decoration:underline">contact@wordspies.co.uk</a></span><br><span style="color:var(--ink)">© 2026 Sibi — all rights reserved</span></p>
       <div class="ad-slot" id="ad-home"><!-- ad code goes here --></div>
     </div>
   </div>
