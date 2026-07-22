@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://wordspies.co.uk/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://wordspies.co.uk/play</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://wordspies.co.uk/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://wordspies.co.uk/blog/games-like-codenames</loc><priority>0.7</priority></url>
-  <url><loc>https://wordspies.co.uk/blog/codenames-rules-explained</loc><priority>0.7</priority></url>
-  <url><loc>https://wordspies.co.uk/blog/word-games-for-zoom-calls</loc><priority>0.7</priority></url>
-  <url><loc>https://wordspies.co.uk/blog/codenames-with-4-players</loc><priority>0.7</priority></url>
-  <url><loc>https://wordspies.co.uk/blog/play-codenames-online-free</loc><priority>0.7</priority></url>
-  <url><loc>https://wordspies.co.uk/blog/best-online-word-party-games</loc><priority>0.7</priority></url>
-  <url><loc>https://wordspies.co.uk/blog/spymaster-clue-strategies</loc><priority>0.7</priority></url>
+  <url><loc>https://wordspies.co.uk/</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://wordspies.co.uk/play</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://wordspies.co.uk/blog</loc><lastmod>2026-07-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://wordspies.co.uk/blog/games-like-codenames</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://wordspies.co.uk/blog/codenames-rules-explained</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://wordspies.co.uk/blog/word-games-for-zoom-calls</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://wordspies.co.uk/blog/codenames-with-4-players</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://wordspies.co.uk/blog/play-codenames-online-free</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://wordspies.co.uk/blog/best-online-word-party-games</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://wordspies.co.uk/blog/spymaster-clue-strategies</loc><lastmod>2026-07-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>
