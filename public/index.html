@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f6f7fc; --card:#ffffff; --ink:#232946; --muted:#8a92ab; --faint:#b9bfd4; --line:#e8eaf3;
+  --bg:#f7f8fb; --card:#ffffff; --ink:#111318; --muted:#5f6675; --faint:#aab0c0; --line:#e6e8ef;
   --red:#ff4d6b; --red-deep:#e63956; --red-soft:#ffe9ed; --red-ink:#d22e4c;
   --blue:#3d7bff; --blue-deep:#2b62e0; --blue-soft:#e9f0ff; --blue-ink:#2258d8;
   --tan:#ead9b0; --tan-deep:#d4bf8d; --tan-soft:#faf6ec; --tan-ink:#a08b58;
@@ -50,9 +50,9 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
   transition:transform .15s var(--spring),box-shadow .2s,filter .15s;
 }
 .btn:hover{transform:translateY(-2px)} .btn:active{transform:translateY(1px) scale(.98)}
-.btn-dark{background:linear-gradient(180deg,#2e3552,#232946);color:#fff;box-shadow:0 4px 0 #161a30,0 10px 24px rgba(35,41,70,.3)}
-.btn-dark:hover{filter:brightness(1.12);box-shadow:0 5px 0 #161a30,0 14px 30px rgba(35,41,70,.35)}
-.btn-dark:active{box-shadow:0 2px 0 #161a30,0 6px 14px rgba(35,41,70,.3)}
+.btn-dark{background:linear-gradient(180deg,#23262e,#111318);color:#fff;box-shadow:0 4px 0 #000,0 10px 24px rgba(17,19,24,.35)}
+.btn-dark:hover{filter:brightness(1.12);box-shadow:0 5px 0 #000,0 14px 30px rgba(17,19,24,.4)}
+.btn-dark:active{box-shadow:0 2px 0 #000,0 6px 14px rgba(17,19,24,.3)}
 .btn-light{background:#fff;box-shadow:0 3px 0 var(--line),var(--sh-sm)}
 .btn-light:active{box-shadow:0 1px 0 var(--line),var(--sh-sm)}
 .btn-green{background:linear-gradient(180deg,#17e094,var(--green));color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.15);box-shadow:0 4px 0 var(--green-deep),0 12px 28px rgba(18,206,132,.35)}
@@ -135,7 +135,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
   transition:.16s;box-shadow:inset 0 0 0 1.5px transparent;
 }
 .chips button:hover{color:var(--ink);transform:translateY(-1px)}
-.chips button.on{background:linear-gradient(180deg,#2e3552,#232946);color:#fff;box-shadow:0 3px 0 #161a30,0 6px 14px rgba(35,41,70,.25)}
+.chips button.on{background:linear-gradient(180deg,#23262e,#111318);color:#fff;box-shadow:0 3px 0 #000,0 6px 14px rgba(17,19,24,.25)}
 .chips.locked button{cursor:default;pointer-events:none}
 .startbtn{width:100%;max-width:320px;font-size:18px;padding:17px}
 .waitmsg{color:var(--muted);font-weight:800;font-size:14.5px;margin-top:8px}
@@ -183,13 +183,13 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .tile.rev.red{background:linear-gradient(170deg,#ff6b84,var(--red-deep));box-shadow:0 3px 0 #c22843,0 10px 24px rgba(255,77,107,.4)}
 .tile.rev.blue{background:linear-gradient(170deg,#5e90ff,var(--blue-deep));box-shadow:0 3px 0 #1f4fc4,0 10px 24px rgba(61,123,255,.4)}
 .tile.rev.neutral{background:linear-gradient(170deg,#f0e3c0,var(--tan-deep));color:#7c6a3e;text-shadow:none;box-shadow:0 3px 0 #bfa877,var(--sh-sm)}
-.tile.rev.assassin{background:linear-gradient(170deg,#33394f,#14172a);box-shadow:0 3px 0 #000,0 12px 30px rgba(20,23,42,.55)}
+.tile.rev.assassin{background:linear-gradient(170deg,#2a2d36,#0a0b0e);box-shadow:0 3px 0 #000,0 12px 30px rgba(20,23,42,.55)}
 .tile.rev span{opacity:.92;font-size:.85em}
 /* spymaster key tints */
 .tile.sred{background:linear-gradient(180deg,#fff0f2,var(--red-soft));color:var(--red-ink);box-shadow:0 2px 0 #f6c1cb,inset 0 0 0 2px #ffccd5,var(--sh-sm)}
 .tile.sblue{background:linear-gradient(180deg,#f0f5ff,var(--blue-soft));color:var(--blue-ink);box-shadow:0 2px 0 #c2d4fb,inset 0 0 0 2px #c8d9ff,var(--sh-sm)}
 .tile.sneutral{background:linear-gradient(180deg,#fdfbf4,var(--tan-soft));color:var(--tan-ink);box-shadow:0 2px 0 #e5dcc2,inset 0 0 0 2px #ece3ca,var(--sh-sm)}
-.tile.sassassin{background:linear-gradient(180deg,#2e3552,#191d33);color:#fff;box-shadow:0 2px 0 #000,0 8px 20px rgba(20,23,42,.45)}
+.tile.sassassin{background:linear-gradient(180deg,#23262e,#0d0e12);color:#fff;box-shadow:0 2px 0 #000,0 8px 20px rgba(20,23,42,.45)}
 .tile.sassassin::after{content:'💀';position:absolute;top:5px;right:7px;font-size:11px;opacity:.8}
 
 .under{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
@@ -243,20 +243,49 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 /* ---------- toast ---------- */
 #toast{
   position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
-  background:linear-gradient(180deg,#2e3552,#232946);color:#fff;padding:13px 24px;border-radius:15px;
+  background:linear-gradient(180deg,#23262e,#111318);color:#fff;padding:13px 24px;border-radius:15px;
   font-size:14.5px;font-weight:800;z-index:99;opacity:0;pointer-events:none;
   transition:opacity .25s,transform .3s var(--spring);box-shadow:var(--sh-lg);max-width:90vw;text-align:center;
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media(max-width:480px){
-  .board{gap:7px}
-  .tile{border-radius:11px;aspect-ratio:auto;min-height:54px;padding:3px}
-  .statusbar{font-size:14px;gap:8px;padding:11px 12px}
+  .board{gap:6px}
+  .tile{border-radius:11px;aspect-ratio:auto;min-height:58px;padding:3px;font-size:clamp(9px,2.9vw,13px)}
+  .statusbar{font-size:14px;gap:8px;padding:11px 12px;position:sticky;top:6px;z-index:20}
   .bigclue{font-size:15px;padding:6px 14px}
-  .wrap{padding:12px 10px 50px}
-  .home .logo{font-size:42px}
+  .wrap{padding:10px 10px 46px}
+  .home{padding-top:4vh}
+  .home .logo{font-size:40px}
+  .top{margin-bottom:12px}
+  .top .logo{font-size:19px}
+  .codepill{padding:7px 7px 7px 14px;font-size:13.5px}
+  .codepill b{font-size:15px;letter-spacing:3px}
+  .codepill .cp{padding:5px 10px;font-size:12px}
+  .scorepill{padding:8px 14px;font-size:14px}
+  .btn{padding:15px 20px;font-size:16px;border-radius:14px}
+  .nums button{width:48px;height:54px}
+  .cluebar .fld{max-width:none;flex:1 1 100%}
+  .log{height:300px}
+  .teambtns button{padding:14px 8px}
+  .helpbtn{padding:8px 13px;font-size:13px}
+  .winov{padding:34px 20px}
+  .team{padding:16px}
+  .setup{padding:18px}
 }
+
+/* help */
+.helpbtn{
+  display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);
+  box-shadow:var(--sh-sm);border-radius:99px;padding:9px 16px;font-size:14px;font-weight:800;color:var(--muted);
+  cursor:pointer;transition:.15s;
+}
+.helpbtn:hover{color:var(--ink);transform:translateY(-1px);box-shadow:var(--sh)}
+.helpov .card{max-width:460px;width:100%;padding:30px 28px;text-align:left}
+.helpov h2{font-family:'Fredoka';font-size:24px;margin-bottom:16px;text-align:center}
+.hline{display:flex;gap:12px;align-items:flex-start;padding:9px 0;font-size:15px;font-weight:700;line-height:1.5}
+.hline .n{flex-shrink:0;width:30px;height:30px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px}
+.hline b.red{color:var(--red)} .hline b.blue{color:var(--blue)}
 
 /* ad slots — paste your ad network tag inside when ready; empty = invisible */
 .ad-slot{margin-top:16px;text-align:center}
@@ -280,6 +309,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
           <button class="btn btn-light" id="joinBtn" style="flex:1">Join game</button>
         </div>
       </div>
+      <div style="margin-top:18px"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button></div>
       <div class="ad-slot" id="ad-home"><!-- ad code goes here --></div>
     </div>
   </div>
@@ -291,7 +321,10 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
     <div class="top">
       <div class="logo"><span class="spy">🕵️</span><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp">Copy invite link</span></div>
-      <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
+        <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
+      </div>
     </div>
 
     <!-- lobby -->
@@ -358,6 +391,19 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- help overlay -->
+<div id="helpOv" class="ov helpov hidden" onclick="if(event.target===this)toggleHelp(false)">
+  <div class="card">
+    <h2>How to play</h2>
+    <div class="hline"><span class="n">👥</span><span>Two teams — <b class="red">Red</b> and <b class="blue">Blue</b>. Each team picks one <b>Spymaster</b>; everyone else guesses.</span></div>
+    <div class="hline"><span class="n">🔤</span><span>25 words on the board. Some belong to each team — <b>only spymasters see which</b>.</span></div>
+    <div class="hline"><span class="n">💡</span><span>The spymaster gives a one-word clue + a number, like <b>OCEAN · 2</b>, linking their team's words.</span></div>
+    <div class="hline"><span class="n">👆</span><span>Guessers tap words. Right word = keep guessing. Wrong word = turn over.</span></div>
+    <div class="hline"><span class="n">💀</span><span>Never tap the <b>assassin</b> word — instant loss! Find all your words first to win.</span></div>
+    <div style="text-align:center;margin-top:20px"><button class="btn btn-dark" onclick="toggleHelp(false)" style="min-width:160px">Got it!</button></div>
   </div>
 </div>
 
@@ -639,6 +685,8 @@ function renderFeed(){
   }).join('');
   el.scrollTop = el.scrollHeight;
 }
+
+function toggleHelp(on){ document.getElementById('helpOv').classList.toggle('hidden', !on); }
 
 let toastTimer = null;
 function toast(msg){
