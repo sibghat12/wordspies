@@ -54,7 +54,7 @@ function shuffle(arr) {
 }
 
 function createBoard(packKey) {
-  const pack = PACKS[packKey] || PACKS.classic;
+  const pack = PACKS[packKey] || PACKS.easy;
   const words = shuffle(pack.words).slice(0, 25);
   const startingTeam = Math.random() < 0.5 ? 'red' : 'blue';
   const otherTeam = startingTeam === 'red' ? 'blue' : 'red';
@@ -77,7 +77,7 @@ function createRoom(hostName) {
     hostId: null,
     players: new Map(), // socketId -> {id, name, team, role, connected}
     state: 'lobby', // lobby | playing | over
-    settings: { pack: 'classic', timer: 0 }, // timer in seconds, 0 = off
+    settings: { pack: 'easy', timer: 0 }, // timer in seconds, 0 = off
     board: null,
     turn: null, // {team, phase: 'clue'|'guess'}
     clue: null, // {word, count, guessesLeft}
