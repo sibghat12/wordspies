@@ -349,10 +349,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
         </div>
       </div>
       <div class="card setup">
-        <h4>WORD PACK</h4>
-        <div class="chips" id="packChips"></div>
-        <hr>
-        <h4>TIMER</h4>
+        <h4>⏱ TIMER</h4>
         <div class="chips" id="timerChips">
           <button data-t="0">Off</button><button data-t="60">1 min</button><button data-t="120">2 min</button><button data-t="180">3 min</button>
         </div>
@@ -544,20 +541,7 @@ function renderLobby(){
       el.appendChild(d);
     }
   }
-  // pack chips
-  const pc = $('packChips');
-  if (!pc.dataset.built) {
-    pc.dataset.built = '1';
-    for (const [k, name] of Object.entries(S.packs)) {
-      const b = document.createElement('button');
-      b.textContent = name; b.dataset.k = k;
-      b.onclick = () => socket.emit('setSettings', { pack: k });
-      pc.appendChild(b);
-    }
-  }
-  pc.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === S.settings.pack));
   $('timerChips').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.t === S.settings.timer));
-  pc.classList.toggle('locked', !isHost);
   $('timerChips').classList.toggle('locked', !isHost);
   show($('startBtn'), isHost);
   show($('waitMsg'), !isHost);
