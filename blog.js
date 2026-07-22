@@ -140,7 +140,7 @@ const articles = {
   }
 };
 
-function layout(title, desc, body, path) {
+function layout(title, desc, body, path, banner) {
   return `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -157,7 +157,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:#1c1e21;m
 .sitehead{background:#fff;border-bottom:1.5px solid #e6e8ef;position:sticky;top:0;z-index:50}
 .hwrap{max-width:1080px;margin:0 auto;padding:0 20px}
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.wrap{max-width:760px;margin:0 auto;padding:34px 20px 70px}
+.wrap{max-width:1080px;margin:0 auto;padding:34px 20px 70px}
+article,.post{max-width:860px}
 .logo{font-family:'Fredoka',sans-serif;font-weight:700;font-size:23px;text-decoration:none}
 .logo .r{color:#ff4d6b}.logo .b{color:#3d7bff}
 .navlinks{display:flex;gap:20px;align-items:center;font-weight:700;font-size:14.5px;color:#5f6675}
@@ -184,6 +185,9 @@ footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 .more:hover{text-decoration:underline;text-underline-offset:3px}
 .pagetitle{font-size:28px;margin:0 0 4px}
 .pagesub{color:#6b7280;font-size:15.5px;margin:0 0 8px}
+.bband{background:linear-gradient(135deg,#128a04,#0f7500);color:#fff;padding:42px 0 46px}
+.bband h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:36px;letter-spacing:-.5px;margin:0 0 8px;color:#fff}
+.bband p{margin:0;font-size:16.5px;font-weight:600;color:#eafbe7}
 .relh{font-size:19px;font-weight:800;margin:38px 0 14px}
 .relgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:560px){.relgrid{grid-template-columns:1fr}}
@@ -196,6 +200,7 @@ footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 <header class="sitehead"><div class="hwrap">
 <div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a href="/blog">Blog</a><a class="play" href="/play">&#9654; Play free</a></div></div>
 </div></header>
+${banner || ''}
 <div class="wrap">
 ${body}
 <footer>
@@ -222,8 +227,9 @@ function articlePage(slug) {
 function indexPage() {
   const items = Object.entries(articles).map(([slug, a]) =>
     `<div class="post"><h2><a href="/blog/${slug}">${a.title}</a></h2><p>${a.desc}</p><a class="more" href="/blog/${slug}">Read article &rarr;</a></div>`).join('');
-  const body = `<h1 class="pagetitle">WordSpies Blog</h1><p class="pagesub">Guides, strategies and tips for word games with friends.</p>${items}`;
-  return layout('WordSpies Blog — Word Game Guides & Tips', 'Guides, strategies and tips for Codenames-style word games and online party games with friends.', body, '/blog');
+  const body = items;
+  const banner = `<div class="bband"><div class="hwrap"><h1>WordSpies Blog</h1><p>Guides, strategies and tips for word games with friends.</p></div></div>`;
+  return layout('WordSpies Blog — Word Game Guides & Tips', 'Guides, strategies and tips for Codenames-style word games and online party games with friends.', body, '/blog', banner);
 }
 
 module.exports = { articles, articlePage, indexPage };
