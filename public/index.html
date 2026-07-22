@@ -8,6 +8,12 @@
 <meta name="theme-color" content="#f6f7fc">
 <meta property="og:title" content="WordSpies — play with friends">
 <meta property="og:description" content="A free online word team game. Create a room, share the code, play. No sign-up.">
+<meta property="og:url" content="https://wordspies.onrender.com/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://wordspies.onrender.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="WordSpies — play with friends">
+<meta name="twitter:description" content="Free online word team game. No sign-up — create a room and play.">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="canonical" href="https://wordspies.onrender.com/">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -293,7 +299,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 <div id="home">
   <div class="wrap">
     <div class="home">
-      <div class="logo"><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></div>
+      <h1 class="logo" style="margin:0"><span class="r">Word</span><span class="b">Spies</span><span class="betachip">BETA</span></h1>
       <div class="card homecard">
         <label class="lbl">Your name</label>
         <input class="fld" id="nameInput" maxlength="20" placeholder="Type your name" autocomplete="off">
@@ -306,6 +312,13 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
         </div>
       </div>
       <div style="margin-top:18px"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button></div>
+      <section style="text-align:left;margin-top:34px;background:#fff;border-radius:18px;padding:22px;box-shadow:var(--sh-sm)">
+        <h2 style="font-family:'Fredoka';font-size:18px;margin-bottom:8px">What is WordSpies?</h2>
+        <p style="font-size:14.5px;line-height:1.65;margin-bottom:14px">WordSpies is a free online word game you play with friends in real time. Two teams — red and blue — race to find their secret words on a 5×5 board using one-word clues from their spymaster. No downloads, no accounts: create a room, share the 4-letter code or invite link, and play on any phone or laptop.</p>
+        <details style="margin-bottom:8px"><summary style="font-weight:900;font-size:14px;cursor:pointer">How many players do you need?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">At least 4 — one spymaster and one guesser per team. It's even better with 6–10 players in the room.</p></details>
+        <details style="margin-bottom:8px"><summary style="font-weight:900;font-size:14px;cursor:pointer">Is WordSpies free?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">Yes — completely free, no sign-up, no install. Open the site, share your room code, and start playing.</p></details>
+        <details><summary style="font-weight:900;font-size:14px;cursor:pointer">Can I play on my phone?</summary><p style="font-size:14px;line-height:1.6;padding-top:6px">Yes, WordSpies works on any modern phone, tablet or computer browser — and friends can mix devices in the same game.</p></details>
+      </section>
       <p style="margin-top:22px;font-size:13px;font-weight:700;color:var(--faint);line-height:1.6"><span style="color:var(--ink)">🚧 Beta — send improvement ideas to <a href="mailto:contact@wordspies.co.uk" style="color:var(--ink);font-weight:900;text-decoration:underline">contact@wordspies.co.uk</a></span><br><span style="color:var(--ink)">© 2026 Sibi — all rights reserved</span></p>
       <div class="ad-slot" id="ad-home"><!-- ad code goes here --></div>
     </div>
