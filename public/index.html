@@ -129,6 +129,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .bluet .teambtns button:hover{background:var(--blue-soft);color:var(--blue-ink);border-color:#bcd2ff}
 .setup{padding:26px;text-align:center}
 .setup h4{font-size:12px;color:var(--muted);font-weight:900;margin-bottom:12px;letter-spacing:2px}
+.setup hr{border:none;height:1.5px;background:var(--line);margin:4px auto 20px;max-width:560px;border-radius:2px}
 .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:22px}
 .chips button{
   padding:10px 18px;border-radius:99px;background:#f1f3fa;font-size:14.5px;font-weight:800;color:var(--muted);
@@ -350,10 +351,12 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
       <div class="card setup">
         <h4>WORD PACK</h4>
         <div class="chips" id="packChips"></div>
+        <hr>
         <h4>TIMER</h4>
         <div class="chips" id="timerChips">
           <button data-t="0">Off</button><button data-t="60">1 min</button><button data-t="120">2 min</button><button data-t="180">3 min</button>
         </div>
+        <hr>
         <button class="btn btn-green startbtn" id="startBtn">Start game</button>
         <div class="waitmsg hidden" id="waitMsg">The host starts the game</div>
       </div>
