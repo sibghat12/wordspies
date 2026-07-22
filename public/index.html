@@ -532,14 +532,19 @@ if (urlRoom && !DEMO) {
   // Invite-link mode: joining becomes the primary action so friends can't miss it
   const code = urlRoom.toUpperCase().slice(0, 4);
   $('codeInput').value = code;
+  // Friend's invite: just a name box + one big Join button. Code comes from the link.
   const jb = $('joinBtn'), cb = $('createBtn');
   jb.classList.remove('btn-light'); jb.classList.add('btn-green');
   jb.textContent = '🎮 Join room ' + code;
+  jb.style.width = '100%';
+  $('codeInput').style.display = 'none';                 // no code to type — the link has it
+  document.querySelector('.split').style.display = 'none';
   cb.classList.remove('btn-green'); cb.classList.add('btn-light');
   cb.textContent = 'Start my own game instead';
-  cb.style.fontSize = '14.5px'; cb.style.padding = '12px';
-  const card = cb.parentNode, jr = document.querySelector('.joinrow'), sp = document.querySelector('.split');
-  card.insertBefore(jr, cb); card.insertBefore(sp, cb);
+  cb.style.cssText += 'font-size:13.5px;padding:10px;margin-top:14px;opacity:.85';
+  const card = cb.parentNode, jr = document.querySelector('.joinrow');
+  card.insertBefore(jr, cb);                             // Join button right under the name
+  $('nameInput').focus();
 }
 
 function getName(){
