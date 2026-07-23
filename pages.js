@@ -53,7 +53,7 @@ footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 ${body}
 <footer>
 <a href="/">Home</a> · <a href="/play">Play</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
-© 2026 Sibi — all rights reserved.
+© 2026 WordSpies. All rights reserved.
 </footer>
 </div></body></html>`;
 }
@@ -68,7 +68,7 @@ function aboutPage() {
 <h2>How it works</h2>
 <p>One player creates a room and shares the code or invite link. Friends join from their own devices and split into two teams. Each team's spymaster gives one-word clues with a number, and teammates discuss and tap the words they think match. The first team to find all of their words wins — unless someone taps the assassin, which ends the game instantly.</p>
 <h2>Who makes WordSpies</h2>
-<p>WordSpies is an independent project built and maintained by Sibi. It is currently in active beta — we play, test and improve it continuously, and we genuinely read the feedback players send in.</p>
+<p>WordSpies is an independent project built and maintained by a small team. It is currently in active beta — we play, test and improve it continuously, and we genuinely read the feedback players send in.</p>
 <h2>Get in touch</h2>
 <p>Ideas, bug reports and kind words are all welcome at <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>
 <h2>A note on trademarks</h2>

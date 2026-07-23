@@ -54,7 +54,7 @@ ${GA}
 <meta name="twitter:image" content="${SITE}/icon-512.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"WebApplication","@id":"${SITE}/#app","name":"WordSpies","url":"${SITE}/","applicationCategory":"GameApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free Codenames-style online word game for friends. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone or laptop. No sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
-{"@type":"Organization","@id":"${SITE}/#org","name":"WordSpies","url":"${SITE}/","logo":"${SITE}/icon-512.png","email":"contact@wordspies.co.uk"},
+{"@type":"Organization","@id":"${SITE}/#org","name":"WordSpies","url":"${SITE}/","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png","width":512,"height":512},"email":"contact@wordspies.co.uk","foundingDate":"2026","areaServed":"Worldwide","knowsLanguage":"en","contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"contact@wordspies.co.uk","availableLanguage":"English"}},
 {"@type":"WebSite","@id":"${SITE}/#website","url":"${SITE}/","name":"WordSpies","publisher":{"@id":"${SITE}/#org"}},
 {"@type":"VideoGame","@id":"${SITE}/#game","name":"WordSpies","url":"${SITE}/play","description":"A free online Codenames-style word game for 4 to 10+ players. Two teams race to find their secret words from spymaster clues while avoiding the assassin.","genre":["Word game","Party game","Team game"],"gamePlatform":["Web browser","iOS","Android"],"playMode":"MultiPlayer","numberOfPlayers":{"@type":"QuantitativeValue","minValue":4,"maxValue":12},"applicationCategory":"Game","operatingSystem":"Any","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
 {"@type":"HowTo","@id":"${SITE}/#howto","name":"How to play WordSpies","description":"Play a free Codenames-style word game with friends in three steps.","totalTime":"PT10M","step":[
@@ -70,17 +70,18 @@ ${GA}
 ]}
 ]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#111318;--muted:#5f6675;--line:#e6e8ef;--red:#ff4d6b;--blue:#3d7bff;--green:#0f7500;--bg:#f7f8fb;
 --sh:0 2px 4px rgba(35,41,70,.06),0 10px 28px rgba(35,41,70,.09);--spring:cubic-bezier(.34,1.56,.64,1)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',system-ui,sans-serif;color:var(--ink);
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);
 background:
-  radial-gradient(1100px 520px at 82% -8%, rgba(61,123,255,.13), transparent 60%),
-  radial-gradient(900px 500px at 2% -4%, rgba(255,77,107,.12), transparent 58%),
+  radial-gradient(900px 480px at 85% -6%, rgba(61,123,255,.16), transparent 62%),
+  radial-gradient(760px 460px at 4% 1%, rgba(255,77,107,.14), transparent 60%),
+  radial-gradient(700px 520px at 50% 118%, rgba(15,117,0,.06), transparent 60%),
   var(--bg);
-background-repeat:no-repeat}
+background-attachment:fixed;background-repeat:no-repeat}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 a{text-decoration:none;color:inherit}
 .sitehead{background:#fff;border-bottom:1.5px solid var(--line);position:sticky;top:0;z-index:50}
@@ -105,7 +106,10 @@ a{text-decoration:none;color:inherit}
 .hero h1 .r{color:var(--red)}.hero h1 .b{color:var(--blue)}
 .hero p{font-size:18px;color:var(--muted);font-weight:700;line-height:1.65;margin-bottom:26px;max-width:480px}
 @media(max-width:860px){.hero p{margin-inline:auto}}
-.herometa{margin-top:14px;color:var(--muted);font-weight:800;font-size:13.5px}
+.herometa{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+@media(max-width:860px){.herometa{justify-content:center}}
+.pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--ink);font-weight:700;font-size:13px;box-shadow:0 1px 2px rgba(35,41,70,.05)}
+.pill::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green)}
 .playersrow{display:flex;align-items:center;gap:12px;margin-top:22px}
 @media(max-width:860px){.playersrow{justify-content:center}}
 .avstack{display:flex}
@@ -132,19 +136,20 @@ font-weight:900;font-size:clamp(8px,1.15vw,11.5px);letter-spacing:.3px;color:var
 .sec-sub{text-align:center;color:var(--muted);font-weight:700;font-size:16px;margin-bottom:36px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 @media(max-width:820px){.grid3{grid-template-columns:1fr}}
-.card{background:#fff;border-radius:20px;padding:26px;box-shadow:var(--sh)}
+.card{background:#fff;border-radius:20px;padding:26px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06);transition:transform .18s var(--spring),box-shadow .2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 6px 14px rgba(35,41,70,.08),0 18px 40px rgba(35,41,70,.12)}
 .card .ico{font-size:34px;margin-bottom:12px}
 .card h3{font-family:'Fredoka';font-size:19px;margin-bottom:8px}
 .card p{color:var(--muted);font-weight:700;font-size:15px;line-height:1.6}
 /* steps */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;counter-reset:step}
 @media(max-width:820px){.steps{grid-template-columns:1fr}}
-.step{background:#fff;border-radius:20px;padding:26px;box-shadow:var(--sh);position:relative}
+.step{background:#fff;border-radius:20px;padding:26px;box-shadow:var(--sh);position:relative;border:1px solid rgba(35,41,70,.06)}
 .step .n{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--red) 49%,var(--blue) 51%);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-size:18px;margin-bottom:14px}
 .step h3{font-family:'Fredoka';font-size:18px;margin-bottom:6px}
 .step p{color:var(--muted);font-weight:700;font-size:15px;line-height:1.6}
 /* reviews */
-.rev{background:#fff;border-radius:20px;padding:24px;box-shadow:var(--sh)}
+.rev{background:#fff;border-radius:20px;padding:24px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06)}
 .rev p{font-size:15.5px;line-height:1.65;font-weight:700;margin-bottom:16px}
 .rev .who{display:flex;align-items:center;gap:12px}
 .rev .who b{font-size:15px;display:block}
@@ -176,7 +181,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
       <h1>The free online <span class="r">Codenames-style</span> word game for <span class="b">friends</span></h1>
       <p>Two teams. Twenty-five words. One deadly assassin. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone — no sign-up, no download.</p>
       <a class="btn" href="/play">${PAD}Play free — takes 10 seconds</a>
-      <div class="herometa">✓ 100% free &nbsp; ✓ No account needed &nbsp; ✓ Works on every phone</div>
+      <div class="herometa"><span class="pill">100% free</span><span class="pill">No account needed</span><span class="pill">Works on every phone</span></div>
       <div class="playersrow">
         <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>
         <div class="cap"><b>Friends & families</b> play WordSpies<br>at game nights and on video calls.</div>
@@ -227,8 +232,8 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 </div></div>
 
 <div class="band gray"><div class="wrap">
-  <h2 class="sec-h">Questions, answered</h2>
-  <p class="sec-sub"></p>
+  <h2 class="sec-h">Frequently Asked Questions</h2>
+  <p class="sec-sub">Everything you need to know about playing WordSpies free.</p>
   <div class="faq">
     <details><summary>Is WordSpies really free?</summary><p>Yes — completely free to play, no sign-up, no downloads, no hidden costs. Open the site, share your room code, play.</p></details>
     <details><summary>How many players do I need?</summary><p>Minimum 4 (one spymaster + one guesser per team). The sweet spot is 6–10 — more guessers means better arguments.</p></details>
@@ -241,7 +246,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 <div class="wrap"><footer>
   <a href="/play">Play</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
   🚧 Beta — we're playing, testing and improving it.<br>
-  © 2026 Sibi — all rights reserved.
+  © 2026 WordSpies. All rights reserved.
 </footer></div>
 </body></html>`;
 }
