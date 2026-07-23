@@ -542,7 +542,8 @@ io.on('connection', (socket) => {
   socket.on('disconnect', guard(() => {
     if (!room || !player) return;
     player.connected = false;
-    // Give the player 60s to come back (page refresh) before removing them.
+    // Give the player 3 minutes to come back (refresh, or leaving the app and
+    // returning to the same URL) before removing them from the room.
     const r = room, p = player, sockId = socket.id;
     setTimeout(() => {
       const current = r.players.get(sockId);
@@ -556,7 +557,7 @@ io.on('connection', (socket) => {
         }
         broadcast(r);
       }
-    }, 60000);
+    }, 180000);
     broadcast(room);
   }));
 });
