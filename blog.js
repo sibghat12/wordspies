@@ -293,7 +293,8 @@ const articles = {
   }
 };
 
-function layout(title, desc, body, path, banner, schema) {
+function layout(title, desc, body, path, banner, schema, image) {
+  const ogimg = SITE + (image || '/og-image.png');
   return `<!DOCTYPE html>
 <html lang="en"><head>
 ${GA}
@@ -306,14 +307,14 @@ ${GA}
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta property="og:site_name" content="WordSpies"><meta property="og:locale" content="en_GB">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
-<meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${SITE}/og-image.png">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${SITE}/og-image.png">
+<meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${ogimg}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${ogimg}">
 ${schema || ''}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-body{font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:#1c1e21;margin:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#ffffff;color:#1c1e21;margin:0}
 .sitehead{background:#fff;border-bottom:1.5px solid #e6e8ef;position:sticky;top:0;z-index:50}
 .hwrap{max-width:1080px;margin:0 auto;padding:0 20px}
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
@@ -337,7 +338,12 @@ article a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline
 .backrow a{color:#374151;text-decoration:none;font-weight:600}
 footer{margin-top:44px;padding:36px 0 44px;border-top:1px solid #e5e7eb;text-align:center;color:#6b7280;font-size:13.5px;font-weight:700;line-height:2;font-family:'Inter',sans-serif}
 footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
-.post{padding:26px 0;border-bottom:1px solid #e5e7eb}
+.hero{width:100%;border-radius:16px;margin:4px 0 30px;display:block;border:1px solid #e6e8ef;aspect-ratio:1200/630;object-fit:cover}
+.post{padding:24px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:22px;align-items:flex-start;max-width:100%}
+.postthumb{flex:0 0 220px;width:220px;border-radius:12px;border:1px solid #e6e8ef;aspect-ratio:1200/630;overflow:hidden;display:block}
+.postthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.postbody{flex:1;min-width:0}
+@media(max-width:600px){.post{flex-direction:column;gap:12px}.postthumb{flex:none;width:100%}}
 .post h2{font-size:21px;margin:0 0 8px;letter-spacing:-.3px}
 .post h2 a{color:#1c1e21;text-decoration:none}
 .post h2 a:hover{color:#0f7500}
@@ -376,24 +382,28 @@ function articlePage(slug) {
   if (!a) return null;
   const related = Object.entries(articles).filter(([s2]) => s2 !== slug).slice(0, 4)
     .map(([s2, r]) => `<a class="rel" href="/blog/${s2}"><b>${r.title}</b><span>Read article &rarr;</span></a>`).join('');
-  const body = `<article><h1>${a.title}</h1><div class="date">${a.date} · WordSpies Blog</div>${a.html}
+  const img = '/blog-img/' + slug + '.jpg';
+  // SEO meta: branded title tag (distinct from on-page H1) + unique description per post
+  const metaTitle = a.metaTitle || `${a.title} | WordSpies`;
+  const metaDesc = a.metaDesc || a.desc;
+  const body = `<article><h1>${a.title}</h1><div class="date">${a.date} · WordSpies Blog</div><img class="hero" src="${img}" alt="${esc(a.title)}" width="1200" height="630">${a.html}
   <a class="cta" href="/">&#127918; Play WordSpies free — no sign-up</a></article>
   <div class="relh">Related articles</div>
   <div class="relgrid">${related}</div>
   <div class="backrow"><a href="/blog">&larr; All articles</a></div>`;
   const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
-{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}","dateModified":"${a.date}","inLanguage":"en","author":{"@type":"Organization","name":"WordSpies"},"publisher":{"@type":"Organization","name":"WordSpies","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"${SITE}/blog/${slug}"}},
+{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","image":"${SITE}${img}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}","dateModified":"${a.date}","inLanguage":"en","author":{"@type":"Organization","name":"WordSpies"},"publisher":{"@type":"Organization","name":"WordSpies","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"${SITE}/blog/${slug}"}},
 {"@type":"BreadcrumbList","itemListElement":[
 {"@type":"ListItem","position":1,"name":"Home","item":"${SITE}/"},
 {"@type":"ListItem","position":2,"name":"Blog","item":"${SITE}/blog"},
 {"@type":"ListItem","position":3,"name":"${esc(a.title)}","item":"${SITE}/blog/${slug}"}]}
 ]}</script>`;
-  return layout(a.title, a.desc, body, '/blog/' + slug, null, schema);
+  return layout(metaTitle, metaDesc, body, '/blog/' + slug, null, schema, img);
 }
 
 function indexPage() {
   const items = Object.entries(articles).map(([slug, a]) =>
-    `<div class="post"><h2><a href="/blog/${slug}">${a.title}</a></h2><p>${a.desc}</p><a class="more" href="/blog/${slug}">Read article &rarr;</a></div>`).join('');
+    `<div class="post"><a class="postthumb" href="/blog/${slug}" aria-label="${esc(a.title)}"><img src="/blog-img/${slug}.jpg" alt="${esc(a.title)}" loading="lazy" width="1200" height="630"></a><div class="postbody"><h2><a href="/blog/${slug}">${a.title}</a></h2><p>${a.desc}</p><a class="more" href="/blog/${slug}">Read article &rarr;</a></div></div>`).join('');
   const body = items;
   const banner = `<div class="bband"><div class="hwrap"><h1>WordSpies Blog</h1><p>Guides, strategies and tips for word games with friends.</p></div></div>`;
   const blogItems = Object.entries(articles).map(([slug, a]) =>
