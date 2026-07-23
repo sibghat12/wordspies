@@ -543,10 +543,32 @@ socket.on('errorMsg', msg => {
   }
 });
 socket.on('disconnect', () => toast('Connection lost — reconnecting…'));
+
+// ---------- analytics: custom game events ----------
+function track(name, params){ try { if (window.gtag) gtag('event', name, params || {}); } catch(e){} }
 let rejoinNotice = null;
+let prevGameState = null, gameStartTs = 0;
 socket.on('state', st => {
   if (DEMO) return;
+  const was = prevGameState;
   S = st; render(); soundAndTitle();
+  if (S) {
+    if (S.state === 'playing' && was !== 'playing') {
+      gameStartTs = Date.now();
+      track('game_started', { players: S.players.length });
+    }
+    if (S.state === 'over' && was === 'playing') {
+      const secs = gameStartTs ? Math.round((Date.now() - gameStartTs) / 1000) : 0;
+      track('game_finished', {
+        duration_seconds: secs,
+        duration_minutes: Math.round(secs / 60),
+        winner: S.winner || 'unknown',
+        win_reason: S.winReason || '',
+        players: S.players.length
+      });
+    }
+    prevGameState = S.state;
+  }
   if (rejoinNotice && S && S.code === rejoinNotice) {
     toast('👋 Welcome back! Rejoined room ' + S.code + ' — tap Log out to leave');
     rejoinNotice = null;
@@ -589,7 +611,7 @@ $('newGameBtn').onclick = () => {
   try { localStorage.removeItem('ws_sess'); } catch(e){}
   socket.emit('leaveRoom');
   S = null;
-  if (n) socket.emit('create', { name: n });
+  if (n) { socket.emit('create', { name: n }); track('game_created', { source: 'new_game_button' }); }
   else location.href = '/play';
 };
 $('leaveBtn').onclick = () => {
@@ -601,7 +623,7 @@ $('leaveBtn').onclick = () => {
 function confirmLeave(){
   return window.confirm('Are you sure you want to leave this game?' + (S && S.state === 'playing' ? ' Your team keeps playing without you.' : ''));
 }
-$('createBtn').onclick = () => { const n = getName(); if (n) socket.emit('create', { name: n }); };
+$('createBtn').onclick = () => { const n = getName(); if (n) { socket.emit('create', { name: n }); track('game_created', { source: 'home' }); } };
 $('joinBtn').onclick = doJoin;
 $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') doJoin(); });
 $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') { if (urlRoom) doJoin(); else $('createBtn').click(); } });
@@ -610,6 +632,7 @@ function doJoin(){
   const code = $('codeInput').value.trim().toUpperCase();
   if (code.length !== 4) { toast('Codes have 4 letters'); return; }
   socket.emit('join', { code, name: n });
+  track('game_joined', { via: urlRoom ? 'invite_link' : 'code' });
 }
 
 // ---------- lobby ----------
@@ -639,6 +662,7 @@ $('timerChips').querySelectorAll('button').forEach(b => {
 });
 $('codePill').onclick = () => {
   const link = location.origin + '/play?room=' + S.code;
+  track('invite_copied', {});
   (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
     .then(() => toast('Invite link copied ✓'))
     .catch(() => toast(link));
@@ -660,6 +684,7 @@ function sendClue(){
   if (!w) { toast('Type a clue word'); return; }
   if (/\s/.test(w)) { toast('Clues are one word'); return; }
   socket.emit('clue', { word: w, count: selCount });
+  track('clue_given', { count: selCount });
   $('clueWord').value = '';
 }
 $('passBtn').onclick = () => socket.emit('pass');
