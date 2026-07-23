@@ -201,6 +201,95 @@ const articles = {
 <p>If the other team is one word from winning, take the safe guaranteed clue and deny them the turn. Track how many words each team has left and let it dictate your risk.</p>
 <h2>Put it into practice</h2>
 <p>Strategy sticks through playing, not reading. <a href="/">Start a free WordSpies game</a>, try the "two safe words" and "stop while ahead" rules tonight, and watch how quickly your team starts winning.</p>`
+  },
+  'codenames-with-2-players': {
+    title: 'How to Play Codenames With 2 Players (Co-op Rules That Work)',
+    desc: 'Only two of you? Here is how to play a Codenames-style word game with 2 players using simple co-op rules — plus a free online version you can start in seconds.',
+    date: '2026-07-23',
+    html: `
+<p>Codenames is built for two teams, but you don't need a crowd to enjoy it. With one small rule tweak, a Codenames-style game works brilliantly for two players — as a co-op puzzle you beat together. Here's how.</p>
+<h2>The co-op setup for 2 players</h2>
+<p>Instead of red versus blue, you both play on the same side. One person is the spymaster and can see which words belong to your team; the other is the guesser. Your shared goal: reveal all of one team's words without ever tapping the assassin.</p>
+<h2>Add a target to create tension</h2>
+<p>Give yourselves a limited number of clues — say nine — to clear all your words. Run out of clues or hit the assassin and you lose the round together. Beat it, then swap roles and chase a better score.</p>
+<h2>Why 2-player co-op is secretly great</h2>
+<p>Competitive Codenames hides half the fun — you never see the other spymaster's brain at work. In two-player co-op every clue is a shared "aha", and the assassin is a genuine group gasp. It's also the best way to learn the game: the guesser sees exactly how a good clue connects to the board.</p>
+<h2>Play it online, free</h2>
+<p>Set it up with the physical board, or just <a href="/">open a WordSpies room</a>, both join from your phones, and use the spymaster and guesser roles built in. Fresh boards every game keep the co-op challenge alive. <a href="/">Start a free game</a> and see how many words the two of you can clear.</p>`
+  },
+  'games-to-play-over-the-phone': {
+    title: '12 Games to Play Over the Phone With Friends Far Away (2026)',
+    desc: 'Long-distance friends or family? These free games to play over the phone or video call need no equipment and work from anywhere — starting with word and guessing games.',
+    date: '2026-07-23',
+    html: `
+<p>Distance is boring, but a good game fixes a phone call fast. Whether you're on a voice call, FaceTime, or a group video chat, here are games that need nothing but your phones — and several that let the whole group join at once.</p>
+<h2>1. A Codenames-style word game</h2>
+<p><a href="/">WordSpies</a> is made for calls: two teams, secret words, one-word clues, and an assassin word that makes everyone groan. Each person opens the same room from their own phone and the board syncs live — perfect when you're not in the same place. No app and no sign-up.</p>
+<h2>2. Twenty questions</h2>
+<p>One person thinks of something; everyone else gets twenty yes-or-no questions. Ancient, free, and works with any number of people on a call.</p>
+<h2>3. Would you rather</h2>
+<p>Endless debate fuel — great for warming up a quiet call before a bigger game.</p>
+<h2>4. Categories</h2>
+<p>Pick a letter and a category; everyone races to name something that fits. Easy to run over voice alone.</p>
+<h2>5. Charades on video</h2>
+<p>If you're on camera, classic charades still lands — one actor, everyone else guessing.</p>
+<h2>6. Build-a-story</h2>
+<p>Each person adds one sentence to a shared story. Chaos guaranteed.</p>
+<h2>The easiest one to start now</h2>
+<p>With four or more of you, a word-guessing game gives the most laughs per minute and needs zero setup. <a href="/">Start a free WordSpies room</a>, drop the 4-letter code in your chat, and you're playing across any distance in seconds.</p>`
+  },
+  'icebreaker-games-virtual-meetings': {
+    title: 'Free Icebreaker Games for Virtual Meetings (No Prep, 2026)',
+    desc: 'Warm up any remote meeting with these free, no-prep icebreaker games. Quick word games that get remote teams talking and laughing in under five minutes.',
+    date: '2026-07-23',
+    html: `
+<p>A good icebreaker turns a stiff video call into a team. The best ones need no prep, no downloads, and no awkward "share a fun fact about yourself." Here are icebreakers that actually work for remote meetings.</p>
+<h2>1. A quick word-guessing game</h2>
+<p>A Codenames-style game is a brilliant icebreaker because it makes people <em>collaborate</em> rather than perform. Split into two teams, give one-word clues, and watch quiet colleagues light up. <a href="/">WordSpies</a> runs in a browser — share a code and the whole meeting joins in under a minute.</p>
+<h2>2. Two truths and a lie</h2>
+<p>Everyone shares three statements; the group guesses the lie. Keep it to one round so it doesn't drag.</p>
+<h2>3. One-word check-in</h2>
+<p>Each person sums up their week in a single word, then explains. Fast and genuinely revealing.</p>
+<h2>4. Rapid categories</h2>
+<p>Name a category — "things in a kitchen" — and go around the call quickly, no repeats and no long pauses.</p>
+<h2>5. Emoji mood</h2>
+<p>Everyone describes how they're feeling in three emojis. Light, quick, and surprisingly bonding.</p>
+<h2>Keeping it under five minutes</h2>
+<p>The goal is energy, not a full game — cap the icebreaker at five minutes and move on. If your team enjoys it, a full word game also makes a great end-of-week wind-down. <a href="/">Try a free round on WordSpies</a> at your next stand-up.</p>`
+  },
+  'games-for-big-groups-video-call': {
+    title: 'Best Games to Play on a Group Video Call With 10+ People (2026)',
+    desc: 'Big group on a video call? These free games scale to 10, 15, or more players — team word games and party games that keep everyone involved, not just watching.',
+    date: '2026-07-23',
+    html: `
+<p>Small-group games fall apart with a big crowd — half the call ends up watching. The trick for 10 or more people is <strong>teams</strong>, so everyone stays involved even when it isn't their turn. Here are the games that scale.</p>
+<h2>1. Team word-guessing (Codenames-style)</h2>
+<p>This is the big-group winner. Two teams means five, eight, even ten people per side, all debating the same clue at once. <a href="/">WordSpies</a> supports big rooms — everyone joins from their phone, picks a team, and the spymasters give the clues while the rest of the team argues happily. Nobody sits out.</p>
+<h2>2. Trivia in teams</h2>
+<p>Split the call into teams and keep score. Works at any size, though someone has to host the questions.</p>
+<h2>3. Draw-and-guess games</h2>
+<p>Drawing party games handle big lobbies well by rotating who draws.</p>
+<h2>4. Werewolf / Mafia</h2>
+<p>Social deduction genuinely gets <em>better</em> with more people — ten-plus is ideal — but it needs a moderator and can run long.</p>
+<h2>5. Categories chain</h2>
+<p>Go around naming items in a category; you're out if you repeat or stall. Scales to any size.</p>
+<h2>Why teams beat a free-for-all</h2>
+<p>With big groups, the games that flop are the ones where you wait ages for your turn. Team games fix that — you contribute on every single turn. <a href="/">Start a free WordSpies room</a>, split into red and blue, and even a 15-person call stays loud and involved.</p>`
+  },
+  'codenames-word-list': {
+    title: 'The Codenames Word List: How Word Packs Keep Boards Fresh',
+    desc: 'What words appear in Codenames-style games, and how do word packs work? A look at building a great word list — 700+ words across categories for boards that never repeat.',
+    date: '2026-07-23',
+    html: `
+<p>The magic of a Codenames-style game lives in its word list. Good words have double meanings, feel familiar, and spark those "wait, could that link to…" moments. Here's what makes a great word list — and how packs keep every board different.</p>
+<h2>What makes a good game word</h2>
+<p>The best words are common, concrete nouns with more than one meaning: BANK, STAR, BUG, PITCH, SPRING. That ambiguity is the whole game — is BANK the money kind or the river kind? A list of obscure or single-meaning words makes flat, clueless boards.</p>
+<h2>Why word packs matter</h2>
+<p>A single fixed list gets stale fast — you start recognising boards. The fix is a large pool split into themed packs: animals, food, travel, cities, countries, movies, sports and everyday objects. Draw 25 random words from a big enough pool and you'll almost never see the same board twice.</p>
+<h2>Themed packs change the whole vibe</h2>
+<p>Letting a group pick categories tailors the game to them: film buffs love a movies pack, families lean on easy everyday words, football fans want a sports pack. Same rules, totally different feel.</p>
+<h2>How many words is enough?</h2>
+<p>For genuinely fresh boards you want hundreds of words at minimum. <a href="/">WordSpies</a> draws each 25-word board from a pool of 700+ across multiple categories, and lets the host choose which packs to include — so boards stay fresh and match your group's taste. <a href="/">Start a free game</a> and pick your categories.</p>`
   }
 };
 
