@@ -331,6 +331,13 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .pstrip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:9px 14px;box-shadow:var(--sh-sm);margin-bottom:14px}
 .mepill{display:flex;align-items:center;gap:8px;font-weight:900;font-size:14px;padding-right:12px;border-right:2px solid var(--line)}
 .mepill .lab{font-size:10.5px;letter-spacing:1px;color:var(--muted);display:block}
+.youbar{display:flex;align-items:center;justify-content:center;gap:13px;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:11px 18px;margin-bottom:16px;box-shadow:var(--sh)}
+.youbar .yav{width:44px;height:44px;flex:0 0 auto}
+.youbar .yname{font-weight:900;font-size:15px;line-height:1.25}
+.youbar .yname small{display:block;font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:800;text-transform:uppercase}
+.youbar .shuffle{background:var(--blue-soft);color:var(--blue);font-weight:800;font-size:13.5px;padding:9px 16px;border-radius:12px;transition:.15s;white-space:nowrap;cursor:pointer}
+.youbar .shuffle:hover{background:var(--blue);color:#fff;transform:translateY(-1px)}
+.youbar .shuffle:active{transform:scale(.94)}
 .side{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .vsx{font-family:'Fredoka';font-weight:700;color:var(--faint);font-size:13px;margin:0 auto;padding:0 6px}
 .pchip{display:flex;align-items:center;gap:7px;padding:4px 12px 4px 5px;border-radius:99px;font-size:13px;font-weight:800;border:2px solid var(--line);background:#f7f8fc;transition:transform .12s var(--spring)}
@@ -408,6 +415,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 
     <!-- lobby -->
     <div id="lobby">
+      <div class="youbar" id="youBar"></div>
       <div class="lgrid">
         <div class="team redt">
           <h3>❤️ Red team <span class="cnt2" id="redCount"></span></h3>
@@ -540,13 +548,13 @@ const HATS = ['#20263b','#7c3aed','#e63956','#0f7500','#b45309','#0e7490','#be18
 const SKINS = ['#ffd9b3','#f3c39a','#e8b088','#d9986b'];
 function hashStr(str){ let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); }
 function avSVG(p, size){
-  const seed = encodeURIComponent((p.name || 'spy') + '-' + String(p.id || '').slice(0, 5));
+  const seed = encodeURIComponent(p.avatarSeed || ((p.name || 'spy') + '-' + String(p.id || '').slice(0, 5)));
   const h = hashStr((p.id || '') + (p.name || ''));
   const bg = HATS[h % HATS.length];
   const initial = esc((p.name || '?')[0].toUpperCase());
   return `<span class="avwrap" style="width:${size}px;height:${size}px">` +
     `<i class="avfb" style="background:${bg};font-size:${Math.round(size * .5)}px">${initial}</i>` +
-    `<img src="https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=ffdfbf,ffd5dc,d1d4f9,c0f0dd,b6e3f4&radius=50" width="${size}" height="${size}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+    `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}&backgroundColor=ffdfbf,ffd5dc,d1d4f9,c0f0dd,b6e3f4&radius=50" width="${size}" height="${size}" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 
 socket.on('connect', () => {
@@ -827,6 +835,14 @@ function renderStrip(){
 
 function renderLobby(){
   const isHost = S.hostId === myId;
+  const meNow = S.players.find(p => p.id === myId);
+  const yb = $('youBar');
+  if (yb && meNow) {
+    yb.innerHTML = `<span class="yav">${avSVG(meNow, 44)}</span>` +
+      `<span class="yname">${esc(meNow.name)}<small>Your avatar</small></span>` +
+      `<button class="shuffle" id="shuffleAv" type="button">🎲 New look</button>`;
+    $('shuffleAv').onclick = () => socket.emit('shuffleAvatar');
+  }
   for (const team of ['red', 'blue']) {
     const el = $(team + 'List');
     el.innerHTML = '';
