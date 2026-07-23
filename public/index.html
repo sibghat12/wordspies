@@ -151,7 +151,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .catchips button.on{background:linear-gradient(180deg,#159f07,var(--green));color:#fff;box-shadow:0 3px 0 #0b5a00,0 6px 14px rgba(15,117,0,.22)}
 .catchips button.on::before{content:'✓ ';font-weight:900}
 .cathint{text-align:center;color:var(--muted);font-size:12.5px;font-weight:700;margin-bottom:18px}
-.startbtn{width:100%;max-width:320px;font-size:18px;padding:17px}
+.startbtn{width:100%;max-width:340px;font-size:18px;padding:17px;margin:8px auto 0;display:block}
 .waitmsg{color:var(--muted);font-weight:800;font-size:14.5px;margin-top:8px}
 
 /* ---------- game ---------- */
@@ -276,6 +276,10 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
   transition:opacity .25s,transform .3s var(--spring);box-shadow:var(--sh-lg);max-width:90vw;text-align:center;
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.good{background:linear-gradient(180deg,#18a80a,#0c7a00)}
+#toast.bad{background:linear-gradient(180deg,#e23a52,#c11f38)}
+.confetti{position:fixed;top:-34px;z-index:9998;pointer-events:none;will-change:transform,opacity;animation:confall 1.5s ease-in forwards}
+@keyframes confall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(92vh) rotate(400deg);opacity:0}}
 
 @media(max-width:480px){
   .board{gap:6px}
@@ -701,16 +705,16 @@ function renderCategories(isHost){
         if (S.hostId !== myId) return;
         const cur = (S.settings.categories || []).slice();
         const k = b.dataset.k, i = cur.indexOf(k);
-        if (i >= 0) { if (cur.length > 1) cur.splice(i, 1); else return toast('Keep at least one category'); }
-        else cur.push(k);
+        if (i >= 0) cur.splice(i, 1); else cur.push(k);
         socket.emit('setSettings', { categories: cur });
       };
     });
   }
   wrap.querySelectorAll('button').forEach(b => b.classList.toggle('on', sel.includes(b.dataset.k)));
   const hint = $('catHint');
-  if (hint) hint.textContent = sel.length === cats.length ? 'All categories — the biggest mix of words'
-    : sel.length + ' selected · words are drawn from these';
+  if (hint) hint.textContent = sel.length === 0 ? 'None picked — we\'ll mix words from every category'
+    : sel.length === cats.length ? 'All categories — the biggest mix of words'
+    : sel.length + (sel.length === 1 ? ' selected · words come from this one' : ' selected · words come from these');
 }
 $('timerChips').querySelectorAll('button').forEach(b => {
   b.onclick = () => socket.emit('setSettings', { timer: parseInt(b.dataset.t, 10) });
@@ -1008,9 +1012,10 @@ function soundAndTitle(){
     for (const e of S.log.slice(lastLogLen)) {
       if (e.type === 'clue') SFX.clue();
       else if (e.type === 'guess') {
-        if (e.color === 'assassin') SFX.boom();
-        else if (e.color === e.team) SFX.good();
-        else SFX.bad();
+        const who = esc(e.name);
+        if (e.color === 'assassin') { SFX.boom(); toast('💀 ' + who + ' hit the assassin!', 'bad'); }
+        else if (e.color === e.team) { SFX.good(); toast('🎉 ' + who + ' nailed ' + esc(e.word) + '!', 'good'); celebrate(); }
+        else { SFX.bad(); toast('😬 Oops! ' + who + ' picked ' + esc(e.word), 'bad'); }
       }
       else if (e.type === 'gameover') SFX.win();
     }
@@ -1033,12 +1038,28 @@ $('shareBtn').onclick = () => {
 };
 
 let toastTimer = null;
-function toast(msg){
+function toast(msg, kind){
   const el = $('toast');
   el.textContent = msg;
+  el.classList.remove('good','bad');
+  if (kind) el.classList.add(kind);
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+// party burst for a correct guess
+function celebrate(){
+  const emojis = ['🎉','🎊','⭐','✨','🥳','🎈'];
+  for (let i = 0; i < 16; i++){
+    const s = document.createElement('div');
+    s.className = 'confetti';
+    s.textContent = emojis[i % emojis.length];
+    s.style.left = (6 + Math.random() * 88) + '%';
+    s.style.animationDelay = (Math.random() * 0.35).toFixed(2) + 's';
+    s.style.fontSize = (15 + Math.random() * 18).toFixed(0) + 'px';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1700);
+  }
 }
 
 // ---------- DEMO MODE (?test): dummy players + board preview ----------
