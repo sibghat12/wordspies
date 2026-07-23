@@ -23,11 +23,16 @@ const DEMO_WORDS = ['TIGER','MOON','PIZZA','ROBOT','PARIS','HONEY','CLOUD','KING
 const PAD = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align:-4px;margin-right:7px" aria-hidden="true"><path d="M7.5 7A6.5 6.5 0 0 0 1 13.5v.6a4.4 4.4 0 0 0 8 2.4h6a4.4 4.4 0 0 0 8-2.4v-.6A6.5 6.5 0 0 0 16.5 7h-9zM7 11h1.4v1.1H9.5v1.4H8.4v1.1H7v-1.1H5.9v-1.4H7V11zm8.6.4a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1zm2.3-2.3a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z"/></svg>';
 
 function page() {
-  const ASSASSIN_IDX = 12; // exactly one black assassin tile, like a real game
-  const demoTiles = DEMO_WORDS.map((w, i) => {
-    const cls = i === ASSASSIN_IDX ? 'tk' : 't' + (i % 7);
-    return `<div class="t ${cls}" style="animation-delay:${(i * 0.9) % 9}s">${w}</div>`;
-  }).join('');
+  // Spymaster-view layout, like a real board: 9 red, 8 blue, 7 neutral, 1 assassin.
+  // rs/bs = a couple of already-revealed (solid) tiles for realism.
+  const DEMO_LAYOUT = {
+    TIGER:'rs', MOON:'b', PIZZA:'n', ROBOT:'r', PARIS:'bs',
+    HONEY:'n', CLOUD:'k', KING:'b', OCEAN:'r', TRAIN:'n',
+    APPLE:'r', GHOST:'b', PIANO:'n', RIVER:'rs', CROWN:'b',
+    SNOW:'r', DRAGON:'n', BEACH:'b', STAR:'r', BRIDGE:'n',
+    CANDY:'b', WOLF:'r', ROCKET:'n', ISLAND:'b', MAGIC:'r'
+  };
+  const demoTiles = DEMO_WORDS.map(w => `<div class="t ${DEMO_LAYOUT[w] || 'n'}">${w}</div>`).join('');
   return `<!DOCTYPE html>
 <html lang="en"><head>
 ${GA}
@@ -102,8 +107,8 @@ a{text-decoration:none;color:inherit}
 /* hero */
 .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;padding:52px 0 66px}
 @media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center;padding-top:26px}}
-.hero h1{font-family:'Fredoka';font-size:clamp(32px,4.6vw,50px);line-height:1.12;letter-spacing:-.5px;margin-bottom:16px}
-.hero h1 .r{color:var(--red)}.hero h1 .b{color:var(--blue)}
+.hero h1{font-family:'Fredoka';font-size:clamp(32px,4.6vw,50px);line-height:1.12;letter-spacing:-.5px;margin-bottom:16px;color:var(--ink)}
+.hero h1 .r,.hero h1 .b{color:inherit}
 .hero p{font-size:18px;color:var(--muted);font-weight:700;line-height:1.65;margin-bottom:26px;max-width:480px}
 @media(max-width:860px){.hero p{margin-inline:auto}}
 .herometa{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
@@ -117,19 +122,17 @@ a{text-decoration:none;color:inherit}
 .avstack svg:first-child{margin-left:0}
 .playersrow .cap{color:var(--muted);font-weight:800;font-size:13.5px;line-height:1.35}
 .playersrow .cap b{color:var(--ink)}
-/* animated demo board */
-.demo{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;max-width:430px;margin-inline:auto;transform:rotate(2deg)}
-.t{aspect-ratio:16/11;border-radius:9px;background:#fff;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;
-font-weight:900;font-size:clamp(8px,1.15vw,11.5px);letter-spacing:.3px;color:var(--ink);animation:flip 9s infinite}
-.t1{animation-name:flipred}.t3{animation-name:flipblue}.t5{animation-name:flipred}.t6{animation-name:flipblue}
-.tk{animation-name:flipblack}
-@keyframes flip{0%,100%{background:#fff;color:#111318}}
-@keyframes flipred{0%,38%,100%{background:#fff;color:#111318}44%,86%{background:var(--red);color:#fff}}
-@keyframes flipblue{0%,52%,100%{background:#fff;color:#111318}58%,90%{background:var(--blue);color:#fff}}
-@keyframes flipblack{0%,44%,100%{background:#fff;color:#111318}50%,92%{background:#111318;color:#fff}}
-.tk::after{content:'💀';position:absolute;top:2px;right:3px;font-size:9px;opacity:0;animation:skull 9s infinite;animation-delay:inherit}
-@keyframes skull{0%,44%,100%{opacity:0}50%,92%{opacity:.9}}
-.t{position:relative}
+/* demo board — spymaster view, styled like a real game board */
+.demo{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:470px;margin-inline:auto}
+.t{aspect-ratio:16/11;border-radius:13px;display:flex;align-items:center;justify-content:center;position:relative;
+font-weight:800;font-size:clamp(9px,1.15vw,12px);letter-spacing:.4px;box-shadow:0 2px 6px rgba(35,41,70,.08);border:1.5px solid transparent}
+.t.r{background:#ffe7ed;color:#d8264a;border-color:#ffd2dd}
+.t.b{background:#e8f0ff;color:#2456c4;border-color:#d4e0ff}
+.t.n{background:#f5efde;color:#9a8a5c;border-color:#ece2c8}
+.t.rs{background:var(--red);color:#fff}
+.t.bs{background:var(--blue);color:#fff}
+.t.k{background:#111318;color:#fff}
+.t.k::after{content:'💀';position:absolute;top:3px;right:5px;font-size:10px}
 /* sections */
 
 .sec-h{font-family:'Fredoka';font-size:30px;text-align:center;margin-bottom:8px}
