@@ -181,7 +181,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 <div class="wrap">
   <div class="hero">
     <div>
-      <h1>The free online <span class="r">Codenames-style</span> word game for <span class="b">friends</span></h1>
+      <h1>The free online <span class="r">Codenames</span> word game for <span class="b">friends</span></h1>
       <p>Two teams. Twenty-five words. One deadly assassin. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone — no sign-up, no download.</p>
       <a class="btn" href="/play">${PAD}Play Codenames — takes 10 seconds</a>
       <div class="herometa"><span class="pill">100% free</span><span class="pill">No account needed</span><span class="pill">Works on every phone</span></div>
