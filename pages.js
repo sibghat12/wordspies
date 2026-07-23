@@ -29,11 +29,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:#1c1e21;m
 .sitehead{background:#fff;border-bottom:1.5px solid #e6e8ef;position:sticky;top:0;z-index:50}
 .hwrap{max-width:1080px;margin:0 auto;padding:0 20px}
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.logo{font-family:'Fredoka',sans-serif;font-weight:700;font-size:23px;text-decoration:none;cursor:pointer}
+.logo{font-family:'Fredoka',sans-serif;font-weight:600;font-size:23px;text-decoration:none;cursor:pointer}
 .logo .r{color:#ff4d6b}.logo .b{color:#3d7bff}
-.navlinks{display:flex;gap:20px;align-items:center;font-weight:700;font-size:14.5px;color:#5f6675}
+.navlinks{display:flex;gap:34px;align-items:center;font-weight:500;font-size:14.5px;color:#5f6675}
 .navlinks a{color:#5f6675;text-decoration:none}.navlinks a:hover{color:#1c1e21}
-.play{background:#0f7500;color:#fff!important;text-decoration:none;font-weight:700;padding:10px 20px;border-radius:10px;font-size:14px}
+.play{background:#0f7500;color:#fff!important;text-decoration:none;font-weight:600;padding:10px 20px;border-radius:12px;font-size:14px;white-space:nowrap}
+@media(max-width:600px){.navlinks{gap:16px;font-size:14px}.navlinks .hideSm{display:none}.play{padding:9px 15px;font-size:13.5px}}
 .play:hover{background:#0b5a00}
 .wrap{max-width:760px;margin:0 auto;padding:40px 20px 70px}
 h1{font-size:32px;line-height:1.2;letter-spacing:-.5px;margin:0 0 6px;font-weight:800}
@@ -47,7 +48,7 @@ footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 </style></head>
 <body>
 <header class="sitehead"><div class="hwrap">
-<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a href="/blog">Blog</a><a href="/about">About</a><a class="play" href="/play">&#9654; Play free</a></div></div>
+<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a class="hideSm" href="/#how">How to play</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/play">&#9654; Play Codenames</a></div></div>
 </div></header>
 <div class="wrap">
 ${body}
