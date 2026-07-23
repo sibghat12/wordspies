@@ -145,6 +145,12 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .chips button:hover{color:var(--ink);transform:translateY(-1px)}
 .chips button.on{background:linear-gradient(180deg,#23262e,#111318);color:#fff;box-shadow:0 3px 0 #000,0 6px 14px rgba(17,19,24,.25)}
 .chips.locked button{cursor:default;pointer-events:none}
+/* category multi-select chips */
+.catchips{margin-bottom:6px}
+.catchips button{padding:9px 15px;font-size:13.5px;position:relative}
+.catchips button.on{background:linear-gradient(180deg,#159f07,var(--green));color:#fff;box-shadow:0 3px 0 #0b5a00,0 6px 14px rgba(15,117,0,.22)}
+.catchips button.on::before{content:'✓ ';font-weight:900}
+.cathint{text-align:center;color:var(--muted);font-size:12.5px;font-weight:700;margin-bottom:18px}
 .startbtn{width:100%;max-width:320px;font-size:18px;padding:17px}
 .waitmsg{color:var(--muted);font-weight:800;font-size:14.5px;margin-top:8px}
 
@@ -230,10 +236,15 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .feed::-webkit-scrollbar{width:4px}.feed::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
 .feed>div{animation:rise .3s var(--spring)}
 .feed .r{color:var(--red-ink)} .feed .b{color:var(--blue-ink)} .feed .m{color:var(--muted)}
-.chat{display:flex;gap:7px;margin-top:11px}
-.chat .fld{padding:10px 14px;font-size:14px;border-radius:12px}
-.chat button{background:#f1f3fa;border-radius:12px;padding:0 16px;transition:.15s}
-.chat button:hover{background:var(--blue-soft);color:var(--blue)}
+.quickreacts{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.quickreacts .qr{font-size:18px;line-height:1;background:#f1f3fa;border-radius:10px;padding:6px 8px;transition:transform .12s var(--spring),background .15s;cursor:pointer}
+.quickreacts .qr:hover{background:var(--blue-soft);transform:translateY(-2px)}
+.quickreacts .qr:active{transform:scale(.9)}
+.chat{display:flex;gap:7px;margin-top:9px}
+.chat .fld{flex:1;padding:11px 14px;font-size:15px;border-radius:12px}
+.chat .chatsend{background:linear-gradient(180deg,#159f07,var(--green));color:#fff;border-radius:12px;padding:0 18px;font-size:16px;transition:.15s;box-shadow:0 2px 6px rgba(15,117,0,.25)}
+.chat .chatsend:hover{filter:brightness(1.08)}
+.chat .chatsend:active{transform:scale(.95)}
 
 /* ---------- win overlay ---------- */
 .ov{position:fixed;inset:0;background:rgba(35,41,70,.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;animation:fadein .25s ease}
@@ -276,7 +287,11 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
   .btn{padding:15px 20px;font-size:16px;border-radius:14px}
   .nums button{width:48px;height:54px}
   .cluebar .fld{max-width:none;flex:1 1 100%}
-  .log{height:300px}
+  .log{height:340px}
+  .chat .fld{font-size:16px;padding:13px 15px}          /* 16px stops iOS zoom-on-focus */
+  .chat .chatsend{padding:0 20px;font-size:19px}
+  .quickreacts .qr{font-size:21px;padding:8px 11px}     /* bigger thumb targets */
+  .log h4{font-size:12.5px}
   .teambtns button{padding:14px 8px}
   .helpbtn{padding:8px 13px;font-size:13px}
   .winov{padding:34px 20px}
@@ -397,6 +412,10 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
         </div>
       </div>
       <div class="card setup">
+        <h4>🗂 WORD CATEGORIES</h4>
+        <div class="chips catchips" id="catChips"></div>
+        <div class="cathint" id="catHint"></div>
+        <hr>
         <h4>⏱ TIMER</h4>
         <div class="chips" id="timerChips">
           <button data-t="0">Off</button><button data-t="60">1 min</button><button data-t="120">2 min</button><button data-t="180">3 min</button>
@@ -429,11 +448,12 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
             <div class="cnt blue"><span>left</span><b id="blueLeft">–</b></div>
           </div>
           <div class="card log">
-            <h4>GAME LOG</h4>
+            <h4>💬 GAME CHAT</h4>
             <div class="feed" id="feed"></div>
+            <div class="quickreacts" id="quickReacts"></div>
             <div class="chat">
-              <input class="fld" id="chatInput" maxlength="200" placeholder="Chat…" autocomplete="off">
-              <button id="chatSend">➤</button>
+              <input class="fld" id="chatInput" maxlength="200" placeholder="Say something…" autocomplete="off" enterkeyhint="send">
+              <button id="chatSend" class="chatsend" aria-label="Send">➤</button>
             </div>
           </div>
           <div class="ad-slot" id="ad-side"><!-- ad code goes here --></div>
@@ -657,6 +677,33 @@ function renderMidJoin(playing){
 }
 $('startBtn').onclick = () => socket.emit('start');
 $('againBtn').onclick = () => socket.emit('rematch');
+
+// ---------- word categories (host-only multi-select) ----------
+function renderCategories(isHost){
+  const wrap = $('catChips'); if (!wrap || !S) return;
+  const cats = S.catalog || [];
+  const sel = (S.settings && S.settings.categories) || [];
+  wrap.classList.toggle('locked', !isHost);
+  // rebuild only if the set of buttons changed
+  if (wrap.dataset.built !== String(cats.length)) {
+    wrap.innerHTML = cats.map(c => `<button data-k="${c.key}">${esc(c.name)}</button>`).join('');
+    wrap.dataset.built = String(cats.length);
+    wrap.querySelectorAll('button').forEach(b => {
+      b.onclick = () => {
+        if (S.hostId !== myId) return;
+        const cur = (S.settings.categories || []).slice();
+        const k = b.dataset.k, i = cur.indexOf(k);
+        if (i >= 0) { if (cur.length > 1) cur.splice(i, 1); else return toast('Keep at least one category'); }
+        else cur.push(k);
+        socket.emit('setSettings', { categories: cur });
+      };
+    });
+  }
+  wrap.querySelectorAll('button').forEach(b => b.classList.toggle('on', sel.includes(b.dataset.k)));
+  const hint = $('catHint');
+  if (hint) hint.textContent = sel.length === cats.length ? 'All categories — the biggest mix of words'
+    : sel.length + ' selected · words are drawn from these';
+}
 $('timerChips').querySelectorAll('button').forEach(b => {
   b.onclick = () => socket.emit('setSettings', { timer: parseInt(b.dataset.t, 10) });
 });
@@ -698,6 +745,13 @@ function sendChat(){
   socket.emit('chat', { text: t });
   $('chatInput').value = '';
 }
+// one-tap emoji reactions — quick, fun, great on mobile
+['👍','😂','🔥','😱','🎯','🤔','💀','🎉'].forEach(em => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = em; b.className = 'qr';
+  b.onclick = () => socket.emit('chat', { text: em });
+  $('quickReacts').appendChild(b);
+});
 
 // ---------- render ----------
 function me(){ return S.players.find(p => p.id === myId); }
@@ -755,6 +809,7 @@ function renderLobby(){
   }
   $('timerChips').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.t === S.settings.timer));
   $('timerChips').classList.toggle('locked', !isHost);
+  renderCategories(isHost);
   const ready = ['red', 'blue'].every(t =>
     S.players.some(p => p.team === t && p.role === 'spymaster') &&
     S.players.some(p => p.team === t && p.role === 'operative'));
