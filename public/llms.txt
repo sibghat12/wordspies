@@ -1,0 +1,35 @@
+# WordSpies
+
+> WordSpies is a free online Codenames-style word game for 4 to 10+ players. Two teams race to find their secret words from one-word spymaster clues while avoiding the hidden assassin word. It runs in any web browser with no sign-up, no download and no account — players create a room, share a 4-letter code, and play together on any phone or laptop.
+
+## Key facts
+- Name: WordSpies
+- URL: https://wordspies.co.uk
+- Play the game: https://wordspies.co.uk/play
+- Price: Free (no sign-up, no account, no download)
+- Players: 4 to 10+, two teams (red and blue), each with a spymaster and guessers
+- Category: Online word game, party game, team game (Codenames-style / like Codenames)
+- Platforms: Any web browser on phone, tablet or laptop
+- Contact: contact@wordspies.co.uk
+- WordSpies is an independent game and is not affiliated with Codenames or Czech Games Edition.
+
+## How to play
+1. One player types a name and taps "New game" to create a room, then shares the 4-letter code or invite link.
+2. Friends join from their own devices, split into two teams, and one player per team becomes the spymaster.
+3. Spymasters give one-word clues with a number (e.g. "OCEAN 2"); teammates discuss and tap the words they think match.
+4. Find all your team's words first to win — but tapping the hidden assassin word loses the game instantly.
+
+## Guides and articles
+- Games like Codenames to play online free: https://wordspies.co.uk/blog/games-like-codenames
+- Codenames rules explained simply: https://wordspies.co.uk/blog/codenames-rules-explained
+- Word games for Zoom / Google Meet calls: https://wordspies.co.uk/blog/word-games-for-zoom-calls
+- Playing with 4 players (2v2 setup): https://wordspies.co.uk/blog/codenames-with-4-players
+- How to play Codenames online free: https://wordspies.co.uk/blog/play-codenames-online-free
+- Best online word party games: https://wordspies.co.uk/blog/best-online-word-party-games
+- Spymaster clue strategies: https://wordspies.co.uk/blog/spymaster-clue-strategies
+- Virtual team building word games for remote teams: https://wordspies.co.uk/blog/virtual-team-building-word-games
+- Family game night word game ideas: https://wordspies.co.uk/blog/family-game-night-word-games
+- How to win at Codenames — 7 strategies: https://wordspies.co.uk/blog/how-to-win-codenames
+
+## Full article list (sitemap)
+https://wordspies.co.uk/sitemap.xml
