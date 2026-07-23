@@ -32,7 +32,7 @@ function page() {
     SNOW:'r', DRAGON:'n', BEACH:'b', STAR:'r', BRIDGE:'n',
     CANDY:'b', WOLF:'r', ROCKET:'n', ISLAND:'b', MAGIC:'r'
   };
-  const demoTiles = DEMO_WORDS.map(w => `<div class="t ${DEMO_LAYOUT[w] || 'n'}">${w}</div>`).join('');
+  const demoTiles = DEMO_WORDS.map((w, i) => `<div class="t ${DEMO_LAYOUT[w] || 'n'}" style="animation-delay:${(i * 0.04).toFixed(2)}s">${w}</div>`).join('');
   return `<!DOCTYPE html>
 <html lang="en"><head>
 ${GA}
@@ -99,11 +99,14 @@ a{text-decoration:none;color:inherit}
 .band.greenb p{color:#d8f5d0}
 .logo{font-family:'Fredoka';font-weight:600;font-size:24px}
 .logo .r{color:var(--red)}.logo .b{color:var(--blue)}
-.navlinks{display:flex;gap:22px;align-items:center;font-weight:600;font-size:15px;color:var(--muted)}
+.navlinks{display:flex;gap:34px;align-items:center;font-weight:500;font-size:15px;color:var(--muted)}
+.navlinks>a:not(.btn){letter-spacing:.2px}
 .navlinks a:hover{color:var(--ink)}
+@media(max-width:600px){.navlinks{gap:18px;font-size:14px}.navlinks .hideSm{display:none}}
 .btn{display:inline-block;background:linear-gradient(180deg,#159f07,var(--green));color:#fff;font-weight:700;padding:14px 28px;border-radius:14px;font-size:16.5px;transition:transform .14s var(--spring),filter .15s}
 .btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
-.btn.small{padding:10px 20px;font-size:14.5px}
+.btn.small{padding:10px 20px;font-size:14.5px;white-space:nowrap}
+@media(max-width:600px){.btn.small{padding:9px 15px;font-size:13.5px}}
 /* hero */
 .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;padding:52px 0 66px}
 @media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center;padding-top:26px}}
@@ -122,10 +125,13 @@ a{text-decoration:none;color:inherit}
 .avstack svg:first-child{margin-left:0}
 .playersrow .cap{color:var(--muted);font-weight:600;font-size:13.5px;line-height:1.35}
 .playersrow .cap b{color:var(--ink)}
-/* demo board — spymaster view, styled like a real game board */
+/* demo board — spymaster view, styled like a real game board (interactive) */
 .demo{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:470px;margin-inline:auto}
 .t{aspect-ratio:16/11;border-radius:13px;display:flex;align-items:center;justify-content:center;position:relative;
-font-weight:600;font-size:clamp(9px,1.15vw,12px);letter-spacing:.4px;box-shadow:0 2px 6px rgba(35,41,70,.08);border:1.5px solid transparent}
+font-weight:600;font-size:clamp(9px,1.15vw,12px);letter-spacing:.4px;box-shadow:0 2px 6px rgba(35,41,70,.08);border:1.5px solid transparent;
+cursor:pointer;opacity:0;animation:tilein .5s var(--spring) both;transition:transform .2s var(--spring),box-shadow .2s,background .35s,color .35s}
+.t:hover{transform:translateY(-4px) scale(1.05);box-shadow:0 12px 24px rgba(35,41,70,.17);z-index:3}
+@keyframes tilein{from{opacity:0;transform:translateY(10px) scale(.72)}to{opacity:1;transform:translateY(0) scale(1)}}
 .t.r{background:#ffe7ed;color:#d8264a;border-color:#ffd2dd}
 .t.b{background:#e8f0ff;color:#2456c4;border-color:#d4e0ff}
 .t.n{background:#f5efde;color:#9a8a5c;border-color:#ece2c8}
@@ -133,6 +139,10 @@ font-weight:600;font-size:clamp(9px,1.15vw,12px);letter-spacing:.4px;box-shadow:
 .t.bs{background:var(--blue);color:#fff}
 .t.k{background:#111318;color:#fff}
 .t.k::after{content:'💀';position:absolute;top:3px;right:5px;font-size:10px}
+/* auto-play reveal — tiles flip to their team colour, looks like a live game */
+.t.lit{border-color:transparent!important}
+.t.r.lit{background:var(--red);color:#fff}
+.t.b.lit{background:var(--blue);color:#fff}
 /* sections */
 
 .sec-h{font-family:'Fredoka';font-size:30px;text-align:center;margin-bottom:8px}
@@ -172,6 +182,8 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   <nav class="nav">
     <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
     <div class="navlinks">
+      <a class="hideSm" href="/#how">How to play</a>
+      <a class="hideSm" href="/about">About</a>
       <a href="/blog">Blog</a>
       <a class="btn small" href="/play">▶ Play Codenames</a>
     </div>
@@ -204,7 +216,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   </div>
 </div></div>
 
-<div class="band gray"><div class="wrap">
+<div class="band gray" id="how"><div class="wrap">
   <h2 class="sec-h">How it works</h2>
   <p class="sec-sub">If you've played Codenames, you already know. If not — you'll get it in one round.</p>
   <div class="steps">
@@ -250,6 +262,23 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   <a href="/play">Play</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
   © 2026 WordSpies. All rights reserved.
 </footer></div>
+<script>
+(function(){
+  var tiles = [].slice.call(document.querySelectorAll('.demo .t'));
+  var team = tiles.filter(function(t){return t.classList.contains('r')||t.classList.contains('b');});
+  // shuffle for a natural, game-like reveal order
+  for(var i=team.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=team[i];team[i]=team[j];team[j]=tmp;}
+  var i2=0;
+  function tick(){
+    if(i2>=team.length){ team.forEach(function(t){t.classList.remove('lit');}); i2=0; }
+    else { team[i2].classList.add('lit'); i2++; }
+  }
+  // start after the entrance cascade finishes
+  setTimeout(function(){ setInterval(tick, 1000); }, 1600);
+  // tap/click any tile to toggle its reveal — playful interactivity
+  tiles.forEach(function(t){ t.addEventListener('click', function(){ if(t.classList.contains('r')||t.classList.contains('b')) t.classList.toggle('lit'); }); });
+})();
+</script>
 </body></html>`;
 }
 
