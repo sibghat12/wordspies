@@ -266,6 +266,8 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .winov h1{font-family:'Fredoka';font-size:36px;font-weight:700;margin-bottom:6px}
 .winov h1 .wr{color:var(--red)} .winov h1 .wb{color:var(--blue)}
 .winov p{color:var(--muted);font-weight:800;margin-bottom:24px}
+.winov .sharenudge{margin:22px 0 9px;color:var(--muted);font-weight:800;font-size:13.5px;line-height:1.45}
+.winov .shareappbtn{width:100%;max-width:260px;font-size:15px;padding:12px}
 .winov .sc{display:flex;justify-content:center;gap:10px;margin-bottom:28px}
 .winov .cnt{min-width:104px}
 .confetti{position:absolute;top:-20px;font-size:17px;animation:fall linear infinite;pointer-events:none}
@@ -526,7 +528,8 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
       <div class="cnt blue"><span>Blue</span><b id="winBlue">0</b></div>
     </div>
     <button class="btn btn-green" id="againBtn" style="width:100%;max-width:260px">Play again</button>
-    <div style="margin-top:12px"><button class="helpbtn" id="shareBtn">📤 Invite friends</button></div>
+    <div class="sharenudge">🎉 Had fun? Send WordSpies to another group chat</div>
+    <button class="btn btn-light shareappbtn" id="shareBtn">📤 Share WordSpies</button>
     <div class="waitmsg hidden" id="againWait">Waiting for the host…</div>
   </div>
 </div>
@@ -1059,9 +1062,10 @@ function soundAndTitle(){
 
 // ---------- share ----------
 $('shareBtn').onclick = () => {
-  const data = { title: 'WordSpies', text: 'Play WordSpies with me — free online word game!', url: location.origin };
+  track('shared', {});
+  const data = { title: 'WordSpies', text: 'We just played WordSpies — a free Codenames-style word game. Grab your group and play, no sign-up needed: ', url: location.origin };
   if (navigator.share) navigator.share(data).catch(()=>{});
-  else { navigator.clipboard?.writeText(data.url).then(()=>toast('Link copied ✓')); }
+  else { navigator.clipboard?.writeText(data.url).then(()=>toast('Link copied — paste it in your group chat ✓')); }
 };
 
 let toastTimer = null;
