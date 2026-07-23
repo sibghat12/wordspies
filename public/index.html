@@ -238,13 +238,16 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .feed .r{color:var(--red-ink)} .feed .b{color:var(--blue-ink)} .feed .m{color:var(--muted)}
 .quickreacts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:12px;border-top:1.5px solid var(--line)}
 .quickreacts::before{content:'React';font-size:10.5px;font-weight:900;letter-spacing:1px;color:var(--faint);text-transform:uppercase;margin-right:2px;width:100%;margin-bottom:1px}
-.quickreacts .qr{font-size:18px;line-height:1;background:#f1f3fa;border-radius:10px;padding:6px 9px;transition:transform .12s var(--spring),background .15s;cursor:pointer}
+.quickreacts .qr{font-size:15px;line-height:1;background:#f1f3fa;border-radius:9px;padding:5px 8px;transition:transform .12s var(--spring),background .15s;cursor:pointer}
 .quickreacts .qr:hover{background:var(--blue-soft);transform:translateY(-2px)}
 .quickreacts .qr:active{transform:scale(.9)}
-.quickreacts .qrmore{background:var(--blue-soft);box-shadow:inset 0 0 0 1.5px var(--blue)}
-.emojipanel{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;max-height:158px;overflow-y:auto;margin-top:9px;padding:9px;background:#f7f8fb;border:1.5px solid var(--line);border-radius:14px}
+/* emoji button in the chat row — the only thing shown until tapped */
+.chat .emojibtn{background:#f1f3fa;border-radius:12px;padding:0 13px;font-size:18px;line-height:1;transition:.15s;flex:0 0 auto;cursor:pointer}
+.chat .emojibtn:hover{background:var(--blue-soft)}
+.chat .emojibtn.on{background:var(--blue-soft);box-shadow:inset 0 0 0 1.5px var(--blue)}
+.emojipanel{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;max-height:132px;overflow-y:auto;margin-top:9px;padding:8px;background:#f7f8fb;border:1.5px solid var(--line);border-radius:14px}
 .emojipanel::-webkit-scrollbar{width:4px}.emojipanel::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
-.emojipanel .ej{font-size:20px;line-height:1;padding:5px 0;border-radius:9px;background:transparent;cursor:pointer;transition:transform .1s var(--spring),background .12s}
+.emojipanel .ej{font-size:17px;line-height:1;padding:4px 0;border-radius:9px;background:transparent;cursor:pointer;transition:transform .1s var(--spring),background .12s}
 .emojipanel .ej:hover{background:#fff;transform:scale(1.2)}
 .emojipanel .ej:active{transform:scale(.9)}
 .chat{display:flex;gap:7px;margin-top:9px}
@@ -301,7 +304,8 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
   .log{height:340px}
   .chat .fld{font-size:16px;padding:13px 15px}          /* 16px stops iOS zoom-on-focus */
   .chat .chatsend{padding:0 20px;font-size:19px}
-  .quickreacts .qr{font-size:21px;padding:8px 11px}     /* bigger thumb targets */
+  .quickreacts .qr{font-size:17px;padding:6px 9px}      /* small but thumb-tappable */
+  .chat .emojibtn{font-size:20px;padding:0 15px}
   .log h4{font-size:12.5px}
   .teambtns button{padding:14px 8px}
   .helpbtn{padding:8px 13px;font-size:13px}
@@ -461,9 +465,10 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
           <div class="card log">
             <h4>💬 GAME CHAT</h4>
             <div class="feed" id="feed"></div>
-            <div class="quickreacts" id="quickReacts"></div>
+            <div class="quickreacts hidden" id="quickReacts"></div>
             <div class="emojipanel hidden" id="emojiPanel"></div>
             <div class="chat">
+              <button id="emojiTrigger" class="emojibtn" type="button" aria-label="Emojis &amp; reactions">🙂</button>
               <input class="fld" id="chatInput" maxlength="200" placeholder="Say something…" autocomplete="off" enterkeyhint="send">
               <button id="chatSend" class="chatsend" aria-label="Send">➤</button>
             </div>
@@ -764,11 +769,12 @@ function sendChat(){
   b.onclick = () => socket.emit('chat', { text: em });
   $('quickReacts').appendChild(b);
 });
-// emoji picker toggle — opens a full panel to add emojis to your message
-const emojiToggle = document.createElement('button');
-emojiToggle.type = 'button'; emojiToggle.textContent = '😊'; emojiToggle.className = 'qr qrmore'; emojiToggle.title = 'More emojis';
-emojiToggle.onclick = () => $('emojiPanel').classList.toggle('hidden');
-$('quickReacts').appendChild(emojiToggle);
+// emoji button in the chat row — reveals reactions + picker only when tapped
+$('emojiTrigger').onclick = () => {
+  const open = $('quickReacts').classList.toggle('hidden') === false;
+  $('emojiPanel').classList.toggle('hidden', !open);
+  $('emojiTrigger').classList.toggle('on', open);
+};
 // build the emoji picker grid — tap adds the emoji to your message
 const EMOJIS = ('😀 😁 😂 🤣 😊 😍 😎 🥳 😉 😴 🤔 😅 😬 😱 😭 😡 🤯 🥰 😐 🙄 😏 🤩 😜 🥺 '
   + '👍 👎 👏 🙌 🙏 💪 👀 ✌️ 🤞 👊 🤙 🖐️ '
