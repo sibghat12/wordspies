@@ -107,7 +107,7 @@ a{text-decoration:none;color:inherit}
 /* hero */
 .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;padding:52px 0 66px}
 @media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center;padding-top:26px}}
-.hero h1{font-family:'Fredoka';font-size:clamp(32px,4.6vw,50px);line-height:1.12;letter-spacing:-.5px;margin-bottom:16px;color:var(--ink)}
+.hero h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:clamp(33px,4.8vw,52px);line-height:1.12;letter-spacing:-1.4px;margin-bottom:16px;color:var(--ink)}
 .hero h1 .r,.hero h1 .b{color:inherit}
 .hero p{font-size:18px;color:var(--muted);font-weight:700;line-height:1.65;margin-bottom:26px;max-width:480px}
 @media(max-width:860px){.hero p{margin-inline:auto}}
@@ -173,7 +173,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
     <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
     <div class="navlinks">
       <a href="/blog">Blog</a>
-      <a class="btn small" href="/play">▶ Play free</a>
+      <a class="btn small" href="/play">▶ Play Codenames</a>
     </div>
   </nav>
 </div></header>
@@ -183,7 +183,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
     <div>
       <h1>The free online <span class="r">Codenames-style</span> word game for <span class="b">friends</span></h1>
       <p>Two teams. Twenty-five words. One deadly assassin. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone — no sign-up, no download.</p>
-      <a class="btn" href="/play">${PAD}Play free — takes 10 seconds</a>
+      <a class="btn" href="/play">${PAD}Play Codenames — takes 10 seconds</a>
       <div class="herometa"><span class="pill">100% free</span><span class="pill">No account needed</span><span class="pill">Works on every phone</span></div>
       <div class="playersrow">
         <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>

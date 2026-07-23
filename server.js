@@ -7,7 +7,7 @@ const http = require('http');
 const express = require('express');
 const compression = require('compression');
 const { Server } = require('socket.io');
-const { PACKS } = require('./words');
+const { PACKS, CATALOG } = require('./words');
 
 const app = express();
 const server = http.createServer(app);
@@ -119,7 +119,7 @@ async function restoreRooms() {
       const d = JSON.parse(raw);
       const room = {
         code: d.code, hostId: d.hostId, players: new Map(),
-        state: d.state, settings: d.settings || { pack: 'easy', timer: 0 },
+        state: d.state, settings: d.settings || { categories: [...ALL_CATS], timer: 0 },
         board: d.board, turn: d.turn, clue: d.clue, winner: d.winner,
         winReason: d.winReason, log: d.log || [], score: d.score || { red: 0, blue: 0 },
         timerEnd: null, timerHandle: null, lastActivity: Date.now()
@@ -164,11 +164,19 @@ function shuffle(arr) {
   return a;
 }
 
-function createBoard() {
-  // every game: 25 random words drawn from ALL packs combined (deduped)
+const ALL_CATS = Object.keys(PACKS);
+function createBoard(categories) {
+  // 25 random words drawn from the selected categories (deduped).
   // best-quality boards: single words only, max 11 letters (fits tiles perfectly)
-  const pool = [...new Set(Object.values(PACKS).flatMap(p => p.words))]
+  let keys = Array.isArray(categories) ? categories.filter(k => PACKS[k]) : [];
+  if (!keys.length) keys = ALL_CATS; // fallback to everything
+  let pool = [...new Set(keys.flatMap(k => PACKS[k].words))]
     .filter(w => !w.includes(' ') && !w.includes('-') && w.length <= 11);
+  // safety: if a tiny selection can't fill 25 unique tiles, top up from all packs
+  if (pool.length < 25) {
+    pool = [...new Set([...pool, ...Object.values(PACKS).flatMap(p => p.words)])]
+      .filter(w => !w.includes(' ') && !w.includes('-') && w.length <= 11);
+  }
   const words = shuffle(pool).slice(0, 25);
   const startingTeam = Math.random() < 0.5 ? 'red' : 'blue';
   const otherTeam = startingTeam === 'red' ? 'blue' : 'red';
@@ -191,7 +199,7 @@ function createRoom(hostName) {
     hostId: null,
     players: new Map(), // socketId -> {id, name, team, role, connected}
     state: 'lobby', // lobby | playing | over
-    settings: { pack: 'easy', timer: 0 }, // timer in seconds, 0 = off
+    settings: { categories: [...ALL_CATS], timer: 0 }, // categories selected; timer secs (0=off)
     board: null,
     turn: null, // {team, phase: 'clue'|'guess'}
     clue: null, // {word, count, guessesLeft}
@@ -226,6 +234,7 @@ function publicState(room, forPlayer) {
     state: room.state,
     hostId: room.hostId,
     settings: room.settings,
+    catalog: CATALOG,
     players: [...room.players.values()].map(p => ({
       id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar
     })),
@@ -293,7 +302,7 @@ function endGame(room, winner, reason) {
 }
 
 function startGame(room) {
-  room.board = createBoard();
+  room.board = createBoard(room.settings.categories);
   room.state = 'playing';
   room.winner = null;
   room.winReason = null;
@@ -391,9 +400,13 @@ io.on('connection', (socket) => {
     broadcast(room);
   }));
 
-  socket.on('setSettings', guard(({ timer }) => {
+  socket.on('setSettings', guard(({ timer, categories }) => {
     if (!room || socket.id !== room.hostId || room.state === 'playing') return;
     if (typeof timer === 'number' && [0, 60, 90, 120, 180].includes(timer)) room.settings.timer = timer;
+    if (Array.isArray(categories)) {
+      const valid = categories.filter(k => PACKS[k]);
+      if (valid.length) room.settings.categories = valid; // must keep at least one
+    }
     broadcast(room);
   }));
 
