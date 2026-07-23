@@ -364,11 +364,11 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 <div id="app" class="hidden">
   <div class="wrap">
     <div class="top">
-      <div class="logo" style="cursor:pointer" onclick="location.href='/'" title="WordSpies home"><span class="r">Word</span><span class="b">Spies</span></div>
+      <div class="logo"><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp">Copy invite link</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
-        <button class="helpbtn" id="leaveBtn" title="Leave this game">🚪 Log out</button>
+        <button class="helpbtn" id="leaveBtn" title="Exit this game">🚪 Exit game</button>
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
@@ -570,7 +570,7 @@ socket.on('state', st => {
     prevGameState = S.state;
   }
   if (rejoinNotice && S && S.code === rejoinNotice) {
-    toast('👋 Welcome back! Rejoined room ' + S.code + ' — tap Log out to leave');
+    toast('👋 Welcome back! Rejoined room ' + S.code + ' — tap Exit game to leave');
     rejoinNotice = null;
   }
 });
