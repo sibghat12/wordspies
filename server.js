@@ -55,6 +55,11 @@ app.get('/blog/:slug', (req, res) => {
   res.type('html').send(page);
 });
 
+const pages = require('./pages');
+app.get('/about', (req, res) => res.type('html').send(pages.aboutPage()));
+app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage()));
+app.get('/terms', (req, res) => res.type('html').send(pages.termsPage()));
+
 process.on('uncaughtException', err => console.error('uncaught:', err));
 process.on('unhandledRejection', err => console.error('unhandled:', err));
 

@@ -239,7 +239,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 </div></div>
 
 <div class="wrap"><footer>
-  <a href="/play">Play</a> · <a href="/blog">Blog</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
+  <a href="/play">Play</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
   🚧 Beta — we're playing, testing and improving it.<br>
   © 2026 Sibi — all rights reserved.
 </footer></div>
