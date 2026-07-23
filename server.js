@@ -236,7 +236,7 @@ function publicState(room, forPlayer) {
     settings: room.settings,
     catalog: CATALOG,
     players: [...room.players.values()].map(p => ({
-      id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar
+      id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar, avatarSeed: p.avatarSeed
     })),
     board: room.board ? {
       startingTeam: room.board.startingTeam,
@@ -406,6 +406,14 @@ io.on('connection', (socket) => {
     if (Array.isArray(categories)) {
       room.settings.categories = categories.filter(k => PACKS[k]); // [] allowed = mix all
     }
+    broadcast(room);
+  }));
+
+  socket.on('shuffleAvatar', guard(() => {
+    if (!room) return;
+    const p = room.players.get(socket.id);
+    if (!p) return;
+    p.avatarSeed = crypto.randomUUID().slice(0, 8);
     broadcast(room);
   }));
 
