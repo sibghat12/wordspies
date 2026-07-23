@@ -119,7 +119,7 @@ async function restoreRooms() {
       const d = JSON.parse(raw);
       const room = {
         code: d.code, hostId: d.hostId, players: new Map(),
-        state: d.state, settings: d.settings || { categories: [...ALL_CATS], timer: 0 },
+        state: d.state, settings: d.settings || { categories: [], timer: 0 },
         board: d.board, turn: d.turn, clue: d.clue, winner: d.winner,
         winReason: d.winReason, log: d.log || [], score: d.score || { red: 0, blue: 0 },
         timerEnd: null, timerHandle: null, lastActivity: Date.now()
@@ -199,7 +199,7 @@ function createRoom(hostName) {
     hostId: null,
     players: new Map(), // socketId -> {id, name, team, role, connected}
     state: 'lobby', // lobby | playing | over
-    settings: { categories: [...ALL_CATS], timer: 0 }, // categories selected; timer secs (0=off)
+    settings: { categories: [], timer: 0 }, // [] = mix all categories; timer secs (0=off)
     board: null,
     turn: null, // {team, phase: 'clue'|'guess'}
     clue: null, // {word, count, guessesLeft}
@@ -404,8 +404,7 @@ io.on('connection', (socket) => {
     if (!room || socket.id !== room.hostId || room.state === 'playing') return;
     if (typeof timer === 'number' && [0, 60, 90, 120, 180].includes(timer)) room.settings.timer = timer;
     if (Array.isArray(categories)) {
-      const valid = categories.filter(k => PACKS[k]);
-      if (valid.length) room.settings.categories = valid; // must keep at least one
+      room.settings.categories = categories.filter(k => PACKS[k]); // [] allowed = mix all
     }
     broadcast(room);
   }));
