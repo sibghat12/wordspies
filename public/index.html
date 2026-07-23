@@ -1132,5 +1132,201 @@ if (DEMO) {
 }
 
 </script>
+
+<!-- ============================================================
+     Voice chat — completely separate, optional add-on script.
+     If anything in here fails (unsupported browser, mic denied,
+     a bug), it fails silently and the game above is 100%
+     unaffected — this script never modifies any function, element,
+     or variable from the main game script above; it only reads the
+     same 'socket' connection and the same 'state' events the game
+     already broadcasts.
+     ============================================================ -->
+<script>
+(function () {
+  try {
+    if (typeof DEMO !== 'undefined' && DEMO) return; // skip entirely on ?test/?demo previews
+    if (typeof socket === 'undefined' || !socket) return;
+    if (!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return; // unsupported browser: no UI shown, no error
+
+    const ICE = { iceServers: (window.__WS_TEST_NO_STUN ? [] : [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }]) };
+    let localStream = null;
+    let voiceOn = false;
+    let selfMuted = false;
+    let currentState = null;
+    const peers = new Map();  // socketId -> RTCPeerConnection
+    const audios = new Map(); // socketId -> <audio>
+    window.__voiceDebug = { peers, audios, state: () => Array.from(peers.entries()).map(([id, pc]) => ({ id, conn: pc.connectionState, ice: pc.iceConnectionState, sig: pc.signalingState })) };
+
+    function myTeamNow() {
+      if (!currentState) return null;
+      const p = currentState.players.find(p => p.id === socket.id);
+      return p ? p.team : null;
+    }
+    function turnTeamNow() { return currentState && currentState.turn ? currentState.turn.team : null; }
+    function gameStateNow() { return currentState ? currentState.state : null; }
+    function shouldBeLive() {
+      if (!voiceOn || selfMuted) return false;
+      const gs = gameStateNow();
+      if (gs !== 'playing') return true; // lobby / game-over: everyone can talk freely
+      const t = myTeamNow();
+      return !!t && t === turnTeamNow();
+    }
+    function applyLocalMuteState() {
+      if (!localStream) { updateVoiceUI(false); return; }
+      const live = shouldBeLive();
+      localStream.getAudioTracks().forEach(t => { t.enabled = live; });
+      updateVoiceUI(live);
+    }
+
+    socket.on('state', function (st) {
+      try { currentState = st; applyLocalMuteState(); } catch (e) { console.error('voice state sync error', e); }
+    });
+
+    // Bump the Opus codec up to a high, near-transparent bitrate (WhatsApp-style
+    // calls typically run ~16-32kbps; this pushes clarity noticeably higher) and
+    // disable silence-detection dropouts so voices don't clip in and out.
+    function boostAudioQuality(sdp) {
+      try {
+        const m = sdp.match(/a=rtpmap:(\d+) opus\/48000/);
+        if (!m) return sdp;
+        const pt = m[1];
+        const line = 'a=fmtp:' + pt + ' minptime=10;useinbandfec=1;maxaveragebitrate=64000;maxplaybackrate=48000;stereo=0;cbr=0;dtx=0\r\n';
+        const fmtpRe = new RegExp('a=fmtp:' + pt + '[^\\r\\n]*\\r\\n');
+        if (fmtpRe.test(sdp)) return sdp.replace(fmtpRe, line);
+        const rtpmapRe = new RegExp('(a=rtpmap:' + pt + ' opus/48000[^\\r\\n]*\\r\\n)');
+        return sdp.replace(rtpmapRe, '$1' + line);
+      } catch (e) { return sdp; }
+    }
+
+    function createPeer(id, initiator) {
+      const pc = new RTCPeerConnection(ICE);
+      peers.set(id, pc);
+      if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+      pc.onicecandidate = e => {
+        if (e.candidate) socket.emit('voice:signal', { to: id, data: { type: 'candidate', candidate: e.candidate } });
+      };
+      pc.ontrack = e => {
+        let el = audios.get(id);
+        if (!el) { el = document.createElement('audio'); el.autoplay = true; el.playsInline = true; el.style.display = 'none'; document.body.appendChild(el); audios.set(id, el); }
+        el.srcObject = e.streams[0];
+      };
+      if (initiator) {
+        pc.onnegotiationneeded = async () => {
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription({ type: 'offer', sdp: boostAudioQuality(offer.sdp) });
+            socket.emit('voice:signal', { to: id, data: { type: 'offer', sdp: pc.localDescription } });
+          } catch (e) { console.error('voice offer error', e); }
+        };
+      }
+      return pc;
+    }
+
+    socket.on('voice:peers', function (ids) {
+      try { if (!voiceOn) return; (ids || []).forEach(id => { if (!peers.has(id)) createPeer(id, true); }); } catch (e) { console.error(e); }
+    });
+    socket.on('voice:peer-joined', function (msg) {
+      try { if (!voiceOn) return; const id = msg && msg.id; if (id && !peers.has(id)) createPeer(id, false); } catch (e) { console.error(e); }
+    });
+    socket.on('voice:peer-left', function (msg) {
+      try {
+        const id = msg && msg.id;
+        const pc = peers.get(id); if (pc) pc.close();
+        peers.delete(id);
+        const el = audios.get(id); if (el) { el.remove(); audios.delete(id); }
+      } catch (e) { console.error(e); }
+    });
+    socket.on('voice:signal', async function (msg) {
+      try {
+        if (!voiceOn) return;
+        const from = msg.from, data = msg.data;
+        let pc = peers.get(from);
+        if (!pc) pc = createPeer(from, false);
+        if (data.type === 'offer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription({ type: 'answer', sdp: boostAudioQuality(answer.sdp) });
+          socket.emit('voice:signal', { to: from, data: { type: 'answer', sdp: pc.localDescription } });
+        } else if (data.type === 'answer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+        } else if (data.type === 'candidate') {
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(() => {});
+        }
+      } catch (e) { console.error('voice signal error', e); }
+    });
+
+    async function enableVoice() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 48000,
+            channelCount: 1
+          },
+          video: false
+        });
+        voiceOn = true;
+        socket.emit('voice:join');
+        applyLocalMuteState();
+      } catch (e) {
+        console.error('mic permission error', e);
+        voiceOn = false;
+        try { if (typeof toast === 'function') toast('🎤 Mic permission denied or unavailable'); } catch (e2) {}
+        updateVoiceUI(false);
+      }
+    }
+    function disableVoice() {
+      voiceOn = false;
+      if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+      peers.forEach(pc => { try { pc.close(); } catch (e) {} });
+      peers.clear();
+      audios.forEach(el => el.remove());
+      audios.clear();
+      try { socket.emit('voice:leave'); } catch (e) {}
+      updateVoiceUI(false);
+    }
+
+    function buildUI() {
+      const bar = document.createElement('div');
+      bar.id = 'voiceBar';
+      bar.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:9998;display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-family:Nunito,system-ui,sans-serif';
+      bar.innerHTML =
+        '<div id="voiceStatus" style="display:none;background:#111318;color:#fff;padding:8px 15px;border-radius:99px;font-size:12.5px;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer"></div>' +
+        '<button id="voiceToggle" type="button" style="background:linear-gradient(180deg,#159f07,#0f7500);color:#fff;border:none;border-radius:99px;padding:13px 20px;font-weight:900;font-size:14px;box-shadow:0 4px 14px rgba(15,117,0,.35);cursor:pointer">🎤 Enable voice chat</button>';
+      document.body.appendChild(bar);
+      const btn = document.getElementById('voiceToggle');
+      const status = document.getElementById('voiceStatus');
+      btn.onclick = () => {
+        if (!voiceOn) { enableVoice(); btn.textContent = '🔴 Leave voice chat'; }
+        else { disableVoice(); btn.textContent = '🎤 Enable voice chat'; }
+      };
+      status.onclick = () => {
+        if (!voiceOn) return;
+        selfMuted = !selfMuted;
+        try { socket.emit('voice:muted', { muted: selfMuted }); } catch (e) {}
+        applyLocalMuteState();
+      };
+    }
+    function updateVoiceUI(live) {
+      const status = document.getElementById('voiceStatus');
+      if (!status) return;
+      if (!voiceOn) { status.style.display = 'none'; return; }
+      status.style.display = 'block';
+      if (selfMuted) { status.textContent = '🔇 You muted yourself — tap to unmute'; status.style.background = '#c11f38'; }
+      else if (live) { status.textContent = '🎙️ Live — tap to mute'; status.style.background = '#0f7500'; }
+      else { status.textContent = "🔇 Muted — not your team's turn"; status.style.background = '#5f6675'; }
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildUI);
+    else buildUI();
+
+  } catch (e) {
+    console.error('voice feature failed to init — game is unaffected:', e);
+  }
+})();
+</script>
 </body>
 </html>
