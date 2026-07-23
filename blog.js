@@ -142,6 +142,65 @@ const articles = {
 <p>If the other team is one word from winning, a safe 1-word clue that guarantees progress beats any gamble. Play the scoreboard, not just the board.</p>
 <h2>Practice makes the spymaster</h2>
 <p>The only way to get good is reps. Start a free game on <a href="/">WordSpies</a>, take the spymaster seat, and try the two-safe-words rule tonight — your win rate will jump.</p>`
+  },
+  'virtual-team-building-word-games': {
+    title: 'Virtual Team Building Games: Free Word Games for Remote Teams (2026)',
+    desc: 'The best free virtual team building games for remote teams — no downloads or sign-ups. Word games that actually get quiet colleagues talking on video calls.',
+    date: '2026-07-22',
+    html: `
+<p>Most "virtual team building games" are either awkward icebreakers or clunky paid platforms nobody opens twice. The ones that actually work share three traits: everyone can join in seconds, they spark real conversation, and they're genuinely fun. Here are free word games that hit all three.</p>
+<h2>1. WordSpies — the team game built for calls</h2>
+<p><a href="/">WordSpies</a> is a free Codenames-style game where two teams race to find their secret words from one-word clues. It's ideal for remote teams because the fun is in the debate: the guessers argue out loud on the call while the spymaster sweats silently. Everyone joins from their own screen with a 4-letter code — no accounts, no installs, no IT tickets. Split a team of 8 into two groups of 4 and you have an instant tournament.</p>
+<h2>2. Word association warm-ups</h2>
+<p>A 60-second round where each person adds a word linked to the last. Zero setup, works as a meeting opener, and quietly reveals how people think.</p>
+<h2>3. Two truths and a word</h2>
+<p>A wordy twist on two-truths-and-a-lie: describe yourself in three words, one of which is false. Fast, personal, and it makes remote colleagues feel like people.</p>
+<h2>4. Collaborative story building</h2>
+<p>The team writes a story one sentence at a time. Cooperative rather than competitive — good for groups where you want inclusion over rivalry.</p>
+<h2>Why word games beat trivia for teams</h2>
+<p>Trivia rewards the person who already knew the answer — everyone else just waits. Word games like Codenames reward discussion, so the quiet new hire and the loud director contribute equally. That's the actual point of team building.</p>
+<h2>Running it well</h2>
+<p>Keep rounds to 15 minutes, put the join link in the meeting chat so latecomers self-serve, and let people opt to spectate. <a href="/">Start a free WordSpies room</a>, drop the code in your team channel, and you'll get more talking in 15 minutes than in a month of "how was your weekend."</p>`
+  },
+  'family-game-night-word-games': {
+    title: 'Family Game Night Ideas: Free Word Games Everyone Can Play (2026)',
+    desc: 'Free word games for family game night that work across ages and phones — no board, no sign-up. Great for kids, grandparents and everyone in between.',
+    date: '2026-07-22',
+    html: `
+<p>The best family game night games work for an 8-year-old and a grandparent at the same time — or on the same video call. No tiny pieces to lose, no rules that take twenty minutes to explain, and nothing to buy. Here are word games that do exactly that.</p>
+<h2>1. WordSpies — teams keep everyone included</h2>
+<p><a href="/">WordSpies</a> splits the family into two teams, so a younger player sits with an adult and nobody's left out. It's a Codenames-style game: give one-word clues, guess your team's secret words, dodge the assassin. Because it plays on any phone with just a 4-letter code, the cousins on a video call join the same game as the people in the room. Boards are drawn from 700+ everyday words, so they're friendly for all ages.</p>
+<h2>2. Categories (Scattergories-style)</h2>
+<p>Pick a letter, race to name a food, animal and place that start with it. Endless, needs nothing but a timer, and levels the field between kids and adults.</p>
+<h2>3. Word chains</h2>
+<p>Each player says a word starting with the last letter of the previous one. Deceptively addictive and great for younger kids learning spelling.</p>
+<h2>4. Twenty questions</h2>
+<p>One person thinks of something; everyone else narrows it down with yes/no questions. Works with any number of players and any age.</p>
+<h2>Keeping it fair across ages</h2>
+<p>Pair a younger player with an older one on the same team, let kids be the guessers (the fun, low-pressure role), and keep rounds short. A team game like <a href="/">WordSpies</a> does the balancing for you — the team wins together, so there's no single loser. Set up a free room and the whole family, near and far, is playing in under a minute.</p>`
+  },
+  'how-to-win-codenames': {
+    title: 'How to Win at Codenames: 7 Winning Strategies & Tips (2026)',
+    desc: 'Want to win more Codenames-style games? Here are 7 proven strategies for spymasters and guessers — clue maths, the assassin rule, and smart guessing tactics.',
+    date: '2026-07-22',
+    html: `
+<p>Codenames-style games look like luck, but the same players keep winning — because clue-giving and guessing are skills. Here are seven strategies that reliably raise your win rate, whether you're the spymaster or a guesser.</p>
+<h2>1. Spymasters: guard against the assassin first</h2>
+<p>Before hunting for clever links, find the assassin word and make sure your clue can't point at it. One accidental assassin clue loses the whole game — no comeback. Safe beats clever, every time.</p>
+<h2>2. Two words you'll get beats four you might</h2>
+<p>A guaranteed 2-word clue outscores a risky 4-word clue over a full game. Only reach for the big number when the board genuinely hands it to you.</p>
+<h2>3. Clue for your team's brains, not your own</h2>
+<p>Your clever connection is worthless if your teammates don't see it. Picture each guesser hearing your word. If it needs explaining, it's a trap you set for yourself.</p>
+<h2>4. Guessers: start with the word you're surest of</h2>
+<p>Tap your most confident word first. If you're right, you've earned momentum and information about the rest of the clue.</p>
+<h2>5. Use — but respect — the bonus guess</h2>
+<p>You always get the clue number plus one guess. That bonus is best spent picking up a word you missed from an earlier clue, not gambling on a fresh hunch.</p>
+<h2>6. Stop while you're ahead</h2>
+<p>Got both words from a "2" clue? Stop. Greedily guessing a third unclued word is how teams hand points — or the game — to their opponents.</p>
+<h2>7. Play the scoreboard</h2>
+<p>If the other team is one word from winning, take the safe guaranteed clue and deny them the turn. Track how many words each team has left and let it dictate your risk.</p>
+<h2>Put it into practice</h2>
+<p>Strategy sticks through playing, not reading. <a href="/">Start a free WordSpies game</a>, try the "two safe words" and "stop while ahead" rules tonight, and watch how quickly your team starts winning.</p>`
   }
 };
 

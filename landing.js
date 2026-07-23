@@ -19,6 +19,8 @@ function avatar(hat, skin, blushOpacity = '.8') {
 }
 
 const DEMO_WORDS = ['TIGER','MOON','PIZZA','ROBOT','PARIS','HONEY','CLOUD','KING','OCEAN','TRAIN','APPLE','GHOST','PIANO','RIVER','CROWN','SNOW','DRAGON','BEACH','STAR','BRIDGE','CANDY','WOLF','ROCKET','ISLAND','MAGIC'];
+// Game controller icon — inherits button text colour via currentColor (white on green button)
+const PAD = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align:-4px;margin-right:7px" aria-hidden="true"><path d="M7.5 7A6.5 6.5 0 0 0 1 13.5v.6a4.4 4.4 0 0 0 8 2.4h6a4.4 4.4 0 0 0 8-2.4v-.6A6.5 6.5 0 0 0 16.5 7h-9zM7 11h1.4v1.1H9.5v1.4H8.4v1.1H7v-1.1H5.9v-1.4H7V11zm8.6.4a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1zm2.3-2.3a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z"/></svg>';
 
 function page() {
   const ASSASSIN_IDX = 12; // exactly one black assassin tile, like a real game
@@ -54,6 +56,11 @@ ${GA}
 {"@type":"WebApplication","@id":"${SITE}/#app","name":"WordSpies","url":"${SITE}/","applicationCategory":"GameApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free Codenames-style online word game for friends. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone or laptop. No sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
 {"@type":"Organization","@id":"${SITE}/#org","name":"WordSpies","url":"${SITE}/","logo":"${SITE}/icon-512.png","email":"contact@wordspies.co.uk"},
 {"@type":"WebSite","@id":"${SITE}/#website","url":"${SITE}/","name":"WordSpies","publisher":{"@id":"${SITE}/#org"}},
+{"@type":"VideoGame","@id":"${SITE}/#game","name":"WordSpies","url":"${SITE}/play","description":"A free online Codenames-style word game for 4 to 10+ players. Two teams race to find their secret words from spymaster clues while avoiding the assassin.","genre":["Word game","Party game","Team game"],"gamePlatform":["Web browser","iOS","Android"],"playMode":"MultiPlayer","numberOfPlayers":{"@type":"QuantitativeValue","minValue":4,"maxValue":12},"applicationCategory":"Game","operatingSystem":"Any","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
+{"@type":"HowTo","@id":"${SITE}/#howto","name":"How to play WordSpies","description":"Play a free Codenames-style word game with friends in three steps.","totalTime":"PT10M","step":[
+{"@type":"HowToStep","position":1,"name":"Create and invite","text":"Type your name, tap New game and share the 4-letter room code or invite link. Friends join instantly from any phone."},
+{"@type":"HowToStep","position":2,"name":"Give clues and guess","text":"Each team's spymaster gives one-word clues like OCEAN 2. Teammates discuss and tap the words they think match."},
+{"@type":"HowToStep","position":3,"name":"Dodge the assassin","text":"Find all your team's words first to win — but never tap the hidden assassin word or your team loses instantly."}]},
 {"@type":"FAQPage","@id":"${SITE}/#faq","mainEntity":[
 {"@type":"Question","name":"Is WordSpies really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. WordSpies is completely free to play with no sign-up, no downloads and no account required."}},
 {"@type":"Question","name":"How many players do I need?","acceptedAnswer":{"@type":"Answer","text":"You need at least 4 players — one spymaster and one guesser on each team — and it scales up to 10 or more."}},
@@ -168,7 +175,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
     <div>
       <h1>The free online <span class="r">Codenames-style</span> word game for <span class="b">friends</span></h1>
       <p>Two teams. Twenty-five words. One deadly assassin. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone — no sign-up, no download.</p>
-      <a class="btn" href="/play">🎮 Play free — takes 10 seconds</a>
+      <a class="btn" href="/play">${PAD}Play free — takes 10 seconds</a>
       <div class="herometa">✓ 100% free &nbsp; ✓ No account needed &nbsp; ✓ Works on every phone</div>
       <div class="playersrow">
         <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>
@@ -202,7 +209,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 <div class="band greenb"><div class="wrap" style="text-align:center">
   <h2 class="sec-h">Round one starts in 10 seconds</h2>
   <p style="font-weight:700;margin:8px 0 26px">Grab three friends and see who finds the assassin first.</p>
-  <a class="btn" href="/play" style="background:#fff;color:var(--green)">🎮 Play WordSpies free</a>
+  <a class="btn" href="/play" style="background:#fff;color:var(--green)">${PAD}Play WordSpies free</a>
 </div></div>
 
 <div class="band white"><div class="wrap">
