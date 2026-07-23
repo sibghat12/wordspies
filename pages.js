@@ -68,7 +68,7 @@ function aboutPage() {
 <h2>How it works</h2>
 <p>One player creates a room and shares the code or invite link. Friends join from their own devices and split into two teams. Each team's spymaster gives one-word clues with a number, and teammates discuss and tap the words they think match. The first team to find all of their words wins — unless someone taps the assassin, which ends the game instantly.</p>
 <h2>Who makes WordSpies</h2>
-<p>WordSpies is an independent project built and maintained by a small team. It is currently in active beta — we play, test and improve it continuously, and we genuinely read the feedback players send in.</p>
+<p>WordSpies is an independent project built and maintained by a small team. We play, test and improve it continuously, and we genuinely read the feedback players send in.</p>
 <h2>Get in touch</h2>
 <p>Ideas, bug reports and kind words are all welcome at <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>
 <h2>A note on trademarks</h2>
@@ -118,7 +118,7 @@ function termsPage() {
 <div class="updated">Last updated: 22 July 2026</div>
 <p>By using <a href="/">wordspies.co.uk</a> (the "Site") you agree to these Terms of Use. If you do not agree, please do not use the Site.</p>
 <h2>The service</h2>
-<p>WordSpies is a free online word game provided "as is" and "as available". It is currently in beta, which means features may change, and the Site may occasionally be unavailable or lose in-progress games (for example when the server restarts).</p>
+<p>WordSpies is a free online word game provided "as is" and "as available". Features may change, and the Site may occasionally be unavailable or lose in-progress games (for example when the server restarts).</p>
 <h2>Acceptable use</h2>
 <ul>
 <li>Play fairly and be respectful to other players.</li>

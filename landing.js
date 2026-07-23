@@ -233,17 +233,17 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 </div></div>
 
 <div class="band white"><div class="wrap">
-  <h2 class="sec-h">What our beta players say</h2>
-  <p class="sec-sub">Straight from our game nights during the beta.</p>
+  <h2 class="sec-h">What our players say</h2>
+  <p class="sec-sub">Straight from our game nights.</p>
   <div class="grid3">
     <div class="rev"><p>"We played six rounds back to back on a video call — nobody wanted to stop. The room code thing is so easy my mum joined in."</p>
-      <div class="who">${avatar('#2b3350', '#ffd9b3')}<div><b>Ayesha</b><span>Beta player · London</span></div></div></div>
+      <div class="who">${avatar('#2b3350', '#ffd9b3')}<div><b>Ayesha</b><span>Player · London</span></div></div></div>
     <div class="rev"><p>"Being spymaster is the best kind of pressure. Gave a 3-word clue that actually worked and felt like a genius all week."</p>
-      <div class="who">${avatar('#7c3aed', '#f3c39a')}<div><b>Hamza</b><span>Beta player · Karachi</span></div></div></div>
+      <div class="who">${avatar('#7c3aed', '#f3c39a')}<div><b>Hamza</b><span>Player · Karachi</span></div></div></div>
     <div class="rev"><p>"Works perfectly on our phones, no one had to download anything. It's now the default game when friends come over."</p>
-      <div class="who">${avatar('#e63956', '#ffd9b3')}<div><b>Zara</b><span>Beta player · Manchester</span></div></div></div>
+      <div class="who">${avatar('#e63956', '#ffd9b3')}<div><b>Zara</b><span>Player · Manchester</span></div></div></div>
   </div>
-  <p class="disclaim">Quotes from our beta playtest sessions.</p>
+  <p class="disclaim">Quotes from our game nights.</p>
 </div></div>
 
 <div class="band gray"><div class="wrap">
