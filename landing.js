@@ -47,11 +47,11 @@ ${GA}
 <meta property="og:title" content="WordSpies — Free Codenames-Style Word Game Online">
 <meta property="og:description" content="Two teams. Secret words. One assassin. Play free with friends — no sign-up.">
 <meta property="og:url" content="${SITE}/"><meta property="og:type" content="website">
-<meta property="og:image" content="${SITE}/icon-512.png"><meta property="og:image:alt" content="WordSpies word game board">
+<meta property="og:image" content="${SITE}/og-image.png"><meta property="og:image:alt" content="WordSpies word game board">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="WordSpies — Free Codenames-Style Word Game Online">
 <meta name="twitter:description" content="Two teams. Secret words. One assassin. Play free with friends — no sign-up.">
-<meta name="twitter:image" content="${SITE}/icon-512.png">
+<meta name="twitter:image" content="${SITE}/og-image.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"WebApplication","@id":"${SITE}/#app","name":"WordSpies","url":"${SITE}/","applicationCategory":"GameApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free Codenames-style online word game for friends. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone or laptop. No sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
 {"@type":"Organization","@id":"${SITE}/#org","name":"WordSpies","url":"${SITE}/","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png","width":512,"height":512},"email":"contact@wordspies.co.uk","foundingDate":"2026","areaServed":"Worldwide","knowsLanguage":"en","contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"contact@wordspies.co.uk","availableLanguage":"English"}},

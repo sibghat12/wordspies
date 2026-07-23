@@ -217,8 +217,8 @@ ${GA}
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta property="og:site_name" content="WordSpies"><meta property="og:locale" content="en_GB">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
-<meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${SITE}/icon-512.png">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${SITE}/icon-512.png">
+<meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${SITE}/og-image.png">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${SITE}/og-image.png">
 ${schema || ''}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
