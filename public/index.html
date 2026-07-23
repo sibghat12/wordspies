@@ -557,14 +557,19 @@ function avSVG(p, size){
     `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}&backgroundColor=ffdfbf,ffd5dc,d1d4f9,c0f0dd,b6e3f4&radius=50" width="${size}" height="${size}" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 
+let everConnected = false;
 socket.on('connect', () => {
   if (DEMO) return;
+  const reconnected = everConnected; // true when the socket dropped and came back
+  everConnected = true;
   myId = socket.id;
-  // refresh-proof: auto-rejoin the room you were in
+  // refresh-proof AND background-proof: auto-rejoin on first load AND on every reconnect
+  // (leaving the app / switching tabs drops the socket; on return we re-claim our seat)
   try {
     const sess = JSON.parse(localStorage.getItem('ws_sess') || 'null');
     const roomParam = new URLSearchParams(location.search).get('room');
-    if (sess && sess.code && sess.token && (!roomParam || roomParam.toUpperCase() === sess.code) && !S) {
+    const roomMatches = !roomParam || (sess && roomParam.toUpperCase() === sess.code);
+    if (sess && sess.code && sess.token && roomMatches && (!S || reconnected)) {
       socket.emit('rejoin', { code: sess.code, token: sess.token });
       rejoinNotice = sess.code;
     }
