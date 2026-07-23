@@ -539,6 +539,59 @@ io.on('connection', (socket) => {
     broadcast(r);
   }));
 
+  // ---------------------------------------------------------------------
+  // Voice chat signaling (WebRTC). Purely a relay — never touches game
+  // state (S/room.state/board/etc). If this whole block failed outright,
+  // the rest of the game (lobby, board, chat) is completely unaffected
+  // since every handler is wrapped in guard() just like the game handlers
+  // above, and nothing here is called from anywhere else in the file.
+  // ---------------------------------------------------------------------
+  // Only ever notify sockets that have themselves called voice:join — never
+  // the whole game room — so a player who hasn't enabled their mic never
+  // gets a stray signaling event and never creates a peer connection.
+  function voiceNotify(r, exceptId, event, payload) {
+    if (!r.voicePeers) return;
+    for (const id of r.voicePeers.keys()) {
+      if (id === exceptId) continue;
+      const sock = io.sockets.sockets.get(id);
+      if (sock) sock.emit(event, payload);
+    }
+  }
+
+  socket.on('voice:join', guard(() => {
+    if (!room || !player) return;
+    if (!room.voicePeers) room.voicePeers = new Map();
+    const existing = [...room.voicePeers.keys()].filter(id => id !== socket.id);
+    room.voicePeers.set(socket.id, { team: player.team });
+    socket.emit('voice:peers', existing);
+    voiceNotify(room, socket.id, 'voice:peer-joined', { id: socket.id });
+  }));
+
+  socket.on('voice:signal', guard(({ to, data }) => {
+    if (!room || !to || typeof to !== 'string') return;
+    if (!room.voicePeers || !room.voicePeers.has(to) || !room.voicePeers.has(socket.id)) return; // both ends must have voice enabled
+    const target = io.sockets.sockets.get(to);
+    if (target) target.emit('voice:signal', { from: socket.id, data });
+  }));
+
+  socket.on('voice:muted', guard(({ muted }) => {
+    if (!room || !room.voicePeers || !room.voicePeers.has(socket.id)) return;
+    voiceNotify(room, socket.id, 'voice:peer-muted', { id: socket.id, muted: !!muted });
+  }));
+
+  socket.on('voice:leave', guard(() => {
+    if (!room || !room.voicePeers || !room.voicePeers.has(socket.id)) return;
+    room.voicePeers.delete(socket.id);
+    voiceNotify(room, socket.id, 'voice:peer-left', { id: socket.id });
+  }));
+
+  socket.on('disconnect', guard(() => {
+    if (room && room.voicePeers && room.voicePeers.has(socket.id)) {
+      room.voicePeers.delete(socket.id);
+      voiceNotify(room, socket.id, 'voice:peer-left', { id: socket.id });
+    }
+  }));
+
   socket.on('disconnect', guard(() => {
     if (!room || !player) return;
     player.connected = false;
