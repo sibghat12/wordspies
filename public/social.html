@@ -161,6 +161,21 @@ input,textarea{font-family:inherit;outline:none}
 .ginvite{display:block;margin-top:6px;background:var(--ink);color:#fff !important;text-decoration:none;font-weight:700;font-size:13.5px;padding:10px 14px;border-radius:12px;text-align:center}
 .mb.me .ginvite{background:rgba(255,255,255,.22)}
 .mlink{color:inherit;text-decoration:underline;word-break:break-all}
+
+/* wide desktop: roomy 1400px layout, bigger wall grid, centered columns elsewhere */
+@media(min-width:900px){
+  .wrap{max-width:1400px;padding-left:36px;padding-right:36px}
+  .head{padding:28px 8px 16px}
+  .search{max-width:660px;margin:4px auto 20px}
+  .wall{grid-template-columns:repeat(3,1fr);gap:18px;padding:6px 8px 44px}
+  .pw{height:300px}
+  #tabMember,#tabMe,#tabChats,#tabChat{max-width:660px;margin:0 auto}
+  .composer{max-width:660px}
+  .picker{max-width:636px}
+}
+@media(min-width:1200px){
+  .wall{grid-template-columns:repeat(4,1fr)}
+}
 </style>
 </head>
 <body>
