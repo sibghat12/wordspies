@@ -291,7 +291,7 @@ input,textarea{font-family:inherit;outline:none}
     <div class="note">Your photo appears on the community wall.<br>Max 2 MB — JPG, PNG or WebP.</div>
   </div>
 
-  <a class="gamelink" href="/play" target="_blank" rel="noopener">🎮 &nbsp;Jump into a game →</a>
+  <a class="gamelink" href="/play?from=social">🎮 &nbsp;Jump into a game →</a>
 
   <div class="tabbar">
     <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community</button>
@@ -558,10 +558,12 @@ function msgBody(m){
   return esc(m.x).replace(/(https?:\/\/[^\s]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
 }
 
-// 🎮 in the chat: open the game to create a room, then paste the invite link here.
+// 🎮 in the chat: go create a room, come back with the invite link.
+// The game shows a "← Back to chat" button that returns to this exact chat.
 function inviteToPlay(){
-  window.open('/play', '_blank', 'noopener');
-  toast('🎮 Create a game, tap "Copy invite link", then paste it here!');
+  if (!curChat) return;
+  sessionStorage.setItem('inviteFlow', '1');
+  location.href = '/play?from=chat:' + curChat;
 }
 
 async function sendMsg(kind, gifUrl){
@@ -720,8 +722,19 @@ async function setupGoogle(){
 // ---------- boot ----------
 (async () => {
   try { ME = (await api('/me')).me; } catch(e){}
-  if (ME) enterApp();
-  else { $('vAuth').classList.remove('hidden'); setupGoogle(); }
+  if (ME) {
+    enterApp();
+    // deep link back into a chat: /social#chat=<userId> (used by the game's Back button)
+    const hm = location.hash.match(/^#chat=([a-f0-9]{6,24})$/);
+    if (hm && ME.photo) {
+      openChatWith(hm[1]);
+      if (sessionStorage.getItem('inviteFlow')) {
+        sessionStorage.removeItem('inviteFlow');
+        setTimeout(() => toast('🎮 Paste your invite link here!'), 700);
+      }
+      history.replaceState(null, '', '/social');
+    }
+  } else { $('vAuth').classList.remove('hidden'); setupGoogle(); }
 })();
 </script>
 </body>
