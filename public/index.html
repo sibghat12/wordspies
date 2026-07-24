@@ -116,7 +116,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .team h3{font-family:'Fredoka';font-size:19px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .team.redt h3{color:var(--red-ink)} .team.bluet h3{color:var(--blue-ink)}
 .team h3 .cnt2{margin-left:auto;font-size:13px;color:var(--faint);font-family:'Nunito';font-weight:800}
-.pp{display:flex;align-items:center;gap:11px;padding:7px 0;font-size:15.5px;font-weight:800;animation:rise .35s var(--spring)}
+.pp{display:flex;align-items:center;gap:11px;padding:7px 0;font-size:15.5px;font-weight:800}
 .pp.dim{opacity:.4}
 .av{
   width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;
@@ -860,7 +860,8 @@ function render(){
   if (playing || over) { renderBoard(); renderStatus(); renderCounts(); }
   renderMidJoin(playing);
   renderFeed();
-  if (over) renderWin(); else stopTick();
+  if (over) renderWin();
+  if (S.state === 'lobby') stopTick();
 }
 
 function renderStrip(){
@@ -975,17 +976,22 @@ function renderStatus(){
       show($('passBtn'), true);
     }
   }
-  if (S.timerEnd) html += ` <span class="tmr" id="tmr"></span>`;
+  html += ` <span class="tmr" id="tmr"></span>`;
   el.innerHTML = html;
   startTick();
 }
 
+let turnKey = '', turnStartTs = 0;
 function startTick(){
   stopTick();
-  if (!S.timerEnd) return;
+  // count-up clock when no turn limit is set, countdown when one is
+  const key = S.turn ? (S.turn.team + ':' + S.turn.phase) : '';
+  if (key !== turnKey) { turnKey = key; turnStartTs = Date.now(); }
   const f = () => {
     const el = $('tmr'); if (!el) return;
-    const s = Math.max(0, Math.ceil((S.timerEnd - Date.now()) / 1000));
+    const s = S.timerEnd
+      ? Math.max(0, Math.ceil((S.timerEnd - Date.now()) / 1000))
+      : Math.max(0, Math.floor((Date.now() - turnStartTs) / 1000));
     el.textContent = '⏱ ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
   };
   f(); tick = setInterval(f, 500);
@@ -1074,10 +1080,15 @@ const SFX = {
 };
 let lastLogLen = 0, wasMyTurn = false;
 function soundAndTitle(){
-  // sounds for new log events
-  if (S.log.length > lastLogLen && lastLogLen > 0) {
-    for (const e of S.log.slice(lastLogLen)) {
-      if (e.type === 'clue') SFX.clue();
+  // sounds for new log events (the server resets the log when a game starts,
+  // so a shrunken log means "new game" — process it from the top)
+  let freshFrom = null;
+  if (S.log.length < lastLogLen) freshFrom = 0;
+  else if (S.log.length > lastLogLen && lastLogLen > 0) freshFrom = lastLogLen;
+  if (freshFrom !== null) {
+    for (const e of S.log.slice(freshFrom)) {
+      if (e.type === 'start') ANNOUNCER.onStart();
+      else if (e.type === 'clue') SFX.clue();
       else if (e.type === 'guess') {
         const who = esc(e.name);
         if (e.color === 'assassin') { SFX.boom(); toast('💀 ' + who + ' hit the assassin!', 'bad'); }
@@ -1141,45 +1152,54 @@ const ANNOUNCER = (() => {
   let enabled = true;
   try { enabled = localStorage.getItem('ws_announcer') !== 'off'; } catch(e){}
 
-  // ---- phrase parts (combinatorial: openers × lines × tails = 1000s of combos) ----
-  const YAY   = ['Ooh','Yes','Boom','Wow','Get in','Oh yes','Bang','Yesss','Woo','Let\'s go','Ayy','Sheesh','Ooooh','That\'s it'];
-  const PRAISE= ['well done','nice one','what a pick','you got it','spot on','brilliant','too easy for you','clever clever','sharp as ever','absolutely nailed it','big brain move','pure class','mind reader alert','you saw right through that clue','the spymaster loves you right now'];
-  const TAIL  = ['!','! Keep going!','! Love that!','! More, more, more!','! Easy!','! ha ha!','! On a roll!','! The crowd goes wild!','! Don\'t stop now!',''];
-  const SMART2= ["you're ON FIRE",'you are so smart, ha ha','two in a row, genius!',"you're cooking now",'big brain time','they simply cannot stop you','unstoppable, ha ha','okay okay, show off','smarty pants strikes again','you are carrying this team','again?! incredible','double trouble, baby!','the streak is ALIVE','someone check this player for superpowers'];
-  const SMART3= ['THREE in a row! Are you cheating? ha ha','you are an absolute MACHINE','totally, completely unstoppable','someone stop this player, PLEASE','galaxy brain over here','that is a HAT TRICK! Take a bow','is there anything you cannot guess?!','you are way too smart for this game, ha ha','legend. Absolute legend','the streak continues! UNBELIEVABLE','GOAT alert! GOAT alert!','this is getting ridiculous, ha ha'];
-  const OOPS  = ['Oops','Oh no','Yikes','Ouch','Oof','Uh oh','Nooo','Oh dear','Ha!','Oh my','Womp womp','Hold on'];
-  const BAD   = ['that was so bad, ha ha','what WAS that?!','terrible. Just terrible, ha ha','even my grandma knew that one','so close, yet so far','that word was NOT it','we do not talk about that pick','back to school, ha ha','nice try... I guess','the words are laughing at you','your team saw that, you know','bold choice. Wrong, but bold','the spymaster is crying right now','I felt that from here','delete that from everyone\'s memory'];
-  const DOOM  = ['you found the ASSASSIN! Game over, ha ha','you just lost the WHOLE game!','NOO, not that one! That was the ONE word to avoid!','the forbidden word! OUCH!','straight into the trap. Legendary, ha ha','of ALL the words on the board... that one?!'];
-  const WINNY = ['takes the crown! What a game!','wins it! Give them the trophy!','are the champions! Incredible stuff!','win! Somebody call the news!','take the victory! Rematch, anyone?'];
+  // ---- phrase parts (mix-and-match: short, punchy lines) ----
+  const YAY   = ['Ooh','Yes','Boom','Wow','Get in','Oh yes','Bang','Yesss','Woo','Let\'s go','Ayy','Sheesh'];
+  const PRAISE= ['well done','nice one','you got it','spot on','brilliant','what a pick','big brain','pure class','clever','sharp','nailed it','too easy'];
+  const SMART2= ["you're on fire!",'two in a row!','so smart!','unstoppable!','okay, show off!','again?! wow!',"you're cooking!",'genius!','double trouble!'];
+  const SMART3= ['THREE in a row!','absolute machine!','hat trick! Take a bow!','too smart for this game!','legend!','someone stop this player!','galaxy brain!','unbelievable!'];
+  const OOPS  = ['Oops','Oh no','Yikes','Ouch','Oof','Uh oh','Nooo','Oh dear','Womp womp'];
+  const BAD   = ['that was bad!','not it!','so wrong!','terrible pick!','the spymaster is crying!','back to school!','what was that?!','oh dear!','bold... but wrong!','not your best!'];
+  const DOOM  = ['the assassin! Game over!','you lost the whole game!','NO! Not that word!','straight into the trap!','the forbidden word!'];
+  const WINNY = ['takes the win!','are the champions!','wins it! Rematch?','takes the crown!','did it! What a game!'];
+  const OPENING = [
+    "Guys, the game is starting! Be ready... and no talking on the other team's turn!",
+    'Here we go! Good luck, spies!',
+    'Game on! Quiet during the enemy turn, please!',
+    'New game! Eyes on the board, everyone!',
+    'Starting now! May the best team win!',
+    'Ready up! And remember... no cheating!',
+    "Let's play! Spymasters, keep that poker face!"
+  ];
 
   const line = {
-    correct: n => `${R(YAY)}, ${n}! ${R(PRAISE)}${R(TAIL)}`,
-    streak2: n => `${n}, ${R(SMART2)}!`,
+    correct: n => `${R(YAY)}, ${n}! ${R(PRAISE)}!`,
+    streak2: n => `${n}, ${R(SMART2)}`,
     streak3: n => `${n}! ${R(SMART3)}`,
     wrong:   n => `${R(OOPS)}, ${n}... ${R(BAD)}`,
     assassin:n => `${n}... ${R(DOOM)}`,
-    win:     t => `${t} team ${R(WINNY)}`
+    win:     t => `${t} team ${R(WINNY)}`,
+    opening: () => R(OPENING)
   };
 
-  // ---- speech ----
-  let voice = null;
-  function pickVoice(){
+  // ---- speech: a RANDOM English voice each line (male/female/accents) ----
+  let voicePool = [];
+  function loadVoices(){
     if (!supported) return;
-    const vs = speechSynthesis.getVoices();
-    voice = vs.find(v => /Google UK English Female/i.test(v.name))
-         || vs.find(v => /en[-_]GB/i.test(v.lang) && /female|Google/i.test(v.name))
-         || vs.find(v => /en[-_](GB|US)/i.test(v.lang))
-         || vs.find(v => /^en/i.test(v.lang)) || null;
+    const all = speechSynthesis.getVoices();
+    voicePool = all.filter(v => /^en[-_]/i.test(v.lang));
+    if (!voicePool.length) voicePool = all;
   }
-  if (supported) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  if (supported) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 
   function speak(text){
     if (!supported || !enabled) return;
     try {
       speechSynthesis.cancel(); // never queue up a backlog
       const u = new SpeechSynthesisUtterance(text);
-      if (voice) u.voice = voice;
-      u.rate = 1.06; u.pitch = 1.05; u.volume = 1;
+      if (voicePool.length) u.voice = R(voicePool);
+      u.rate = .98 + Math.random() * .17;   // a bit of natural variation
+      u.pitch = .85 + Math.random() * .4;
+      u.volume = 1;
       speechSynthesis.speak(u);
     } catch(e){}
   }
@@ -1209,6 +1229,10 @@ const ANNOUNCER = (() => {
     if (e.reason === 'assassin') return; // the assassin line already tells the story
     speak(line.win(e.team === 'red' ? 'Red' : 'Blue'));
   }
+  function onStart(){
+    for (const k in streaks) streaks[k] = 0;
+    speak(line.opening());
+  }
 
   // ---- toggle button ----
   const btn = $('voiceBtn');
@@ -1224,7 +1248,7 @@ const ANNOUNCER = (() => {
   paint();
   if (!supported && btn) btn.style.display = 'none';
 
-  return { onGuess, onGameOver, speak, line, isEnabled: () => enabled };
+  return { onGuess, onGameOver, onStart, speak, line, isEnabled: () => enabled };
 })();
 
 // ---------- VOICE TEST PANEL (?voicetest=1): try every announcer line ----------
@@ -1241,6 +1265,7 @@ if (new URLSearchParams(location.search).get('voicetest')) {
       <button class="helpbtn" data-vt="wrong">❌ Wrong</button>
       <button class="helpbtn" data-vt="assassin">💀 Assassin</button>
       <button class="helpbtn" data-vt="win">🏆 Win</button>
+      <button class="helpbtn" data-vt="opening">🎬 Game start</button>
     </div>
     <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:8px">Tap again for a different random line. Uses your device's voice.</div>`;
   document.body.appendChild(p);
