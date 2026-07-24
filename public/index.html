@@ -1070,12 +1070,47 @@ function beep(freq, dur, type, delay, vol){
     o.start(t); o.stop(t + dur + .02);
   } catch(e){}
 }
+// applause: a flurry of short filtered-noise bursts (sounds like clapping)
+function applause(){
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = AC.currentTime;
+    for (let i = 0; i < 26; i++){
+      const t = t0 + Math.random() * .9;
+      const dur = .02 + Math.random() * .02;
+      const buf = AC.createBuffer(1, AC.sampleRate * dur, AC.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / d.length);
+      const src = AC.createBufferSource(); src.buffer = buf;
+      const bp = AC.createBiquadFilter(); bp.type = 'bandpass';
+      bp.frequency.value = 1200 + Math.random() * 1800; bp.Q.value = 1;
+      const g = AC.createGain(); g.gain.value = .10 + Math.random() * .10;
+      src.connect(bp); bp.connect(g); g.connect(AC.destination);
+      src.start(t);
+    }
+  } catch(e){}
+}
+// fail: a sad "wah-wah" slide down
+function failSound(){
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(380, t);
+    o.frequency.exponentialRampToValueAtTime(140, t + .55);
+    g.gain.setValueAtTime(.09, t);
+    g.gain.exponentialRampToValueAtTime(.0001, t + .6);
+    o.connect(g); g.connect(AC.destination);
+    o.start(t); o.stop(t + .65);
+  } catch(e){}
+}
 const SFX = {
   clue(){ beep(880,.14); beep(1175,.16,'sine',.1); },
-  good(){ beep(660,.1); beep(990,.14,'sine',.09); },
-  bad(){ beep(170,.22,'square',0,.08); },
+  good(){ applause(); },
+  bad(){ failSound(); },
   boom(){ beep(120,.5,'sawtooth',0,.14); beep(80,.6,'sawtooth',.1,.12); },
-  win(){ [523,659,784,1047].forEach((f,i)=>beep(f,.18,'sine',i*.12)); },
+  win(){ applause(); [523,659,784,1047].forEach((f,i)=>beep(f,.18,'sine',i*.12)); },
   turn(){ beep(740,.12); }
 };
 let lastLogLen = 0, wasMyTurn = false;
@@ -1181,13 +1216,16 @@ const ANNOUNCER = (() => {
     opening: () => R(OPENING)
   };
 
-  // ---- speech: a RANDOM English voice each line (male/female/accents) ----
-  let voicePool = [];
+  // ---- speech: ONE consistent voice — the best natural English voice available ----
+  let voice = null;
   function loadVoices(){
     if (!supported) return;
-    const all = speechSynthesis.getVoices();
-    voicePool = all.filter(v => /^en[-_]/i.test(v.lang));
-    if (!voicePool.length) voicePool = all;
+    const vs = speechSynthesis.getVoices();
+    voice = vs.find(v => /Google UK English Female/i.test(v.name))
+         || vs.find(v => /Google US English/i.test(v.name))
+         || vs.find(v => /Samantha|Daniel/i.test(v.name))          // best iOS/macOS voices
+         || vs.find(v => /en[-_]GB/i.test(v.lang))
+         || vs.find(v => /^en[-_]/i.test(v.lang)) || null;
   }
   if (supported) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 
@@ -1196,10 +1234,8 @@ const ANNOUNCER = (() => {
     try {
       speechSynthesis.cancel(); // never queue up a backlog
       const u = new SpeechSynthesisUtterance(text);
-      if (voicePool.length) u.voice = R(voicePool);
-      u.rate = .98 + Math.random() * .17;   // a bit of natural variation
-      u.pitch = .85 + Math.random() * .4;
-      u.volume = 1;
+      if (voice) u.voice = voice;
+      u.rate = 1.05; u.pitch = 1.02; u.volume = 1;
       speechSynthesis.speak(u);
     } catch(e){}
   }
@@ -1242,8 +1278,8 @@ const ANNOUNCER = (() => {
     try { localStorage.setItem('ws_announcer', enabled ? 'on' : 'off'); } catch(e){}
     if (!enabled && supported) speechSynthesis.cancel();
     paint();
-    toast(enabled ? '📢 Announcer on — I\'ll hype the guesses!' : '🔇 Announcer muted');
-    if (enabled) speak('Announcer on! Let\'s go!');
+    toast(enabled ? '📢 Announcer on' : '🔇 Announcer muted');
+    if (enabled) speak('Guys, silence... let\'s play!');
   };
   paint();
   if (!supported && btn) btn.style.display = 'none';
