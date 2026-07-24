@@ -47,6 +47,22 @@ app.use(express.static(path.join(__dirname, 'public'), {
 }));
 app.get('/healthz', (req, res) => res.send('ok'));
 
+// Is this invite link still good? Lets the page tell "expired" from "live"
+// before it tries to seat anyone. The code is already in the visitor's URL,
+// so this leaks nothing — and it deliberately never exposes the watch code.
+app.get('/api/room/:code', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const code = String(req.params.code || '').trim().toUpperCase();
+  const r = rooms.get(code);
+  if (!r) return res.json({ exists: false });
+  res.json({
+    exists: true,
+    state: r.state,
+    players: r.players.size,
+    started: r.state !== 'lobby'
+  });
+});
+
 const blog = require('./blog');
 app.get('/blog', (req, res) => res.type('html').send(blog.indexPage()));
 app.get('/blog/:slug', (req, res) => {
@@ -89,6 +105,11 @@ if (process.env.REDIS_URL) {
 // fails to load, the game itself keeps running untouched.
 let social = null;
 try { social = require('./social').mount(app, redis) || null; } catch (e) { console.error('social module failed to load (game unaffected):', e.message); }
+
+// 🧪 Unlocks the test hatch: /play?test=<this>. Lives here rather than in the
+// client bundle so it isn't discoverable by reading the page source. Set
+// TEST_KEY in the environment to rotate it, or to '' to disable the hatch.
+const TEST_KEY = process.env.TEST_KEY !== undefined ? process.env.TEST_KEY : 'sq7-bench';
 
 const ROOM_TTL_MS = 1000 * 60 * 60 * 6; // clean up rooms idle for 6 hours
 const saveTimers = new Map();
@@ -187,10 +208,14 @@ function createBoard(categories) {
   const words = shuffle(pool).slice(0, 25);
   const startingTeam = Math.random() < 0.5 ? 'red' : 'blue';
   const otherTeam = startingTeam === 'red' ? 'blue' : 'red';
+  // Both teams get the same number of cards — 8 each. (Classic Codenames gives
+  // the first team 9 as a handicap for going first; an even board is simply
+  // easier to read and feels fairer at the table.) The freed card becomes a
+  // neutral, so the 25 still add up: 8 + 8 + 8 + 1 assassin.
   const colors = shuffle([
-    ...Array(9).fill(startingTeam),
+    ...Array(8).fill(startingTeam),
     ...Array(8).fill(otherTeam),
-    ...Array(7).fill('neutral'),
+    ...Array(8).fill('neutral'),
     'assassin'
   ]);
   return {
@@ -250,7 +275,8 @@ function publicState(room, forPlayer) {
     settings: room.settings,
     catalog: CATALOG,
     players: [...room.players.values()].map(p => ({
-      id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar, avatarSeed: p.avatarSeed, watcher: !!p.watcher
+      id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar, avatarSeed: p.avatarSeed, watcher: !!p.watcher,
+      photo: p.photo || null, verified: !!p.socUid
     })),
     board: room.board ? {
       startingTeam: room.board.startingTeam,
@@ -344,53 +370,103 @@ function startGame(room) {
 // credited to their profile. Server-side lookup, so it can't be spoofed.
 async function resolveSocialUid(socket) {
   try {
-    if (!redis) return null;
     const m = String(socket.handshake.headers.cookie || '').match(/(?:^|;\s*)soc_sess=([a-f0-9]{48})/);
     if (!m) return null;
+    // Ask the social module — it owns the session store and knows whether that's
+    // redis or its in-memory fallback. Reading redis directly here would return
+    // null on any redis-less deploy even though the person is properly logged in.
+    if (social && social.uidBySession) return await social.uidBySession(m[1]);
+    if (!redis) return null;
     return await redis.get('soc:sess:' + m[1]);
   } catch (e) { return null; }
+}
+
+// Cookie → { uid, name, photo }. Everything a logged-in player needs to be
+// seated without typing anything. Resolves to null for guests, and guests
+// must keep working — playing without an account is the whole pitch.
+async function resolveSocialIdentity(socket) {
+  const uid = await resolveSocialUid(socket);
+  if (!uid) return null;
+  let profile = null;
+  if (social && social.profileByUid) {
+    try { profile = await social.profileByUid(uid); } catch (e) { console.error('identity:', e.message); }
+  }
+  return { uid, name: (profile && profile.name) || null, photo: (profile && profile.photo) || null };
 }
 
 io.on('connection', (socket) => {
   let room = null;
   let player = null;
   socket.socUid = null;
-  resolveSocialUid(socket).then(uid => { socket.socUid = uid || null; }).catch(() => {});
+  socket.socProfile = null;
+  // Hold the promise, not just the result. Auto-join fires the instant the
+  // socket connects, so a handler that read socket.socUid directly would race
+  // this lookup and silently seat a logged-in player as an anonymous guest —
+  // their win would then never be credited. Handlers await this instead.
+  socket.socReady = resolveSocialIdentity(socket)
+    .then(idn => {
+      socket.socUid = idn ? idn.uid : null;
+      socket.socProfile = idn;
+      return idn;
+    })
+    .catch(() => null);
 
-  const guard = (fn) => (...args) => {
-    try { fn(...args); } catch (err) { console.error(err); }
+  const guard = (fn) => async (...args) => {
+    try { await fn(...args); } catch (err) { console.error(err); }
   };
 
-  socket.on('create', guard(({ name }) => {
-    if (room) return;
-    name = String(name || '').trim().slice(0, 20) || 'Player';
-    room = createRoom(name);
-    player = { id: socket.id, name, team: null, role: 'operative', connected: true, avatar: pickAvatar(room), token: crypto.randomUUID(), socUid: socket.socUid };
-    room.hostId = socket.id;
-    room.players.set(socket.id, player);
-    socket.join(room.code);
-    socket.emit('session', { code: room.code, token: player.token, name: player.name });
-    addLog(room, { type: 'join', name });
-    broadcast(room);
+  // `room` is only assigned after an await, so two rapid create/join events
+  // could both pass the `if (room)` check. This closes that window.
+  let entering = false;
+
+  socket.on('create', guard(async ({ name }) => {
+    if (room || entering) return;
+    entering = true;
+    try {
+      const idn = await socket.socReady;
+      // No name typed (auto-join from a link) → use the profile name.
+      name = String(name || '').trim().slice(0, 20) || (idn && idn.name) || 'Player';
+      room = createRoom(name);
+      player = {
+        id: socket.id, name, team: null, role: 'operative', connected: true,
+        avatar: pickAvatar(room), token: crypto.randomUUID(),
+        socUid: idn ? idn.uid : null, photo: idn ? idn.photo : null
+      };
+      room.hostId = socket.id;
+      room.players.set(socket.id, player);
+      socket.join(room.code);
+      socket.emit('session', { code: room.code, token: player.token, name: player.name });
+      addLog(room, { type: 'join', name });
+      broadcast(room);
+    } finally { entering = false; }
   }));
 
-  socket.on('join', guard(({ code, name }) => {
-    if (room) return;
-    code = String(code || '').trim().toUpperCase();
-    const r = rooms.get(code);
-    if (!r) { socket.emit('errorMsg', 'Room not found. Check the code and try again.'); return; }
-    name = String(name || '').trim().slice(0, 20) || 'Player';
-    // avoid duplicate names
-    const names = new Set([...r.players.values()].map(p => p.name));
-    let finalName = name; let n = 2;
-    while (names.has(finalName)) finalName = `${name} ${n++}`;
-    room = r;
-    player = { id: socket.id, name: finalName, team: null, role: 'operative', connected: true, avatar: pickAvatar(room), token: crypto.randomUUID(), socUid: socket.socUid };
-    room.players.set(socket.id, player);
-    socket.join(room.code);
-    socket.emit('session', { code: room.code, token: player.token, name: player.name });
-    addLog(room, { type: 'join', name: finalName });
-    broadcast(room);
+  socket.on('join', guard(async ({ code, name }) => {
+    if (room || entering) return;
+    entering = true;
+    try {
+      code = String(code || '').trim().toUpperCase();
+      const r = rooms.get(code);
+      if (!r) { socket.emit('errorMsg', 'Room not found. Check the code and try again.'); return; }
+      const idn = await socket.socReady;
+      if (!rooms.has(code)) { socket.emit('errorMsg', 'Room not found. Check the code and try again.'); return; }
+      name = String(name || '').trim().slice(0, 20) || (idn && idn.name) || 'Player';
+      // avoid duplicate names
+      const names = new Set([...r.players.values()].map(p => p.name));
+      let finalName = name; let n = 2;
+      while (names.has(finalName)) finalName = `${name} ${n++}`;
+      room = r;
+      player = {
+        id: socket.id, name: finalName, team: null, role: 'operative', connected: true,
+        avatar: pickAvatar(room), token: crypto.randomUUID(),
+        socUid: idn ? idn.uid : null, photo: idn ? idn.photo : null
+      };
+      room.players.set(socket.id, player);
+      socket.join(room.code);
+      socket.emit('session', { code: room.code, token: player.token, name: player.name });
+      addLog(room, { type: 'join', name: finalName });
+      broadcast(room);
+    } finally { entering = false; }
   }));
 
   // Watch-only entry: a secret link (?watch=Wxxxxxxxx) that shows the match
@@ -408,18 +484,24 @@ io.on('connection', (socket) => {
     broadcast(room);
   }));
 
-  socket.on('rejoin', guard(({ code, token }) => {
-    if (room) return;
+  socket.on('rejoin', guard(async ({ code, token }) => {
+    if (room || entering) return;
     code = String(code || '').trim().toUpperCase();
     const r = rooms.get(code);
     if (!r) { socket.emit('sessionExpired'); return; }
     const entry = [...r.players.entries()].find(([, p]) => p.token === token);
     if (!entry) { socket.emit('sessionExpired'); return; }
+    const idn = await socket.socReady;
+    if (room) return;                       // a join landed while we were waiting
     const [oldId, p] = entry;
     r.players.delete(oldId);
     p.id = socket.id;
     p.connected = true;
-    if (!p.socUid && socket.socUid) p.socUid = socket.socUid;
+    // Someone who logged in mid-session gets credited from here on.
+    if (idn) {
+      if (!p.socUid) p.socUid = idn.uid;
+      if (!p.photo && idn.photo) p.photo = idn.photo;
+    }
     r.players.set(socket.id, p);
     if (r.hostId === oldId) r.hostId = socket.id;
     room = r; player = p;
@@ -455,6 +537,63 @@ io.on('connection', (socket) => {
     }
     player.team = team;
     player.role = role;
+    broadcast(room);
+  }));
+
+  // ---- 🧪 test hatch ----------------------------------------------------
+  // Fills a room with dummy players and can force a result, so the wheel and
+  // the win→profile loop can be exercised on the live site without rounding up
+  // three friends. Gated on a key that only appears server-side: without it,
+  // anyone could inflate their own win count.
+  socket.on('testFill', guard(({ key }) => {
+    if (!TEST_KEY || key !== TEST_KEY || !room || socket.id !== room.hostId) return;
+    if (room.state !== 'lobby') return;
+    room.test = true;
+    for (const nm of ['Robo', 'Pixel', 'Widget']) {
+      if ([...room.players.values()].some(p => p.name === nm)) continue;
+      const id = 'bot_' + crypto.randomUUID().slice(0, 8);
+      room.players.set(id, {
+        id, name: nm, team: null, role: 'operative', connected: true,
+        avatar: pickAvatar(room), token: crypto.randomUUID(), bot: true,
+        socUid: null, photo: null
+      });
+      addLog(room, { type: 'join', name: nm });
+    }
+    broadcast(room);
+  }));
+
+  socket.on('testWin', guard(({ key, team }) => {
+    if (!TEST_KEY || key !== TEST_KEY || !room || !room.test || socket.id !== room.hostId) return;
+    if (!['red', 'blue'].includes(team) || room.state !== 'playing') return;
+    // Goes through the normal ending, so profiles are credited exactly as they
+    // would be in a real game — that's the whole point of testing it here.
+    endGame(room, team, 'allfound');
+    broadcast(room);
+  }));
+
+  // 🎡 Spin the wheel: the host shuffles everyone into teams at random, so
+  // nobody has to negotiate who plays with whom. Lobby only — re-dealing seats
+  // mid-game would hand the board's colors to the wrong people.
+  socket.on('spinTeams', guard(() => {
+    if (!room || socket.id !== room.hostId) return;
+    if (room.state !== 'lobby') { socket.emit('errorMsg', 'You can only spin for teams before the game starts.'); return; }
+    // 👁 Watchers are never dealt in — they asked to watch.
+    const pool = shuffle([...room.players.values()].filter(p => !p.watcher));
+    if (pool.length < 2) { socket.emit('errorMsg', 'You need at least 2 players to spin for teams.'); return; }
+
+    // Deal alternately rather than splitting the list in half: that's what
+    // guarantees the two teams can never differ by more than one player.
+    pool.forEach((p, i) => {
+      p.team = i % 2 === 0 ? 'red' : 'blue';
+      // First one dealt to each side takes the spymaster seat.
+      p.role = i < 2 ? 'spymaster' : 'operative';
+    });
+
+    addLog(room, { type: 'spin' });
+    // The client animates a wheel over this order, then reveals the new lobby.
+    io.to(room.code).emit('teamsSpun', {
+      order: pool.map(p => ({ id: p.id, name: p.name, team: p.team, role: p.role }))
+    });
     broadcast(room);
   }));
 
