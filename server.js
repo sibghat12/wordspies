@@ -388,9 +388,12 @@ io.on('connection', (socket) => {
       const taken = [...room.players.values()].some(p => p !== player && p.team === team && p.role === 'spymaster');
       if (taken) { socket.emit('errorMsg', 'That team already has a spymaster.'); return; }
     }
-    // Can't switch teams during a game
-    if (room.state === 'playing' && player.team && player.team !== team) {
-      socket.emit('errorMsg', 'You can\'t switch teams during a game.');
+    // 🔒 Teams are locked while a round is on: nobody switches teams, and
+    // people who arrive mid-game stay spectators until the round ends.
+    if (room.state === 'playing' && player.team !== team) {
+      socket.emit('errorMsg', player.team
+        ? 'You can\'t switch teams during a game.'
+        : '🔒 The game is locked while a round is on — watch along and join when it ends!');
       return;
     }
     // No new spymasters mid-game: the original spymaster saw the colors and can
@@ -401,6 +404,18 @@ io.on('connection', (socket) => {
     }
     player.team = team;
     player.role = role;
+    broadcast(room);
+  }));
+
+  // Host moderation: only the party creator can remove someone from their
+  // seat — spymaster or team — sending them back to the spectator bench.
+  socket.on('kick', guard(({ playerId }) => {
+    if (!room || socket.id !== room.hostId) return;
+    const target = room.players.get(String(playerId || ''));
+    if (!target || target.id === room.hostId || !target.team) return;
+    target.team = null;
+    target.role = 'operative';
+    addLog(room, { type: 'kick', name: target.name });
     broadcast(room);
   }));
 
