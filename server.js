@@ -85,6 +85,10 @@ if (process.env.REDIS_URL) {
   } catch (e) { console.error('redis init failed:', e.message); redis = null; }
 }
 
+// WordSpies Social (community pages) — fully isolated module; if it ever
+// fails to load, the game itself keeps running untouched.
+try { require('./social').mount(app, redis); } catch (e) { console.error('social module failed to load (game unaffected):', e.message); }
+
 const ROOM_TTL_MS = 1000 * 60 * 60 * 6; // clean up rooms idle for 6 hours
 const saveTimers = new Map();
 function saveRoom(room) {
