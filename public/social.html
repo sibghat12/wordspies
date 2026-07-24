@@ -243,7 +243,7 @@ $('authGo').onclick = async () => {
       const j = await api(mode === 'signup' ? '/signup' : '/login', {
         method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
       });
-      ME = j.me; enterApp();
+      ME = j.me; enterApp(mode === 'signup');
     }
   } catch(e){ $('authErr').style.color = 'var(--err)'; $('authErr').textContent = e.message; }
   $('authGo').disabled = false;
@@ -257,10 +257,19 @@ const avatarHtml = (u, size, cls) => u.photo
   ? `<img class="av ${cls||''}" style="width:${size}px;height:${size}px" src="${esc(u.photo)}">`
   : `<span class="avph ${cls||''}" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px">${esc((u.name||'?')[0].toUpperCase())}</span>`;
 
-function enterApp(){
+function enterApp(justJoined){
   $('vAuth').classList.add('hidden');
   $('vApp').classList.remove('hidden');
-  paintMe(); loadMembers(); showTab('wall');
+  paintMe(); loadMembers();
+  if (justJoined && !ME.bio) {
+    // fresh member: take them straight to "tell us about you"
+    showTab('me');
+    toast('👋 Welcome, ' + ME.name + '! Tell us a bit about you');
+    if (!$('fLoc').value) {
+      api('/geo').then(j => { if (j.suggestion && !$('fLoc').value) $('fLoc').value = j.suggestion; }).catch(()=>{});
+    }
+    $('fBio').focus();
+  } else showTab('wall');
 }
 function paintMe(){
   $('meAvSmall').innerHTML = avatarHtml(ME, 34);
@@ -345,11 +354,11 @@ async function setupGoogle(){
         try {
           const j = await api('/google', { method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({ credential: resp.credential }) });
-          ME = j.me; enterApp();
+          ME = j.me; enterApp(true);
         } catch(e){ $('authErr').textContent = e.message; }
       }
     });
-    google.accounts.id.renderButton($('gBtn'), { theme:'outline', size:'large', shape:'pill', width: 320 });
+    google.accounts.id.renderButton($('gBtn'), { theme:'outline', size:'large', shape:'pill', text:'continue_with', logo_alignment:'left', width: 320 });
     // two clean choices first; the email form appears only when chosen
     $('chooser').classList.remove('hidden');
     $('emailForm').classList.add('hidden');
