@@ -543,6 +543,105 @@ function mount(app, redis) {
   // ---- chat (direct messages, text or GIF) ----
   const cid = (a, b) => [a, b].sort().join(':');
 
+  // ---- 👥 invite friends -------------------------------------------------
+  // The people you can pull into a game: anyone you follow, anyone who follows
+  // you, and anyone you've ever chatted with. That last group matters — you
+  // often play with someone before either of you gets round to following.
+  async function inviteCircle(meId) {
+    const ids = new Set();
+    for (const key of ['soc:following:', 'soc:followers:', 'soc:convos:']) {
+      for (const id of await db.smembers(key + meId)) if (id !== meId) ids.add(id);
+    }
+    return ids;
+  }
+
+  api.get('/people', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const [following, followers, convos] = await Promise.all([
+        db.smembers('soc:following:' + me.id),
+        db.smembers('soc:followers:' + me.id),
+        db.smembers('soc:convos:' + me.id)
+      ]);
+      const fset = new Set(following), rset = new Set(followers), cset = new Set(convos);
+      const ids = [...new Set([...following, ...followers, ...convos])].filter(id => id !== me.id);
+
+      const out = [];
+      for (const id of ids.slice(0, 300)) {
+        const raw = await db.get('soc:user:' + id);
+        if (!raw) continue;                       // deleted account — skip quietly
+        const u = JSON.parse(raw);
+        // When we last spoke, so recent chats float to the top of the list
+        let lastAt = 0;
+        if (cset.has(id)) {
+          const last = await db.lrange('soc:msgs:' + cid(me.id, id), -1, -1);
+          if (last.length) { try { lastAt = JSON.parse(last[0]).t || 0; } catch (e) {} }
+        }
+        out.push({
+          id: u.id, name: u.name, photo: u.photo || null, cc: u.cc || '',
+          verified: isVerified(u),
+          online: await db.exists('soc:online:' + u.id),
+          // what they are to you — the panel shows this under the name
+          rel: fset.has(id) && rset.has(id) ? 'friend'
+             : rset.has(id) ? 'follows you'
+             : fset.has(id) ? 'you follow'
+             : 'chatted',
+          lastAt
+        });
+      }
+      // Online first, then whoever you spoke to most recently, then A–Z.
+      out.sort((a, b) =>
+        (b.online ? 1 : 0) - (a.online ? 1 : 0) ||
+        b.lastAt - a.lastAt ||
+        a.name.localeCompare(b.name));
+      res.json({ people: out });
+    } catch (e) { console.error('social people:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // Drop the invite link into each person's chat. In-app only — no email, so
+  // inviting eight people costs them nothing but a message they'll see next
+  // time they open the app. The chat renders /play?room=CODE as a Join button
+  // already, so the text doubles as a one-tap entry into the game.
+  api.post('/invite', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (limited(req, 'invite', 12)) return res.status(429).json({ error: 'Slow down a little ✋' });
+
+      const body = req.body || {};
+      const code = String(body.code || '').toUpperCase();
+      if (!/^[A-Z0-9]{4}$/.test(code)) return res.status(400).json({ error: 'No game to invite to.' });
+      const ids = [...new Set((Array.isArray(body.ids) ? body.ids : []).map(String))].slice(0, 20);
+      if (!ids.length) return res.status(400).json({ error: 'Pick someone first.' });
+
+      // You can only invite your own circle. Without this the endpoint would be
+      // a way to message any member on the site, follow or no follow.
+      const circle = await inviteCircle(me.id);
+      // Build the link from the request itself, so it's right behind the proxy
+      // in production and still works when running locally on another port.
+      const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https').split(',')[0].trim();
+      const host = String(req.headers['x-forwarded-host'] || req.headers.host || 'wordspies.co.uk').split(',')[0].trim();
+      const link = proto + '://' + host + '/play?room=' + code;
+      const sent = [];
+
+      for (const to of ids) {
+        if (!circle.has(to)) continue;
+        const raw = await db.get('soc:user:' + to);
+        if (!raw) continue;
+        const msg = { f: me.id, k: 'text', x: '🎮 Come play WordSpies with me! ' + link, t: Date.now() };
+        const key = 'soc:msgs:' + cid(me.id, to);
+        await db.rpush(key, JSON.stringify(msg));
+        await db.ltrim(key, -500, -1);
+        await db.sadd('soc:convos:' + me.id, to);
+        await db.sadd('soc:convos:' + to, me.id);
+        await db.incr('soc:unread:' + to + ':' + me.id);
+        sent.push(to);
+      }
+      res.json({ ok: true, sent: sent.length, ids: sent });
+    } catch (e) { console.error('social invite:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
   api.post('/message', async (req, res) => {
     try {
       const me = await userFromReq(req);
