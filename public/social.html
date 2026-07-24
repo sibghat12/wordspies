@@ -86,6 +86,7 @@ input,textarea{font-family:inherit;outline:none}
 .ovl .onm{font-weight:800;font-size:15.5px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ovl .osub{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.82);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chip-new{position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:99px}
+.chip-vip{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#1d9bf0,#0b7fd6);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:99px;box-shadow:0 2px 8px rgba(29,155,240,.5)}
 .chip-you{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.94);color:var(--ink);font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:99px}
 .pcard .info{padding:11px 13px 13px}
 .pcard .nm{font-weight:700;font-size:14px;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -119,6 +120,7 @@ input,textarea{font-family:inherit;outline:none}
 .badge{position:absolute;top:-2px;right:-12px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px}
 @media(min-width:700px){.badge{top:-6px}}
 .dot{display:inline-block;width:9px;height:9px;background:var(--green);border-radius:50%;margin-left:6px;vertical-align:middle}
+.vtick{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#1d9bf0,#0b7fd6);color:#fff;font-size:9.5px;font-weight:800;margin-left:5px;vertical-align:middle;box-shadow:0 1px 4px rgba(29,155,240,.45);flex:none}
 .citem{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--line);background:#fff}
 .citem:hover{background:#fbfbfc}
 .cav{position:relative;display:inline-block}
@@ -175,6 +177,20 @@ input,textarea{font-family:inherit;outline:none}
 }
 @media(min-width:1200px){
   .wall{grid-template-columns:repeat(4,1fr)}
+}
+
+/* desktop: WhatsApp-style split — every chat on the left, the open one on the right */
+@media(min-width:900px){
+  .splitview{display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;align-items:start}
+  .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;position:sticky;top:74px}
+  .splitview #tabChats .head{padding:18px 20px 10px}
+  .splitview #tabChat{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;position:relative;min-height:72vh;display:flex;flex-direction:column}
+  .splitview #tabChat .chathead{position:static;border-radius:16px 16px 0 0}
+  .splitview #tabChat .back2{display:none}
+  .splitview .msgs{flex:1;padding-bottom:16px;min-height:50vh;background:var(--bg)}
+  .splitview .composer{position:sticky;bottom:12px;left:auto;transform:none;width:auto;max-width:none;margin:0 10px 10px;border-top:none;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 8px}
+  .splitview .picker{position:absolute;bottom:76px;left:12px;right:12px;width:auto;max-width:none;transform:none}
+  .citem.sel{background:#f4f5f7}
 }
 </style>
 </head>
@@ -451,10 +467,11 @@ function enterApp(justJoined){
   } else showTab('wall');
 }
 function paintMe(){
+  const tick = ME.verified ? '<span class="vtick">✓</span>' : '';
   $('meAvSmall').innerHTML = avatarHtml(ME, 34);
-  $('meName').textContent = ME.name;
+  $('meName').innerHTML = esc(ME.name) + tick;
   $('myAv').innerHTML = avatarHtml(ME, 104, 'big');
-  $('myName').textContent = ME.name;
+  $('myName').innerHTML = esc(ME.name) + tick;
   $('myGames').textContent = ME.games; $('myWins').textContent = ME.wins;
   $('myRate').textContent = winRate(ME);
   $('mySince').textContent = new Date(ME.createdAt).toLocaleDateString(undefined, {month:'short', year:'2-digit'});
@@ -471,13 +488,20 @@ function showTab(t){
   clearInterval(chatTimer); chatTimer = null;
   [['tabWall','wall'],['tabMe','me'],['tabMember','member'],['tabChats','chats'],['tabChat','chat']]
     .forEach(([id, key]) => $(id).classList.toggle('hidden', t !== key));
+  // desktop: show the chat list AND the open chat side by side
+  const split = window.innerWidth >= 900 && curChat && (t === 'chat' || t === 'chats');
+  $('vApp').classList.toggle('splitview', !!split);
+  if (split) { $('tabChats').classList.remove('hidden'); $('tabChat').classList.remove('hidden'); }
   $('tbWall').classList.toggle('on', t === 'wall');
   $('tbMe').classList.toggle('on', t === 'me');
   $('tbChats').classList.toggle('on', t === 'chats' || t === 'chat');
   $('vApp').classList.toggle('chatmode', t === 'chats' || t === 'chat');
-  $('vApp').classList.toggle('chatfull', t === 'chat');
-  if (t === 'chats') { refreshChats(); chatTimer = setInterval(refreshChats, 5000); askNotify(); }
-  if (t === 'chat') { refreshChat(true); chatTimer = setInterval(refreshChat, 3000); }
+  $('vApp').classList.toggle('chatfull', t === 'chat' && !split);
+  if (split) {
+    refreshChats(); refreshChat(true); askNotify();
+    chatTimer = setInterval(() => { refreshChat(); refreshChats(); }, 3500);
+  } else if (t === 'chats') { refreshChats(); chatTimer = setInterval(refreshChats, 5000); askNotify(); }
+  else if (t === 'chat') { refreshChat(true); chatTimer = setInterval(refreshChat, 3000); }
   window.scrollTo(0,0);
 }
 
@@ -514,10 +538,10 @@ async function refreshChats(){
     const L = (await api('/chats')).chats;
     $('chatsEmpty').classList.toggle('hidden', L.length > 0);
     $('chatList').innerHTML = L.map(c => `
-      <div class="citem" onclick="openChatWith('${c.id}')">
+      <div class="citem${c.id === curChat ? ' sel' : ''}" onclick="openChatWith('${c.id}')">
         <span class="cav">${avatarHtml(c, 46)}${c.online ? '<span class="dot cdot"></span>' : ''}</span>
         <div class="cmid">
-          <div class="cname">${esc(c.name)}</div>
+          <div class="cname">${esc(c.name)}${c.verified ? '<span class="vtick">✓</span>' : ''}</div>
           <div class="cprev">${c.last ? (c.last.f === ME.id ? 'You: ' : '') + (c.last.k === 'gif' ? '🖼 GIF' : esc(c.last.x.slice(0, 46))) : 'Say hello 👋'}</div>
         </div>
         <div class="cright">
@@ -540,7 +564,7 @@ async function refreshChat(first){
   try {
     const j = await api('/chat/' + curChat);
     $('chAv').innerHTML = avatarHtml(j.user, 38);
-    $('chName').textContent = j.user.name;
+    $('chName').innerHTML = esc(j.user.name) + (j.user.verified ? '<span class="vtick">✓</span>' : '');
     $('chState').innerHTML = j.user.online ? '<span style="color:var(--green)">● online</span>' : 'offline';
     if (j.messages.length !== lastMsgCount || j.theirRead !== lastTheirRead) {
       $('msgs').innerHTML = j.messages.map(m => {
@@ -648,9 +672,9 @@ function renderWall(){
       <div class="pw ${m.photo ? '' : 'g' + hue(m.name)}">
         ${m.photo ? `<img class="bg" src="${esc(m.photo)}" aria-hidden="true"><img class="photo" src="${esc(m.photo)}" loading="lazy">` : `<div class="nophoto">${esc(m.name[0].toUpperCase())}</div>`}
         <div class="scrim"></div>
-        ${m.id === (ME&&ME.id) ? '<span class="chip-you">YOU</span>' : (Date.now() - m.createdAt < WEEK ? '<span class="chip-new">NEW</span>' : '')}
+        ${m.id === (ME&&ME.id) ? '<span class="chip-you">YOU</span>' : (m.verified ? '<span class="chip-vip">✓ SPECIAL</span>' : (Date.now() - m.createdAt < WEEK ? '<span class="chip-new">NEW</span>' : ''))}
         <div class="ovl">
-          <div class="onm">${esc(m.name)}${m.online ? '<span class="dot"></span>' : ''}</div>
+          <div class="onm">${esc(m.name)}${m.verified ? '<span class="vtick">✓</span>' : ''}${m.online ? '<span class="dot"></span>' : ''}</div>
           <div class="osub">${countryPart}${agePart}${gamesPart}${winsPart}</div>
         </div>
       </div>
@@ -663,7 +687,7 @@ function openMember(i){
   if (ME && m.id === ME.id) { showTab('me'); return; }
   curMember = m.id;
   $('mAv').innerHTML = avatarHtml(m, 104, 'big');
-  $('mName').textContent = m.name + (m.age ? ' · ' + m.age : '');
+  $('mName').innerHTML = esc(m.name) + (m.verified ? '<span class="vtick">✓</span>' : '') + (m.age ? ' <span style="color:var(--faint);font-weight:600">· ' + m.age + '</span>' : '');
   $('mLoc').textContent = flag(m.cc) + ' ' + (m.location || m.country || 'Somewhere on Earth');
   $('mGames').textContent = m.games; $('mWins').textContent = m.wins;
   $('mRate').textContent = winRate(m);
