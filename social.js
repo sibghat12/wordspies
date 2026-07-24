@@ -270,27 +270,56 @@ function mount(app, redis) {
     } catch (e) { console.error('social google:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
-  // ---- forgot password: 6-digit code by email (needs SOC_RESEND_KEY to send) ----
+  // ---- email via Brevo (BREVO_API_KEY env) with Resend as a fallback ----
+  const BREVO_KEY = process.env.BREVO_API_KEY || null;
   const RESEND_KEY = process.env.SOC_RESEND_KEY || null;
   const MAIL_FROM = process.env.SOC_MAIL_FROM || 'WordSpies <onboarding@resend.dev>';
+  const MAIL_NAME = process.env.SOC_MAIL_NAME || 'WordSpies';
+  const MAIL_EMAIL = process.env.SOC_MAIL_EMAIL || 'sibghat726@gmail.com';
+  async function sendMail(to, subject, text) {
+    if (BREVO_KEY) {
+      const r = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({ sender: { name: MAIL_NAME, email: MAIL_EMAIL }, to: [{ email: to }], subject, textContent: text })
+      });
+      if (!r.ok) console.error('brevo:', r.status, await r.text());
+      return r.ok;
+    }
+    if (RESEND_KEY) {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: MAIL_FROM, to: [to], subject, text })
+      });
+      if (!r.ok) console.error('resend:', r.status, await r.text());
+      return r.ok;
+    }
+    return false;
+  }
+  // one notification email per person per type per hour, and only when they're away
+  async function notifyUser(uid, type, subject, text, skipIfOnline) {
+    try {
+      if (skipIfOnline && await db.exists('soc:online:' + uid)) return;
+      if (await db.exists('soc:notified:' + uid + ':' + type)) return;
+      const u = JSON.parse(await db.get('soc:user:' + uid) || 'null');
+      if (!u || !u.email) return;
+      await db.set('soc:notified:' + uid + ':' + type, '1', 3600);
+      sendMail(u.email, subject, text).catch(e => console.error('notify mail:', e.message));
+    } catch (e) { console.error('notify:', e.message); }
+  }
   api.post('/forgot', async (req, res) => {
     try {
       if (limited(req, 'fp', 4)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
       const email = String((req.body || {}).email || '').trim().toLowerCase();
       const uid = await db.get('soc:email:' + email);
       if (!uid) return res.json({ ok: true }); // don't reveal which emails exist
-      if (!RESEND_KEY) return res.status(503).json({ error: 'Password reset email isn\'t set up yet — if you signed up with this email on Google, use "Sign in with Google", or contact contact@wordspies.co.uk.' });
+      if (!BREVO_KEY && !RESEND_KEY) return res.status(503).json({ error: 'Password reset email isn\'t set up yet — if you signed up with this email on Google, use "Sign in with Google", or contact contact@wordspies.co.uk.' });
       const code = String(Math.floor(100000 + Math.random() * 900000));
       await db.set('soc:reset:' + email, bcrypt.hashSync(code, 8), 900); // 15 min
-      const mr = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: MAIL_FROM, to: [email], subject: 'Your WordSpies reset code: ' + code,
-          text: `Hi!\n\nYour WordSpies Social password reset code is: ${code}\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— WordSpies`
-        })
-      });
-      if (!mr.ok) { console.error('resend:', mr.status, await mr.text()); return res.status(502).json({ error: 'Could not send the email — try again shortly.' }); }
+      const ok = await sendMail(email, 'Your WordSpies reset code: ' + code,
+        `Hi!\n\nYour WordSpies Social password reset code is: ${code}\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— WordSpies`);
+      if (!ok) return res.status(502).json({ error: 'Could not send the email — try again shortly.' });
       res.json({ ok: true });
     } catch (e) { console.error('social forgot:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -491,8 +520,11 @@ function mount(app, redis) {
       if (!me) return res.status(401).json({ error: 'Please log in.' });
       const id = String((req.body || {}).id || '');
       if (id === me.id || !(await db.get('soc:user:' + id))) return res.status(400).json({ error: 'Bad user.' });
+      const already = await db.sismember('soc:followers:' + id, me.id);
       await db.sadd('soc:following:' + me.id, id);
       await db.sadd('soc:followers:' + id, me.id);
+      if (!already) notifyUser(id, 'follow', '🎉 ' + me.name + ' started following you on WordSpies',
+        `Hi!\n\n${me.name} just started following you on WordSpies Social.\n\nSee who's around: https://wordspies.co.uk/social\n\n— WordSpies`, false);
       res.json({ ok: true, followers: await db.scard('soc:followers:' + id) });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -528,6 +560,8 @@ function mount(app, redis) {
       await db.sadd('soc:convos:' + me.id, to);
       await db.sadd('soc:convos:' + to, me.id);
       await db.incr('soc:unread:' + to + ':' + me.id);
+      notifyUser(to, 'msg', '💬 New message from ' + me.name + ' on WordSpies',
+        `Hi!\n\n${me.name} sent you a message on WordSpies Social.\n\nRead and reply here: https://wordspies.co.uk/social\n\n— WordSpies`, true);
       res.json({ ok: true, msg });
     } catch (e) { console.error('social message:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
