@@ -15,7 +15,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button{font-family:inherit;cursor:pointer}
 input,textarea{font-family:inherit;outline:none}
 .hidden{display:none !important}
@@ -138,11 +138,14 @@ input,textarea{font-family:inherit;outline:none}
 .chname{font-weight:800;font-size:15px}
 .chstate{font-size:11px;color:var(--faint)}
 .msgs{padding:14px 16px 150px;display:flex;flex-direction:column;gap:8px;min-height:55vh}
-.mb{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-break:break-word}
+.mb{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;min-width:0}
+.chatmode .gamelink,.chatmode .sfoot{display:none}
 .mb.me{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:5px}
 .mb.them{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}
 .mb img{max-width:220px;border-radius:10px;display:block}
 .mb .mtime{font-size:9.5px;opacity:.65;margin-top:3px;text-align:right}
+.tick{margin-left:4px;font-size:10px;letter-spacing:-1px}
+.tick.seen{color:#48f09b}
 .composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:7px;padding:10px 14px;background:var(--bg);border-top:1px solid var(--line);z-index:12}
 @media(min-width:700px){.composer{bottom:0}}
 .composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:10px 16px;font-size:14px;min-width:0}
@@ -152,11 +155,6 @@ input,textarea{font-family:inherit;outline:none}
 @media(min-width:700px){.picker{bottom:66px}}
 .em{background:none;border:none;font-size:22px;padding:5px;border-radius:8px}
 .em:hover{background:#f2f3f5}
-.gifsearch{display:flex;gap:8px;margin-bottom:10px}
-.gifsearch input{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px}
-.gifsearch button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:0 12px}
-.gifgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.gifgrid img{width:100%;height:90px;object-fit:cover;border-radius:8px;cursor:pointer}
 .mbtns{display:flex;gap:10px;padding:16px 24px 0}
 .ginvite{display:block;margin-top:6px;background:var(--ink);color:#fff !important;text-decoration:none;font-weight:700;font-size:13.5px;padding:10px 14px;border-radius:12px;text-align:center}
 .mb.me .ginvite{background:rgba(255,255,255,.22)}
@@ -253,17 +251,12 @@ input,textarea{font-family:inherit;outline:none}
     </div>
     <div class="msgs" id="msgs"></div>
     <div class="composer">
-      <button class="cbtn" onclick="togglePicker('emoji')">😊</button>
-      <button class="cbtn" onclick="togglePicker('gif')">GIF</button>
+      <button class="cbtn" onclick="togglePicker()">😊</button>
       <button class="cbtn" onclick="inviteToPlay()" title="Invite to a game">🎮</button>
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
       <button class="cbtn send" onclick="sendMsg()">➤</button>
     </div>
     <div class="picker hidden" id="emojiPick"></div>
-    <div class="picker hidden" id="gifPick">
-      <div class="gifsearch"><input id="gifQ" placeholder="Search GIFs…"><button onclick="loadGifs($('gifQ').value)">🔎</button></div>
-      <div class="gifgrid" id="gifGrid"></div>
-    </div>
   </div>
 
   <!-- my profile -->
@@ -430,7 +423,6 @@ function enterApp(justJoined){
   $('vApp').classList.remove('hidden');
   paintMe(); loadMembers();
   pingLoop(); if (!window.__pingT) window.__pingT = setInterval(pingLoop, 25000);
-  api('/config').then(c => GIPHY = c.giphy).catch(()=>{});
   if (!ME.photo) {
     // a photo is required before joining the community wall
     showTab('me');
@@ -458,7 +450,7 @@ function paintMe(){
   $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
   $('myEmail').textContent = ME.location || 'Add your city below';
 }
-let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0;
+let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0, lastTheirRead = 0;
 
 function showTab(t){
   if ((t === 'wall' || t === 'chats' || t === 'chat') && ME && !ME.photo) {
@@ -471,6 +463,7 @@ function showTab(t){
   $('tbWall').classList.toggle('on', t === 'wall');
   $('tbMe').classList.toggle('on', t === 'me');
   $('tbChats').classList.toggle('on', t === 'chats' || t === 'chat');
+  $('vApp').classList.toggle('chatmode', t === 'chats' || t === 'chat');
   if (t === 'chats') { refreshChats(); chatTimer = setInterval(refreshChats, 5000); askNotify(); }
   if (t === 'chat') { refreshChat(true); chatTimer = setInterval(refreshChat, 3000); }
   window.scrollTo(0,0);
@@ -537,14 +530,20 @@ async function refreshChat(first){
     $('chAv').innerHTML = avatarHtml(j.user, 38);
     $('chName').textContent = j.user.name;
     $('chState').innerHTML = j.user.online ? '<span style="color:var(--green)">● online</span>' : 'offline';
-    if (j.messages.length !== lastMsgCount) {
-      $('msgs').innerHTML = j.messages.map(m => `
+    if (j.messages.length !== lastMsgCount || j.theirRead !== lastTheirRead) {
+      $('msgs').innerHTML = j.messages.map(m => {
+        const tick = m.f === ME.id
+          ? (m.t <= j.theirRead ? '<span class="tick seen">✓✓</span>' : '<span class="tick">✓</span>')
+          : '';
+        return `
         <div class="mb ${m.f === ME.id ? 'me' : 'them'}">
           ${msgBody(m)}
-          <div class="mtime">${fmtT(m.t)}</div>
-        </div>`).join('');
-      window.scrollTo(0, document.body.scrollHeight);
+          <div class="mtime">${fmtT(m.t)}${tick}</div>
+        </div>`;
+      }).join('');
+      if (j.messages.length !== lastMsgCount) window.scrollTo(0, document.body.scrollHeight);
       lastMsgCount = j.messages.length;
+      lastTheirRead = j.theirRead;
     }
   } catch(e){}
 }
@@ -587,33 +586,12 @@ const EMOJIS = '😀 😁 😂 🤣 😊 😍 🥰 😘 😜 🤪 🤩 🥳 😎
 function buildEmojis(){
   $('emojiPick').innerHTML = EMOJIS.map(e => `<button class="em" onclick="$('msgIn').value += '${e}';$('msgIn').focus()">${e}</button>`).join('');
 }
-function togglePicker(which){
-  const em = $('emojiPick'), gf = $('gifPick');
-  if (which === 'emoji') {
-    gf.classList.add('hidden'); em.classList.toggle('hidden');
-    if (!em.dataset.ready) { buildEmojis(); em.dataset.ready = 1; }
-  } else {
-    em.classList.add('hidden'); gf.classList.toggle('hidden');
-    if (!gf.classList.contains('hidden') && !$('gifGrid').dataset.ready) { loadGifs(''); $('gifGrid').dataset.ready = 1; }
-  }
+function togglePicker(){
+  const em = $('emojiPick');
+  em.classList.toggle('hidden');
+  if (!em.dataset.ready) { buildEmojis(); em.dataset.ready = 1; }
 }
-function hidePickers(){ $('emojiPick').classList.add('hidden'); $('gifPick').classList.add('hidden'); }
-let GIPHY = null;
-async function loadGifs(q){
-  $('gifGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:20px">Loading…</div>';
-  try {
-    const key = GIPHY || 'dc6zaTOxFJmzC';
-    const r = await fetch('https://api.giphy.com/v1/gifs/' + (q ? 'search?q=' + encodeURIComponent(q) + '&' : 'trending?') + 'limit=24&rating=pg-13&api_key=' + key);
-    const j = await r.json();
-    if (!j.data || !j.data.length) throw 0;
-    $('gifGrid').innerHTML = j.data.map(g => {
-      const pv = (g.images.fixed_width_small || g.images.fixed_width).url;
-      const full = (g.images.downsized_medium && g.images.downsized_medium.url) || g.images.fixed_width.url;
-      return `<img src="${esc(pv)}" loading="lazy" onclick="sendMsg('gif', '${esc(full)}')">`;
-    }).join('');
-  } catch(e){ $('gifGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:20px">GIF search unavailable right now 😕</div>'; }
-}
-$('gifQ').addEventListener('keydown', e => { if (e.key === 'Enter') loadGifs($('gifQ').value); });
+function hidePickers(){ $('emojiPick').classList.add('hidden'); }
 
 // ---------- follow ----------
 async function toggleFollow(){
