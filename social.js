@@ -75,9 +75,19 @@ function mount(app, redis) {
     const raw = await db.get('soc:user:' + uid);
     return raw ? JSON.parse(raw) : null;
   }
+  const calcAge = birthdate => {
+    if (!birthdate) return null;
+    const today = new Date();
+    const birth = new Date(birthdate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age > 0 && age < 150 ? age : null;
+  };
   const pub = u => ({ id: u.id, name: u.name, bio: u.bio || '', location: u.location || '',
     country: u.country || '', cc: u.cc || '',
-    photo: u.photo || null, createdAt: u.createdAt, games: u.games || 0, wins: u.wins || 0 });
+    photo: u.photo || null, createdAt: u.createdAt, games: u.games || 0, wins: u.wins || 0,
+    age: calcAge(u.birthdate), birthdate: u.birthdate || null });
 
   // ---- simple rate limit (per ip per route bucket) ----
   const hits = new Map();
@@ -106,19 +116,22 @@ function mount(app, redis) {
   api.post('/signup', async (req, res) => {
     try {
       if (limited(req, 'su', 5)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
-      let { name, email, password } = req.body || {};
+      let { name, email, password, birthdate } = req.body || {};
       name = String(name || '').trim();
       email = String(email || '').trim().toLowerCase();
       password = String(password || '');
+      birthdate = String(birthdate || '').trim();
       if (!/^[a-zA-Z0-9_ ]{3,15}$/.test(name)) return res.status(400).json({ error: 'Name: 3–15 letters, numbers or spaces.' });
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 100) return res.status(400).json({ error: 'That email doesn\'t look right.' });
       if (password.length < 6 || password.length > 100) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+      if (birthdate && !/^\d{4}-\d{2}-\d{2}$/.test(birthdate)) return res.status(400).json({ error: 'Invalid birthdate format.' });
       if (await db.get('soc:email:' + email)) return res.status(409).json({ error: 'That email is already registered — try logging in.' });
       if (await db.get('soc:uname:' + name.toLowerCase())) return res.status(409).json({ error: 'That name is taken.' });
       const id = crypto.randomBytes(9).toString('hex');
       const geo = await geoFromIp(reqIp(req));
       const user = { id, name, email, passHash: bcrypt.hashSync(password, 10), bio: '', location: geoLabel(geo),
         country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
+        birthdate: birthdate || null,
         games: 0, wins: 0, createdAt: Date.now() };
       await db.set('soc:user:' + id, JSON.stringify(user));
       await db.set('soc:email:' + email, id);
@@ -178,6 +191,7 @@ function mount(app, redis) {
         const geo = await geoFromIp(reqIp(req));
         user = { id, name, email, passHash: null, googleId: g.sub, bio: '', location: geoLabel(geo),
           country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
+          birthdate: null,
           games: 0, wins: 0, createdAt: Date.now(), fresh: true };
         await db.set('soc:user:' + id, JSON.stringify(user));
         await db.set('soc:email:' + email, id);
@@ -186,6 +200,25 @@ function mount(app, redis) {
       } else if (!user.googleId) {
         user.googleId = g.sub; // link Google to the existing email account
         await db.set('soc:user:' + user.id, JSON.stringify(user));
+      }
+      // no photo yet? import their Google profile picture automatically
+      if (!user.photo && g.picture) {
+        try {
+          const pu = String(g.picture).replace(/=s\d+(-c)?$/, '=s400-c');
+          const pr = await fetch(pu);
+          if (pr.ok) {
+            const buf = Buffer.from(await pr.arrayBuffer());
+            if (buf.length > 100 && buf.length < 3 * 1024 * 1024) {
+              const ct = pr.headers.get('content-type') || '';
+              const ext = ct.includes('png') ? 'png' : 'jpg';
+              for (const old of fs.readdirSync(PHOTO_DIR)) if (old.startsWith(user.id + '.')) fs.unlinkSync(path.join(PHOTO_DIR, old));
+              const fname = `${user.id}.${Date.now().toString(36)}.${ext}`;
+              fs.writeFileSync(path.join(PHOTO_DIR, fname), buf);
+              user.photo = '/social-photos/' + fname;
+              await db.set('soc:user:' + user.id, JSON.stringify(user));
+            }
+          }
+        } catch (e) { /* profile photo import is best-effort */ }
       }
       const token = crypto.randomBytes(24).toString('hex');
       await db.set('soc:sess:' + token, user.id, SESS_TTL);
@@ -248,6 +281,45 @@ function mount(app, redis) {
     res.json({ ok: true });
   });
 
+  api.post('/deleteAccount', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+
+      const uid = u.id;
+      const email = u.email;
+      const name = u.name;
+
+      // Delete user profile data
+      await db.del('soc:user:' + uid);
+      await db.del('soc:email:' + email);
+      await db.del('soc:uname:' + name.toLowerCase());
+      await db.srem('soc:members', uid);
+
+      // Delete photo files
+      try {
+        const photoFiles = fs.readdirSync(PHOTO_DIR);
+        for (const f of photoFiles) {
+          if (f.startsWith(uid + '.')) {
+            fs.unlinkSync(path.join(PHOTO_DIR, f));
+          }
+        }
+      } catch (e) {
+        // Ignore file deletion errors
+      }
+
+      // Clear the current session
+      const t = cookies(req).soc_sess;
+      if (t) await db.del('soc:sess:' + t);
+      clearSess(res);
+
+      res.json({ ok: true });
+    } catch (e) {
+      console.error('social deleteAccount:', e.message);
+      res.status(500).json({ error: 'Something went wrong.' });
+    }
+  });
+
   api.get('/me', async (req, res) => {
     const u = await userFromReq(req);
     // backfill country for members who joined before geo existed
@@ -267,9 +339,14 @@ function mount(app, redis) {
     try {
       const u = await userFromReq(req);
       if (!u) return res.status(401).json({ error: 'Please log in.' });
-      const { bio, location } = req.body || {};
+      const { bio, location, birthdate } = req.body || {};
       if (bio !== undefined) u.bio = String(bio).slice(0, 200);
       if (location !== undefined) u.location = String(location).slice(0, 40);
+      if (birthdate !== undefined) {
+        const bd = String(birthdate).trim();
+        if (bd && !/^\d{4}-\d{2}-\d{2}$/.test(bd)) return res.status(400).json({ error: 'Invalid birthdate format.' });
+        u.birthdate = bd || null;
+      }
       await db.set('soc:user:' + u.id, JSON.stringify(u));
       res.json({ me: pub(u) });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
@@ -316,6 +393,52 @@ function mount(app, redis) {
       out.sort((a, b) => b.createdAt - a.createdAt);
       res.json({ members: out });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // ---- game tracking (called by the game module) ----
+  // Look up user by social session token to get their ID
+  api.post('/linkPlayer', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Not logged in.' });
+      res.json({ userId: u.id, name: u.name });
+    } catch (e) {
+      console.error('social linkPlayer:', e.message);
+      res.status(500).json({ error: 'Something went wrong.' });
+    }
+  });
+
+  // Record game results: POST /api/social/recordGame { playerIds: [id1, id2...], winnerId: id, team: 'red'|'blue' }
+  // playerIds: list of social user IDs who participated
+  // winnerId: the ID of the winning player (for solo/leaderboard games) OR
+  // team: the winning team (for team games); all players on winning team get +1 win
+  api.post('/recordGame', async (req, res) => {
+    try {
+      let { playerIds, winnerId, winningTeam } = req.body || {};
+      playerIds = Array.isArray(playerIds) ? playerIds : [];
+
+      if (playerIds.length === 0) return res.status(400).json({ error: 'No players provided.' });
+
+      // Increment game count for all players
+      for (const uid of playerIds) {
+        const raw = await db.get('soc:user:' + uid);
+        if (raw) {
+          const user = JSON.parse(raw);
+          user.games = (user.games || 0) + 1;
+          // Check if this player won
+          const won = winnerId === uid || (winningTeam && user.lastTeam === winningTeam);
+          if (won) {
+            user.wins = (user.wins || 0) + 1;
+          }
+          await db.set('soc:user:' + uid, JSON.stringify(user));
+        }
+      }
+
+      res.json({ ok: true });
+    } catch (e) {
+      console.error('social recordGame:', e.message);
+      res.status(500).json({ error: 'Something went wrong.' });
+    }
   });
 
   app.use('/api/social', api);
