@@ -162,6 +162,53 @@ function mount(app, redis) {
     } catch (e) { console.error('social google:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
+  // ---- forgot password: 6-digit code by email (needs SOC_RESEND_KEY to send) ----
+  const RESEND_KEY = process.env.SOC_RESEND_KEY || null;
+  const MAIL_FROM = process.env.SOC_MAIL_FROM || 'WordSpies <onboarding@resend.dev>';
+  api.post('/forgot', async (req, res) => {
+    try {
+      if (limited(req, 'fp', 4)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
+      const email = String((req.body || {}).email || '').trim().toLowerCase();
+      const uid = await db.get('soc:email:' + email);
+      if (!uid) return res.json({ ok: true }); // don't reveal which emails exist
+      if (!RESEND_KEY) return res.status(503).json({ error: 'Password reset email isn\'t set up yet — if you signed up with this email on Google, use "Sign in with Google", or contact contact@wordspies.co.uk.' });
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      await db.set('soc:reset:' + email, bcrypt.hashSync(code, 8), 900); // 15 min
+      const mr = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: MAIL_FROM, to: [email], subject: 'Your WordSpies reset code: ' + code,
+          text: `Hi!\n\nYour WordSpies Social password reset code is: ${code}\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— WordSpies`
+        })
+      });
+      if (!mr.ok) { console.error('resend:', mr.status, await mr.text()); return res.status(502).json({ error: 'Could not send the email — try again shortly.' }); }
+      res.json({ ok: true });
+    } catch (e) { console.error('social forgot:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.post('/reset', async (req, res) => {
+    try {
+      if (limited(req, 'rs', 6)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
+      const email = String((req.body || {}).email || '').trim().toLowerCase();
+      const code = String((req.body || {}).code || '').trim();
+      const password = String((req.body || {}).password || '');
+      if (password.length < 6 || password.length > 100) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+      const hash = await db.get('soc:reset:' + email);
+      if (!hash || !/^\d{6}$/.test(code) || !bcrypt.compareSync(code, hash)) return res.status(401).json({ error: 'Wrong or expired code.' });
+      const uid = await db.get('soc:email:' + email);
+      const user = uid && JSON.parse(await db.get('soc:user:' + uid) || 'null');
+      if (!user) return res.status(401).json({ error: 'Wrong or expired code.' });
+      user.passHash = bcrypt.hashSync(password, 10);
+      await db.set('soc:user:' + user.id, JSON.stringify(user));
+      await db.del('soc:reset:' + email);
+      const token = crypto.randomBytes(24).toString('hex');
+      await db.set('soc:sess:' + token, user.id, SESS_TTL);
+      setSess(res, token);
+      res.json({ me: pub(user) });
+    } catch (e) { console.error('social reset:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
   api.post('/logout', async (req, res) => {
     const t = cookies(req).soc_sess;
     if (t) await db.del('soc:sess:' + t);
