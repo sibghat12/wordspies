@@ -70,11 +70,16 @@ input,textarea{font-family:inherit;outline:none}
 .search{margin:4px 20px 12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 16px;display:flex;gap:10px;align-items:center}
 .search input{border:none;background:none;flex:1;padding:12px 0;font-size:13.5px;font-weight:500}
 .wall{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 20px 30px}
-.pcard{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line);cursor:pointer}
+.pcard{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line);cursor:pointer;transition:transform .12s}
+.pcard:hover{transform:translateY(-2px)}
 .pw{position:relative;height:172px;overflow:hidden;background:#eceef2}
 .pw .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px) brightness(.92);transform:scale(1.2)}
 .pw .photo{position:relative;width:100%;height:100%;object-fit:contain;display:block}
-.pcard .nophoto{width:100%;height:172px;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:#c6cad3;background:#eceef2}
+.pcard .nophoto{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;color:rgba(255,255,255,.9)}
+.g0{background:linear-gradient(135deg,#667eea,#764ba2)} .g1{background:linear-gradient(135deg,#f5576c,#f093fb)}
+.g2{background:linear-gradient(135deg,#0ba360,#3cba92)} .g3{background:linear-gradient(135deg,#2193b0,#6dd5ed)}
+.g4{background:linear-gradient(135deg,#ee9617,#fe5858)} .g5{background:linear-gradient(135deg,#5f2c82,#49a09d)}
+.flagbadge{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.94);border-radius:99px;padding:2px 9px;font-size:14px;line-height:1.5;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .pcard .info{padding:11px 13px 13px}
 .pcard .nm{font-weight:700;font-size:14px;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard .sub{color:var(--faint);font-size:11.5px;font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -194,12 +199,12 @@ input,textarea{font-family:inherit;outline:none}
     <div class="note">Your photo appears on the community wall.<br>Max 2 MB — JPG, PNG or WebP.</div>
   </div>
 
-  <a class="gamelink" href="/play">🎮 &nbsp;Jump into a game →</a>
+  <a class="gamelink" href="/play" target="_blank" rel="noopener">🎮 &nbsp;Jump into a game →</a>
 
   <div class="tabbar">
     <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community</button>
     <button onclick="toast('💬 Chats are coming in the next update!')"><span class="ico">💬</span>Chats</button>
-    <button onclick="location.href='/play'"><span class="ico">🎮</span>Play</button>
+    <button onclick="window.open('/play','_blank','noopener')"><span class="ico">🎮</span>Play</button>
     <button id="tbMe" onclick="showTab('me')"><span class="ico">👤</span>Me</button>
   </div>
 </div>
@@ -310,16 +315,21 @@ function showTab(t){
 async function loadMembers(){
   try { MEMBERS = (await api('/members')).members; renderWall(); } catch(e){}
 }
+const flag = cc => (cc && cc.length === 2) ? [...cc.toUpperCase()].map(c => String.fromCodePoint(127397 + c.charCodeAt(0))).join('') : '🌍';
+const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 6; };
 function renderWall(){
   const q = ($('q').value || '').toLowerCase();
-  const list = MEMBERS.filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q));
+  const list = MEMBERS.filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q) || (m.country||'').toLowerCase().includes(q));
   $('wallEmpty').classList.toggle('hidden', list.length > 0);
   $('wall').innerHTML = list.map((m,i) => `
     <div class="pcard" onclick="openMember(${i})" data-i="${i}">
-      ${m.photo ? `<div class="pw"><img class="bg" src="${esc(m.photo)}" aria-hidden="true"><img class="photo" src="${esc(m.photo)}" loading="lazy"></div>` : `<div class="nophoto">${esc(m.name[0].toUpperCase())}</div>`}
+      <div class="pw ${m.photo ? '' : 'g' + hue(m.name)}">
+        ${m.photo ? `<img class="bg" src="${esc(m.photo)}" aria-hidden="true"><img class="photo" src="${esc(m.photo)}" loading="lazy">` : `<div class="nophoto">${esc(m.name[0].toUpperCase())}</div>`}
+        <span class="flagbadge" title="${esc(m.country || '')}">${flag(m.cc)}</span>
+      </div>
       <div class="info">
         <div class="nm">${esc(m.name)}${m.id === (ME&&ME.id) ? ' <span style="color:var(--faint);font-weight:500">(you)</span>' : ''}</div>
-        <div class="sub">${esc(m.location || 'Somewhere on Earth')} · ${m.games} games</div>
+        <div class="sub">${esc(m.location || m.country || 'Somewhere on Earth')} · ${m.games} games</div>
       </div>
     </div>`).join('');
   window.__wallList = list;
@@ -329,7 +339,7 @@ function openMember(i){
   if (ME && m.id === ME.id) { showTab('me'); return; }
   $('mAv').innerHTML = avatarHtml(m, 104, 'big');
   $('mName').textContent = m.name;
-  $('mLoc').textContent = m.location || 'Somewhere on Earth';
+  $('mLoc').textContent = flag(m.cc) + ' ' + (m.location || m.country || 'Somewhere on Earth');
   $('mGames').textContent = m.games; $('mWins').textContent = m.wins;
   $('mSince').textContent = new Date(m.createdAt).toLocaleDateString(undefined, {month:'short', year:'2-digit'});
   $('mBio').textContent = m.bio || 'No bio yet.';
