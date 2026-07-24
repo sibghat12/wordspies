@@ -184,6 +184,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
     <div class="navlinks">
       <a class="hideSm" href="/#how">How to play</a>
       <a class="hideSm" href="/about">About</a>
+      <a href="/social">Social</a>
       <a href="/blog">Blog</a>
       <a class="btn small" href="/play">▶ Play Codenames</a>
     </div>
@@ -259,7 +260,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 </div></div>
 
 <div class="wrap"><footer>
-  <a href="/play">Play</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
+  <a href="/play">Play</a> · <a href="/social">Social</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
   © 2026 WordSpies. All rights reserved.
 </footer></div>
 <script>

@@ -12,6 +12,9 @@ const multer = require('multer');
 
 const SESS_TTL = 60 * 60 * 24 * 90; // 90 days
 const PHOTO_DIR = process.env.SOC_PHOTOS || path.join(__dirname, 'social-photos');
+// "Continue with Google": set SOC_GOOGLE_CLIENT_ID in the service environment
+// to switch the button on. Without it, email sign-up still works fine.
+const GOOGLE_CLIENT_ID = process.env.SOC_GOOGLE_CLIENT_ID || null;
 
 function mount(app, redis) {
   fs.mkdirSync(PHOTO_DIR, { recursive: true });
@@ -69,6 +72,8 @@ function mount(app, redis) {
   const api = express.Router();
   api.use(express.json({ limit: '8kb' }));
 
+  api.get('/config', (req, res) => res.json({ google: GOOGLE_CLIENT_ID }));
+
   // ---- auth ----
   api.post('/signup', async (req, res) => {
     try {
@@ -104,12 +109,57 @@ function mount(app, redis) {
       const uid = await db.get('soc:email:' + email);
       const raw = uid && await db.get('soc:user:' + uid);
       const user = raw && JSON.parse(raw);
+      if (user && !user.passHash) return res.status(401).json({ error: 'This account uses Google — tap "Continue with Google".' });
       if (!user || !bcrypt.compareSync(password, user.passHash)) return res.status(401).json({ error: 'Wrong email or password.' });
       const token = crypto.randomBytes(24).toString('hex');
       await db.set('soc:sess:' + token, user.id, SESS_TTL);
       setSess(res, token);
       res.json({ me: pub(user) });
     } catch (e) { console.error('social login:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // "Continue with Google" — the browser sends Google's signed ID token; we
+  // verify it with Google, then log the person in (creating their profile on
+  // first visit). Same email = same account, so Google + email users never split.
+  api.post('/google', async (req, res) => {
+    try {
+      if (!GOOGLE_CLIENT_ID) return res.status(400).json({ error: 'Google sign-in is not enabled yet.' });
+      if (limited(req, 'gg', 10)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
+      const credential = String((req.body || {}).credential || '');
+      if (!credential || credential.length > 4096) return res.status(400).json({ error: 'Bad Google response.' });
+      const gr = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(credential));
+      if (!gr.ok) return res.status(401).json({ error: 'Google sign-in failed — try again.' });
+      const g = await gr.json();
+      if (g.aud !== GOOGLE_CLIENT_ID || g.email_verified !== 'true' || !g.email ||
+          (g.exp && Date.now() / 1000 > Number(g.exp) + 60)) {
+        return res.status(401).json({ error: 'Google sign-in failed — try again.' });
+      }
+      const email = String(g.email).toLowerCase();
+      let uid = await db.get('soc:email:' + email);
+      let user = uid ? JSON.parse(await db.get('soc:user:' + uid) || 'null') : null;
+      if (!user) {
+        // first visit: create a profile with a friendly unique name
+        let base = String(g.given_name || g.name || email.split('@')[0])
+          .replace(/[^a-zA-Z0-9_ ]/g, '').trim().slice(0, 15) || 'Spy';
+        if (base.length < 3) base = 'Spy ' + base;
+        let name = base, n = 1;
+        while (await db.get('soc:uname:' + name.toLowerCase())) { n++; name = (base.slice(0, 12) + ' ' + n).trim(); }
+        const id = crypto.randomBytes(9).toString('hex');
+        user = { id, name, email, passHash: null, googleId: g.sub, bio: '', location: '', photo: null,
+          games: 0, wins: 0, createdAt: Date.now() };
+        await db.set('soc:user:' + id, JSON.stringify(user));
+        await db.set('soc:email:' + email, id);
+        await db.set('soc:uname:' + name.toLowerCase(), id);
+        await db.sadd('soc:members', id);
+      } else if (!user.googleId) {
+        user.googleId = g.sub; // link Google to the existing email account
+        await db.set('soc:user:' + user.id, JSON.stringify(user));
+      }
+      const token = crypto.randomBytes(24).toString('hex');
+      await db.set('soc:sess:' + token, user.id, SESS_TTL);
+      setSess(res, token);
+      res.json({ me: pub(user) });
+    } catch (e) { console.error('social google:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
   api.post('/logout', async (req, res) => {
