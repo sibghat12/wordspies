@@ -151,9 +151,11 @@ input,textarea{font-family:inherit;outline:none}
 .chatmode .gamelink{display:none}
 .chatfull .tabbar{display:none}
 .chatfull{padding-top:0 !important;padding-bottom:0}
-.chatfull .chathead{top:0}
-.chatfull .composer{bottom:0}
-.chatfull .picker{bottom:62px}
+.chatfull #tabChat{display:flex;flex-direction:column;height:100vh;height:100dvh;position:relative}
+.chatfull .chathead{position:static}
+.chatfull .msgs{flex:1;overflow-y:auto;min-height:0;padding-bottom:16px}
+.chatfull .composer{position:static;left:auto;transform:none;width:auto;max-width:none;margin:0;border-top:1px solid var(--line)}
+.chatfull .picker{position:absolute;bottom:72px;left:12px;right:12px;width:auto;max-width:none;transform:none}
 .mb.me{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:5px}
 .mb.them{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}
 .mb img{max-width:220px;border-radius:10px;display:block}
@@ -194,11 +196,11 @@ input,textarea{font-family:inherit;outline:none}
   .splitview{display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;align-items:start}
   .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;position:sticky;top:74px}
   .splitview #tabChats .head{padding:18px 20px 10px}
-  .splitview #tabChat{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;position:relative;min-height:72vh;display:flex;flex-direction:column}
+  .splitview #tabChat{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;position:relative;height:calc(100vh - 130px);display:flex;flex-direction:column}
   .splitview #tabChat .chathead{position:static;border-radius:16px 16px 0 0}
   .splitview #tabChat .back2{display:none}
-  .splitview .msgs{flex:1;padding-bottom:16px;min-height:50vh;background:var(--bg)}
-  .splitview .composer{position:sticky;bottom:12px;left:auto;transform:none;width:auto;max-width:none;margin:0 10px 10px;border-top:none;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 8px}
+  .splitview .msgs{flex:1;overflow-y:auto;min-height:0;padding-bottom:16px;background:var(--bg)}
+  .splitview .composer{position:static;left:auto;transform:none;width:auto;max-width:none;margin:10px;border-top:none;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 8px}
   .splitview .picker{position:absolute;bottom:76px;left:12px;right:12px;width:auto;max-width:none;transform:none}
   .citem.sel{background:#f4f5f7}
 }
@@ -595,7 +597,7 @@ async function refreshChat(first){
           <div class="mtime">${fmtT(m.t)}${tick}</div>
         </div>`;
       }).join('');
-      if (j.messages.length !== lastMsgCount) window.scrollTo(0, document.body.scrollHeight);
+      if (j.messages.length !== lastMsgCount) { const box = $('msgs'); box.scrollTop = box.scrollHeight; }
       lastMsgCount = j.messages.length;
       lastTheirRead = j.theirRead;
     }
