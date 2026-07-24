@@ -1208,8 +1208,26 @@ if (DEMO) {
       };
       pc.ontrack = e => {
         let el = audios.get(id);
-        if (!el) { el = document.createElement('audio'); el.autoplay = true; el.playsInline = true; el.style.display = 'none'; document.body.appendChild(el); audios.set(id, el); }
+        if (!el) { el = document.createElement('audio'); el.autoplay = true; el.playsInline = true; el.volume = 1; el.muted = false; el.style.display = 'none'; document.body.appendChild(el); audios.set(id, el); }
         el.srcObject = e.streams[0];
+        // Some mobile browsers (notably iOS Safari) silently refuse to
+        // autoplay an <audio> element created after an async delay, even
+        // though we already had a user gesture (the "Enable voice chat"
+        // tap). No error is thrown — the connection just stays silent.
+        // Force a real play() call and, if it's still blocked, retry on
+        // the player's very next tap anywhere on the page.
+        const attemptPlay = () => {
+          const p = el.play();
+          if (p && p.catch) {
+            p.catch(err => {
+              console.warn('voice: remote audio play blocked, will retry on next tap', err);
+              const retry = () => { el.play().catch(() => {}); };
+              document.addEventListener('click', retry, { once: true });
+              document.addEventListener('touchend', retry, { once: true });
+            });
+          }
+        };
+        attemptPlay();
       };
       if (initiator) {
         pc.onnegotiationneeded = async () => {
@@ -1256,6 +1274,27 @@ if (DEMO) {
       } catch (e) { console.error('voice signal error', e); }
     });
 
+    let audioUnlocked = false;
+    function unlockAudioPlayback() {
+      // Must run synchronously inside the click handler (a real user
+      // gesture) so that <audio> elements created later, after the async
+      // mic-permission + WebRTC negotiation, are still allowed to play
+      // sound on strict mobile browsers (iOS Safari in particular).
+      if (audioUnlocked) return;
+      audioUnlocked = true;
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) {
+          const ctx = new Ctx();
+          const buffer = ctx.createBuffer(1, 1, 22050);
+          const src = ctx.createBufferSource();
+          src.buffer = buffer;
+          src.connect(ctx.destination);
+          if (src.start) src.start(0); else src.noteOn(0);
+          if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+        }
+      } catch (e) { /* not critical — best effort only */ }
+    }
     async function enableVoice() {
       try {
         localStream = await navigator.mediaDevices.getUserMedia({
@@ -1300,7 +1339,7 @@ if (DEMO) {
       const btn = document.getElementById('voiceToggle');
       const status = document.getElementById('voiceStatus');
       btn.onclick = () => {
-        if (!voiceOn) { enableVoice(); btn.textContent = '🔴 Leave voice chat'; }
+        if (!voiceOn) { unlockAudioPlayback(); enableVoice(); btn.textContent = '🔴 Leave voice chat'; }
         else { disableVoice(); btn.textContent = '🎤 Enable voice chat'; }
       };
       status.onclick = () => {
