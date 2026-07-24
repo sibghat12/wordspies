@@ -426,7 +426,6 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
         <button class="helpbtn" id="leaveBtn" title="Exit this game">🚪 Exit game</button>
-        <button class="helpbtn" id="voiceBtn" title="Announcer voice on/off">📢</button>
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
@@ -976,22 +975,17 @@ function renderStatus(){
       show($('passBtn'), true);
     }
   }
-  html += ` <span class="tmr" id="tmr"></span>`;
+  if (S.timerEnd) html += ` <span class="tmr" id="tmr"></span>`;
   el.innerHTML = html;
   startTick();
 }
 
-let turnKey = '', turnStartTs = 0;
 function startTick(){
   stopTick();
-  // count-up clock when no turn limit is set, countdown when one is
-  const key = S.turn ? (S.turn.team + ':' + S.turn.phase) : '';
-  if (key !== turnKey) { turnKey = key; turnStartTs = Date.now(); }
+  if (!S.timerEnd) return;
   const f = () => {
     const el = $('tmr'); if (!el) return;
-    const s = S.timerEnd
-      ? Math.max(0, Math.ceil((S.timerEnd - Date.now()) / 1000))
-      : Math.max(0, Math.floor((Date.now() - turnStartTs) / 1000));
+    const s = Math.max(0, Math.ceil((S.timerEnd - Date.now()) / 1000));
     el.textContent = '⏱ ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
   };
   f(); tick = setInterval(f, 500);
@@ -1070,13 +1064,13 @@ function beep(freq, dur, type, delay, vol){
     o.start(t); o.stop(t + dur + .02);
   } catch(e){}
 }
-// applause: a flurry of short filtered-noise bursts (sounds like clapping)
+// applause: a flurry of short filtered-noise bursts (sounds like winner clapping)
 function applause(){
   try {
     AC = AC || new (window.AudioContext || window.webkitAudioContext)();
     const t0 = AC.currentTime;
-    for (let i = 0; i < 26; i++){
-      const t = t0 + Math.random() * .9;
+    for (let i = 0; i < 42; i++){
+      const t = t0 + Math.random() * 1.3;
       const dur = .02 + Math.random() * .02;
       const buf = AC.createBuffer(1, AC.sampleRate * dur, AC.sampleRate);
       const d = buf.getChannelData(0);
@@ -1122,16 +1116,14 @@ function soundAndTitle(){
   else if (S.log.length > lastLogLen && lastLogLen > 0) freshFrom = lastLogLen;
   if (freshFrom !== null) {
     for (const e of S.log.slice(freshFrom)) {
-      if (e.type === 'start') ANNOUNCER.onStart();
-      else if (e.type === 'clue') SFX.clue();
+      if (e.type === 'clue') SFX.clue();
       else if (e.type === 'guess') {
         const who = esc(e.name);
         if (e.color === 'assassin') { SFX.boom(); toast('💀 ' + who + ' hit the assassin!', 'bad'); }
         else if (e.color === e.team) { SFX.good(); toast('🎉 ' + who + ' nailed ' + esc(e.word) + '!', 'good'); celebrate(); }
         else { SFX.bad(); toast('😬 Oops! ' + who + ' picked ' + esc(e.word), 'bad'); }
-        ANNOUNCER.onGuess(e);
       }
-      else if (e.type === 'gameover') { SFX.win(); ANNOUNCER.onGameOver(e); }
+      else if (e.type === 'gameover') SFX.win();
     }
   }
   lastLogLen = S.log.length;
@@ -1175,142 +1167,6 @@ function celebrate(){
     document.body.appendChild(s);
     setTimeout(() => s.remove(), 1700);
   }
-}
-
-// ---------- VOICE ANNOUNCER ----------
-// Speaks short hype/roast lines when someone guesses, using the browser's
-// built-in text-to-speech (instant, free, works offline — no AI call latency).
-// Lines are built from mix-and-match parts, so there are thousands of combos.
-const ANNOUNCER = (() => {
-  const R = a => a[Math.floor(Math.random() * a.length)];
-  const supported = 'speechSynthesis' in window;
-  let enabled = true;
-  try { enabled = localStorage.getItem('ws_announcer') !== 'off'; } catch(e){}
-
-  // ---- phrase parts (mix-and-match: short, punchy lines) ----
-  const YAY   = ['Ooh','Yes','Boom','Wow','Get in','Oh yes','Bang','Yesss','Woo','Let\'s go','Ayy','Sheesh'];
-  const PRAISE= ['well done','nice one','you got it','spot on','brilliant','what a pick','big brain','pure class','clever','sharp','nailed it','too easy'];
-  const SMART2= ["you're on fire!",'two in a row!','so smart!','unstoppable!','okay, show off!','again?! wow!',"you're cooking!",'genius!','double trouble!'];
-  const SMART3= ['THREE in a row!','absolute machine!','hat trick! Take a bow!','too smart for this game!','legend!','someone stop this player!','galaxy brain!','unbelievable!'];
-  const OOPS  = ['Oops','Oh no','Yikes','Ouch','Oof','Uh oh','Nooo','Oh dear','Womp womp'];
-  const BAD   = ['that was bad!','not it!','so wrong!','terrible pick!','the spymaster is crying!','back to school!','what was that?!','oh dear!','bold... but wrong!','not your best!'];
-  const DOOM  = ['the assassin! Game over!','you lost the whole game!','NO! Not that word!','straight into the trap!','the forbidden word!'];
-  const WINNY = ['takes the win!','are the champions!','wins it! Rematch?','takes the crown!','did it! What a game!'];
-  const OPENING = [
-    "Guys, the game is starting! Be ready... and no talking on the other team's turn!",
-    'Here we go! Good luck, spies!',
-    'Game on! Quiet during the enemy turn, please!',
-    'New game! Eyes on the board, everyone!',
-    'Starting now! May the best team win!',
-    'Ready up! And remember... no cheating!',
-    "Let's play! Spymasters, keep that poker face!"
-  ];
-
-  const line = {
-    correct: n => `${R(YAY)}, ${n}! ${R(PRAISE)}!`,
-    streak2: n => `${n}, ${R(SMART2)}`,
-    streak3: n => `${n}! ${R(SMART3)}`,
-    wrong:   n => `${R(OOPS)}, ${n}... ${R(BAD)}`,
-    assassin:n => `${n}... ${R(DOOM)}`,
-    win:     t => `${t} team ${R(WINNY)}`,
-    opening: () => R(OPENING)
-  };
-
-  // ---- speech: ONE consistent voice — the best natural English voice available ----
-  let voice = null;
-  function loadVoices(){
-    if (!supported) return;
-    const vs = speechSynthesis.getVoices();
-    voice = vs.find(v => /Google UK English Female/i.test(v.name))
-         || vs.find(v => /Google US English/i.test(v.name))
-         || vs.find(v => /Samantha|Daniel/i.test(v.name))          // best iOS/macOS voices
-         || vs.find(v => /en[-_]GB/i.test(v.lang))
-         || vs.find(v => /^en[-_]/i.test(v.lang)) || null;
-  }
-  if (supported) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
-
-  function speak(text){
-    if (!supported || !enabled) return;
-    try {
-      speechSynthesis.cancel(); // never queue up a backlog
-      const u = new SpeechSynthesisUtterance(text);
-      if (voice) u.voice = voice;
-      u.rate = 1.05; u.pitch = 1.02; u.volume = 1;
-      speechSynthesis.speak(u);
-    } catch(e){}
-  }
-
-  // some mobile browsers need one user gesture before TTS works — warm it up
-  document.addEventListener('pointerdown', function unlock(){
-    document.removeEventListener('pointerdown', unlock);
-    if (supported) { try { const u = new SpeechSynthesisUtterance(''); u.volume = 0; speechSynthesis.speak(u); } catch(e){} }
-  }, { once: true });
-
-  // ---- streak tracking (consecutive correct guesses per player) ----
-  const streaks = {};
-  function onGuess(e){
-    const n = e.name;
-    if (e.color === 'assassin') { streaks[n] = 0; speak(line.assassin(n)); return; }
-    if (e.color === e.team) {
-      streaks[n] = (streaks[n] || 0) + 1;
-      const s = streaks[n];
-      speak(s >= 3 ? line.streak3(n) : s === 2 ? line.streak2(n) : line.correct(n));
-    } else {
-      streaks[n] = 0;
-      speak(line.wrong(n));
-    }
-  }
-  function onGameOver(e){
-    for (const k in streaks) streaks[k] = 0;
-    if (e.reason === 'assassin') return; // the assassin line already tells the story
-    speak(line.win(e.team === 'red' ? 'Red' : 'Blue'));
-  }
-  function onStart(){
-    for (const k in streaks) streaks[k] = 0;
-    speak(line.opening());
-  }
-
-  // ---- toggle button ----
-  const btn = $('voiceBtn');
-  function paint(){ if (btn) { btn.textContent = enabled ? '📢' : '🔇'; btn.title = 'Announcer voice: ' + (enabled ? 'on' : 'off'); } }
-  if (btn) btn.onclick = () => {
-    enabled = !enabled;
-    try { localStorage.setItem('ws_announcer', enabled ? 'on' : 'off'); } catch(e){}
-    if (!enabled && supported) speechSynthesis.cancel();
-    paint();
-    toast(enabled ? '📢 Announcer on' : '🔇 Announcer muted');
-    if (enabled) speak('Guys, silence... let\'s play!');
-  };
-  paint();
-  if (!supported && btn) btn.style.display = 'none';
-
-  return { onGuess, onGameOver, onStart, speak, line, isEnabled: () => enabled };
-})();
-
-// ---------- VOICE TEST PANEL (?voicetest=1): try every announcer line ----------
-if (new URLSearchParams(location.search).get('voicetest')) {
-  const p = document.createElement('div');
-  p.style.cssText = 'position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:9999;background:#fff;border:2px solid var(--line);border-radius:18px;box-shadow:0 12px 40px rgba(35,41,70,.25);padding:14px 16px;width:min(94vw,360px)';
-  p.innerHTML = `
-    <div style="font-weight:900;font-size:13px;letter-spacing:1px;margin-bottom:8px">🎙 ANNOUNCER TEST</div>
-    <input id="vtName" value="Sibii" maxlength="15" style="width:100%;background:#f1f3fa;border-radius:10px;padding:8px 12px;font-size:13px;margin-bottom:8px" placeholder="Player name">
-    <div style="display:flex;flex-wrap:wrap;gap:6px">
-      <button class="helpbtn" data-vt="correct">✅ Correct</button>
-      <button class="helpbtn" data-vt="streak2">🔥 2 in a row</button>
-      <button class="helpbtn" data-vt="streak3">🚀 3 in a row</button>
-      <button class="helpbtn" data-vt="wrong">❌ Wrong</button>
-      <button class="helpbtn" data-vt="assassin">💀 Assassin</button>
-      <button class="helpbtn" data-vt="win">🏆 Win</button>
-      <button class="helpbtn" data-vt="opening">🎬 Game start</button>
-    </div>
-    <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:8px">Tap again for a different random line. Uses your device's voice.</div>`;
-  document.body.appendChild(p);
-  p.querySelectorAll('[data-vt]').forEach(b => b.onclick = () => {
-    const n = p.querySelector('#vtName').value.trim() || 'Sibii';
-    const t = ANNOUNCER.line[b.dataset.vt](b.dataset.vt === 'win' ? 'Red' : n);
-    toast('🎙 ' + t);
-    ANNOUNCER.speak(t);
-  });
 }
 
 // ---------- DEMO MODE (?test): dummy players + board preview ----------
