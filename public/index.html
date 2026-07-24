@@ -1149,7 +1149,22 @@ if (DEMO) {
     if (typeof socket === 'undefined' || !socket) return;
     if (!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return; // unsupported browser: no UI shown, no error
 
-    const ICE = { iceServers: (window.__WS_TEST_NO_STUN ? [] : [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }]) };
+    // STUN alone only works when both players' networks allow a direct
+    // peer-to-peer path. Mobile data (carrier-grade NAT) and a lot of
+    // corporate/hotel wifi block that outright — those calls would never
+    // connect at all, or connect then drop repeatedly, no matter how good
+    // the STUN servers are. A TURN relay is the fallback for exactly that
+    // case: if a direct path can't be found, traffic relays through the
+    // TURN server instead of failing. (Free public relay — fine to start
+    // with; can move to a dedicated/self-hosted TURN server later if usage
+    // grows enough to need it.)
+    const ICE = { iceServers: (window.__WS_TEST_NO_STUN ? [] : [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]) };
     let localStream = null;
     let voiceOn = false;
     let selfMuted = false;
