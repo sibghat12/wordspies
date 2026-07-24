@@ -691,7 +691,7 @@ function renderWall(){
                        m.wins ? m.wins + ' win' + (m.wins === 1 ? '' : 's') : null].filter(Boolean).join(' · ');
     return `
     <div class="pcard" onclick="openMember(${i})" data-i="${i}">
-      ${m.id === (ME&&ME.id) ? '<span class="chip-you">YOU</span>' : (m.verified ? '<span class="chip-vip">✓ SPECIAL</span>' : (Date.now() - m.createdAt < WEEK7 ? '<span class="chip-new">NEW</span>' : ''))}
+      ${m.id === (ME&&ME.id) ? '<span class="chip-you">YOU</span>' : ''}
       <div class="pcirc ${m.photo ? '' : 'g' + hue(m.name)}">
         ${m.photo ? `<img src="${esc(m.photo)}" loading="lazy">` : `<div class="pcircph">${esc(m.name[0].toUpperCase())}</div>`}
       </div>
