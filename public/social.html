@@ -19,6 +19,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webki
 button{font-family:inherit;cursor:pointer}
 input,textarea{font-family:inherit;outline:none}
 .hidden{display:none !important}
+body.authmodal #vAuth{position:fixed;inset:0;z-index:80;background:rgba(250,250,250,.98);overflow-y:auto;margin:0;padding:28px 18px 40px}
+#authClose{position:fixed;top:14px;right:14px;z-index:81;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+body.authmodal{overflow:hidden}
 .wrap{max-width:520px;margin:0 auto;min-height:100%;position:relative;padding-bottom:86px;overflow-x:clip}
 .logo{font-family:'Fredoka';font-weight:600;font-size:19px}
 .logo em{font-style:normal;color:var(--accent)}
@@ -356,7 +359,21 @@ input,textarea{font-family:inherit;outline:none}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let ME = null, MEMBERS = [], mode = 'signup';
+let ME = null, MEMBERS = [], mode = 'signup', GUEST = false;
+
+// Guests can browse the wall and open profiles — anything social needs a login.
+function requireLogin(msg){
+  if (msg) toast(msg);
+  if (!$('authClose')) {
+    const x = document.createElement('button');
+    x.id = 'authClose'; x.type = 'button'; x.textContent = '✕';
+    x.onclick = () => { $('vAuth').classList.add('hidden'); document.body.classList.remove('authmodal'); };
+    $('vAuth').prepend(x);
+  }
+  document.body.classList.add('authmodal');
+  $('vAuth').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
 
 let toastT = null;
 function toast(m){ const t = $('toastEl'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2600); }
@@ -466,6 +483,9 @@ const winRate = u => {
 };
 
 function enterApp(justJoined){
+  GUEST = false;
+  document.body.classList.remove('authmodal');
+  const xc = $('authClose'); if (xc) xc.remove();
   $('vAuth').classList.add('hidden');
   $('vApp').classList.remove('hidden');
   paintMe(); loadMembers();
@@ -501,6 +521,10 @@ function paintMe(){
 let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0, lastTheirRead = 0;
 
 function showTab(t){
+  if (GUEST && (t === 'chats' || t === 'chat' || t === 'me')) {
+    requireLogin('👋 Log in to chat and make your own profile');
+    return;
+  }
   if ((t === 'wall' || t === 'chats' || t === 'chat') && ME && !ME.photo) {
     t = 'me';
     toast('📷 Add your photo first — then you join the wall');
@@ -573,6 +597,7 @@ async function refreshChats(){
 }
 
 function openChatWith(id){
+  if (GUEST) { requireLogin('💬 Log in to send messages'); return; }
   if (!id) return;
   curChat = id; lastMsgCount = 0;
   $('msgs').innerHTML = ''; $('chName').textContent = '…'; $('chState').textContent = ''; $('chAv').innerHTML = '';
@@ -653,6 +678,7 @@ function hidePickers(){ $('emojiPick').classList.add('hidden'); }
 
 // ---------- follow ----------
 async function toggleFollow(){
+  if (GUEST) { requireLogin('⭐ Log in to follow ' + ($('mName').textContent || 'people')); return; }
   if (!curMember) return;
   try {
     const on = $('followBtn').dataset.f;
@@ -800,7 +826,20 @@ async function setupGoogle(){
       }
       history.replaceState(null, '', '/social');
     }
-  } else { $('vAuth').classList.remove('hidden'); setupGoogle(); }
+  } else {
+    // Not logged in: let them browse the community wall as a guest.
+    // Chat, follow, and profile actions open the login popup instead.
+    GUEST = true;
+    $('vApp').classList.remove('hidden');
+    const chip = document.querySelector('.mechip');
+    if (chip) {
+      chip.onclick = () => requireLogin('👋 Welcome! Log in or join in seconds');
+      chip.innerHTML = '<span class="mename" style="padding-right:8px">👋 Log in / Join</span>';
+    }
+    loadMembers();
+    showTab('wall');
+    setupGoogle();
+  }
 })();
 </script>
 </body>
