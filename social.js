@@ -680,7 +680,34 @@ function mount(app, redis) {
       } catch (e) { console.error('recordResult user:', e.message); }
     }
   }
-  return { recordResult };
+  // Called by the game server when someone arrives with a Social session
+  // cookie: hand back just enough of their profile to seat them without
+  // asking for a name. Never throws — the game must work if this fails.
+  async function profileByUid(uid) {
+    if (!uid) return null;
+    try {
+      const raw = await db.get('soc:user:' + uid);
+      if (!raw) return null;
+      const u = JSON.parse(raw);
+      return { id: u.id, name: u.name || null, photo: u.photo || null };
+    } catch (e) {
+      console.error('profileByUid:', e.message);
+      return null;
+    }
+  }
+
+  // Session cookie → uid, resolved through *this* module's store rather than
+  // the game server reading redis directly. Without this, a deployment with no
+  // REDIS_URL logs people in fine over HTTP (the fallback store holds the
+  // session) while every socket sees them as an anonymous guest — so their wins
+  // are never credited and the failure is completely silent.
+  async function uidBySession(token) {
+    if (!/^[a-f0-9]{48}$/.test(String(token || ''))) return null;
+    try { return await db.get('soc:sess:' + token); }
+    catch (e) { console.error('uidBySession:', e.message); return null; }
+  }
+
+  return { recordResult, profileByUid, uidBySession };
 }
 
 module.exports = { mount };
