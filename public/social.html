@@ -7,6 +7,7 @@
 <meta name="description" content="Meet the people you play WordSpies with. Create a profile, follow other spies, and chat between games.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fredoka:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <style>
 :root{
   --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
@@ -44,6 +45,7 @@ input,textarea{font-family:inherit;outline:none}
 .auth .legal{margin-top:auto;padding-top:30px;text-align:center;color:#b9bdc6;font-size:11px;font-weight:500;line-height:1.7}
 .authcol{width:340px;max-width:100%;margin:0 auto}
 .authcol #gBtn{display:flex;justify-content:center;height:44px}
+.authcol #gBtnForm{display:flex;justify-content:center;height:44px;margin-bottom:10px}
 .ordiv{display:flex;align-items:center;gap:14px;margin:16px 0;color:var(--faint);font-size:12px;font-weight:600}
 .ordiv span{flex:1;height:1px;background:var(--line)}
 .pillbtn{border-radius:99px;height:44px;padding:0 14px;font-size:15px;font-weight:600}
@@ -57,12 +59,12 @@ input,textarea{font-family:inherit;outline:none}
 .tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 8px calc(14px + env(safe-area-inset-bottom));z-index:10}
 .tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--faint);background:none;border:none}
 .tabbar button.on{color:var(--ink)}
-.tabbar .ico{font-size:19px}
+.tabbar .ico{font-size:19px;display:none}
 /* desktop: navigation moves to the top like a website header */
 @media(min-width:700px){
   .tabbar{top:0;bottom:auto;border-top:none;border-bottom:1px solid var(--line);padding:12px 8px;justify-content:center;gap:52px}
   .tabbar button{flex-direction:row;gap:8px;font-size:13.5px}
-  .tabbar .ico{font-size:17px}
+  .tabbar .ico{font-size:17px;display:none}
   .wrap{padding-top:58px;padding-bottom:40px}
 }
 
@@ -98,11 +100,12 @@ input,textarea{font-family:inherit;outline:none}
 .prof .big{width:104px;height:104px;border:4px solid var(--bg);font-size:38px}
 .prof h2{font-size:21px;margin-top:10px;font-weight:800;letter-spacing:-.4px}
 .prof .loc{color:var(--faint);font-weight:500;font-size:12.5px;margin-top:3px}
-.stats{display:flex;margin:18px 24px;border:1px solid var(--line);border-radius:14px;background:#fff}
-.stats>div{flex:1;padding:13px 0;text-align:center}
+.stats{display:flex;margin:18px 24px;border:1px solid var(--line);border-radius:14px;background:#fff;flex-wrap:wrap}
+.stats>div{flex:1;min-width:45%;padding:13px 0;text-align:center}
 .stats>div+div{border-left:1px solid var(--line)}
 .stats b{display:block;font-size:17px;font-weight:800}
 .stats span{color:var(--faint);font-size:10.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase}
+.winrate{color:var(--green);font-weight:700;font-size:18px;margin-top:4px}
 .bio{background:#fff;margin:0 24px 14px;border-radius:14px;padding:16px;border:1px solid var(--line);font-size:13.5px;color:var(--sub);line-height:1.65}
 .prow{display:flex;gap:10px;padding:0 24px;margin-bottom:14px}
 .upl{position:absolute;bottom:2px;right:2px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;border:3px solid var(--bg);font-size:13px}
@@ -132,8 +135,11 @@ input,textarea{font-family:inherit;outline:none}
     </div>
   </div>
   <div id="emailForm">
+    <div id="gBtnForm"></div>
+    <div class="ordiv"><span></span>or<span></span></div>
     <div id="suName" class="field"><input id="fName" maxlength="15" placeholder="Your name (shown to everyone)"></div>
     <div class="field"><input id="fEmail" type="email" maxlength="100" placeholder="Email"></div>
+    <div id="suBirth" class="field"><input id="fSignupBirth" type="date" placeholder="Date of birth (optional)"></div>
     <div class="field"><input id="fPass" type="password" maxlength="100" placeholder="Password (6+ characters)"></div>
     <div id="resetFields" class="hidden">
       <div class="field"><input id="fCode" maxlength="6" inputmode="numeric" placeholder="6-digit code from your email"></div>
@@ -175,7 +181,7 @@ input,textarea{font-family:inherit;outline:none}
     </div>
     <div class="stats">
       <div><b id="mGames">0</b><span>Games</span></div>
-      <div><b id="mWins">0</b><span>Wins</span></div>
+      <div><b id="mWins">0</b><span>Wins</span><div class="winrate" id="mRate">—</div></div>
       <div><b id="mSince">—</b><span>Joined</span></div>
     </div>
     <div class="bio" id="mBio"></div>
@@ -193,16 +199,21 @@ input,textarea{font-family:inherit;outline:none}
     <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" class="hidden">
     <div class="stats">
       <div><b id="myGames">0</b><span>Games</span></div>
-      <div><b id="myWins">0</b><span>Wins</span></div>
+      <div><b id="myWins">0</b><span>Wins</span><div class="winrate" id="myRate">—</div></div>
       <div><b id="mySince">—</b><span>Joined</span></div>
     </div>
     <div style="padding:0 24px">
+      <div class="field"><input id="fBirth" type="date" placeholder="Your birthdate (optional)"></div>
       <div class="field"><input id="fLoc" maxlength="40" placeholder="Your city (optional)"></div>
       <div class="field"><textarea id="fBio" maxlength="200" rows="3" placeholder="Say something about yourself…"></textarea></div>
     </div>
     <div class="prow">
       <button class="btn btn-accent" onclick="saveProfile()">Save profile</button>
       <button class="btn btn-line" onclick="logout()">Log out</button>
+    </div>
+    <div style="padding:0 24px;margin-top:20px">
+      <button class="btn btn-line" style="color:var(--err);border-color:var(--err)" onclick="confirmDelete()">Delete account</button>
+      <div class="note" style="color:var(--err);margin-top:10px">This action cannot be undone. You'll lose all your profile data and game history.</div>
     </div>
     <div class="note">Your photo appears on the community wall.<br>Max 2 MB — JPG, PNG or WebP.</div>
   </div>
@@ -243,6 +254,7 @@ async function api(p, opts){
 function setMode(m){
   mode = m;
   $('suName').classList.toggle('hidden', m !== 'signup');
+  $('suBirth').classList.toggle('hidden', m !== 'signup');
   $('fPass').parentElement.classList.toggle('hidden', m === 'forgot');
   $('resetFields').classList.toggle('hidden', m !== 'forgot');
   $('forgotLink').classList.toggle('hidden', m !== 'login');
@@ -274,7 +286,10 @@ $('authGo').onclick = async () => {
       }
     } else {
       const body = { email: $('fEmail').value, password: $('fPass').value };
-      if (mode === 'signup') body.name = $('fName').value;
+      if (mode === 'signup') {
+        body.name = $('fName').value;
+        body.birthdate = $('fSignupBirth').value || '';
+      }
       const j = await api(mode === 'signup' ? '/signup' : '/login', {
         method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
       });
@@ -287,17 +302,63 @@ $('authGo').onclick = async () => {
 
 async function logout(){ await api('/logout', {method:'POST'}); ME = null; $('vApp').classList.add('hidden'); $('vAuth').classList.remove('hidden'); }
 
+async function confirmDelete(){
+  const result = await Swal.fire({
+    title: 'Delete Account?',
+    html: 'This will permanently delete your profile, photos, and all game history.<br><strong>This cannot be undone.</strong>',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#999',
+    confirmButtonText: 'Yes, delete my account',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await api('/deleteAccount', { method: 'POST' });
+      Swal.fire({
+        title: 'Account Deleted',
+        text: 'Your account and all data have been permanently deleted.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        logout();
+      });
+    } catch (e) {
+      Swal.fire({
+        title: 'Error',
+        text: e.message,
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    }
+  }
+}
+
 // ---------- app ----------
 const avatarHtml = (u, size, cls) => u.photo
   ? `<img class="av ${cls||''}" style="width:${size}px;height:${size}px" src="${esc(u.photo)}">`
   : `<span class="avph ${cls||''}" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px">${esc((u.name||'?')[0].toUpperCase())}</span>`;
 
+const winRate = u => {
+  if (!u.games || u.games === 0) return '—';
+  const pct = Math.round((u.wins / u.games) * 100);
+  return pct + '%';
+};
+
 function enterApp(justJoined){
   $('vAuth').classList.add('hidden');
   $('vApp').classList.remove('hidden');
   paintMe(); loadMembers();
-  if (justJoined && !ME.bio) {
-    // fresh member: take them straight to "tell us about you"
+  if (!ME.photo) {
+    // a photo is required before joining the community wall
+    showTab('me');
+    toast('📷 ' + (justJoined ? 'Welcome, ' + ME.name + '! ' : '') + 'Add your photo to join the community');
+    if (!$('fLoc').value) {
+      api('/geo').then(j => { if (j.suggestion && !$('fLoc').value) $('fLoc').value = j.suggestion; }).catch(()=>{});
+    }
+  } else if (justJoined && !ME.bio) {
     showTab('me');
     toast('👋 Welcome, ' + ME.name + '! Tell us a bit about you');
     if (!$('fLoc').value) {
@@ -312,11 +373,17 @@ function paintMe(){
   $('myAv').innerHTML = avatarHtml(ME, 104, 'big');
   $('myName').textContent = ME.name;
   $('myGames').textContent = ME.games; $('myWins').textContent = ME.wins;
+  $('myRate').textContent = winRate(ME);
   $('mySince').textContent = new Date(ME.createdAt).toLocaleDateString(undefined, {month:'short', year:'2-digit'});
-  $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
+  $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
   $('myEmail').textContent = ME.location || 'Add your city below';
 }
 function showTab(t){
+  if (t === 'wall' && ME && !ME.photo) {
+    t = 'me';
+    toast('📷 Add your photo first — then you join the wall');
+    $('photoIn') && window.scrollTo(0,0);
+  }
   $('tabWall').classList.toggle('hidden', t !== 'wall');
   $('tabMe').classList.toggle('hidden', t !== 'me');
   $('tabMember').classList.toggle('hidden', t !== 'member');
@@ -332,30 +399,44 @@ const flag = cc => (cc && cc.length === 2) ? [...cc.toUpperCase()].map(c => Stri
 const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 6; };
 function renderWall(){
   const q = ($('q').value || '').toLowerCase();
-  const list = MEMBERS.filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q) || (m.country||'').toLowerCase().includes(q));
+  // only members with a photo appear on the wall
+  let list = MEMBERS.filter(m => m.photo).filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q) || (m.country||'').toLowerCase().includes(q));
+  // Sort by win rate (best players first), then by games played
+  list.sort((a, b) => {
+    const aRate = a.games ? (a.wins / a.games) : 0;
+    const bRate = b.games ? (b.wins / b.games) : 0;
+    if (aRate !== bRate) return bRate - aRate; // Higher win rate first
+    return b.games - a.games; // More games second
+  });
   $('wallEmpty').classList.toggle('hidden', list.length > 0);
   const WEEK = 7 * 24 * 3600 * 1000;
-  $('wall').innerHTML = list.map((m,i) => `
+  $('wall').innerHTML = list.map((m,i) => {
+    const agePart = m.age ? ' | ' + m.age : '';
+    const countryPart = flag(m.cc) + ' ' + (m.country || 'Earth');
+    const winPct = m.games ? Math.round((m.wins / m.games) * 100) + '%' : '—';
+    return `
     <div class="pcard" onclick="openMember(${i})" data-i="${i}">
       <div class="pw ${m.photo ? '' : 'g' + hue(m.name)}">
         ${m.photo ? `<img class="bg" src="${esc(m.photo)}" aria-hidden="true"><img class="photo" src="${esc(m.photo)}" loading="lazy">` : `<div class="nophoto">${esc(m.name[0].toUpperCase())}</div>`}
         <div class="scrim"></div>
         ${m.id === (ME&&ME.id) ? '<span class="chip-you">YOU</span>' : (Date.now() - m.createdAt < WEEK ? '<span class="chip-new">NEW</span>' : '')}
         <div class="ovl">
-          <div class="onm">${esc(m.name)} ${flag(m.cc)}</div>
-          <div class="osub">${esc(m.location || m.country || 'Somewhere on Earth')} · ${m.games} game${m.games === 1 ? '' : 's'}</div>
+          <div class="onm">${esc(m.name)}${agePart}</div>
+          <div class="osub">${countryPart} · ${winPct} ∼ ${m.games} game${m.games === 1 ? '' : 's'}</div>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   window.__wallList = list;
 }
 function openMember(i){
   const m = window.__wallList[i]; if (!m) return;
   if (ME && m.id === ME.id) { showTab('me'); return; }
   $('mAv').innerHTML = avatarHtml(m, 104, 'big');
-  $('mName').textContent = m.name;
+  $('mName').textContent = m.name + (m.age ? ' · ' + m.age : '');
   $('mLoc').textContent = flag(m.cc) + ' ' + (m.location || m.country || 'Somewhere on Earth');
   $('mGames').textContent = m.games; $('mWins').textContent = m.wins;
+  $('mRate').textContent = winRate(m);
   $('mSince').textContent = new Date(m.createdAt).toLocaleDateString(undefined, {month:'short', year:'2-digit'});
   $('mBio').textContent = m.bio || 'No bio yet.';
   showTab('member');
@@ -364,7 +445,7 @@ function openMember(i){
 async function saveProfile(){
   try {
     const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ bio: $('fBio').value, location: $('fLoc').value }) });
+      body: JSON.stringify({ bio: $('fBio').value, location: $('fLoc').value, birthdate: $('fBirth').value }) });
     ME = j.me; paintMe(); loadMembers(); toast('✓ Profile saved');
   } catch(e){ toast(e.message); }
 }
@@ -374,8 +455,11 @@ $('photoIn').onchange = async () => {
   if (f.size > 2 * 1024 * 1024) { toast('Photo too large — max 2 MB'); return; }
   const fd = new FormData(); fd.append('photo', f);
   try {
+    const first = !ME.photo;
     const j = await api('/photo', { method:'POST', body: fd });
-    ME = j.me; paintMe(); loadMembers(); toast('✓ Photo updated');
+    ME = j.me; paintMe(); loadMembers();
+    if (first) { toast('🎉 Looking good — welcome to the wall!'); showTab('wall'); }
+    else toast('✓ Photo updated');
   } catch(e){ toast(e.message); }
   $('photoIn').value = '';
 };
@@ -401,6 +485,7 @@ async function setupGoogle(){
       }
     });
     google.accounts.id.renderButton($('gBtn'), { theme:'outline', size:'large', shape:'pill', text:'continue_with', logo_alignment:'left', width: 320 });
+    google.accounts.id.renderButton($('gBtnForm'), { theme:'outline', size:'large', shape:'pill', text:'continue_with', logo_alignment:'left', width: 320 });
     // two clean choices first; the email form appears only when chosen
     $('chooser').classList.remove('hidden');
     $('emailForm').classList.add('hidden');
