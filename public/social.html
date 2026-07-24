@@ -413,7 +413,8 @@ function renderWall(){
   $('wall').innerHTML = list.map((m,i) => {
     const agePart = m.age ? ' | ' + m.age : '';
     const countryPart = flag(m.cc) + ' ' + (m.country || 'Earth');
-    const winPct = m.games ? Math.round((m.wins / m.games) * 100) + '%' : '—';
+    const gamesPart = m.games ? ` · ${m.games} game${m.games === 1 ? '' : 's'}` : '';
+    const winsPart = m.wins ? ` · ${m.wins} win${m.wins === 1 ? '' : 's'}` : '';
     return `
     <div class="pcard" onclick="openMember(${i})" data-i="${i}">
       <div class="pw ${m.photo ? '' : 'g' + hue(m.name)}">
@@ -421,8 +422,8 @@ function renderWall(){
         <div class="scrim"></div>
         ${m.id === (ME&&ME.id) ? '<span class="chip-you">YOU</span>' : (Date.now() - m.createdAt < WEEK ? '<span class="chip-new">NEW</span>' : '')}
         <div class="ovl">
-          <div class="onm">${esc(m.name)}${agePart}</div>
-          <div class="osub">${countryPart} · ${winPct} ∼ ${m.games} game${m.games === 1 ? '' : 's'}</div>
+          <div class="onm">${esc(m.name)}</div>
+          <div class="osub">${countryPart}${agePart}${gamesPart}${winsPart}</div>
         </div>
       </div>
     </div>`;
