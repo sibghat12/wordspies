@@ -14,7 +14,7 @@
   --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;overflow-x:clip;max-width:100%}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button{font-family:inherit;cursor:pointer}
 input,textarea{font-family:inherit;outline:none}
@@ -57,8 +57,8 @@ input,textarea{font-family:inherit;outline:none}
 .mechip{display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 6px 5px 14px}
 .mechip .mename{font-weight:700;font-size:13.5px;letter-spacing:-.1px}
 .tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 8px calc(14px + env(safe-area-inset-bottom));z-index:10}
-.tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--faint);background:none;border:none}
-.tabbar button.on{color:var(--ink)}
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--ink);background:none;border:none}
+.tabbar button.on{color:var(--ink);font-weight:800}
 .tabbar .ico{font-size:19px;display:none}
 /* desktop: navigation moves to the top like a website header */
 @media(min-width:700px){
@@ -304,7 +304,6 @@ input,textarea{font-family:inherit;outline:none}
   <div class="tabbar">
     <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community</button>
     <button id="tbChats" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
-    <button onclick="window.open('/play','_blank','noopener')"><span class="ico">🎮</span>Play</button>
     <button id="tbMe" onclick="showTab('me')"><span class="ico">👤</span>Me</button>
   </div>
 </div>
