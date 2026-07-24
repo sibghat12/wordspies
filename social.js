@@ -35,6 +35,44 @@ function mount(app, redis) {
     async smembers(k) {
       if (redis) return redis.smembers(k);
       const s = mem.get(k); return s instanceof Set ? [...s] : [];
+    },
+    async srem(k, m) {
+      if (redis) return redis.srem(k, m);
+      const s = mem.get(k); if (s instanceof Set) s.delete(m);
+    },
+    async sismember(k, m) {
+      if (redis) return (await redis.sismember(k, m)) === 1;
+      const s = mem.get(k); return s instanceof Set && s.has(m);
+    },
+    async scard(k) {
+      if (redis) return redis.scard(k);
+      const s = mem.get(k); return s instanceof Set ? s.size : 0;
+    },
+    async exists(k) {
+      if (redis) return (await redis.exists(k)) === 1;
+      return mem.has(k);
+    },
+    async rpush(k, v) {
+      if (redis) return redis.rpush(k, v);
+      const l = Array.isArray(mem.get(k)) ? mem.get(k) : []; l.push(v); mem.set(k, l);
+    },
+    async lrange(k, a, b) {
+      if (redis) return redis.lrange(k, a, b);
+      const l = mem.get(k) || [];
+      const from = a < 0 ? Math.max(0, l.length + a) : a;
+      const to = b < 0 ? l.length + b : b;
+      return l.slice(from, to + 1);
+    },
+    async ltrim(k, a, b) {
+      if (redis) return redis.ltrim(k, a, b);
+      const l = mem.get(k) || [];
+      const from = a < 0 ? Math.max(0, l.length + a) : a;
+      const to = b < 0 ? l.length + b : b;
+      mem.set(k, l.slice(from, to + 1));
+    },
+    async incr(k) {
+      if (redis) return redis.incr(k);
+      const n = (parseInt(mem.get(k)) || 0) + 1; mem.set(k, String(n)); return n;
     }
   };
 
@@ -104,7 +142,7 @@ function mount(app, redis) {
   const api = express.Router();
   api.use(express.json({ limit: '8kb' }));
 
-  api.get('/config', (req, res) => res.json({ google: GOOGLE_CLIENT_ID }));
+  api.get('/config', (req, res) => res.json({ google: GOOGLE_CLIENT_ID, giphy: process.env.SOC_GIPHY_KEY || null }));
 
   // suggestion for the "your city" field, from the visitor's IP
   api.get('/geo', async (req, res) => {
@@ -296,6 +334,19 @@ function mount(app, redis) {
       await db.del('soc:uname:' + name.toLowerCase());
       await db.srem('soc:members', uid);
 
+      // Untangle follows and conversations
+      for (const o of await db.smembers('soc:following:' + uid)) await db.srem('soc:followers:' + o, uid);
+      for (const o of await db.smembers('soc:followers:' + uid)) await db.srem('soc:following:' + o, uid);
+      await db.del('soc:following:' + uid); await db.del('soc:followers:' + uid);
+      for (const o of await db.smembers('soc:convos:' + uid)) {
+        await db.srem('soc:convos:' + o, uid);
+        await db.del('soc:msgs:' + [uid, o].sort().join(':'));
+        await db.del('soc:unread:' + o + ':' + uid);
+        await db.del('soc:unread:' + uid + ':' + o);
+      }
+      await db.del('soc:convos:' + uid);
+      await db.del('soc:online:' + uid);
+
       // Delete photo files
       try {
         const photoFiles = fs.readdirSync(PHOTO_DIR);
@@ -388,10 +439,130 @@ function mount(app, redis) {
       const out = [];
       for (const id of ids.slice(0, 500)) {
         const raw = await db.get('soc:user:' + id);
-        if (raw) out.push(pub(JSON.parse(raw)));
+        if (raw) {
+          const u = JSON.parse(raw);
+          out.push({ ...pub(u), online: await db.exists('soc:online:' + u.id) });
+        }
       }
       out.sort((a, b) => b.createdAt - a.createdAt);
       res.json({ members: out });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // ---- presence: the app pings while open; a user is online while the key lives ----
+  api.post('/ping', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      await db.set('soc:online:' + u.id, '1', 60);
+      let unread = 0;
+      for (const o of await db.smembers('soc:convos:' + u.id)) {
+        unread += parseInt(await db.get('soc:unread:' + u.id + ':' + o)) || 0;
+      }
+      res.json({ unread });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // ---- follow ----
+  api.get('/user/:id', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      const raw = await db.get('soc:user:' + String(req.params.id));
+      if (!raw) return res.status(404).json({ error: 'Not found.' });
+      const u = JSON.parse(raw);
+      res.json({
+        user: pub(u),
+        online: await db.exists('soc:online:' + u.id),
+        followers: await db.scard('soc:followers:' + u.id),
+        following: await db.scard('soc:following:' + u.id),
+        isFollowing: me ? await db.sismember('soc:following:' + me.id, u.id) : false
+      });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.post('/follow', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const id = String((req.body || {}).id || '');
+      if (id === me.id || !(await db.get('soc:user:' + id))) return res.status(400).json({ error: 'Bad user.' });
+      await db.sadd('soc:following:' + me.id, id);
+      await db.sadd('soc:followers:' + id, me.id);
+      res.json({ ok: true, followers: await db.scard('soc:followers:' + id) });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.post('/unfollow', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const id = String((req.body || {}).id || '');
+      await db.srem('soc:following:' + me.id, id);
+      await db.srem('soc:followers:' + id, me.id);
+      res.json({ ok: true, followers: await db.scard('soc:followers:' + id) });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // ---- chat (direct messages, text or GIF) ----
+  const cid = (a, b) => [a, b].sort().join(':');
+
+  api.post('/message', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (limited(req, 'msg', 40)) return res.status(429).json({ error: 'Slow down a little ✋' });
+      const to = String((req.body || {}).to || '');
+      const kind = (req.body || {}).kind === 'gif' ? 'gif' : 'text';
+      const text = String((req.body || {}).text || '').trim().slice(0, kind === 'gif' ? 300 : 500);
+      if (!text || to === me.id || !(await db.get('soc:user:' + to))) return res.status(400).json({ error: 'Nothing to send.' });
+      if (kind === 'gif' && !/^https:\/\/(media[0-9]*\.giphy\.com|i\.giphy\.com)\//.test(text)) return res.status(400).json({ error: 'Bad GIF.' });
+      const msg = { f: me.id, k: kind, x: text, t: Date.now() };
+      const key = 'soc:msgs:' + cid(me.id, to);
+      await db.rpush(key, JSON.stringify(msg));
+      await db.ltrim(key, -500, -1);
+      await db.sadd('soc:convos:' + me.id, to);
+      await db.sadd('soc:convos:' + to, me.id);
+      await db.incr('soc:unread:' + to + ':' + me.id);
+      res.json({ ok: true, msg });
+    } catch (e) { console.error('social message:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.get('/chats', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const out = [];
+      for (const o of await db.smembers('soc:convos:' + me.id)) {
+        const raw = await db.get('soc:user:' + o);
+        if (!raw) continue;
+        const u = JSON.parse(raw);
+        const last = await db.lrange('soc:msgs:' + cid(me.id, o), -1, -1);
+        out.push({
+          id: u.id, name: u.name, photo: u.photo || null, cc: u.cc || '',
+          online: await db.exists('soc:online:' + o),
+          last: last.length ? JSON.parse(last[0]) : null,
+          unread: parseInt(await db.get('soc:unread:' + me.id + ':' + o)) || 0
+        });
+      }
+      out.sort((a, b) => ((b.last && b.last.t) || 0) - ((a.last && a.last.t) || 0));
+      res.json({ chats: out });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.get('/chat/:id', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const o = String(req.params.id);
+      const raw = await db.get('soc:user:' + o);
+      if (!raw) return res.status(404).json({ error: 'Not found.' });
+      const u = JSON.parse(raw);
+      const msgs = (await db.lrange('soc:msgs:' + cid(me.id, o), -100, -1)).map(m => JSON.parse(m));
+      await db.del('soc:unread:' + me.id + ':' + o);
+      res.json({
+        user: { id: u.id, name: u.name, photo: u.photo || null, online: await db.exists('soc:online:' + o) },
+        messages: msgs
+      });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
