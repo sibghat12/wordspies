@@ -97,7 +97,7 @@ function saveRoom(room) {
     saveTimers.delete(room.code);
     if (!rooms.has(room.code)) return;
     const data = {
-      code: room.code, hostId: room.hostId, state: room.state, settings: room.settings,
+      code: room.code, watchCode: room.watchCode, hostId: room.hostId, state: room.state, settings: room.settings,
       board: room.board, turn: room.turn, clue: room.clue, winner: room.winner,
       winReason: room.winReason, log: room.log, score: room.score,
       lastActivity: room.lastActivity,
@@ -122,7 +122,8 @@ async function restoreRooms() {
       if (!raw) continue;
       const d = JSON.parse(raw);
       const room = {
-        code: d.code, hostId: d.hostId, players: new Map(),
+        code: d.code, watchCode: d.watchCode || ('W' + crypto.randomBytes(4).toString('hex').toUpperCase()),
+        hostId: d.hostId, players: new Map(),
         state: d.state, settings: d.settings || { categories: [], timer: 0 },
         board: d.board, turn: d.turn, clue: d.clue, winner: d.winner,
         winReason: d.winReason, log: d.log || [], score: d.score || { red: 0, blue: 0 },
@@ -200,6 +201,9 @@ function createRoom(hostName) {
   const code = makeCode();
   const room = {
     code,
+    // secret view-only code — sharing this link lets people WATCH the match
+    // without ever learning the join code
+    watchCode: 'W' + crypto.randomBytes(4).toString('hex').toUpperCase(),
     hostId: null,
     players: new Map(), // socketId -> {id, name, team, role, connected}
     state: 'lobby', // lobby | playing | over
@@ -233,14 +237,17 @@ function remaining(room, team) {
 function publicState(room, forPlayer) {
   const isSpymaster = forPlayer && forPlayer.role === 'spymaster';
   const revealAll = room.state === 'over';
+  const isWatcher = forPlayer && forPlayer.watcher;
   return {
-    code: room.code,
+    // watchers never see the join code or the watch code — their link is all they get
+    code: isWatcher ? null : room.code,
+    watchCode: isWatcher ? null : room.watchCode,
     state: room.state,
     hostId: room.hostId,
     settings: room.settings,
     catalog: CATALOG,
     players: [...room.players.values()].map(p => ({
-      id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar, avatarSeed: p.avatarSeed
+      id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar, avatarSeed: p.avatarSeed, watcher: !!p.watcher
     })),
     board: room.board ? {
       startingTeam: room.board.startingTeam,
@@ -360,6 +367,21 @@ io.on('connection', (socket) => {
     broadcast(room);
   }));
 
+  // Watch-only entry: a secret link (?watch=Wxxxxxxxx) that shows the match
+  // live — board, clues, players — but can never join a team or act.
+  socket.on('watch', guard(({ watchCode }) => {
+    if (room) return;
+    watchCode = String(watchCode || '').trim().toUpperCase();
+    const r = [...rooms.values()].find(x => x.watchCode === watchCode);
+    if (!r) { socket.emit('errorMsg', 'This watch link is no longer valid.'); return; }
+    let n = [...r.players.values()].filter(p => p.watcher).length + 1;
+    room = r;
+    player = { id: socket.id, name: 'Viewer ' + n, team: null, role: 'operative', watcher: true, connected: true, avatar: pickAvatar(room), token: crypto.randomUUID() };
+    room.players.set(socket.id, player);
+    socket.join(room.code);
+    broadcast(room);
+  }));
+
   socket.on('rejoin', guard(({ code, token }) => {
     if (room) return;
     code = String(code || '').trim().toUpperCase();
@@ -388,12 +410,14 @@ io.on('connection', (socket) => {
       const taken = [...room.players.values()].some(p => p !== player && p.team === team && p.role === 'spymaster');
       if (taken) { socket.emit('errorMsg', 'That team already has a spymaster.'); return; }
     }
-    // 🔒 Teams are locked while a round is on: nobody switches teams, and
-    // people who arrive mid-game stay spectators until the round ends.
-    if (room.state === 'playing' && player.team !== team) {
-      socket.emit('errorMsg', player.team
-        ? 'You can\'t switch teams during a game.'
-        : '🔒 The game is locked while a round is on — watch along and join when it ends!');
+    // 👁 Watch-only visitors can never take a seat
+    if (player.watcher) {
+      socket.emit('errorMsg', '👁 This is a watch-only link — you can see the game but not play.');
+      return;
+    }
+    // Can't switch teams during a game
+    if (room.state === 'playing' && player.team && player.team !== team) {
+      socket.emit('errorMsg', 'You can\'t switch teams during a game.');
       return;
     }
     // No new spymasters mid-game: the original spymaster saw the colors and can
@@ -536,7 +560,7 @@ io.on('connection', (socket) => {
   }));
 
   socket.on('chat', guard(({ text }) => {
-    if (!room || !player) return;
+    if (!room || !player || player.watcher) return;
     text = String(text || '').trim().slice(0, 200);
     if (!text) return;
     addLog(room, { type: 'chat', name: player.name, team: player.team, text });
