@@ -425,6 +425,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
     <div class="top">
       <div class="logo"><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp">Copy invite link</span></div>
+      <div class="codepill" id="watchPill" style="display:none"><span class="cp">👁 Copy watch-only link</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
         <button class="helpbtn" id="leaveBtn" title="Exit this game">🚪 Exit game</button>
@@ -586,11 +587,14 @@ function avSVG(p, size){
 }
 
 let everConnected = false;
+const URL_WATCH = new URLSearchParams(location.search).get('watch');
 socket.on('connect', () => {
   if (DEMO) return;
   const reconnected = everConnected; // true when the socket dropped and came back
   everConnected = true;
   myId = socket.id;
+  // watch-only link: hop straight into viewer mode (also on every reconnect)
+  if (URL_WATCH) { socket.emit('watch', { watchCode: URL_WATCH }); return; }
   // refresh-proof AND background-proof: auto-rejoin on first load AND on every reconnect
   // (leaving the app / switching tabs drops the socket; on return we re-claim our seat)
   try {
@@ -723,11 +727,21 @@ document.querySelectorAll('.teambtns button').forEach(b => {
 // and can rejoin their seat at any time).
 function renderMidJoin(playing){
   const el = $('midJoin'), m = me();
-  if (!playing || !m || m.team) { show(el, false); return; }
-  const watchers = S.players.filter(p => !p.team && p.connected).length;
-  el.innerHTML = `<b>👁 You're watching live${watchers > 1 ? ' with ' + (watchers - 1) + ' other' + (watchers > 2 ? 's' : '') : ''}!</b> ` +
-    `The game is locked while the round is on — you can follow every clue and guess. You can pick a team when the round ends.`;
+  if (!m || m.team || (!playing && !m.watcher)) { show(el, false); return; }
+  if (m.watcher) {
+    const watchers = S.players.filter(p => p.watcher && p.connected).length;
+    el.innerHTML = `<b>👁 Watch mode${watchers > 1 ? ' · ' + watchers + ' watching' : ''}</b> — you're viewing this match live. ` +
+      `You can see the board, the players and every clue, but this link can't join the game.`;
+    show(el, true); return;
+  }
+  el.innerHTML = `<b>👋 You're watching — pick a team to jump in:</b><div class="midjoinbtns">` +
+    `<button class="btn mjr" data-team="red" data-role="operative">❤️ Join Red</button>` +
+    `<button class="btn mjb" data-team="blue" data-role="operative">💙 Join Blue</button>` +
+    `</div>`;
   show(el, true);
+  el.querySelectorAll('button').forEach(b => {
+    b.onclick = () => socket.emit('setTeamRole', { team: b.dataset.team, role: b.dataset.role });
+  });
 }
 $('startBtn').onclick = () => socket.emit('start');
 $('againBtn').onclick = () => socket.emit('rematch');
@@ -780,6 +794,14 @@ $('codePill').onclick = () => {
   track('invite_copied', {});
   (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
     .then(() => toast('Invite link copied ✓'))
+    .catch(() => toast(link));
+};
+$('watchPill').onclick = () => {
+  if (!S || !S.watchCode) return;
+  const link = location.origin + '/play?watch=' + S.watchCode;
+  track('watch_link_copied', {});
+  (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
+    .then(() => toast('👁 Watch-only link copied — viewers can\'t join or see the code'))
     .catch(() => toast(link));
 };
 
@@ -844,7 +866,9 @@ function me(){ return S.players.find(p => p.id === myId); }
 function render(){
   show($('home'), false);
   show($('app'), true);
-  $('codeText').textContent = S.code;
+  $('codeText').textContent = S.code || '';
+  show($('codePill'), !!S.code);
+  show($('watchPill'), !!S.watchCode);
   $('scoreRed').textContent = S.score.red;
   $('scoreBlue').textContent = S.score.blue;
 
