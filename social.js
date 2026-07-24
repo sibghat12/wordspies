@@ -665,6 +665,22 @@ function mount(app, redis) {
   });
 
   console.log('social module: mounted');
+
+  // Called by the game server when a match ends: winners/losers are social
+  // profile ids. Everyone gets +1 game played; winners also get +1 win.
+  async function recordResult(winnerIds, loserIds) {
+    for (const uid of [...winnerIds, ...loserIds]) {
+      try {
+        const raw = await db.get('soc:user:' + uid);
+        if (!raw) continue;
+        const u = JSON.parse(raw);
+        u.games = (u.games || 0) + 1;
+        if (winnerIds.includes(uid)) u.wins = (u.wins || 0) + 1;
+        await db.set('soc:user:' + uid, JSON.stringify(u));
+      } catch (e) { console.error('recordResult user:', e.message); }
+    }
+  }
+  return { recordResult };
 }
 
 module.exports = { mount };
