@@ -158,6 +158,9 @@ input,textarea{font-family:inherit;outline:none}
 .gifgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .gifgrid img{width:100%;height:90px;object-fit:cover;border-radius:8px;cursor:pointer}
 .mbtns{display:flex;gap:10px;padding:16px 24px 0}
+.ginvite{display:block;margin-top:6px;background:var(--ink);color:#fff !important;text-decoration:none;font-weight:700;font-size:13.5px;padding:10px 14px;border-radius:12px;text-align:center}
+.mb.me .ginvite{background:rgba(255,255,255,.22)}
+.mlink{color:inherit;text-decoration:underline;word-break:break-all}
 </style>
 </head>
 <body>
@@ -252,6 +255,7 @@ input,textarea{font-family:inherit;outline:none}
     <div class="composer">
       <button class="cbtn" onclick="togglePicker('emoji')">😊</button>
       <button class="cbtn" onclick="togglePicker('gif')">GIF</button>
+      <button class="cbtn" onclick="inviteToPlay()" title="Invite to a game">🎮</button>
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
       <button class="cbtn send" onclick="sendMsg()">➤</button>
     </div>
@@ -536,13 +540,32 @@ async function refreshChat(first){
     if (j.messages.length !== lastMsgCount) {
       $('msgs').innerHTML = j.messages.map(m => `
         <div class="mb ${m.f === ME.id ? 'me' : 'them'}">
-          ${m.k === 'gif' ? `<img src="${esc(m.x)}" loading="lazy">` : esc(m.x)}
+          ${msgBody(m)}
           <div class="mtime">${fmtT(m.t)}</div>
         </div>`).join('');
       window.scrollTo(0, document.body.scrollHeight);
       lastMsgCount = j.messages.length;
     }
   } catch(e){}
+}
+
+// Render a message: GIFs as images, game invite links as a big Join button,
+// other links clickable. Everything is escaped first.
+function msgBody(m){
+  if (m.k === 'gif') return `<img src="${esc(m.x)}" loading="lazy">`;
+  const gm = m.x.match(/(?:https?:\/\/[^\s]+)?\/play\?room=([A-Za-z0-9]{4})/);
+  if (gm) {
+    const code = gm[1].toUpperCase();
+    const rest = esc(m.x.replace(gm[0], '').trim());
+    return (rest ? rest + ' ' : '') + `<a class="ginvite" href="/play?room=${code}" target="_blank" rel="noopener">🎮 Tap to join my game · ${code}</a>`;
+  }
+  return esc(m.x).replace(/(https?:\/\/[^\s]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
+}
+
+// 🎮 in the chat: open the game to create a room, then paste the invite link here.
+function inviteToPlay(){
+  window.open('/play', '_blank', 'noopener');
+  toast('🎮 Create a game, tap "Copy invite link", then paste it here!');
 }
 
 async function sendMsg(kind, gifUrl){
