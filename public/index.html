@@ -145,12 +145,23 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .chips button:hover{color:var(--ink);transform:translateY(-1px)}
 .chips button.on{background:linear-gradient(180deg,#23262e,#111318);color:#fff;box-shadow:0 3px 0 #000,0 6px 14px rgba(17,19,24,.25)}
 .chips.locked button{cursor:default;pointer-events:none}
-/* category multi-select chips */
-.catchips{margin-bottom:6px}
-.catchips button{padding:7px 12px;font-size:12px;position:relative}
-.catchips button.on{background:linear-gradient(180deg,#159f07,var(--green));color:#fff;box-shadow:0 3px 0 #0b5a00,0 6px 14px rgba(15,117,0,.22)}
-.catchips button.on::before{content:'✓ ';font-weight:900}
-.cathint{text-align:center;color:var(--muted);font-size:12.5px;font-weight:700;margin-bottom:18px}
+/* category multi-select dropdown — collapses down to one line so picking
+   several categories doesn't eat vertical space, especially on mobile */
+.catdd{position:relative;margin-bottom:18px}
+.catdd-toggle{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:#f1f3fa;border:none;border-radius:12px;padding:11px 16px;
+  font-weight:700;font-size:13px;color:var(--ink);cursor:pointer;transition:.15s;text-align:left;
+}
+.catdd-toggle:hover{background:var(--blue-soft);color:var(--blue)}
+.catdd-chev{transition:transform .15s;color:var(--muted);font-size:11px;flex:0 0 auto}
+.catdd.open .catdd-chev{transform:rotate(180deg)}
+.catdd-panel{margin-top:8px;max-height:230px;overflow-y:auto;border:1.5px solid var(--line);border-radius:12px;padding:6px;background:#fff;box-shadow:var(--sh-sm)}
+.catdd-panel.hidden{display:none}
+.catdd-item{display:flex;align-items:center;gap:10px;padding:9px 10px;font-size:12.5px;font-weight:600;border-radius:9px;cursor:pointer;user-select:none}
+.catdd-item:hover{background:#f7f8fb}
+.catdd-item input{width:17px;height:17px;accent-color:var(--green);flex:0 0 auto}
+.catdd.locked .catdd-toggle{cursor:default;pointer-events:none;opacity:.75}
 .startbtn{width:100%;max-width:340px;font-size:18px;padding:17px;margin:8px auto 0;display:block}
 .waitmsg{color:var(--muted);font-weight:800;font-size:14.5px;margin-top:8px}
 
@@ -184,7 +195,7 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
   background:linear-gradient(180deg,#fff 0%,#fafbfe 100%);
   box-shadow:0 2px 0 var(--line),var(--sh-sm);border:1px solid rgba(35,41,70,.06);
   display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;
-  font-weight:900;font-size:clamp(9px,2.6vw,15px);letter-spacing:.4px;color:var(--ink);
+  font-weight:600;font-size:clamp(9px,2.6vw,15px);letter-spacing:.3px;color:var(--ink);
   overflow-wrap:anywhere;line-height:1.15;text-transform:uppercase;
   transition:transform .16s var(--spring),box-shadow .2s;
 }
@@ -310,7 +321,14 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
   .chat .emojibtn{font-size:20px;padding:0 15px}
   .log h4{font-size:12.5px}
   .teambtns button{padding:14px 8px}
-  .helpbtn{padding:8px 13px;font-size:13px}
+  .helpbtn{padding:6px 10px;font-size:11px;gap:4px}
+  .youbar{padding:8px 14px;gap:9px}
+  .youbar .yav{width:36px;height:36px}
+  .youbar .yname{font-size:12.5px}
+  .youbar .yname small{font-size:9px}
+  .youbar .shuffle{font-size:12px;padding:7px 12px}
+  .catdd-toggle{font-size:12px;padding:9px 13px}
+  .catdd-item{font-size:12px;padding:7px 9px}
   .winov{padding:34px 20px}
   .team{padding:16px}
   .setup{padding:18px}
@@ -438,8 +456,12 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
       </div>
       <div class="card setup">
         <h4>🗂 WORD CATEGORIES</h4>
-        <div class="chips catchips" id="catChips"></div>
-        <div class="cathint" id="catHint"></div>
+        <div class="catdd" id="catDD">
+          <button type="button" class="catdd-toggle" id="catDDToggle">
+            <span id="catDDLabel">All categories (mixed)</span><span class="catdd-chev">▾</span>
+          </button>
+          <div class="catdd-panel hidden" id="catDDPanel"></div>
+        </div>
         <hr>
         <h4>⏱ TIMER</h4>
         <div class="chips" id="timerChips">
@@ -711,32 +733,46 @@ function renderMidJoin(playing){
 $('startBtn').onclick = () => socket.emit('start');
 $('againBtn').onclick = () => socket.emit('rematch');
 
-// ---------- word categories (host-only multi-select) ----------
+// ---------- word categories (host-only multi-select dropdown) ----------
 function renderCategories(isHost){
-  const wrap = $('catChips'); if (!wrap || !S) return;
+  const dd = $('catDD'); if (!dd || !S) return;
   const cats = S.catalog || [];
   const sel = (S.settings && S.settings.categories) || [];
-  wrap.classList.toggle('locked', !isHost);
-  // rebuild only if the set of buttons changed
-  if (wrap.dataset.built !== String(cats.length)) {
-    wrap.innerHTML = cats.map(c => `<button data-k="${c.key}">${esc(c.name)}</button>`).join('');
-    wrap.dataset.built = String(cats.length);
-    wrap.querySelectorAll('button').forEach(b => {
-      b.onclick = () => {
+  dd.classList.toggle('locked', !isHost);
+  const panel = $('catDDPanel'); if (!panel) return;
+  // rebuild only if the set of options changed
+  if (panel.dataset.built !== String(cats.length)) {
+    panel.innerHTML = cats.map(c => `<label class="catdd-item"><input type="checkbox" data-k="${c.key}"> ${esc(c.name)}</label>`).join('');
+    panel.dataset.built = String(cats.length);
+    panel.querySelectorAll('input').forEach(cb => {
+      cb.onchange = () => {
         if (S.hostId !== myId) return;
         const cur = (S.settings.categories || []).slice();
-        const k = b.dataset.k, i = cur.indexOf(k);
+        const k = cb.dataset.k, i = cur.indexOf(k);
         if (i >= 0) cur.splice(i, 1); else cur.push(k);
         socket.emit('setSettings', { categories: cur });
       };
     });
   }
-  wrap.querySelectorAll('button').forEach(b => b.classList.toggle('on', sel.includes(b.dataset.k)));
-  const hint = $('catHint');
-  if (hint) hint.textContent = sel.length === 0 ? 'None picked — we\'ll mix words from every category'
-    : sel.length === cats.length ? 'All categories — the biggest mix of words'
-    : sel.length + (sel.length === 1 ? ' selected · words come from this one' : ' selected · words come from these');
+  panel.querySelectorAll('input').forEach(cb => { cb.checked = sel.includes(cb.dataset.k); });
+  const label = $('catDDLabel');
+  if (label) label.textContent = sel.length === 0 ? 'All categories (mixed)'
+    : sel.length === cats.length ? 'All categories selected'
+    : sel.length + (sel.length === 1 ? ' category selected' : ' categories selected');
 }
+// keep the dropdown open while picking several categories — only close it
+// on an explicit toggle click or a tap outside the whole component
+$('catDDToggle').onclick = () => {
+  const dd = $('catDD'), panel = $('catDDPanel');
+  const opening = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !opening);
+  dd.classList.toggle('open', opening);
+};
+document.addEventListener('click', (e) => {
+  const dd = $('catDD'); if (!dd || dd.contains(e.target)) return;
+  $('catDDPanel').classList.add('hidden');
+  dd.classList.remove('open');
+});
 $('timerChips').querySelectorAll('button').forEach(b => {
   b.onclick = () => socket.emit('setSettings', { timer: parseInt(b.dataset.t, 10) });
 });
@@ -1131,292 +1167,6 @@ if (DEMO) {
   toast('👀 Demo preview — this is how a live game looks');
 }
 
-</script>
-
-<!-- ============================================================
-     Voice chat — completely separate, optional add-on script.
-     If anything in here fails (unsupported browser, mic denied,
-     a bug), it fails silently and the game above is 100%
-     unaffected — this script never modifies any function, element,
-     or variable from the main game script above; it only reads the
-     same 'socket' connection and the same 'state' events the game
-     already broadcasts.
-     ============================================================ -->
-<script>
-(function () {
-  try {
-    if (typeof DEMO !== 'undefined' && DEMO) return; // skip entirely on ?test/?demo previews
-    if (typeof socket === 'undefined' || !socket) return;
-    if (!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return; // unsupported browser: no UI shown, no error
-
-    // STUN alone only works when both players' networks allow a direct
-    // peer-to-peer path. Mobile data (carrier-grade NAT) and a lot of
-    // corporate/hotel wifi block that outright — those calls would never
-    // connect at all, or connect then drop repeatedly, no matter how good
-    // the STUN servers are. A TURN relay is the fallback for exactly that
-    // case: if a direct path can't be found, traffic relays through the
-    // TURN server instead of failing. (Free public relay — fine to start
-    // with; can move to a dedicated/self-hosted TURN server later if usage
-    // grows enough to need it.)
-    const ICE = { iceServers: (window.__WS_TEST_NO_STUN ? [] : [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'turn:178.128.162.202:3478?transport=udp', username: 'wordspies', credential: '51eda457df6bb2b4174e27a4ce77312c' },
-      { urls: 'turn:178.128.162.202:3478?transport=tcp', username: 'wordspies', credential: '51eda457df6bb2b4174e27a4ce77312c' }
-    ]) };
-    let localStream = null;
-    let voiceOn = false;
-    let selfMuted = false;
-    let currentState = null;
-    const peers = new Map();  // socketId -> RTCPeerConnection
-    const audios = new Map(); // socketId -> <audio>
-    window.__voiceDebug = { peers, audios, state: () => Array.from(peers.entries()).map(([id, pc]) => ({ id, conn: pc.connectionState, ice: pc.iceConnectionState, sig: pc.signalingState })) };
-
-    function myTeamNow() {
-      if (!currentState) return null;
-      const p = currentState.players.find(p => p.id === socket.id);
-      return p ? p.team : null;
-    }
-    function turnTeamNow() { return currentState && currentState.turn ? currentState.turn.team : null; }
-    function gameStateNow() { return currentState ? currentState.state : null; }
-    function shouldBeLive() {
-      if (!voiceOn || selfMuted) return false;
-      const gs = gameStateNow();
-      if (gs !== 'playing') return true; // lobby / game-over: everyone can talk freely
-      const t = myTeamNow();
-      return !!t && t === turnTeamNow();
-    }
-    function applyLocalMuteState() {
-      if (!localStream) { updateVoiceUI(false); return; }
-      const live = shouldBeLive();
-      localStream.getAudioTracks().forEach(t => { t.enabled = live; });
-      updateVoiceUI(live);
-    }
-
-    socket.on('state', function (st) {
-      try { currentState = st; applyLocalMuteState(); } catch (e) { console.error('voice state sync error', e); }
-    });
-
-    // A dropped-and-restored network connection (phone screen lock, wifi <->
-    // cellular handoff, tab briefly backgrounded, etc.) gives the socket a
-    // brand-new id on reconnect. The old peer connections on both ends are
-    // now permanently orphaned (this is the other half of the "worked for a
-    // second then all gone" bug) since nothing ever told either side to
-    // rebuild them. If voice was on when we dropped, tear down whatever's
-    // left and rejoin fresh the moment the socket comes back.
-    let voiceHadConnectedOnce = false;
-    socket.on('connect', function () {
-      try {
-        const isReconnect = voiceHadConnectedOnce;
-        voiceHadConnectedOnce = true;
-        if (isReconnect && voiceOn) {
-          peers.forEach((pc, id) => dropPeer(id));
-          socket.emit('voice:join');
-        }
-      } catch (e) { console.error('voice reconnect error', e); }
-    });
-
-    // Bump the Opus codec up to a high, near-transparent bitrate (WhatsApp-style
-    // calls typically run ~16-32kbps; this pushes clarity noticeably higher) and
-    // disable silence-detection dropouts so voices don't clip in and out.
-    function boostAudioQuality(sdp) {
-      try {
-        const m = sdp.match(/a=rtpmap:(\d+) opus\/48000/);
-        if (!m) return sdp;
-        const pt = m[1];
-        const line = 'a=fmtp:' + pt + ' minptime=10;useinbandfec=1;maxaveragebitrate=64000;maxplaybackrate=48000;stereo=0;cbr=0;dtx=0\r\n';
-        const fmtpRe = new RegExp('a=fmtp:' + pt + '[^\\r\\n]*\\r\\n');
-        if (fmtpRe.test(sdp)) return sdp.replace(fmtpRe, line);
-        const rtpmapRe = new RegExp('(a=rtpmap:' + pt + ' opus/48000[^\\r\\n]*\\r\\n)');
-        return sdp.replace(rtpmapRe, '$1' + line);
-      } catch (e) { return sdp; }
-    }
-
-    function dropPeer(id) {
-      const pc = peers.get(id);
-      if (pc) { try { pc.close(); } catch (e) {} peers.delete(id); }
-      const el = audios.get(id);
-      if (el) { el.remove(); audios.delete(id); }
-    }
-
-    function createPeer(id, initiator) {
-      const pc = new RTCPeerConnection(ICE);
-      peers.set(id, pc);
-      if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-      pc.onicecandidate = e => {
-        if (e.candidate) socket.emit('voice:signal', { to: id, data: { type: 'candidate', candidate: e.candidate } });
-      };
-      // A phone locking, switching wifi/cellular, or briefly losing signal can
-      // knock out the underlying connection (ICE goes 'disconnected'/'failed')
-      // without the page ever reloading — this is the "worked for a second
-      // then went silent" case. Drop the dead connection instead of leaving a
-      // stale, silently-broken one behind; the reconnect handler below (or the
-      // other player toggling voice) will re-establish a fresh one.
-      pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'closed') {
-          dropPeer(id);
-        }
-      };
-      pc.ontrack = e => {
-        let el = audios.get(id);
-        if (!el) { el = document.createElement('audio'); el.autoplay = true; el.playsInline = true; el.volume = 1; el.muted = false; el.style.display = 'none'; document.body.appendChild(el); audios.set(id, el); }
-        el.srcObject = e.streams[0];
-        // Some mobile browsers (notably iOS Safari) silently refuse to
-        // autoplay an <audio> element created after an async delay, even
-        // though we already had a user gesture (the "Enable voice chat"
-        // tap). No error is thrown — the connection just stays silent.
-        // Force a real play() call and, if it's still blocked, retry on
-        // the player's very next tap anywhere on the page.
-        const attemptPlay = () => {
-          const p = el.play();
-          if (p && p.catch) {
-            p.catch(err => {
-              console.warn('voice: remote audio play blocked, will retry on next tap', err);
-              const retry = () => { el.play().catch(() => {}); };
-              document.addEventListener('click', retry, { once: true });
-              document.addEventListener('touchend', retry, { once: true });
-            });
-          }
-        };
-        attemptPlay();
-      };
-      if (initiator) {
-        pc.onnegotiationneeded = async () => {
-          try {
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription({ type: 'offer', sdp: boostAudioQuality(offer.sdp) });
-            socket.emit('voice:signal', { to: id, data: { type: 'offer', sdp: pc.localDescription } });
-          } catch (e) { console.error('voice offer error', e); }
-        };
-      }
-      return pc;
-    }
-
-    socket.on('voice:peers', function (ids) {
-      try { if (!voiceOn) return; (ids || []).forEach(id => { if (!peers.has(id)) createPeer(id, true); }); } catch (e) { console.error(e); }
-    });
-    socket.on('voice:peer-joined', function (msg) {
-      try { if (!voiceOn) return; const id = msg && msg.id; if (id && !peers.has(id)) createPeer(id, false); } catch (e) { console.error(e); }
-    });
-    socket.on('voice:peer-left', function (msg) {
-      try {
-        const id = msg && msg.id;
-        const pc = peers.get(id); if (pc) pc.close();
-        peers.delete(id);
-        const el = audios.get(id); if (el) { el.remove(); audios.delete(id); }
-      } catch (e) { console.error(e); }
-    });
-    socket.on('voice:signal', async function (msg) {
-      try {
-        if (!voiceOn) return;
-        const from = msg.from, data = msg.data;
-        let pc = peers.get(from);
-        if (!pc) pc = createPeer(from, false);
-        if (data.type === 'offer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription({ type: 'answer', sdp: boostAudioQuality(answer.sdp) });
-          socket.emit('voice:signal', { to: from, data: { type: 'answer', sdp: pc.localDescription } });
-        } else if (data.type === 'answer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-        } else if (data.type === 'candidate') {
-          await pc.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(() => {});
-        }
-      } catch (e) { console.error('voice signal error', e); }
-    });
-
-    let audioUnlocked = false;
-    function unlockAudioPlayback() {
-      // Must run synchronously inside the click handler (a real user
-      // gesture) so that <audio> elements created later, after the async
-      // mic-permission + WebRTC negotiation, are still allowed to play
-      // sound on strict mobile browsers (iOS Safari in particular).
-      if (audioUnlocked) return;
-      audioUnlocked = true;
-      try {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (Ctx) {
-          const ctx = new Ctx();
-          const buffer = ctx.createBuffer(1, 1, 22050);
-          const src = ctx.createBufferSource();
-          src.buffer = buffer;
-          src.connect(ctx.destination);
-          if (src.start) src.start(0); else src.noteOn(0);
-          if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
-        }
-      } catch (e) { /* not critical — best effort only */ }
-    }
-    async function enableVoice() {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            sampleRate: 48000,
-            channelCount: 1
-          },
-          video: false
-        });
-        voiceOn = true;
-        socket.emit('voice:join');
-        applyLocalMuteState();
-      } catch (e) {
-        console.error('mic permission error', e);
-        voiceOn = false;
-        try { if (typeof toast === 'function') toast('🎤 Mic permission denied or unavailable'); } catch (e2) {}
-        updateVoiceUI(false);
-      }
-    }
-    function disableVoice() {
-      voiceOn = false;
-      if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-      peers.forEach(pc => { try { pc.close(); } catch (e) {} });
-      peers.clear();
-      audios.forEach(el => el.remove());
-      audios.clear();
-      try { socket.emit('voice:leave'); } catch (e) {}
-      updateVoiceUI(false);
-    }
-
-    function buildUI() {
-      const bar = document.createElement('div');
-      bar.id = 'voiceBar';
-      bar.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:9998;display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-family:Nunito,system-ui,sans-serif';
-      bar.innerHTML =
-        '<div id="voiceStatus" style="display:none;background:#111318;color:#fff;padding:8px 15px;border-radius:99px;font-size:12.5px;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer"></div>' +
-        '<button id="voiceToggle" type="button" style="background:linear-gradient(180deg,#159f07,#0f7500);color:#fff;border:none;border-radius:99px;padding:13px 20px;font-weight:900;font-size:14px;box-shadow:0 4px 14px rgba(15,117,0,.35);cursor:pointer">🎤 Enable voice chat</button>';
-      document.body.appendChild(bar);
-      const btn = document.getElementById('voiceToggle');
-      const status = document.getElementById('voiceStatus');
-      btn.onclick = () => {
-        if (!voiceOn) { unlockAudioPlayback(); enableVoice(); btn.textContent = '🔴 Leave voice chat'; }
-        else { disableVoice(); btn.textContent = '🎤 Enable voice chat'; }
-      };
-      status.onclick = () => {
-        if (!voiceOn) return;
-        selfMuted = !selfMuted;
-        try { socket.emit('voice:muted', { muted: selfMuted }); } catch (e) {}
-        applyLocalMuteState();
-      };
-    }
-    function updateVoiceUI(live) {
-      const status = document.getElementById('voiceStatus');
-      if (!status) return;
-      if (!voiceOn) { status.style.display = 'none'; return; }
-      status.style.display = 'block';
-      if (selfMuted) { status.textContent = '🔇 You muted yourself — tap to unmute'; status.style.background = '#c11f38'; }
-      else if (live) { status.textContent = '🎙️ Live — tap to mute'; status.style.background = '#0f7500'; }
-      else { status.textContent = "🔇 Muted — not your team's turn"; status.style.background = '#5f6675'; }
-    }
-
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildUI);
-    else buildUI();
-
-  } catch (e) {
-    console.error('voice feature failed to init — game is unaffected:', e);
-  }
-})();
 </script>
 </body>
 </html>
