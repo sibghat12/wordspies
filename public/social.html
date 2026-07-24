@@ -140,6 +140,11 @@ input,textarea{font-family:inherit;outline:none}
 .msgs{padding:14px 16px 150px;display:flex;flex-direction:column;gap:8px;min-height:55vh}
 .mb{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;min-width:0}
 .chatmode .gamelink,.chatmode .sfoot{display:none}
+.chatfull .tabbar{display:none}
+.chatfull{padding-top:0 !important;padding-bottom:0}
+.chatfull .chathead{top:0}
+.chatfull .composer{bottom:0}
+.chatfull .picker{bottom:62px}
 .mb.me{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:5px}
 .mb.them{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}
 .mb img{max-width:220px;border-radius:10px;display:block}
@@ -464,6 +469,7 @@ function showTab(t){
   $('tbMe').classList.toggle('on', t === 'me');
   $('tbChats').classList.toggle('on', t === 'chats' || t === 'chat');
   $('vApp').classList.toggle('chatmode', t === 'chats' || t === 'chat');
+  $('vApp').classList.toggle('chatfull', t === 'chat');
   if (t === 'chats') { refreshChats(); chatTimer = setInterval(refreshChats, 5000); askNotify(); }
   if (t === 'chat') { refreshChat(true); chatTimer = setInterval(refreshChat, 3000); }
   window.scrollTo(0,0);
