@@ -46,7 +46,8 @@ input,textarea{font-family:inherit;outline:none}
 
 /* header + tabs */
 .head{display:flex;align-items:center;justify-content:space-between;padding:22px 20px 12px}
-.head .me-av{width:38px;height:38px;cursor:pointer}
+.mechip{display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 6px 5px 14px}
+.mechip .mename{font-weight:700;font-size:13.5px;letter-spacing:-.1px}
 .tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 8px calc(14px + env(safe-area-inset-bottom));z-index:10}
 .tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--faint);background:none;border:none}
 .tabbar button.on{color:var(--ink)}
@@ -96,18 +97,24 @@ input,textarea{font-family:inherit;outline:none}
   <div class="tag">THE COMMUNITY BEHIND THE GAME</div>
   <h1 id="authTitle">Meet the people<br>you <em>play with</em></h1>
   <p class="sub" id="authSub">Create your profile, follow other spies,<br>and chat between games.</p>
-  <div id="gWrap" class="hidden" style="margin-bottom:6px">
-    <div id="gBtn" style="display:flex;justify-content:center"></div>
-    <div style="display:flex;align-items:center;gap:12px;margin:16px 0 14px;color:var(--faint);font-size:12px;font-weight:600">
-      <span style="flex:1;height:1px;background:var(--line)"></span>or<span style="flex:1;height:1px;background:var(--line)"></span>
-    </div>
+  <div id="chooser" class="hidden">
+    <div id="gBtn" style="display:flex;justify-content:center;margin-bottom:12px"></div>
+    <button class="btn btn-dark" id="emailBtn">✉️ &nbsp;Sign up with email</button>
   </div>
-  <div id="suName" class="field"><input id="fName" maxlength="15" placeholder="Your name (shown to everyone)"></div>
-  <div class="field"><input id="fEmail" type="email" maxlength="100" placeholder="Email"></div>
-  <div class="field"><input id="fPass" type="password" maxlength="100" placeholder="Password (6+ characters)"></div>
-  <div class="err" id="authErr"></div>
-  <button class="btn btn-dark" id="authGo">Create my profile</button>
-  <div class="alt" id="authSwap">Already a member? <a>Log in</a></div>
+  <div id="emailForm">
+    <div id="suName" class="field"><input id="fName" maxlength="15" placeholder="Your name (shown to everyone)"></div>
+    <div class="field"><input id="fEmail" type="email" maxlength="100" placeholder="Email"></div>
+    <div class="field"><input id="fPass" type="password" maxlength="100" placeholder="Password (6+ characters)"></div>
+    <div id="resetFields" class="hidden">
+      <div class="field"><input id="fCode" maxlength="6" inputmode="numeric" placeholder="6-digit code from your email"></div>
+      <div class="field"><input id="fNewPass" type="password" maxlength="100" placeholder="New password (6+ characters)"></div>
+    </div>
+    <div class="err" id="authErr"></div>
+    <button class="btn btn-dark" id="authGo">Create my profile</button>
+    <div class="alt hidden" id="forgotLink"><a>Forgot password?</a></div>
+    <div class="alt" id="authSwap">Already a member? <a>Log in</a></div>
+    <div class="alt hidden" id="backChoice"><a>← Other sign-in options</a></div>
+  </div>
   <div class="legal">Be kind — no bullying, ever. You can report anyone.<br>The game itself needs no account — this is just for the community.</div>
 </div>
 
@@ -118,7 +125,10 @@ input,textarea{font-family:inherit;outline:none}
   <div id="tabWall">
     <div class="head">
       <div class="logo">WordSpies <em>Social</em></div>
-      <img class="av me-av" id="meAvSmall" src="" onclick="showTab('me')">
+      <div class="mechip" onclick="showTab('me')">
+        <span class="mename" id="meName"></span>
+        <span id="meAvSmall"></span>
+      </div>
     </div>
     <div class="search">🔎<input id="q" placeholder="Search spies…" oninput="renderWall()"></div>
     <div class="wall" id="wall"></div>
@@ -197,25 +207,45 @@ async function api(p, opts){
 // ---------- auth ----------
 function setMode(m){
   mode = m;
-  $('suName').classList.toggle('hidden', m === 'login');
-  $('authTitle').innerHTML = m === 'login' ? 'Welcome <em>back</em>' : 'Meet the people<br>you <em>play with</em>';
-  $('authSub').innerHTML = m === 'login' ? 'Log in to your community profile.' : 'Create your profile, follow other spies,<br>and chat between games.';
-  $('authGo').textContent = m === 'login' ? 'Log in' : 'Create my profile';
-  $('authSwap').innerHTML = m === 'login' ? 'New here? <a>Create a profile</a>' : 'Already a member? <a>Log in</a>';
+  $('suName').classList.toggle('hidden', m !== 'signup');
+  $('fPass').parentElement.classList.toggle('hidden', m === 'forgot');
+  $('resetFields').classList.toggle('hidden', m !== 'forgot');
+  $('forgotLink').classList.toggle('hidden', m !== 'login');
+  $('authTitle').innerHTML = m === 'login' ? 'Welcome <em>back</em>' : m === 'forgot' ? 'Reset your <em>password</em>' : 'Meet the people<br>you <em>play with</em>';
+  $('authSub').innerHTML = m === 'login' ? 'Log in to your community profile.' : m === 'forgot' ? 'We\'ll email you a 6-digit code.' : 'Create your profile, follow other spies,<br>and chat between games.';
+  $('authGo').textContent = m === 'login' ? 'Log in' : m === 'forgot' ? 'Send me the code' : 'Create my profile';
+  $('authSwap').innerHTML = m === 'signup' ? 'Already a member? <a>Log in</a>' : 'New here? <a>Create a profile</a>';
   $('authErr').textContent = '';
 }
-$('authSwap').onclick = () => setMode(mode === 'login' ? 'signup' : 'login');
+$('authSwap').onclick = () => setMode(mode === 'signup' ? 'login' : 'signup');
+$('forgotLink').onclick = () => setMode('forgot');
+let codeSent = false;
 $('authGo').onclick = async () => {
   $('authErr').textContent = '';
   $('authGo').disabled = true;
   try {
-    const body = { email: $('fEmail').value, password: $('fPass').value };
-    if (mode === 'signup') body.name = $('fName').value;
-    const j = await api(mode === 'signup' ? '/signup' : '/login', {
-      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
-    });
-    ME = j.me; enterApp();
-  } catch(e){ $('authErr').textContent = e.message; }
+    if (mode === 'forgot') {
+      if (!codeSent || !$('fCode').value) {
+        await api('/forgot', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: $('fEmail').value }) });
+        codeSent = true;
+        $('authGo').textContent = 'Set new password';
+        $('authErr').style.color = 'var(--green)';
+        $('authErr').textContent = 'Code sent! Check your email (and spam).';
+        $('fCode').focus();
+      } else {
+        const j = await api('/reset', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ email: $('fEmail').value, code: $('fCode').value, password: $('fNewPass').value }) });
+        ME = j.me; enterApp();
+      }
+    } else {
+      const body = { email: $('fEmail').value, password: $('fPass').value };
+      if (mode === 'signup') body.name = $('fName').value;
+      const j = await api(mode === 'signup' ? '/signup' : '/login', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+      });
+      ME = j.me; enterApp();
+    }
+  } catch(e){ $('authErr').style.color = 'var(--err)'; $('authErr').textContent = e.message; }
   $('authGo').disabled = false;
 };
 ['fEmail','fPass','fName'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('authGo').click(); }));
@@ -233,8 +263,8 @@ function enterApp(){
   paintMe(); loadMembers(); showTab('wall');
 }
 function paintMe(){
-  const small = $('meAvSmall');
-  if (ME.photo) { small.src = ME.photo; small.style.display='block'; } else { small.src=''; small.style.background='#eceef2'; }
+  $('meAvSmall').innerHTML = avatarHtml(ME, 34);
+  $('meName').textContent = ME.name;
   $('myAv').innerHTML = avatarHtml(ME, 104, 'big');
   $('myName').textContent = ME.name;
   $('myGames').textContent = ME.games; $('myWins').textContent = ME.wins;
@@ -320,7 +350,12 @@ async function setupGoogle(){
       }
     });
     google.accounts.id.renderButton($('gBtn'), { theme:'outline', size:'large', shape:'pill', width: 320 });
-    $('gWrap').classList.remove('hidden');
+    // two clean choices first; the email form appears only when chosen
+    $('chooser').classList.remove('hidden');
+    $('emailForm').classList.add('hidden');
+    $('backChoice').classList.remove('hidden');
+    $('emailBtn').onclick = () => { $('chooser').classList.add('hidden'); $('emailForm').classList.remove('hidden'); };
+    $('backChoice').onclick = () => { $('emailForm').classList.add('hidden'); $('chooser').classList.remove('hidden'); $('authErr').textContent=''; };
   } catch(e){}
 }
 
