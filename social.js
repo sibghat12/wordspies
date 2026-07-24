@@ -62,7 +62,7 @@ function mount(app, redis) {
       if (!r.ok) return null;
       const j = await r.json();
       if (!j.success) return null;
-      return { city: j.city || '', country: j.country || '' };
+      return { city: j.city || '', country: j.country || '', cc: (j.country_code || '').toUpperCase() };
     } catch (e) { return null; }
   }
   const geoLabel = g => !g ? '' : (g.city && g.country ? g.city + ', ' + g.country : g.country || '');
@@ -76,6 +76,7 @@ function mount(app, redis) {
     return raw ? JSON.parse(raw) : null;
   }
   const pub = u => ({ id: u.id, name: u.name, bio: u.bio || '', location: u.location || '',
+    country: u.country || '', cc: u.cc || '',
     photo: u.photo || null, createdAt: u.createdAt, games: u.games || 0, wins: u.wins || 0 });
 
   // ---- simple rate limit (per ip per route bucket) ----
@@ -116,7 +117,8 @@ function mount(app, redis) {
       if (await db.get('soc:uname:' + name.toLowerCase())) return res.status(409).json({ error: 'That name is taken.' });
       const id = crypto.randomBytes(9).toString('hex');
       const geo = await geoFromIp(reqIp(req));
-      const user = { id, name, email, passHash: bcrypt.hashSync(password, 10), bio: '', location: geoLabel(geo), photo: null,
+      const user = { id, name, email, passHash: bcrypt.hashSync(password, 10), bio: '', location: geoLabel(geo),
+        country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
         games: 0, wins: 0, createdAt: Date.now() };
       await db.set('soc:user:' + id, JSON.stringify(user));
       await db.set('soc:email:' + email, id);
@@ -174,7 +176,8 @@ function mount(app, redis) {
         while (await db.get('soc:uname:' + name.toLowerCase())) { n++; name = (base.slice(0, 12) + ' ' + n).trim(); }
         const id = crypto.randomBytes(9).toString('hex');
         const geo = await geoFromIp(reqIp(req));
-        user = { id, name, email, passHash: null, googleId: g.sub, bio: '', location: geoLabel(geo), photo: null,
+        user = { id, name, email, passHash: null, googleId: g.sub, bio: '', location: geoLabel(geo),
+          country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
           games: 0, wins: 0, createdAt: Date.now(), fresh: true };
         await db.set('soc:user:' + id, JSON.stringify(user));
         await db.set('soc:email:' + email, id);
@@ -247,6 +250,15 @@ function mount(app, redis) {
 
   api.get('/me', async (req, res) => {
     const u = await userFromReq(req);
+    // backfill country for members who joined before geo existed
+    if (u && !u.cc) {
+      const geo = await geoFromIp(reqIp(req));
+      if (geo && geo.cc) {
+        u.country = geo.country; u.cc = geo.cc;
+        if (!u.location) u.location = geoLabel(geo);
+        await db.set('soc:user:' + u.id, JSON.stringify(u));
+      }
+    }
     res.json({ me: u ? pub(u) : null });
   });
 
