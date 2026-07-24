@@ -70,16 +70,21 @@ input,textarea{font-family:inherit;outline:none}
 .search{margin:4px 20px 12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 16px;display:flex;gap:10px;align-items:center}
 .search input{border:none;background:none;flex:1;padding:12px 0;font-size:13.5px;font-weight:500}
 .wall{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 20px 30px}
-.pcard{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line);cursor:pointer;transition:transform .12s}
-.pcard:hover{transform:translateY(-2px)}
-.pw{position:relative;height:172px;overflow:hidden;background:#eceef2}
-.pw .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px) brightness(.92);transform:scale(1.2)}
+.pcard{border-radius:18px;overflow:hidden;border:1px solid var(--line);cursor:pointer;transition:transform .14s ease}
+.pcard:hover{transform:translateY(-3px)}
+.pw{position:relative;height:216px;overflow:hidden;background:#eceef2}
+.pw .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px) brightness(.9);transform:scale(1.2)}
 .pw .photo{position:relative;width:100%;height:100%;object-fit:contain;display:block}
-.pcard .nophoto{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;color:rgba(255,255,255,.9)}
-.g0{background:linear-gradient(135deg,#667eea,#764ba2)} .g1{background:linear-gradient(135deg,#f5576c,#f093fb)}
-.g2{background:linear-gradient(135deg,#0ba360,#3cba92)} .g3{background:linear-gradient(135deg,#2193b0,#6dd5ed)}
-.g4{background:linear-gradient(135deg,#ee9617,#fe5858)} .g5{background:linear-gradient(135deg,#5f2c82,#49a09d)}
-.flagbadge{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.94);border-radius:99px;padding:2px 9px;font-size:14px;line-height:1.5;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.pcard .nophoto{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:800;color:rgba(255,255,255,.85)}
+.g0{background:linear-gradient(150deg,#667eea,#764ba2)} .g1{background:linear-gradient(150deg,#f5576c,#f093fb)}
+.g2{background:linear-gradient(150deg,#0ba360,#3cba92)} .g3{background:linear-gradient(150deg,#2193b0,#6dd5ed)}
+.g4{background:linear-gradient(150deg,#ee9617,#fe5858)} .g5{background:linear-gradient(150deg,#5f2c82,#49a09d)}
+.scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,20,0) 42%,rgba(10,12,20,.78))}
+.ovl{position:absolute;left:13px;right:13px;bottom:11px;color:#fff}
+.ovl .onm{font-weight:800;font-size:15.5px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ovl .osub{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.82);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-new{position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:99px}
+.chip-you{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.94);color:var(--ink);font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:4px 9px;border-radius:99px}
 .pcard .info{padding:11px 13px 13px}
 .pcard .nm{font-weight:700;font-size:14px;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard .sub{color:var(--faint);font-size:11.5px;font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -104,7 +109,10 @@ input,textarea{font-family:inherit;outline:none}
 .note{color:var(--faint);font-size:11.5px;font-weight:500;text-align:center;padding:0 30px 26px;line-height:1.6}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%)}
-.gamelink{display:block;margin:6px 24px 30px;text-align:center;text-decoration:none;color:var(--accent);font-weight:600;font-size:13.5px}
+.gamelink{display:block;margin:6px 24px 22px;text-align:center;text-decoration:none;color:var(--accent);font-weight:600;font-size:13.5px}
+.sfoot{text-align:center;color:var(--faint);font-size:11.5px;font-weight:500;padding:10px 20px 14px;line-height:2.1;border-top:1px solid var(--line);margin:0 20px}
+.sfoot a{color:var(--sub);text-decoration:none;font-weight:600}
+.sfoot a:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -200,6 +208,11 @@ input,textarea{font-family:inherit;outline:none}
   </div>
 
   <a class="gamelink" href="/play" target="_blank" rel="noopener">🎮 &nbsp;Jump into a game →</a>
+
+  <footer class="sfoot">
+    <div class="slinks"><a href="/">Home</a> · <a href="/play" target="_blank" rel="noopener">Play game</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></div>
+    <div>© 2026 WordSpies · wordspies.co.uk</div>
+  </footer>
 
   <div class="tabbar">
     <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community</button>
@@ -321,15 +334,17 @@ function renderWall(){
   const q = ($('q').value || '').toLowerCase();
   const list = MEMBERS.filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q) || (m.country||'').toLowerCase().includes(q));
   $('wallEmpty').classList.toggle('hidden', list.length > 0);
+  const WEEK = 7 * 24 * 3600 * 1000;
   $('wall').innerHTML = list.map((m,i) => `
     <div class="pcard" onclick="openMember(${i})" data-i="${i}">
       <div class="pw ${m.photo ? '' : 'g' + hue(m.name)}">
         ${m.photo ? `<img class="bg" src="${esc(m.photo)}" aria-hidden="true"><img class="photo" src="${esc(m.photo)}" loading="lazy">` : `<div class="nophoto">${esc(m.name[0].toUpperCase())}</div>`}
-        <span class="flagbadge" title="${esc(m.country || '')}">${flag(m.cc)}</span>
-      </div>
-      <div class="info">
-        <div class="nm">${esc(m.name)}${m.id === (ME&&ME.id) ? ' <span style="color:var(--faint);font-weight:500">(you)</span>' : ''}</div>
-        <div class="sub">${esc(m.location || m.country || 'Somewhere on Earth')} · ${m.games} games</div>
+        <div class="scrim"></div>
+        ${m.id === (ME&&ME.id) ? '<span class="chip-you">YOU</span>' : (Date.now() - m.createdAt < WEEK ? '<span class="chip-new">NEW</span>' : '')}
+        <div class="ovl">
+          <div class="onm">${esc(m.name)} ${flag(m.cc)}</div>
+          <div class="osub">${esc(m.location || m.country || 'Somewhere on Earth')} · ${m.games} game${m.games === 1 ? '' : 's'}</div>
+        </div>
       </div>
     </div>`).join('');
   window.__wallList = list;
