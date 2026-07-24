@@ -117,6 +117,8 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .team.redt h3{color:var(--red-ink)} .team.bluet h3{color:var(--blue-ink)}
 .team h3 .cnt2{margin-left:auto;font-size:13px;color:var(--faint);font-family:'Nunito';font-weight:800}
 .pp{display:flex;align-items:center;gap:11px;padding:7px 0;font-size:15.5px;font-weight:800}
+.kickx{margin-left:auto;background:#fff;border:1.5px solid #eee;color:#d33;border-radius:50%;width:24px;height:24px;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0;line-height:1}
+.kickx:hover{background:#d33;color:#fff;border-color:#d33}
 .pp.dim{opacity:.4}
 .av{
   width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;
@@ -722,14 +724,10 @@ document.querySelectorAll('.teambtns button').forEach(b => {
 function renderMidJoin(playing){
   const el = $('midJoin'), m = me();
   if (!playing || !m || m.team) { show(el, false); return; }
-  el.innerHTML = `<b>👋 You're watching — pick a team to jump in:</b><div class="midjoinbtns">` +
-    `<button class="btn mjr" data-team="red" data-role="operative">❤️ Join Red</button>` +
-    `<button class="btn mjb" data-team="blue" data-role="operative">💙 Join Blue</button>` +
-    `</div>`;
+  const watchers = S.players.filter(p => !p.team && p.connected).length;
+  el.innerHTML = `<b>👁 You're watching live${watchers > 1 ? ' with ' + (watchers - 1) + ' other' + (watchers > 2 ? 's' : '') : ''}!</b> ` +
+    `The game is locked while the round is on — you can follow every clue and guess. You can pick a team when the round ends.`;
   show(el, true);
-  el.querySelectorAll('button').forEach(b => {
-    b.onclick = () => socket.emit('setTeamRole', { team: b.dataset.team, role: b.dataset.role });
-  });
 }
 $('startBtn').onclick = () => socket.emit('start');
 $('againBtn').onclick = () => socket.emit('rematch');
@@ -899,7 +897,11 @@ function renderLobby(){
       const d = document.createElement('div');
       d.className = 'pp' + (p.connected ? '' : ' dim');
       d.innerHTML = `<span class="av">${avSVG(p, 34)}</span><span>${esc(p.name)}${p.id === myId ? ' (you)' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>` +
-        `<span class="role${p.role === 'spymaster' ? ' spy' : ''}">${p.role === 'spymaster' ? '🕵️‍♀️ Spymaster' : 'Guesser'}</span>`;
+        `<span class="role${p.role === 'spymaster' ? ' spy' : ''}">${p.role === 'spymaster' ? '🕵️‍♀️ Spymaster' : 'Guesser'}</span>` +
+        (isHost && p.id !== myId ? `<button class="kickx" title="Remove from team">✕</button>` : '');
+      if (isHost && p.id !== myId) d.querySelector('.kickx').onclick = () => {
+        if (window.confirm('Remove ' + p.name + ' from the team? They can watch and rejoin.')) socket.emit('kick', { playerId: p.id });
+      };
       el.appendChild(d);
     }
   }
@@ -1040,6 +1042,7 @@ function renderFeed(){
       case 'timeout': return `<div class="ev"><span class="evic">⏱</span><span class="m">Time's up for <span class="${tc}">${e.team}</span></span></div><hr class="thin">`;
       case 'gameover': return `<div class="roundsep">🏆 <span class="${tc}">${e.team}</span> wins!</div>`;
       case 'chat': return `<div class="ev"><span class="evic">💬</span><span>${mini(e.name)}<span class="${tc}">${esc(e.name)}</span>: ${esc(e.text)}</span></div>`;
+      case 'kick': return `<div class="ev"><span class="evic">👢</span><span class="m"><b>${esc(e.name)}</b> was moved to spectators by the host</span></div>`;
       default: return '';
     }
   }).join('');
