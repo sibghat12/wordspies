@@ -87,7 +87,8 @@ if (process.env.REDIS_URL) {
 
 // WordSpies Social (community pages) — fully isolated module; if it ever
 // fails to load, the game itself keeps running untouched.
-try { require('./social').mount(app, redis); } catch (e) { console.error('social module failed to load (game unaffected):', e.message); }
+let social = null;
+try { social = require('./social').mount(app, redis) || null; } catch (e) { console.error('social module failed to load (game unaffected):', e.message); }
 
 const ROOM_TTL_MS = 1000 * 60 * 60 * 6; // clean up rooms idle for 6 hours
 const saveTimers = new Map();
@@ -99,7 +100,7 @@ function saveRoom(room) {
     const data = {
       code: room.code, watchCode: room.watchCode, hostId: room.hostId, state: room.state, settings: room.settings,
       board: room.board, turn: room.turn, clue: room.clue, winner: room.winner,
-      winReason: room.winReason, log: room.log, score: room.score,
+      winReason: room.winReason, log: room.log, score: room.score, spySwapped: room.spySwapped || {},
       lastActivity: room.lastActivity,
       players: [...room.players.entries()].map(([id, p]) => [id, { ...p }])
     };
@@ -127,6 +128,7 @@ async function restoreRooms() {
         state: d.state, settings: d.settings || { categories: [], timer: 0 },
         board: d.board, turn: d.turn, clue: d.clue, winner: d.winner,
         winReason: d.winReason, log: d.log || [], score: d.score || { red: 0, blue: 0 },
+        spySwapped: d.spySwapped || {},
         timerEnd: null, timerHandle: null, lastActivity: Date.now()
       };
       for (const [id, p] of d.players || []) room.players.set(id, { ...p, connected: false });
@@ -243,6 +245,7 @@ function publicState(room, forPlayer) {
     code: isWatcher ? null : room.code,
     watchCode: isWatcher ? null : room.watchCode,
     state: room.state,
+    spySwapped: room.spySwapped || {},
     hostId: room.hostId,
     settings: room.settings,
     catalog: CATALOG,
@@ -310,6 +313,14 @@ function endGame(room, winner, reason) {
   room.score[winner]++;
   clearTimer(room);
   addLog(room, { type: 'gameover', team: winner, reason });
+  // Credit the match to any players who are logged into WordSpies Social:
+  // everyone seated gets +1 game, the winning team also gets +1 win.
+  if (social && social.recordResult) {
+    const seated = [...room.players.values()].filter(p => p.socUid && p.team && !p.watcher);
+    const winners = [...new Set(seated.filter(p => p.team === winner).map(p => p.socUid))];
+    const losers = [...new Set(seated.filter(p => p.team !== winner).map(p => p.socUid))].filter(u => !winners.includes(u));
+    if (winners.length || losers.length) social.recordResult(winners, losers).catch(e => console.error('recordResult:', e.message));
+  }
 }
 
 function startGame(room) {
@@ -319,6 +330,7 @@ function startGame(room) {
   room.winReason = null;
   room.clue = null;
   room.turn = { team: room.board.startingTeam, phase: 'clue' };
+  room.spySwapped = {}; // each team gets one emergency spymaster swap per game
   room.log = [];
   addLog(room, { type: 'start', team: room.board.startingTeam });
   armTimer(room);
@@ -327,9 +339,23 @@ function startGame(room) {
 // ---------------------------------------------------------------------------
 // Socket handlers
 // ---------------------------------------------------------------------------
+// If the visitor is logged into WordSpies Social, their session cookie rides
+// along on the socket handshake — resolve it to a profile id so wins can be
+// credited to their profile. Server-side lookup, so it can't be spoofed.
+async function resolveSocialUid(socket) {
+  try {
+    if (!redis) return null;
+    const m = String(socket.handshake.headers.cookie || '').match(/(?:^|;\s*)soc_sess=([a-f0-9]{48})/);
+    if (!m) return null;
+    return await redis.get('soc:sess:' + m[1]);
+  } catch (e) { return null; }
+}
+
 io.on('connection', (socket) => {
   let room = null;
   let player = null;
+  socket.socUid = null;
+  resolveSocialUid(socket).then(uid => { socket.socUid = uid || null; }).catch(() => {});
 
   const guard = (fn) => (...args) => {
     try { fn(...args); } catch (err) { console.error(err); }
@@ -339,7 +365,7 @@ io.on('connection', (socket) => {
     if (room) return;
     name = String(name || '').trim().slice(0, 20) || 'Player';
     room = createRoom(name);
-    player = { id: socket.id, name, team: null, role: 'operative', connected: true, avatar: pickAvatar(room), token: crypto.randomUUID() };
+    player = { id: socket.id, name, team: null, role: 'operative', connected: true, avatar: pickAvatar(room), token: crypto.randomUUID(), socUid: socket.socUid };
     room.hostId = socket.id;
     room.players.set(socket.id, player);
     socket.join(room.code);
@@ -359,7 +385,7 @@ io.on('connection', (socket) => {
     let finalName = name; let n = 2;
     while (names.has(finalName)) finalName = `${name} ${n++}`;
     room = r;
-    player = { id: socket.id, name: finalName, team: null, role: 'operative', connected: true, avatar: pickAvatar(room), token: crypto.randomUUID() };
+    player = { id: socket.id, name: finalName, team: null, role: 'operative', connected: true, avatar: pickAvatar(room), token: crypto.randomUUID(), socUid: socket.socUid };
     room.players.set(socket.id, player);
     socket.join(room.code);
     socket.emit('session', { code: room.code, token: player.token, name: player.name });
@@ -393,6 +419,7 @@ io.on('connection', (socket) => {
     r.players.delete(oldId);
     p.id = socket.id;
     p.connected = true;
+    if (!p.socUid && socket.socUid) p.socUid = socket.socUid;
     r.players.set(socket.id, p);
     if (r.hostId === oldId) r.hostId = socket.id;
     room = r; player = p;
@@ -440,6 +467,33 @@ io.on('connection', (socket) => {
     target.team = null;
     target.role = 'operative';
     addLog(room, { type: 'kick', name: target.name });
+    broadcast(room);
+  }));
+
+  // 🆘 Emergency rescue: if a spymaster loses connection (or leaves) mid-game,
+  // the host can promote a teammate to spymaster so the game isn't stuck.
+  // Allowed ONCE per team per game, and only while that team's spymaster is
+  // actually gone — the replaced spymaster is benched to spectators, since
+  // they've already seen the colors.
+  socket.on('promoteSpymaster', guard(({ playerId }) => {
+    if (!room || socket.id !== room.hostId || room.state !== 'playing') return;
+    const target = room.players.get(String(playerId || ''));
+    if (!target || target.watcher || !target.team || target.role === 'spymaster') return;
+    const team = target.team;
+    const currentSpy = [...room.players.values()].find(p => p.team === team && p.role === 'spymaster');
+    if (currentSpy && currentSpy.connected) {
+      socket.emit('errorMsg', 'That team\'s spymaster is still connected — you can only replace one who lost connection or left.');
+      return;
+    }
+    room.spySwapped = room.spySwapped || {};
+    if (room.spySwapped[team]) {
+      socket.emit('errorMsg', 'That team already used its one emergency spymaster swap this game.');
+      return;
+    }
+    room.spySwapped[team] = true;
+    if (currentSpy) { currentSpy.team = null; currentSpy.role = 'operative'; } // bench the old spymaster
+    target.role = 'spymaster';
+    addLog(room, { type: 'spyswap', team, name: target.name });
     broadcast(room);
   }));
 
