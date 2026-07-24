@@ -1161,9 +1161,8 @@ if (DEMO) {
     const ICE = { iceServers: (window.__WS_TEST_NO_STUN ? [] : [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+      { urls: 'turn:178.128.162.202:3478?transport=udp', username: 'wordspies', credential: '51eda457df6bb2b4174e27a4ce77312c' },
+      { urls: 'turn:178.128.162.202:3478?transport=tcp', username: 'wordspies', credential: '51eda457df6bb2b4174e27a4ce77312c' }
     ]) };
     let localStream = null;
     let voiceOn = false;
