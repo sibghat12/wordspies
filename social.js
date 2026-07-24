@@ -122,10 +122,15 @@ function mount(app, redis) {
     if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
     return age > 0 && age < 150 ? age : null;
   };
+  // 🔵 Founding members: everyone who joined in the first days gets a blue tick.
+  // (Also honours a manual `verified: true` flag set directly on a user.)
+  const FOUNDER_CUTOFF = Date.parse('2026-07-26T00:00:00Z');
+  const isVerified = u => u.verified === true || (u.createdAt && u.createdAt < FOUNDER_CUTOFF);
   const pub = u => ({ id: u.id, name: u.name, bio: u.bio || '', location: u.location || '',
     country: u.country || '', cc: u.cc || '',
     photo: u.photo || null, createdAt: u.createdAt, games: u.games || 0, wins: u.wins || 0,
-    age: calcAge(u.birthdate), birthdate: u.birthdate || null });
+    age: calcAge(u.birthdate), birthdate: u.birthdate || null,
+    verified: isVerified(u) });
 
   // ---- simple rate limit (per ip per route bucket) ----
   const hits = new Map();
@@ -539,6 +544,7 @@ function mount(app, redis) {
         const last = await db.lrange('soc:msgs:' + cid(me.id, o), -1, -1);
         out.push({
           id: u.id, name: u.name, photo: u.photo || null, cc: u.cc || '',
+          verified: isVerified(u),
           online: await db.exists('soc:online:' + o),
           last: last.length ? JSON.parse(last[0]) : null,
           unread: parseInt(await db.get('soc:unread:' + me.id + ':' + o)) || 0
@@ -564,7 +570,7 @@ function mount(app, redis) {
       await db.set('soc:read:' + convo + ':' + me.id, String(Date.now()));
       const theirRead = parseInt(await db.get('soc:read:' + convo + ':' + o)) || 0;
       res.json({
-        user: { id: u.id, name: u.name, photo: u.photo || null, online: await db.exists('soc:online:' + o) },
+        user: { id: u.id, name: u.name, photo: u.photo || null, verified: isVerified(u), online: await db.exists('soc:online:' + o) },
         messages: msgs,
         theirRead
       });
