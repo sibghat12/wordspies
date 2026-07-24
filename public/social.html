@@ -15,11 +15,11 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow-x:clip;max-width:100%}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:pan-y}
 button{font-family:inherit;cursor:pointer}
 input,textarea{font-family:inherit;outline:none}
 .hidden{display:none !important}
-.wrap{max-width:520px;margin:0 auto;min-height:100%;position:relative;padding-bottom:86px}
+.wrap{max-width:520px;margin:0 auto;min-height:100%;position:relative;padding-bottom:86px;overflow-x:clip}
 .logo{font-family:'Fredoka';font-weight:600;font-size:19px}
 .logo em{font-style:normal;color:var(--accent)}
 .btn{display:flex;align-items:center;justify-content:center;gap:10px;border:none;border-radius:12px;padding:14px;font-weight:600;font-size:14.5px;width:100%}
@@ -113,9 +113,6 @@ input,textarea{font-family:inherit;outline:none}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .gamelink{display:block;margin:6px 24px 22px;text-align:center;text-decoration:none;color:var(--accent);font-weight:600;font-size:13.5px}
-.sfoot{text-align:center;color:var(--faint);font-size:11.5px;font-weight:500;padding:10px 20px 14px;line-height:2.1;border-top:1px solid var(--line);margin:0 20px}
-.sfoot a{color:var(--sub);text-decoration:none;font-weight:600}
-.sfoot a:hover{color:var(--ink)}
 
 /* presence + chat */
 .tabbar button{position:relative}
@@ -134,12 +131,12 @@ input,textarea{font-family:inherit;outline:none}
 .cunread{display:inline-flex;background:var(--accent);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:99px;align-items:center;justify-content:center;margin-top:4px;padding:0 5px}
 .chathead{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
 @media(min-width:700px){.chathead{top:49px}}
-.back2{background:none;border:none;font-size:18px;padding:4px 8px}
+.back2{background:var(--ink);color:#fff;border:none;font-size:17px;width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .chname{font-weight:800;font-size:15px}
 .chstate{font-size:11px;color:var(--faint)}
 .msgs{padding:14px 16px 150px;display:flex;flex-direction:column;gap:8px;min-height:55vh}
 .mb{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;min-width:0}
-.chatmode .gamelink,.chatmode .sfoot{display:none}
+.chatmode .gamelink{display:none}
 .chatfull .tabbar{display:none}
 .chatfull{padding-top:0 !important;padding-bottom:0}
 .chatfull .chathead{top:0}
@@ -295,11 +292,6 @@ input,textarea{font-family:inherit;outline:none}
   </div>
 
   <a class="gamelink" href="/play" target="_blank" rel="noopener">🎮 &nbsp;Jump into a game →</a>
-
-  <footer class="sfoot">
-    <div class="slinks"><a href="/">Home</a> · <a href="/play" target="_blank" rel="noopener">Play game</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></div>
-    <div>© 2026 WordSpies · wordspies.co.uk</div>
-  </footer>
 
   <div class="tabbar">
     <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community</button>
