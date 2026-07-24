@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordSpies Social — the community behind the game</title>
+<meta name="description" content="Meet the people you play WordSpies with. Create a profile, follow other spies, and chat between games.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fredoka:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit;outline:none}
+.hidden{display:none !important}
+.wrap{max-width:520px;margin:0 auto;min-height:100%;position:relative;padding-bottom:86px}
+.logo{font-family:'Fredoka';font-weight:600;font-size:19px}
+.logo em{font-style:normal;color:var(--accent)}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;border:none;border-radius:12px;padding:14px;font-weight:600;font-size:14.5px;width:100%}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-line{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.field{margin-bottom:12px}
+.field input,.field textarea{width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 16px;font-size:14px;font-weight:500}
+.field input:focus,.field textarea:focus{border-color:var(--ink)}
+.err{color:var(--err);font-size:13px;font-weight:600;text-align:center;margin:10px 0;min-height:16px}
+.av{border-radius:50%;object-fit:cover;background:#eceef2;display:block}
+.avph{border-radius:50%;background:#eceef2;color:var(--faint);display:flex;align-items:center;justify-content:center;font-weight:800}
+
+/* auth */
+.auth{padding:52px 28px 40px;display:flex;flex-direction:column;min-height:100vh;max-width:440px;margin:0 auto}
+.auth .logo{text-align:center;font-size:22px;margin-bottom:6px}
+.auth .tag{color:var(--faint);text-align:center;font-size:12px;font-weight:500;letter-spacing:.5px;margin-bottom:40px}
+.auth h1{font-size:27px;line-height:1.25;text-align:center;font-weight:800;letter-spacing:-.5px;margin-bottom:10px}
+.auth h1 em{font-style:normal;color:var(--accent)}
+.auth .sub{color:var(--sub);text-align:center;font-size:14px;line-height:1.6;margin-bottom:34px}
+.auth .alt{text-align:center;color:var(--faint);font-size:13px;font-weight:500;margin-top:18px}
+.auth .alt a{color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer}
+.auth .legal{margin-top:auto;padding-top:30px;text-align:center;color:#b9bdc6;font-size:11px;font-weight:500;line-height:1.7}
+.auth .btn{margin-bottom:10px}
+
+/* header + tabs */
+.head{display:flex;align-items:center;justify-content:space-between;padding:22px 20px 12px}
+.head .me-av{width:38px;height:38px;cursor:pointer}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 8px calc(14px + env(safe-area-inset-bottom));z-index:10}
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--faint);background:none;border:none}
+.tabbar button.on{color:var(--ink)}
+.tabbar .ico{font-size:19px}
+
+/* wall */
+.search{margin:4px 20px 12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 16px;display:flex;gap:10px;align-items:center}
+.search input{border:none;background:none;flex:1;padding:12px 0;font-size:13.5px;font-weight:500}
+.wall{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 20px 30px}
+.pcard{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line);cursor:pointer}
+.pcard .photo{width:100%;height:150px;object-fit:cover;display:block;background:#eceef2}
+.pcard .nophoto{width:100%;height:150px;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:#c6cad3;background:#eceef2}
+.pcard .info{padding:11px 13px 13px}
+.pcard .nm{font-weight:700;font-size:14px;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .sub{color:var(--faint);font-size:11.5px;font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{text-align:center;color:var(--faint);font-weight:500;font-size:14px;padding:60px 30px;line-height:1.7}
+
+/* profile */
+.cover{height:130px;background:linear-gradient(160deg,#1d1f29,#3a3d4d);position:relative}
+.cover .back{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:10px;width:34px;height:34px;font-size:16px}
+.prof{margin-top:-52px;text-align:center;padding:0 24px}
+.prof .pav{position:relative;display:inline-block}
+.prof .big{width:104px;height:104px;border:4px solid var(--bg);font-size:38px}
+.prof h2{font-size:21px;margin-top:10px;font-weight:800;letter-spacing:-.4px}
+.prof .loc{color:var(--faint);font-weight:500;font-size:12.5px;margin-top:3px}
+.stats{display:flex;margin:18px 24px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.stats>div{flex:1;padding:13px 0;text-align:center}
+.stats>div+div{border-left:1px solid var(--line)}
+.stats b{display:block;font-size:17px;font-weight:800}
+.stats span{color:var(--faint);font-size:10.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase}
+.bio{background:#fff;margin:0 24px 14px;border-radius:14px;padding:16px;border:1px solid var(--line);font-size:13.5px;color:var(--sub);line-height:1.65}
+.prow{display:flex;gap:10px;padding:0 24px;margin-bottom:14px}
+.upl{position:absolute;bottom:2px;right:2px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;border:3px solid var(--bg);font-size:13px}
+.note{color:var(--faint);font-size:11.5px;font-weight:500;text-align:center;padding:0 30px 26px;line-height:1.6}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.gamelink{display:block;margin:6px 24px 30px;text-align:center;text-decoration:none;color:var(--accent);font-weight:600;font-size:13.5px}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div id="vAuth" class="auth hidden">
+  <div class="logo">WordSpies <em>Social</em></div>
+  <div class="tag">THE COMMUNITY BEHIND THE GAME</div>
+  <h1 id="authTitle">Meet the people<br>you <em>play with</em></h1>
+  <p class="sub" id="authSub">Create your profile, follow other spies,<br>and chat between games.</p>
+  <div id="suName" class="field"><input id="fName" maxlength="15" placeholder="Your name (shown to everyone)"></div>
+  <div class="field"><input id="fEmail" type="email" maxlength="100" placeholder="Email"></div>
+  <div class="field"><input id="fPass" type="password" maxlength="100" placeholder="Password (6+ characters)"></div>
+  <div class="err" id="authErr"></div>
+  <button class="btn btn-dark" id="authGo">Create my profile</button>
+  <div class="alt" id="authSwap">Already a member? <a>Log in</a></div>
+  <div class="legal">Be kind — no bullying, ever. You can report anyone.<br>The game itself needs no account — this is just for the community.</div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="vApp" class="wrap hidden">
+
+  <!-- wall -->
+  <div id="tabWall">
+    <div class="head">
+      <div class="logo">WordSpies <em>Social</em></div>
+      <img class="av me-av" id="meAvSmall" src="" onclick="showTab('me')">
+    </div>
+    <div class="search">🔎<input id="q" placeholder="Search spies…" oninput="renderWall()"></div>
+    <div class="wall" id="wall"></div>
+    <div class="empty hidden" id="wallEmpty">No spies found yet.<br>You're one of the first — invite your friends!</div>
+  </div>
+
+  <!-- member profile -->
+  <div id="tabMember" class="hidden">
+    <div class="cover"><button class="back" onclick="showTab('wall')">←</button></div>
+    <div class="prof">
+      <span class="pav" id="mAv"></span>
+      <h2 id="mName"></h2>
+      <div class="loc" id="mLoc"></div>
+    </div>
+    <div class="stats">
+      <div><b id="mGames">0</b><span>Games</span></div>
+      <div><b id="mWins">0</b><span>Wins</span></div>
+      <div><b id="mSince">—</b><span>Joined</span></div>
+    </div>
+    <div class="bio" id="mBio"></div>
+    <div class="note">Follow &amp; messages are coming in the next update ✨</div>
+  </div>
+
+  <!-- my profile -->
+  <div id="tabMe" class="hidden">
+    <div class="cover"><button class="back" onclick="showTab('wall')">←</button></div>
+    <div class="prof">
+      <span class="pav"><span id="myAv"></span><button class="upl" onclick="$('photoIn').click()">📷</button></span>
+      <h2 id="myName"></h2>
+      <div class="loc" id="myEmail"></div>
+    </div>
+    <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" class="hidden">
+    <div class="stats">
+      <div><b id="myGames">0</b><span>Games</span></div>
+      <div><b id="myWins">0</b><span>Wins</span></div>
+      <div><b id="mySince">—</b><span>Joined</span></div>
+    </div>
+    <div style="padding:0 24px">
+      <div class="field"><input id="fLoc" maxlength="40" placeholder="Your city (optional)"></div>
+      <div class="field"><textarea id="fBio" maxlength="200" rows="3" placeholder="Say something about yourself…"></textarea></div>
+    </div>
+    <div class="prow">
+      <button class="btn btn-accent" onclick="saveProfile()">Save profile</button>
+      <button class="btn btn-line" onclick="logout()">Log out</button>
+    </div>
+    <div class="note">Your photo appears on the community wall.<br>Max 2 MB — JPG, PNG or WebP.</div>
+  </div>
+
+  <a class="gamelink" href="/play">🎮 &nbsp;Jump into a game →</a>
+
+  <div class="tabbar">
+    <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community</button>
+    <button onclick="toast('💬 Chats are coming in the next update!')"><span class="ico">💬</span>Chats</button>
+    <button onclick="location.href='/play'"><span class="ico">🎮</span>Play</button>
+    <button id="tbMe" onclick="showTab('me')"><span class="ico">👤</span>Me</button>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let ME = null, MEMBERS = [], mode = 'signup';
+
+let toastT = null;
+function toast(m){ const t = $('toastEl'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2600); }
+
+async function api(p, opts){
+  const r = await fetch('/api/social' + p, opts);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || 'Something went wrong.');
+  return j;
+}
+
+// ---------- auth ----------
+function setMode(m){
+  mode = m;
+  $('suName').classList.toggle('hidden', m === 'login');
+  $('authTitle').innerHTML = m === 'login' ? 'Welcome <em>back</em>' : 'Meet the people<br>you <em>play with</em>';
+  $('authSub').innerHTML = m === 'login' ? 'Log in to your community profile.' : 'Create your profile, follow other spies,<br>and chat between games.';
+  $('authGo').textContent = m === 'login' ? 'Log in' : 'Create my profile';
+  $('authSwap').innerHTML = m === 'login' ? 'New here? <a>Create a profile</a>' : 'Already a member? <a>Log in</a>';
+  $('authErr').textContent = '';
+}
+$('authSwap').onclick = () => setMode(mode === 'login' ? 'signup' : 'login');
+$('authGo').onclick = async () => {
+  $('authErr').textContent = '';
+  $('authGo').disabled = true;
+  try {
+    const body = { email: $('fEmail').value, password: $('fPass').value };
+    if (mode === 'signup') body.name = $('fName').value;
+    const j = await api(mode === 'signup' ? '/signup' : '/login', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    ME = j.me; enterApp();
+  } catch(e){ $('authErr').textContent = e.message; }
+  $('authGo').disabled = false;
+};
+['fEmail','fPass','fName'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('authGo').click(); }));
+
+async function logout(){ await api('/logout', {method:'POST'}); ME = null; $('vApp').classList.add('hidden'); $('vAuth').classList.remove('hidden'); }
+
+// ---------- app ----------
+const avatarHtml = (u, size, cls) => u.photo
+  ? `<img class="av ${cls||''}" style="width:${size}px;height:${size}px" src="${esc(u.photo)}">`
+  : `<span class="avph ${cls||''}" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px">${esc((u.name||'?')[0].toUpperCase())}</span>`;
+
+function enterApp(){
+  $('vAuth').classList.add('hidden');
+  $('vApp').classList.remove('hidden');
+  paintMe(); loadMembers(); showTab('wall');
+}
+function paintMe(){
+  const small = $('meAvSmall');
+  if (ME.photo) { small.src = ME.photo; small.style.display='block'; } else { small.src=''; small.style.background='#eceef2'; }
+  $('myAv').innerHTML = avatarHtml(ME, 104, 'big');
+  $('myName').textContent = ME.name;
+  $('myGames').textContent = ME.games; $('myWins').textContent = ME.wins;
+  $('mySince').textContent = new Date(ME.createdAt).toLocaleDateString(undefined, {month:'short', year:'2-digit'});
+  $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
+  $('myEmail').textContent = ME.location || 'Add your city below';
+}
+function showTab(t){
+  $('tabWall').classList.toggle('hidden', t !== 'wall');
+  $('tabMe').classList.toggle('hidden', t !== 'me');
+  $('tabMember').classList.toggle('hidden', t !== 'member');
+  $('tbWall').classList.toggle('on', t === 'wall');
+  $('tbMe').classList.toggle('on', t === 'me');
+  window.scrollTo(0,0);
+}
+
+async function loadMembers(){
+  try { MEMBERS = (await api('/members')).members; renderWall(); } catch(e){}
+}
+function renderWall(){
+  const q = ($('q').value || '').toLowerCase();
+  const list = MEMBERS.filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q));
+  $('wallEmpty').classList.toggle('hidden', list.length > 0);
+  $('wall').innerHTML = list.map((m,i) => `
+    <div class="pcard" onclick="openMember(${i})" data-i="${i}">
+      ${m.photo ? `<img class="photo" src="${esc(m.photo)}" loading="lazy">` : `<div class="nophoto">${esc(m.name[0].toUpperCase())}</div>`}
+      <div class="info">
+        <div class="nm">${esc(m.name)}${m.id === (ME&&ME.id) ? ' <span style="color:var(--faint);font-weight:500">(you)</span>' : ''}</div>
+        <div class="sub">${esc(m.location || 'Somewhere on Earth')} · ${m.games} games</div>
+      </div>
+    </div>`).join('');
+  window.__wallList = list;
+}
+function openMember(i){
+  const m = window.__wallList[i]; if (!m) return;
+  if (ME && m.id === ME.id) { showTab('me'); return; }
+  $('mAv').innerHTML = avatarHtml(m, 104, 'big');
+  $('mName').textContent = m.name;
+  $('mLoc').textContent = m.location || 'Somewhere on Earth';
+  $('mGames').textContent = m.games; $('mWins').textContent = m.wins;
+  $('mSince').textContent = new Date(m.createdAt).toLocaleDateString(undefined, {month:'short', year:'2-digit'});
+  $('mBio').textContent = m.bio || 'No bio yet.';
+  showTab('member');
+}
+
+async function saveProfile(){
+  try {
+    const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ bio: $('fBio').value, location: $('fLoc').value }) });
+    ME = j.me; paintMe(); loadMembers(); toast('✓ Profile saved');
+  } catch(e){ toast(e.message); }
+}
+
+$('photoIn').onchange = async () => {
+  const f = $('photoIn').files[0]; if (!f) return;
+  if (f.size > 2 * 1024 * 1024) { toast('Photo too large — max 2 MB'); return; }
+  const fd = new FormData(); fd.append('photo', f);
+  try {
+    const j = await api('/photo', { method:'POST', body: fd });
+    ME = j.me; paintMe(); loadMembers(); toast('✓ Photo updated');
+  } catch(e){ toast(e.message); }
+  $('photoIn').value = '';
+};
+
+// ---------- boot ----------
+(async () => {
+  try { ME = (await api('/me')).me; } catch(e){}
+  if (ME) enterApp();
+  else { $('vAuth').classList.remove('hidden'); }
+})();
+</script>
+</body>
+</html>
