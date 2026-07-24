@@ -557,11 +557,16 @@ function mount(app, redis) {
       const raw = await db.get('soc:user:' + o);
       if (!raw) return res.status(404).json({ error: 'Not found.' });
       const u = JSON.parse(raw);
-      const msgs = (await db.lrange('soc:msgs:' + cid(me.id, o), -100, -1)).map(m => JSON.parse(m));
+      const convo = cid(me.id, o);
+      const msgs = (await db.lrange('soc:msgs:' + convo, -100, -1)).map(m => JSON.parse(m));
       await db.del('soc:unread:' + me.id + ':' + o);
+      // mark how far I have read; report how far THEY have read (for ✓✓ seen ticks)
+      await db.set('soc:read:' + convo + ':' + me.id, String(Date.now()));
+      const theirRead = parseInt(await db.get('soc:read:' + convo + ':' + o)) || 0;
       res.json({
         user: { id: u.id, name: u.name, photo: u.photo || null, online: await db.exists('soc:online:' + o) },
-        messages: msgs
+        messages: msgs,
+        theirRead
       });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
