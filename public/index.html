@@ -119,6 +119,11 @@ input{font-family:inherit;font-weight:700;color:var(--ink);outline:none;border:n
 .pp{display:flex;align-items:center;gap:11px;padding:7px 0;font-size:15.5px;font-weight:800}
 .kickx{margin-left:auto;background:#fff;border:1.5px solid #eee;color:#d33;border-radius:50%;width:24px;height:24px;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0;line-height:1}
 .kickx:hover{background:#d33;color:#fff;border-color:#d33}
+.rescue{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0;padding:10px 14px;border-radius:14px;font-size:13.5px;background:#fff6f6;border:1.5px solid #f3c8c8}
+.rescue.blue{background:#f4f8ff;border-color:#c6d8f5}
+.rescue .rt b{text-transform:capitalize}
+.rbtn{border:none;border-radius:10px;padding:7px 12px;font-weight:800;font-size:13px;cursor:pointer;background:var(--ink);color:#fff}
+.rbtn:hover{opacity:.85}
 .pp.dim{opacity:.4}
 .av{
   width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;
@@ -661,6 +666,19 @@ socket.on('sessionExpired', () => { try { localStorage.removeItem('ws_sess'); } 
 
 // ---------- home ----------
 try { const n = localStorage.getItem('ws_name') || sessionStorage.getItem('ws_name'); if (n) $('nameInput').value = n; } catch(e){}
+// Logged into WordSpies Social? Use the profile name automatically — no need
+// to type it again. (Still editable if they fancy a nickname for one game.)
+fetch('/api/social/me').then(r => r.json()).then(j => {
+  if (j && j.me && j.me.name) {
+    const inp = $('nameInput');
+    if (inp) {
+      inp.value = j.me.name;
+      inp.placeholder = j.me.name;
+      const lbl = inp.previousElementSibling;
+      if (lbl && lbl.classList.contains('lbl')) lbl.innerHTML = 'Your name <span style="font-weight:600;color:var(--sub)">· from your profile ✓</span>';
+    }
+  }
+}).catch(() => {});
 const urlRoom = new URLSearchParams(location.search).get('room');
 if (urlRoom && !DEMO) {
   // Invite-link mode: joining becomes the primary action so friends can't miss it
@@ -899,6 +917,37 @@ function renderStrip(){
   const blues = S.players.filter(p => p.team === 'blue').map(chip).join('');
   el.innerHTML = `<span class="mepill">${avSVG(m, 32)}<span><span class="lab">PLAYING AS</span>${esc(m.name)} · ${roleTxt}</span></span>` +
     `<span class="side">${reds}</span><span class="vsx">VS</span><span class="side">${blues}</span>`;
+  renderSpyRescue();
+}
+
+// 🆘 Host-only banner: a spymaster lost connection mid-game → let the host
+// promote a teammate (once per team per game). Shows under the player strip.
+function renderSpyRescue(){
+  let box = $('spyRescue');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'spyRescue';
+    $('pstrip').insertAdjacentElement('afterend', box);
+  }
+  box.innerHTML = '';
+  if (S.hostId !== myId || S.state !== 'playing') return;
+  for (const team of ['red', 'blue']) {
+    const spy = S.players.find(p => p.team === team && p.role === 'spymaster');
+    const used = S.spySwapped && S.spySwapped[team];
+    if ((spy && spy.connected) || used) continue;
+    const cands = S.players.filter(p => p.team === team && p.role === 'operative' && p.connected && !p.watcher);
+    if (!cands.length) continue;
+    const d = document.createElement('div');
+    d.className = 'rescue ' + team;
+    d.innerHTML = `<span class="rt">🆘 The <b>${team}</b> spymaster ${spy ? 'lost connection' : 'left'} — pick a stand-in (once per game):</span>` +
+      cands.map(p => `<button class="rbtn" data-pid="${esc(p.id)}">🕵️ ${esc(p.name)}</button>`).join('');
+    d.querySelectorAll('.rbtn').forEach(b => b.onclick = () => {
+      const p = cands.find(x => x.id === b.dataset.pid);
+      if (p && window.confirm('Make ' + p.name + ' the new ' + team + ' spymaster? This can only be done once per team per game.'))
+        socket.emit('promoteSpymaster', { playerId: p.id });
+    });
+    box.appendChild(d);
+  }
 }
 
 function renderLobby(){
@@ -1067,6 +1116,7 @@ function renderFeed(){
       case 'gameover': return `<div class="roundsep">🏆 <span class="${tc}">${e.team}</span> wins!</div>`;
       case 'chat': return `<div class="ev"><span class="evic">💬</span><span>${mini(e.name)}<span class="${tc}">${esc(e.name)}</span>: ${esc(e.text)}</span></div>`;
       case 'kick': return `<div class="ev"><span class="evic">👢</span><span class="m"><b>${esc(e.name)}</b> was moved to spectators by the host</span></div>`;
+      case 'spyswap': return `<div class="ev"><span class="evic">🆘</span><span class="m"><b>${esc(e.name)}</b> stepped in as the new <span class="${tc}">${e.team}</span> spymaster</span></div>`;
       default: return '';
     }
   }).join('');
