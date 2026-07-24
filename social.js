@@ -46,6 +46,27 @@ function mount(app, redis) {
     `soc_sess=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESS_TTL}${process.env.NODE_ENV === 'production' || process.env.REDIS_URL ? '; Secure' : ''}`);
   const clearSess = res => res.setHeader('Set-Cookie', 'soc_sess=; Path=/; HttpOnly; Max-Age=0');
 
+  // Rough location from IP (country reliable, city approximate). Free, no key.
+  function reqIp(req) {
+    const xf = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+    return xf || req.socket.remoteAddress || '';
+  }
+  async function geoFromIp(ip) {
+    try {
+      ip = ip.replace(/^::ffff:/, '');
+      if (!ip || ip === '127.0.0.1' || ip === '::1') return null;
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 2500);
+      const r = await fetch('https://ipwho.is/' + encodeURIComponent(ip), { signal: ctrl.signal });
+      clearTimeout(t);
+      if (!r.ok) return null;
+      const j = await r.json();
+      if (!j.success) return null;
+      return { city: j.city || '', country: j.country || '' };
+    } catch (e) { return null; }
+  }
+  const geoLabel = g => !g ? '' : (g.city && g.country ? g.city + ', ' + g.country : g.country || '');
+
   async function userFromReq(req) {
     const t = cookies(req).soc_sess;
     if (!t || !/^[a-f0-9]{48}$/.test(t)) return null;
@@ -74,6 +95,12 @@ function mount(app, redis) {
 
   api.get('/config', (req, res) => res.json({ google: GOOGLE_CLIENT_ID }));
 
+  // suggestion for the "your city" field, from the visitor's IP
+  api.get('/geo', async (req, res) => {
+    const g = await geoFromIp(reqIp(req));
+    res.json({ suggestion: geoLabel(g) });
+  });
+
   // ---- auth ----
   api.post('/signup', async (req, res) => {
     try {
@@ -88,7 +115,8 @@ function mount(app, redis) {
       if (await db.get('soc:email:' + email)) return res.status(409).json({ error: 'That email is already registered — try logging in.' });
       if (await db.get('soc:uname:' + name.toLowerCase())) return res.status(409).json({ error: 'That name is taken.' });
       const id = crypto.randomBytes(9).toString('hex');
-      const user = { id, name, email, passHash: bcrypt.hashSync(password, 10), bio: '', location: '', photo: null,
+      const geo = await geoFromIp(reqIp(req));
+      const user = { id, name, email, passHash: bcrypt.hashSync(password, 10), bio: '', location: geoLabel(geo), photo: null,
         games: 0, wins: 0, createdAt: Date.now() };
       await db.set('soc:user:' + id, JSON.stringify(user));
       await db.set('soc:email:' + email, id);
@@ -145,8 +173,9 @@ function mount(app, redis) {
         let name = base, n = 1;
         while (await db.get('soc:uname:' + name.toLowerCase())) { n++; name = (base.slice(0, 12) + ' ' + n).trim(); }
         const id = crypto.randomBytes(9).toString('hex');
-        user = { id, name, email, passHash: null, googleId: g.sub, bio: '', location: '', photo: null,
-          games: 0, wins: 0, createdAt: Date.now() };
+        const geo = await geoFromIp(reqIp(req));
+        user = { id, name, email, passHash: null, googleId: g.sub, bio: '', location: geoLabel(geo), photo: null,
+          games: 0, wins: 0, createdAt: Date.now(), fresh: true };
         await db.set('soc:user:' + id, JSON.stringify(user));
         await db.set('soc:email:' + email, id);
         await db.set('soc:uname:' + name.toLowerCase(), id);
