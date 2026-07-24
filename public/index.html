@@ -1183,6 +1183,25 @@ if (DEMO) {
       try { currentState = st; applyLocalMuteState(); } catch (e) { console.error('voice state sync error', e); }
     });
 
+    // A dropped-and-restored network connection (phone screen lock, wifi <->
+    // cellular handoff, tab briefly backgrounded, etc.) gives the socket a
+    // brand-new id on reconnect. The old peer connections on both ends are
+    // now permanently orphaned (this is the other half of the "worked for a
+    // second then all gone" bug) since nothing ever told either side to
+    // rebuild them. If voice was on when we dropped, tear down whatever's
+    // left and rejoin fresh the moment the socket comes back.
+    let voiceHadConnectedOnce = false;
+    socket.on('connect', function () {
+      try {
+        const isReconnect = voiceHadConnectedOnce;
+        voiceHadConnectedOnce = true;
+        if (isReconnect && voiceOn) {
+          peers.forEach((pc, id) => dropPeer(id));
+          socket.emit('voice:join');
+        }
+      } catch (e) { console.error('voice reconnect error', e); }
+    });
+
     // Bump the Opus codec up to a high, near-transparent bitrate (WhatsApp-style
     // calls typically run ~16-32kbps; this pushes clarity noticeably higher) and
     // disable silence-detection dropouts so voices don't clip in and out.
@@ -1199,12 +1218,30 @@ if (DEMO) {
       } catch (e) { return sdp; }
     }
 
+    function dropPeer(id) {
+      const pc = peers.get(id);
+      if (pc) { try { pc.close(); } catch (e) {} peers.delete(id); }
+      const el = audios.get(id);
+      if (el) { el.remove(); audios.delete(id); }
+    }
+
     function createPeer(id, initiator) {
       const pc = new RTCPeerConnection(ICE);
       peers.set(id, pc);
       if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
       pc.onicecandidate = e => {
         if (e.candidate) socket.emit('voice:signal', { to: id, data: { type: 'candidate', candidate: e.candidate } });
+      };
+      // A phone locking, switching wifi/cellular, or briefly losing signal can
+      // knock out the underlying connection (ICE goes 'disconnected'/'failed')
+      // without the page ever reloading — this is the "worked for a second
+      // then went silent" case. Drop the dead connection instead of leaving a
+      // stale, silently-broken one behind; the reconnect handler below (or the
+      // other player toggling voice) will re-establish a fresh one.
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'closed') {
+          dropPeer(id);
+        }
       };
       pc.ontrack = e => {
         let el = audios.get(id);
