@@ -353,8 +353,14 @@ body.ingame #meCorner{display:none !important}
 @media(max-width:720px){#socBtn .sqn{display:none}#socBtn:has(img){padding:3px;border-radius:50%}#socBtn img{width:25px;height:25px;margin:0}}
 
 /* ---------- 🔐 log in before you play ----------
-   Anyone with a profile gets one tap to bring their wins, photo and friends
-   with them. Everyone else scrolls past it to the name box, exactly as before. */
+   Where this block sits is the whole argument. A stranger came here to play, so
+   the name box and the buttons come first and the sign-up waits underneath. But
+   a browser that has held a profile before belongs to someone with wins, a photo
+   and friends to lose — for them it moves to the top and the "or" divider slides
+   under it, so the same markup reads as an offer or as the way in. */
+#signin{display:flex;flex-direction:column}
+#signin.sitop .siOr{order:9}
+#signin .siOr i{font-style:normal;flex:none}
 #signin .siT{margin:0 0 3px;font-size:13.4px;font-weight:600;color:var(--ink);text-align:center}
 #signin .siS{margin:0 0 12px;font-size:11.4px;font-weight:400;color:var(--muted);text-align:center;line-height:1.5}
 #gPlay{display:flex;justify-content:center;min-height:44px}
@@ -541,22 +547,25 @@ b,strong{font-weight:600}
       <h1 class="logo" style="margin:0;cursor:pointer" onclick="location.href='/'" title="WordSpies home"><span class="r">Word</span><span class="b">Spies</span></h1>
       <p style="margin:6px 0 0;font-size:13.1px;font-weight:400;color:var(--muted)">The free online Codenames-style word game</p>
       <div class="card homecard">
+        <div id="asMe" class="hidden"></div>
+        <div id="guestForm">
+          <label class="lbl">Your name</label>
+          <input class="fld" id="nameInput" maxlength="20" placeholder="Type your name" autocomplete="off">
+          <div class="gap"></div>
+          <button class="btn btn-green" id="createBtn" style="width:100%">▶&nbsp; New game</button>
+          <div class="split">OR</div>
+          <div class="joinrow">
+            <input class="fld codefld" id="codeInput" maxlength="4" placeholder="CODE" autocomplete="off">
+            <button class="btn btn-light" id="joinBtn" style="flex:1">Join game</button>
+          </div>
+        </div>
         <div id="signin" class="hidden">
+          <div class="siOr" id="siDiv"><span></span><i id="siDivT">or save your games</i><span></span></div>
           <p class="siT" id="siT">Play as yourself</p>
-          <p class="siS" id="siS">Log in and your name, photo, wins and friends all save to your profile.</p>
+          <p class="siS" id="siS">Sign up free and your name, photo, wins and friends all save to your profile.</p>
           <div id="gPlay"></div>
           <p class="siAlt" id="siAlt">Signed up with email? <a id="siEmail" href="/social">Log in</a></p>
-          <div class="siOr"><span></span>or play as a guest<span></span></div>
-        </div>
-        <div id="asMe" class="hidden"></div>
-        <label class="lbl">Your name</label>
-        <input class="fld" id="nameInput" maxlength="20" placeholder="Type your name" autocomplete="off">
-        <div class="gap"></div>
-        <button class="btn btn-green" id="createBtn" style="width:100%">▶&nbsp; New game</button>
-        <div class="split">OR</div>
-        <div class="joinrow">
-          <input class="fld codefld" id="codeInput" maxlength="4" placeholder="CODE" autocomplete="off">
-          <button class="btn btn-light" id="joinBtn" style="flex:1">Join game</button>
+          <p class="siAlt hidden" id="siGuest"><a id="siGuestGo" role="button" tabindex="0">Not you? Join as a guest instead →</a></p>
         </div>
       </div>
       <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button><a class="helpbtn" href="/social" style="text-decoration:none">👥 Social</a><button class="helpbtn hidden" id="installBtn" title="Install WordSpies on your device">📲 Install app</button></div>
@@ -1022,6 +1031,12 @@ function showJoiningAs(me, code){
 // The invite points at a room that is gone (ended, or swept after 6h idle).
 function showDeadRoom(){
   if (document.getElementById('deadRoomNote')) return;
+  // There's nothing left to log in *to* — drop the gate before it hides the
+  // one message that matters, or the news that the room is gone lands inside
+  // a panel nobody can see.
+  const si = $('signin'), gf = $('guestForm');
+  if (si) si.classList.add('hidden');
+  if (gf) gf.classList.remove('hidden');
   const cb = $('createBtn');
   if (!cb) {                                   // auto-join card is showing — rebuild
     const card = document.querySelector('.homecard');
@@ -1059,6 +1074,10 @@ const rememberAccount = () => { try { localStorage.setItem('ws_acct', '1'); } ca
 // saves the new name to the profile, so it changes in one place and everywhere
 // at once instead of leaving you with a different nickname per game.
 let PROFILE_NAME = '', renameBusy = false;
+// True while the invite card is standing in front of the guest form. The Google
+// fallback below rewrites the sub-line, and on a gate that line is naming the
+// room and the person waiting in it — worth more than any generic pitch.
+let SI_GATED = false;
 
 function lockNameToProfile(name){
   const inp = $('nameInput');
@@ -1196,14 +1215,61 @@ function paintSignin(){
   }
 
   am.classList.add('hidden');
+  const gf = $('guestForm'), card = document.querySelector('.homecard');
+  if (gf) gf.classList.remove('hidden');
   if (wantGuest || DEMO) { si.classList.add('hidden'); return; }   // they've already said "guest"
-  if (RETURNING) {
-    $('siT').textContent = '👋 Welcome back';
-    $('siS').textContent = 'Log in to carry on with your wins, photo and friends.';
-  }
+
   const back = encodeURIComponent(location.pathname + location.search);
   $('siEmail').href = '/social?login=1&next=' + back;
+  $('siGuest').classList.add('hidden');
+  $('siDiv').classList.remove('hidden');
   si.classList.remove('hidden');
+  SI_GATED = false;
+
+  // Nobody has ever logged in on this browser, so as far as we know they don't
+  // have an account and came here to play. The buttons stay first and the offer
+  // sits underneath them — the promise on the tin is still "no sign-up".
+  if (!RETURNING) {
+    si.classList.remove('sitop');
+    if (card && si !== card.lastElementChild) card.appendChild(si);
+    $('siDivT').textContent = 'or save your games';
+    $('siT').textContent = 'Play as yourself';
+    $('siS').textContent = 'Sign up free and your name, photo, wins and friends all save to your profile.';
+    return;
+  }
+
+  // This browser has held a profile, so there is an account to come back to and
+  // playing as a stranger would quietly throw the win away. The login goes first.
+  si.classList.add('sitop');
+  if (card && si !== card.firstElementChild) card.insertBefore(si, card.firstChild);
+  $('siT').textContent = '👋 Welcome back';
+  $('siDivT').textContent = 'or play as a guest';
+
+  if (!inviteCode || savedSessionFor(inviteCode)) {
+    $('siS').textContent = 'Log in to carry on with your wins, photo and friends.';
+    return;
+  }
+
+  // On a friend's invite it stops being a suggestion. The guest form is hidden
+  // rather than removed — a link nobody can open is worse than one that lets a
+  // stranger in — but you have to say "not me" out loud to get past it.
+  const nm = (() => { try { return localStorage.getItem('ws_name') || ''; } catch(e){ return ''; } })();
+  $('siS').textContent = nm
+    ? 'Log in and you’ll join room ' + inviteCode + ' as ' + nm + ', with your wins and photo.'
+    : 'Log in to join room ' + inviteCode + ' with your profile, wins and photo.';
+  $('siDiv').classList.add('hidden');
+  if (gf) gf.classList.add('hidden');
+  $('siGuest').classList.remove('hidden');
+  SI_GATED = true;
+  const go = () => {
+    SI_GATED = false;
+    if (gf) gf.classList.remove('hidden');
+    $('siGuest').classList.add('hidden');
+    $('siDiv').classList.remove('hidden');
+    const inp = $('nameInput'); if (inp) inp.focus();
+  };
+  $('siGuestGo').onclick = go;
+  $('siGuestGo').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
 }
 
 // Google's button is drawn into an iframe at a fixed pixel width, so measure
@@ -1215,7 +1281,9 @@ async function setupPlayGoogle(){
   // remaining route the headline, rather than leaving a dangling "or".
   const emailOnly = () => {
     box.style.display = 'none';
-    $('siS').textContent = RETURNING
+    // On a gate the sub-line already names the room and the person waiting to
+    // rejoin it — a generic pitch would be a downgrade, so leave it alone.
+    if (!SI_GATED) $('siS').textContent = RETURNING
       ? 'Log in to carry on with your wins, photo and friends.'
       : 'Already have a profile? Log in so your wins and friends save.';
     $('siAlt').innerHTML = '<a id="siEmail" href="' + $('siEmail').getAttribute('href') + '">Log in to my profile →</a>';
