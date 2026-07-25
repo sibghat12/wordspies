@@ -586,6 +586,11 @@ const winRate = u => {
 
 function enterApp(justJoined){
   GUEST = false;
+  // Sent here from the play page just to log in? Take them straight back to
+  // the game. The leading-slash test keeps this to our own pages — "//evil"
+  // and "https://evil" are both rejected.
+  const nx = new URLSearchParams(location.search).get('next');
+  if (nx && /^\/[^\/\\]/.test(nx)) { location.replace(nx); return; }
   document.body.classList.remove('authmodal');
   const xc = $('authClose'); if (xc) xc.remove();
   $('vAuth').classList.add('hidden');
@@ -1244,7 +1249,15 @@ async function setupGoogle(){
     }
     loadMembers();
     showTab('wall');
-    setupGoogle();
+    await setupGoogle();
+    // /social?login=1 — they clicked "Log in" on the play page, so open the
+    // form rather than dropping them on the wall to hunt for it.
+    if (new URLSearchParams(location.search).get('login') === '1') {
+      requireLogin();
+      const cl = $('chooserLogin');
+      if (cl && cl.onclick) cl.onclick();   // opens the form in login mode
+      else setMode('login');                // no Google key — the form is already up
+    }
   }
 })();
 </script>
