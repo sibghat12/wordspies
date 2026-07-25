@@ -132,7 +132,7 @@ function mount(app, redis) {
   // Matched on the display name, lowercased and trimmed, so it lands the moment
   // they sign up rather than needing their account to exist first. A `king: true`
   // set directly on a user works too, if you ever want to crown someone by hand.
-  const KINGS = new Set(['ayoub', 'xman', 'ali', 'pray', 'dem', 'sibi', 'rami', 'earlin', 'ana']);
+  const KINGS = new Set(['ayoub', 'xman', 'ali', 'pray', 'dem', 'sibi', 'rami', 'earlin', 'ana', 'karina']);
   const isKing = u => u.king === true || KINGS.has(String(u.name || '').trim().toLowerCase());
 
   // A king's crown replaces the tick rather than sitting beside it — two badges on
