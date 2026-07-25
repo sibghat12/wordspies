@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WordSpies Social — the community behind the game</title>
 <meta name="description" content="Meet the people you play WordSpies with. Create a profile, follow other spies, and chat between games.">
+<meta name="theme-color" content="#fafafa">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WordSpies">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fredoka:wght@600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
@@ -106,6 +114,44 @@ body.authmodal{overflow:hidden}
 .pcard .sub{color:var(--faint);font-size:11.5px;font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .empty{text-align:center;color:var(--faint);font-weight:500;font-size:14px;padding:60px 30px;line-height:1.7}
 
+/* ---------- wall: sidebar, sections, card actions ---------- */
+.wallside{display:none}
+.sect{display:flex;align-items:baseline;gap:9px;padding:18px 20px 2px}
+.sect h3{font-size:13.5px;font-weight:800;letter-spacing:-.2px}
+.sect .cnt{font-size:11px;font-weight:700;color:var(--faint)}
+.sect .ln{flex:1;height:1px;background:var(--line)}
+.prate{position:absolute;top:10px;right:10px;background:#eef9f3;color:#12925c;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px}
+.pcirc.live{outline:2px solid var(--green);outline-offset:2px}
+.pacts{display:none;gap:7px;margin-top:13px}
+.pacts button{flex:1;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:11.5px;font-weight:700;padding:8px 0;color:var(--ink);white-space:nowrap}
+.pacts button.msg{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pacts button.fol.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pacts button:disabled{opacity:.55}
+.sbcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:13px}
+.sbme{text-align:center;padding-top:20px}
+.sbme .av,.sbme .avph{margin:0 auto 10px}
+.sbname{font-weight:800;font-size:15.5px;letter-spacing:-.2px}
+.sbloc{color:var(--faint);font-size:12px;font-weight:600;margin-top:3px}
+.sbstats{display:flex;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.sbstats div{flex:1}
+.sbstats div+div{border-left:1px solid var(--line)}
+.sbstats b{display:block;font-size:16px;font-weight:800}
+.sbstats span{font-size:9px;letter-spacing:.7px;text-transform:uppercase;color:var(--faint);font-weight:700}
+.sbh{font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--faint);margin-bottom:11px}
+.sbrow{display:flex;align-items:center;gap:10px;padding:6px;margin:0 -6px;cursor:pointer;border-radius:11px}
+.sbrow:hover{background:#f6f7f9}
+.sbrow .rk{width:16px;text-align:center;font-weight:800;font-size:11.5px;color:var(--faint);flex:none}
+.sbrow .rn{flex:1;min-width:0;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbrow .rv{font-size:11.5px;font-weight:800;color:var(--green);flex:none}
+.sblive{display:flex;gap:9px;margin-bottom:13px}
+.sblive div{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 4px;text-align:center}
+.sblive b{display:block;font-size:19px;font-weight:800;letter-spacing:-.5px}
+.sblive span{font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);font-weight:700}
+.sblive .lv b{color:var(--green)}
+.sbcta{display:block;text-align:center;text-decoration:none;background:var(--ink);color:#fff;font-weight:700;font-size:13.5px;padding:14px;border-radius:14px;margin-bottom:13px}
+.sbcta:hover{opacity:.9}
+.sbnote{color:var(--faint);font-size:11px;font-weight:500;line-height:1.6;text-align:center;padding:0 6px}
+
 /* profile */
 .cover{height:130px;background:linear-gradient(160deg,#1d1f29,#3a3d4d);position:relative}
 .cover .back{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:10px;width:34px;height:34px;font-size:16px}
@@ -161,7 +207,7 @@ body.authmodal{overflow:hidden}
 .back2{background:var(--ink);color:#fff;border:none;font-size:17px;width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .chname{font-weight:800;font-size:15px}
 .chstate{font-size:11px;color:var(--faint)}
-.msgs{padding:14px 16px 150px;display:flex;flex-direction:column;gap:8px;min-height:55vh}
+.msgs{padding:14px 16px 150px;display:flex;flex-direction:column;gap:8px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .mb{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;min-width:0}
 .chatmode .gamelink{display:none}
 .chatfull .tabbar{display:none}
@@ -174,9 +220,25 @@ body.authmodal{overflow:hidden}
 .mb.me{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:5px}
 .mb.them{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}
 .mb img{max-width:220px;border-radius:10px;display:block}
-.mb .mtime{font-size:9.5px;opacity:.65;margin-top:3px;text-align:right}
-.tick{margin-left:4px;font-size:10px;letter-spacing:-1px}
-.tick.seen{color:#48f09b}
+.mb .mtime{font-size:9.5px;margin-top:4px;display:flex;align-items:center;justify-content:flex-end;gap:5px;line-height:1;font-weight:500}
+.mb.me .mtime{color:rgba(255,255,255,.74)}
+.mb.them .mtime{color:var(--faint)}
+/* read receipts: one white tick when sent, two dark ones once they've read it */
+.tick{width:17px;height:11px;display:block;flex:none}
+.tick path{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+.tick.seen path{stroke:var(--ink);opacity:1}
+/* a quiet date pill between days, like every chat app you've used */
+.daysep{align-self:center;background:#e9ebf0;color:var(--sub);font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:5px 13px;border-radius:99px;margin:10px 0 2px}
+/* messages from the same person in a row hug each other */
+.mb.cont{margin-top:-4px}
+.mb.me.cont{border-top-right-radius:7px}
+.mb.them.cont{border-top-left-radius:7px}
+/* new messages arrived while you were reading further up */
+.jumpnew{position:fixed;left:50%;bottom:140px;transform:translateX(-50%) translateY(10px);background:var(--ink);color:#fff;border:none;border-radius:99px;padding:9px 17px;font-size:12.5px;font-weight:700;box-shadow:0 10px 26px rgba(0,0,0,.25);z-index:14;opacity:0;pointer-events:none;transition:.2s}
+.jumpnew.show{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+.chatfull .jumpnew,.splitview .jumpnew{position:absolute;bottom:86px}
+/* stop the page itself moving while you're inside a chat on a phone */
+body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:none}
 .composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:7px;padding:10px 14px;background:var(--bg);border-top:1px solid var(--line);z-index:12}
 @media(min-width:700px){.composer{bottom:0}}
 .composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:10px 16px;font-size:14px;min-width:0}
@@ -195,14 +257,22 @@ body.authmodal{overflow:hidden}
 @media(min-width:900px){
   .wrap{max-width:1400px;padding-left:36px;padding-right:36px}
   .head{padding:28px 8px 16px}
-  .filterrow{max-width:1000px;margin:4px auto 20px}
-  .wall{grid-template-columns:repeat(3,1fr);gap:18px;padding:6px 8px 44px}
+  /* the wall becomes a two-column page: a sticky rail, then the grid */
+  .walllay{display:grid;grid-template-columns:262px minmax(0,1fr);gap:28px;align-items:start;padding:0 8px}
+  .wallside{display:block;position:sticky;top:78px}
+  .filterrow{margin:0 0 4px}
+  .wall{grid-template-columns:1fr 1fr;gap:18px;padding:8px 0 30px}
+  .sect{padding:22px 2px 0}
+  .pacts{display:flex}
   .pw{height:300px}
   #tabMember,#tabMe,#tabChats,#tabChat{max-width:660px;margin:0 auto}
   .composer{max-width:660px}
   .picker{max-width:636px}
 }
-@media(min-width:1200px){
+@media(min-width:1100px){
+  .wall{grid-template-columns:repeat(3,1fr)}
+}
+@media(min-width:1450px){
   .wall{grid-template-columns:repeat(4,1fr)}
 }
 
@@ -269,17 +339,24 @@ body.authmodal{overflow:hidden}
         <span id="meAvSmall"></span>
       </div>
     </div>
-    <div class="filterrow">
-      <div class="search">🔎<input id="q" placeholder="Search spies…" oninput="renderWall()"></div>
-      <div class="fchips">
-        <button class="fchip on" data-f="all">All</button>
-        <button class="fchip" data-f="nearby">📍 Nearby</button>
-        <button class="fchip" data-f="new">New</button>
-        <button class="fchip" data-f="special"><span class="vtick" style="margin:0 4px 0 0">✓</span>Special</button>
+    <div class="walllay">
+      <!-- desktop only: you, the room's pulse, and who's winning -->
+      <aside class="wallside" id="wallSide"></aside>
+      <div class="wallmain">
+        <div class="filterrow">
+          <div class="search">🔎<input id="q" placeholder="Search spies…" oninput="renderWall()"></div>
+          <div class="fchips">
+            <button class="fchip on" data-f="all">All</button>
+            <button class="fchip" data-f="online">🟢 Online</button>
+            <button class="fchip" data-f="nearby">📍 Nearby</button>
+            <button class="fchip" data-f="new">New</button>
+            <button class="fchip" data-f="special"><span class="vtick" style="margin:0 4px 0 0">✓</span>Special</button>
+          </div>
+        </div>
+        <div id="wallBody"></div>
+        <div class="empty hidden" id="wallEmpty">No spies found yet.<br>You're one of the first — invite your friends!</div>
       </div>
     </div>
-    <div class="wall" id="wall"></div>
-    <div class="empty hidden" id="wallEmpty">No spies found yet.<br>You're one of the first — invite your friends!</div>
   </div>
 
   <!-- member profile -->
@@ -318,6 +395,7 @@ body.authmodal{overflow:hidden}
       <div><div class="chname" id="chName"></div><div class="chstate" id="chState"></div></div>
     </div>
     <div class="msgs" id="msgs"></div>
+    <button class="jumpnew" id="jumpNew" onclick="toBottom($('msgs'))">↓ New messages</button>
     <div class="composer">
       <button class="cbtn" onclick="togglePicker()">😊</button>
       <button class="cbtn" onclick="inviteToPlay()" title="Invite to a game">🎮</button>
@@ -565,6 +643,11 @@ function showTab(t){
   $('tbChats').classList.toggle('on', t === 'chats' || t === 'chat');
   $('vApp').classList.toggle('chatmode', t === 'chats' || t === 'chat');
   $('vApp').classList.toggle('chatfull', t === 'chat' && !split);
+  // full-screen chat on a phone: freeze the page behind it, and size the chat
+  // to the window that's actually visible (the keyboard eats part of it)
+  document.body.classList.toggle('chatlock', t === 'chat' && !split);
+  $('jumpNew').classList.remove('show');
+  fitChat();
   if (split) {
     refreshChats(); refreshChat(true); askNotify();
     chatTimer = setInterval(() => { refreshChat(); refreshChats(); }, 3500);
@@ -753,6 +836,28 @@ function openChatWith(id){
   showTab('chat');
 }
 
+// One white tick the moment it's sent, two dark ones once they've read it.
+const TICK_SENT = '<svg class="tick" viewBox="0 0 17 11" aria-label="Sent"><path d="M2 6.2 5.1 9.1 11 2.1"/></svg>';
+const TICK_SEEN = '<svg class="tick seen" viewBox="0 0 17 11" aria-label="Read"><path d="M1 6.2 4.1 9.1 10 2.1"/><path d="M6.6 6.2 9.7 9.1 15.6 2.1"/></svg>';
+
+// Bubbles carry the clock time only — the date lives in the pill above them.
+const clockT = t => new Date(t).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+
+// "Today" / "Yesterday" / "12 Mar" — the pill that sits between days.
+function dayLabel(t){
+  const d = new Date(t), n = new Date();
+  const same = (a, b) => a.toDateString() === b.toDateString();
+  if (same(d, n)) return 'Today';
+  const y = new Date(n); y.setDate(y.getDate() - 1);
+  if (same(d, y)) return 'Yesterday';
+  return d.toLocaleDateString([], { day:'numeric', month:'short',
+    year: d.getFullYear() === n.getFullYear() ? undefined : 'numeric' });
+}
+
+// Are we parked at the bottom of the thread? (Within a message or so.)
+function atBottom(box){ return box.scrollHeight - box.scrollTop - box.clientHeight < 70; }
+function toBottom(box){ box.scrollTop = box.scrollHeight; $('jumpNew').classList.remove('show'); }
+
 async function refreshChat(first){
   if (!curChat) return;
   try {
@@ -761,22 +866,55 @@ async function refreshChat(first){
     $('chName').innerHTML = esc(j.user.name) + (j.user.verified ? '<span class="vtick">✓</span>' : '');
     $('chState').innerHTML = j.user.online ? '<span style="color:var(--green)">● online</span>' : 'offline';
     if (j.messages.length !== lastMsgCount || j.theirRead !== lastTheirRead) {
-      $('msgs').innerHTML = j.messages.map(m => {
-        const tick = m.f === ME.id
-          ? (m.t <= j.theirRead ? '<span class="tick seen">✓✓</span>' : '<span class="tick">✓</span>')
-          : '';
-        return `
-        <div class="mb ${m.f === ME.id ? 'me' : 'them'}">
+      const box = $('msgs');
+      // Remember exactly where they were reading before we redraw, so a
+      // background refresh never yanks the thread out from under them.
+      const wasBottom = first || lastMsgCount === 0 || atBottom(box);
+      const prevTop = box.scrollTop;
+      const grew = j.messages.length > lastMsgCount && lastMsgCount > 0;
+
+      let lastDay = '', prev = null;
+      box.innerHTML = j.messages.map(m => {
+        const mine = m.f === ME.id;
+        const tick = mine ? (m.t <= j.theirRead ? TICK_SEEN : TICK_SENT) : '';
+        const day = dayLabel(m.t);
+        const sep = day !== lastDay ? `<div class="daysep">${esc(day)}</div>` : '';
+        // same person, within four minutes, same day → tuck it under the one above
+        const cont = !sep && prev && prev.f === m.f && (m.t - prev.t) < 240000 ? ' cont' : '';
+        lastDay = day; prev = m;
+        return sep + `
+        <div class="mb ${mine ? 'me' : 'them'}${cont}">
           ${msgBody(m)}
-          <div class="mtime">${fmtT(m.t)}${tick}</div>
+          <div class="mtime">${clockT(m.t)}${tick}</div>
         </div>`;
       }).join('');
-      if (j.messages.length !== lastMsgCount) { const box = $('msgs'); box.scrollTop = box.scrollHeight; }
+
+      if (wasBottom) toBottom(box);
+      else {
+        box.scrollTop = prevTop;   // new messages arrive below — don't move the reader
+        if (grew) $('jumpNew').classList.add('show');
+      }
       lastMsgCount = j.messages.length;
       lastTheirRead = j.theirRead;
     }
   } catch(e){}
 }
+
+// The keyboard on a phone shrinks the visible window without telling the page.
+// Pin the chat to what's actually on screen so the composer stays put and the
+// thread above it stays scrollable instead of sliding off the top.
+function fitChat(){
+  const el = $('tabChat');
+  if (!$('vApp').classList.contains('chatfull')) { el.style.height = ''; return; }
+  const vv = window.visualViewport;
+  el.style.height = Math.round(vv ? vv.height : window.innerHeight) + 'px';
+  if (window.scrollY) window.scrollTo(0, 0);
+}
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', fitChat);
+  visualViewport.addEventListener('scroll', fitChat);
+}
+addEventListener('orientationchange', () => setTimeout(fitChat, 250));
 
 // Render a message: GIFs as images, game invite links as a big Join button,
 // other links clickable. Everything is escaped first.
@@ -808,10 +946,16 @@ async function sendMsg(kind, gifUrl){
     await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ to: curChat, kind: kind === 'gif' ? 'gif' : 'text', text }) });
     lastMsgCount = -1;
-    refreshChat();
+    await refreshChat();
+    toBottom($('msgs'));                     // your own message always lands in view
   } catch(e){ toast(e.message); }
 }
 $('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+// tapping the box opens the keyboard, which resizes the window — re-fit, then
+// drop back to the newest message rather than leaving them mid-thread
+$('msgIn').addEventListener('focus', () => setTimeout(() => { fitChat(); toBottom($('msgs')); }, 300));
+// keep the "new messages" pill honest as they scroll
+$('msgs').addEventListener('scroll', () => { if (atBottom($('msgs'))) $('jumpNew').classList.remove('show'); });
 
 // ---------- emoji + GIF pickers ----------
 const EMOJIS = '😀 😁 😂 🤣 😊 😍 🥰 😘 😜 🤪 🤩 🥳 😎 🤓 🤔 🙃 😅 😇 😋 🤗 🤭 😏 😴 🥱 🤯 😱 😭 🥺 😢 😤 😡 🙄 😬 🤢 🥶 🥵 😈 🤡 👻 💀 👽 🤖 💩 😺 🙈 🙉 🙊 💪 👍 👎 👏 🙌 🤝 🙏 ✌️ 🤞 🤟 🤘 🤙 👋 ✋ 👌 🤌 👈 👉 👆 👇 ❤️ 🧡 💛 💚 💙 💜 🖤 🤍 💔 💖 💘 💝 💯 💢 💥 💫 ⭐ 🌟 ✨ ⚡ 🔥 🌈 ☀️ 🌙 🎉 🎊 🎈 🎁 🏆 🥇 🎮 🎲 🎯 🕵️ 🔎 🧠 🍕 🍔 🍟 🌮 🍩 🍪 🎂 🍺 ☕ 🚀 ✈️ 🏝 ⚽ 🏀 🎸 🎧 📸'.split(' ').filter(Boolean);
@@ -839,8 +983,14 @@ async function toggleFollow(){
   } catch(e){ toast(e.message); }
 }
 
+let FOLLOWING = new Set();
 async function loadMembers(){
-  try { MEMBERS = (await api('/members')).members; renderWall(); } catch(e){}
+  try {
+    const j = await api('/members');
+    MEMBERS = j.members;
+    FOLLOWING = new Set(j.following || []);
+    renderWall();
+  } catch(e){}
 }
 const flag = cc => (cc && cc.length === 2) ? [...cc.toUpperCase()].map(c => String.fromCodePoint(127397 + c.charCodeAt(0))).join('') : '🌍';
 const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 6; };
@@ -850,7 +1000,8 @@ function renderWall(){
   const WEEK7 = 7 * 24 * 3600 * 1000;
   // only members with a photo appear on the wall
   let list = MEMBERS.filter(m => m.photo).filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q) || (m.country||'').toLowerCase().includes(q));
-  if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
+  if (wallFilter === 'online') list = list.filter(m => m.online);
+  else if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
   else if (wallFilter === 'new') list = list.filter(m => Date.now() - m.createdAt < WEEK7);
   else if (wallFilter === 'special') list = list.filter(m => m.verified);
   // Sort by win rate (best players first), then by games played
@@ -861,23 +1012,122 @@ function renderWall(){
     return b.games - a.games; // More games second
   });
   $('wallEmpty').classList.toggle('hidden', list.length > 0);
-  $('wall').innerHTML = list.map((m,i) => {
+  window.__wallList = list;
+
+  // Cards index into __wallList, so build the grids from the same array.
+  const card = i => {
+    const m = list[i];
+    const mine = ME && m.id === ME.id;
     const agePart = m.age ? ' | ' + m.age : '';
     const countryPart = flag(m.cc) + ' ' + (m.country || 'Earth');
     const statsLine = [m.games ? m.games + ' game' + (m.games === 1 ? '' : 's') : null,
                        m.wins ? m.wins + ' win' + (m.wins === 1 ? '' : 's') : null].filter(Boolean).join(' · ');
+    const rate = m.games >= 3 ? Math.round((m.wins / m.games) * 100) : null;
+    const fol = FOLLOWING.has(m.id);
     return `
     <div class="pcard" onclick="openMember(${i})" data-i="${i}">
-      ${m.id === (ME&&ME.id) ? '<span class="chip-you">YOU</span>' : ''}
-      <div class="pcirc ${m.photo ? '' : 'g' + hue(m.name)}">
+      ${mine ? '<span class="chip-you">YOU</span>'
+             : (rate !== null ? `<span class="prate">${rate}%</span>` : '')}
+      <div class="pcirc ${m.online ? 'live ' : ''}${m.photo ? '' : 'g' + hue(m.name)}">
         ${m.photo ? `<img src="${esc(m.photo)}" loading="lazy">` : `<div class="pcircph">${esc(m.name[0].toUpperCase())}</div>`}
       </div>
       <div class="pnm">${esc(m.name)}${m.verified ? '<span class="vtick">✓</span>' : ''}${m.online ? '<span class="dot"></span>' : ''}</div>
       <div class="psub">${countryPart}${agePart}</div>
-      ${statsLine ? `<div class="psub2">${statsLine}</div>` : ''}
+      <div class="psub2">${statsLine || 'No games yet'}</div>
+      <div class="pacts">${mine
+        ? `<button onclick="event.stopPropagation();showTab('me')">Edit your profile</button>`
+        : `<button class="msg" onclick="wallMsg(event,'${m.id}')">Message</button>
+           <button class="fol${fol ? ' on' : ''}" onclick="wallFollow(event,'${m.id}',this)">${fol ? 'Following' : 'Follow'}</button>`}
+      </div>
     </div>`;
-  }).join('');
-  window.__wallList = list;
+  };
+  const grid = idx => idx.length ? `<div class="wall">${idx.map(card).join('')}</div>` : '';
+  const head = (t, n) => `<div class="sect"><h3>${t}</h3><span class="cnt">${n}</span><span class="ln"></span></div>`;
+
+  // With no filter and enough people, break the wall into a few honest groups
+  // so a wide screen reads as a room rather than one long anonymous grid.
+  const idx = list.map((m, i) => i);
+  if (wallFilter === 'all' && !q && list.length >= 6) {
+    const on  = idx.filter(i => list[i].online);
+    const nw  = idx.filter(i => !list[i].online && Date.now() - list[i].createdAt < WEEK7);
+    const rest = idx.filter(i => !on.includes(i) && !nw.includes(i));
+    $('wallBody').innerHTML =
+      (on.length  ? head('🟢 Online now', on.length + ' here') + grid(on) : '') +
+      (nw.length  ? head('✨ New this week', nw.length + ' joined') + grid(nw) : '') +
+      (rest.length ? head(on.length || nw.length ? 'Every spy' : 'The wall', rest.length) + grid(rest) : '');
+  } else {
+    $('wallBody').innerHTML = grid(idx);
+  }
+  renderSide();
+}
+
+// The desktop rail: who you are, what the room looks like right now, and who's
+// actually winning. Hidden entirely on phones by CSS.
+function renderSide(){
+  const side = $('wallSide'); if (!side) return;
+  const WEEK7 = 7 * 24 * 3600 * 1000;
+  const all = MEMBERS.filter(m => m.photo);
+  const online = all.filter(m => m.online).length;
+  const fresh = all.filter(m => Date.now() - m.createdAt < WEEK7).length;
+
+  const meCard = (ME && !GUEST) ? `
+    <div class="sbcard sbme">
+      ${avatarHtml(ME, 64)}
+      <div class="sbname">${esc(ME.name)}${ME.verified ? '<span class="vtick">✓</span>' : ''}</div>
+      <div class="sbloc">${flag(ME.cc)} ${esc(ME.location || ME.country || 'Somewhere on Earth')}</div>
+      <div class="sbstats">
+        <div><b>${ME.games || 0}</b><span>Games</span></div>
+        <div><b>${ME.wins || 0}</b><span>Wins</span></div>
+        <div><b>${winRate(ME)}</b><span>Win rate</span></div>
+      </div>
+    </div>` : `
+    <div class="sbcard sbme">
+      <div class="sbname">You're browsing as a guest</div>
+      <div class="sbloc" style="margin-bottom:14px">Make a profile to message spies and follow the people you play with.</div>
+      <button class="btn btn-dark" onclick="requireLogin('Join the wall')">Create your profile</button>
+    </div>`;
+
+  const top = all.filter(m => m.games > 0)
+    .sort((a, b) => (b.wins - a.wins) || (b.games - a.games))
+    .slice(0, 5);
+
+  side.innerHTML = meCard + `
+    <div class="sblive">
+      <div><b>${all.length}</b><span>Spies</span></div>
+      <div class="lv"><b>${online}</b><span>Online</span></div>
+      <div><b>${fresh}</b><span>New</span></div>
+    </div>
+    ${top.length ? `<div class="sbcard">
+      <div class="sbh">Top spies</div>
+      ${top.map((m, i) => `
+        <div class="sbrow" onclick="openMemberById('${m.id}')">
+          <span class="rk">${i + 1}</span>
+          ${avatarHtml(m, 30)}
+          <span class="rn">${esc(m.name)}</span>
+          <span class="rv">${m.wins} ${m.wins === 1 ? 'win' : 'wins'}</span>
+        </div>`).join('')}
+    </div>` : ''}
+    <a class="sbcta" href="/play">Start a game →</a>
+    <div class="sbnote">Play a round, then come back and follow whoever made you laugh.</div>`;
+}
+
+function wallMsg(e, id){
+  e.stopPropagation();
+  if (!ME || GUEST) return requireLogin('Message a spy');
+  openChatWith(id);
+}
+async function wallFollow(e, id, btn){
+  e.stopPropagation();
+  if (!ME || GUEST) return requireLogin('Follow a spy');
+  const on = FOLLOWING.has(id);
+  btn.disabled = true;
+  try {
+    await api(on ? '/unfollow' : '/follow', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+    if (on) FOLLOWING.delete(id); else FOLLOWING.add(id);
+    btn.classList.toggle('on', !on);
+    btn.textContent = on ? 'Follow' : 'Following';
+  } catch(err){ toast(err.message); }
+  btn.disabled = false;
 }
 document.querySelectorAll('.fchip').forEach(b => b.onclick = () => {
   wallFilter = b.dataset.f;
@@ -885,7 +1135,14 @@ document.querySelectorAll('.fchip').forEach(b => b.onclick = () => {
   renderWall();
 });
 function openMember(i){
-  const m = window.__wallList[i]; if (!m) return;
+  const m = window.__wallList[i]; if (m) openMemberObj(m);
+}
+// Sidebar rows aren't in __wallList order, so they open profiles by id.
+function openMemberById(id){
+  const m = MEMBERS.find(x => x.id === id); if (m) openMemberObj(m);
+}
+function openMemberObj(m){
+  if (!m) return;
   if (ME && m.id === ME.id) { showTab('me'); return; }
   curMember = m.id;
   $('mAv').innerHTML = avatarHtml(m, 104, 'big');
@@ -989,6 +1246,90 @@ async function setupGoogle(){
     showTab('wall');
     setupGoogle();
   }
+})();
+</script>
+
+<!-- ---------- 📲 keep WordSpies on your home screen ----------
+     Same offer as the game page, so whichever door someone comes through on a
+     phone, they get one chance to keep the app. Dismissing it sticks. -->
+<style>
+#a2hs{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(190%);z-index:70;
+  display:flex;align-items:center;gap:11px;width:calc(100vw - 24px);max-width:430px;
+  background:var(--ink);color:#fff;padding:10px 12px 10px 12px;border-radius:16px;
+  box-shadow:0 12px 34px rgba(0,0,0,.32);transition:transform .34s cubic-bezier(.2,.8,.3,1)}
+#a2hs.on{transform:translateX(-50%)}
+#a2hs>img{width:38px;height:38px;border-radius:10px;flex:none}
+#a2hs .t{flex:1;min-width:0;line-height:1.3}
+#a2hs .t b{display:block;font-size:12.8px;font-weight:700}
+#a2hs .t span{font-size:10.8px;color:rgba(255,255,255,.62);font-weight:500}
+#a2hs .go{background:#fff;color:var(--ink);border:none;border-radius:99px;font-size:12.3px;font-weight:800;padding:9px 16px;flex:none}
+#a2hs .no{background:none;border:none;color:rgba(255,255,255,.55);font-size:18px;line-height:1;padding:4px 2px;flex:none}
+#a2hsSteps{position:fixed;inset:0;z-index:90;background:rgba(20,22,28,.55);display:flex;align-items:center;justify-content:center;padding:22px}
+#a2hsSteps .card{background:#fff;border-radius:20px;padding:24px 22px;max-width:360px;width:100%}
+#a2hsSteps h3{font-size:17px;font-weight:800;margin-bottom:14px}
+#a2hsSteps p{font-size:13.2px;color:var(--sub);line-height:1.65;margin-bottom:9px}
+#a2hsSteps .btn{margin-top:14px}
+@media(min-width:900px){#a2hs{bottom:22px}}
+/* never park it on top of the message box */
+body.chatlock #a2hs{display:none}
+</style>
+<div id="a2hs">
+  <img src="/icon-192.png" alt="">
+  <div class="t"><b>Add WordSpies to your home screen</b><span>Opens like an app — no app store</span></div>
+  <button class="go" id="a2hsGo">Add</button>
+  <button class="no" id="a2hsNo" title="Not now">×</button>
+</div>
+<div id="a2hsSteps" class="hidden">
+  <div class="card">
+    <h3>📲 Install WordSpies</h3>
+    <p id="a2hsS1"><b>1.</b> Tap the <b>Share</b> button at the bottom of Safari.</p>
+    <p id="a2hsS2"><b>2.</b> Scroll down and tap <b>Add to Home Screen</b>.</p>
+    <p><b>3.</b> Tap <b>Add</b> — WordSpies opens full-screen, like a real app.</p>
+    <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
+  </div>
+</div>
+<script>
+(function(){
+  // Registering the worker is what makes a browser treat this as installable.
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  }
+  const el = id => document.getElementById(id);
+  const bar = el('a2hs');
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // iPadOS lies
+  let prompt = null, shown = false;
+
+  const dismissed = () => { try { return localStorage.getItem('ws_a2hs') === 'no'; } catch(e){ return false; } };
+  const remember  = () => { try { localStorage.setItem('ws_a2hs', 'no'); } catch(e){} };
+
+  function offer(){
+    if (shown || standalone || dismissed()) return;
+    if (!prompt && !isIOS) return;                       // this browser can't install us
+    shown = true;
+    setTimeout(() => bar.classList.add('on'), 2200);
+  }
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); prompt = e; offer(); });
+  addEventListener('appinstalled', () => { bar.classList.remove('on'); remember(); });
+  if (isIOS) offer();
+
+  el('a2hsNo').onclick = () => { bar.classList.remove('on'); remember(); };
+  el('a2hsGo').onclick = async () => {
+    bar.classList.remove('on');
+    if (prompt) {
+      prompt.prompt();
+      const r = await prompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
+      prompt = null;                                     // the event is single-use
+      if (r.outcome !== 'accepted') remember();
+      return;
+    }
+    if (!isIOS) {                                        // Android fallback: menu steps
+      el('a2hsS1').innerHTML = '<b>1.</b> Open your browser’s <b>menu</b> (⋮ or ···).';
+      el('a2hsS2').innerHTML = '<b>2.</b> Choose <b>Install app</b> or <b>Add to Home screen</b>.';
+    }
+    el('a2hsSteps').classList.remove('hidden');
+  };
 })();
 </script>
 </body>
