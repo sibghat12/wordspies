@@ -2236,7 +2236,13 @@ if (installBtn) installBtn.onclick = async () => {
     return;
   }
   // No API available (iOS, or a browser that already dismissed us) — show steps.
-  if (!isIOS) {
+  // Which steps depends on the browser: Safari hides Add to Home Screen behind
+  // the ••• button, Chrome behind the Share icon. /a2hs.js knows the difference.
+  if (window.wsInstallSteps) {
+    const steps = window.wsInstallSteps();
+    $('instStep1').innerHTML = steps.one;
+    $('instStep2').innerHTML = steps.two;
+  } else if (!isIOS) {
     $('instStep1').innerHTML = 'Open your browser’s <b>menu</b> (⋮ or ···).';
     $('instStep2').innerHTML = 'Choose <b>Install app</b> or <b>Add to Home screen</b>.';
   }
