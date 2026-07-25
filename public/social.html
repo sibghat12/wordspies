@@ -124,6 +124,19 @@ body.authmodal{overflow:hidden}
 .prow{display:flex;gap:10px;padding:0 24px;margin-bottom:14px}
 .upl{position:absolute;bottom:2px;right:2px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;border:3px solid var(--bg);font-size:13px}
 .note{color:var(--faint);font-size:11.5px;font-weight:500;text-align:center;padding:0 30px 26px;line-height:1.6}
+/* ---------- 🔔 notification settings ---------- */
+.setbox{padding:0 24px;margin-top:20px}
+.seth{font-size:11.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px}
+.setrow{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:9px}
+.setrow .sc{flex:1;min-width:0}
+.setrow .sc b{display:block;font-size:13.2px;font-weight:600}
+.setrow .sc span{display:block;font-size:11.2px;color:var(--faint);font-weight:500;margin-top:2px;line-height:1.45}
+.sw{flex:none;width:44px;height:26px;border-radius:99px;background:#d6dae6;border:none;position:relative;cursor:pointer;transition:background .18s;padding:0}
+.sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s}
+.sw.on{background:var(--green)}
+.sw.on::after{transform:translateX(18px)}
+.setrow .sbtn{flex:none;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer}
+.setrow .sbtn[disabled]{background:#c9cdd9;cursor:default}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .gamelink{display:block;margin:6px 24px 22px;text-align:center;text-decoration:none;color:var(--accent);font-weight:600;font-size:13.5px}
@@ -338,6 +351,18 @@ body.authmodal{overflow:hidden}
       <button class="btn btn-accent" onclick="saveProfile()">Save profile</button>
       <button class="btn btn-line" onclick="logout()">Log out</button>
     </div>
+    <!-- 🔔 how you'd like to hear about messages and follows -->
+    <div class="setbox">
+      <div class="seth">Notifications</div>
+      <div class="setrow">
+        <div class="sc"><b>Sound</b><span>A soft chime for a new message or follower.</span></div>
+        <button class="sw" id="swSound" onclick="toggleSound()" aria-label="Sound alerts"></button>
+      </div>
+      <div class="setrow">
+        <div class="sc"><b>Push notifications</b><span id="pushWhy">Get told even when WordSpies is closed.</span></div>
+        <button class="sbtn" id="pushBtn" onclick="enablePush()">Turn on</button>
+      </div>
+    </div>
     <div style="padding:0 24px;margin-top:20px">
       <button class="btn btn-line" style="color:var(--err);border-color:var(--err)" onclick="confirmDelete()">Delete account</button>
       <div class="note" style="color:var(--err);margin-top:10px">This action cannot be undone. You'll lose all your profile data and game history.</div>
@@ -546,6 +571,7 @@ function showTab(t){
     chatTimer = setInterval(() => { refreshChat(); refreshChats(); }, 3500);
   } else if (t === 'chats') { refreshChats(); chatTimer = setInterval(refreshChats, 5000); askNotify(); }
   else if (t === 'chat') { refreshChat(true); chatTimer = setInterval(refreshChat, 3000); }
+  if (t === 'me') { paintSound(); paintPush(); }
   window.scrollTo(0,0);
 }
 
@@ -557,15 +583,128 @@ function updateBadge(n){
   b.classList.toggle('hidden', !n);
 }
 function askNotify(){ if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }
+
+// ---------- 🔊 sound ----------
+// Two short chimes, synthesised on the spot — no audio file to download and
+// nothing to go stale in the cache. Messages get a gentle two-note fall,
+// follows a brighter rise, so you can tell them apart without looking.
+let soundOn = true;
+try { soundOn = localStorage.getItem('ws_sound') !== 'off'; } catch(e){}
+let AC = null;
+function audio(){
+  if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; AC = new C(); }
+  if (AC.state === 'suspended') AC.resume().catch(() => {});
+  return AC;
+}
+function chime(notes){
+  if (!soundOn) return;
+  const ac = audio(); if (!ac) return;
+  const t0 = ac.currentTime;
+  notes.forEach(([hz, at, len], i) => {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.value = hz;
+    // a quick swell in and a slow tail out, so it sounds like a bell not a beep
+    g.gain.setValueAtTime(0.0001, t0 + at);
+    g.gain.exponentialRampToValueAtTime(0.14, t0 + at + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + len);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t0 + at); o.stop(t0 + at + len + 0.02);
+  });
+}
+const soundMsg    = () => chime([[880, 0, 0.22], [660, 0.11, 0.34]]);
+const soundFollow = () => chime([[587.33, 0, 0.18], [739.99, 0.09, 0.18], [987.77, 0.18, 0.42]]);
+function paintSound(){ $('swSound').classList.toggle('on', soundOn); }
+function toggleSound(){
+  soundOn = !soundOn;
+  try { localStorage.setItem('ws_sound', soundOn ? 'on' : 'off'); } catch(e){}
+  paintSound();
+  if (soundOn) soundMsg();          // let them hear what they just switched on
+}
+// Browsers won't let us make a sound until you've touched the page once, so
+// warm the audio engine up on the first tap and never think about it again.
+addEventListener('pointerdown', () => audio(), { once: true });
+
+// ---------- 📣 push notifications ----------
+// The old code only fired a notification while this tab was open, which rather
+// missed the point. Real push goes through the service worker, so it reaches
+// you with the app closed.
+async function pushState(){
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported';
+  if (Notification.permission === 'denied') return 'blocked';
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) return 'off';
+  return (await reg.pushManager.getSubscription()) ? 'on' : 'off';
+}
+async function paintPush(){
+  const b = $('pushBtn'), why = $('pushWhy');
+  if (!b) return;
+  const st = await pushState();
+  if (st === 'unsupported') { b.textContent = 'Not available'; b.disabled = true;
+    why.textContent = 'This browser can\'t do push notifications.'; return; }
+  if (st === 'blocked') { b.textContent = 'Blocked'; b.disabled = true;
+    why.textContent = 'Notifications are blocked — turn them back on in your browser settings.'; return; }
+  b.disabled = false;
+  b.textContent = st === 'on' ? 'Turn off' : 'Turn on';
+  why.textContent = st === 'on'
+    ? 'On — we\'ll let you know about messages and new followers.'
+    : 'Get told even when WordSpies is closed.';
+}
+const b64ToU8 = s => {
+  const p = (s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(p), u = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) u[i] = raw.charCodeAt(i);
+  return u;
+};
+async function enablePush(){
+  const b = $('pushBtn');
+  try {
+    if (await pushState() === 'on') {                    // second tap = turn it off again
+      const reg = await navigator.serviceWorker.getRegistration();
+      const sub = reg && await reg.pushManager.getSubscription();
+      if (sub) {
+        await api('/push/unsubscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {});
+        await sub.unsubscribe();
+      }
+      return paintPush();
+    }
+    b.disabled = true; b.textContent = '…';
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return paintPush();
+    const { key } = await api('/push/key');
+    if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
+    await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(sub.toJSON()) });
+    toast('Push notifications on 🔔');
+  } catch (e) { toast('Couldn\'t turn on push.'); }
+  paintPush();
+}
+
+let lastFollowers = null;
 async function pingLoop(){
   if (!ME) return;
   try {
     const j = await api('/ping', { method: 'POST' });
     updateBadge(j.unread);
-    if (j.unread > lastUnread && 'Notification' in window && Notification.permission === 'granted' &&
-        (document.hidden || (!curChat && $('tabChat').classList.contains('hidden'))))
-      new Notification('WordSpies Social 💬', { body: 'You have a new message!', icon: '/icon-192.png' });
+    const away = document.hidden || (!curChat && $('tabChat').classList.contains('hidden'));
+    if (j.unread > lastUnread && away) {
+      soundMsg();
+      if ('Notification' in window && Notification.permission === 'granted')
+        new Notification('WordSpies Social 💬', { body: 'You have a new message!', icon: '/icon-192.png' });
+    }
     lastUnread = j.unread;
+    // a new follower is worth a nudge too — the count is the cheapest signal we have
+    if (typeof j.followers === 'number') {
+      if (lastFollowers !== null && j.followers > lastFollowers) {
+        soundFollow();
+        if ('Notification' in window && Notification.permission === 'granted' && document.hidden)
+          new Notification('WordSpies Social 👋', { body: 'Someone new is following you!', icon: '/icon-192.png' });
+      }
+      lastFollowers = j.followers;
+    }
   } catch(e){}
 }
 
