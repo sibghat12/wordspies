@@ -280,6 +280,16 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   tiles.forEach(function(t){ t.addEventListener('click', function(){ if(t.classList.contains('r')||t.classList.contains('b')) t.classList.toggle('lit'); }); });
 })();
 </script>
+
+<!-- The front door is where most people arrive, so it has to make the same
+     offer as the rest of the site. Registering the worker is what earns us the
+     right to be installed at all; the wall does the asking. -->
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
+}
+</script>
+<script src="/a2hs.js" defer></script>
 </body></html>`;
 }
 
