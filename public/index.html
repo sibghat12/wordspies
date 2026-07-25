@@ -23,6 +23,10 @@
 <link rel="canonical" href="https://wordspies.co.uk/play">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WordSpies">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WordSpies","url":"https://wordspies.co.uk/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"Free Codenames-style online word team game. Create a room, share the code, play with friends. No sign-up.","offers":{"@type":"Offer","price":"0"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -317,6 +321,12 @@ body.mecorner #codePill,body.mecorner #invPill{margin-right:46px}
 #meMenu a:hover,#meMenu button:hover{background:#f1f3fa}
 #meMenu button.out{color:#c62828}
 @media(max-width:720px){#meCorner{top:10px;right:10px}#meCorner .mebtn{width:34px;height:34px}}
+/* Inside a game the floating badge would land on top of the score pill, so it
+   steps aside and your photo rides in the header row instead. */
+body.ingame #meCorner{display:none !important}
+#socBtn img{width:24px;height:24px;border-radius:50%;object-fit:cover;display:block;margin:-3px 0 -3px -5px}
+#socBtn .sqn{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:720px){#socBtn .sqn{display:none}#socBtn:has(img){padding:3px;border-radius:50%}#socBtn img{width:25px;height:25px;margin:0}}
 
 /* ---------- 📲 add to home screen (slim bar for link visitors) ---------- */
 #a2hs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%) translateY(140%);z-index:70;
@@ -514,7 +524,7 @@ b,strong{font-weight:600}
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
         <button class="helpbtn" id="leaveBtn" title="Exit this game">🚪 Exit game</button>
-        <a class="helpbtn" href="/social" title="WordSpies Social" style="text-decoration:none">👥</a>
+        <a class="helpbtn" id="socBtn" href="/social" title="WordSpies Social" style="text-decoration:none">👥</a>
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
@@ -1166,6 +1176,19 @@ $('watchPill').onclick = () => {
 // playing as. Tapping it opens the small menu — profile, Social, log out.
 function paintMeCorner(){
   document.body.classList.toggle('mecorner', !!SOC_ME);
+  // In a game the header carries your photo; on the home screen the floating
+  // badge does. Either way your face is in the corner and it's obvious who
+  // you're signed in as.
+  document.body.classList.toggle('ingame', !$('app').classList.contains('hidden'));
+  const sb = $('socBtn');
+  if (sb) {
+    sb.innerHTML = SOC_ME
+      ? (SOC_ME.photo ? '<img src="' + esc(SOC_ME.photo) + '" alt="">'
+                      : '<span style="margin-left:-2px">👤</span>')
+        + '<span class="sqn">' + esc(SOC_ME.name || 'You') + '</span>'
+      : '👥';
+    sb.title = SOC_ME ? 'Signed in as ' + (SOC_ME.name || 'you') + ' — open Social' : 'WordSpies Social';
+  }
   if (!SOC_ME) { $('meCorner').style.display = 'none'; return; }
   $('meBtn').innerHTML = SOC_ME.photo
     ? '<img src="' + esc(SOC_ME.photo) + '" alt="">'
@@ -1214,6 +1237,7 @@ $('a2hsGo').onclick = async () => {
   }
   $('instOv').classList.remove('hidden');              // iOS — show the Share → Add steps
 };
+
 
 // ---------- 👥 invite friends ----------
 // Pick people from your WordSpies Social circle and drop the room link straight
@@ -1356,6 +1380,7 @@ function me(){ return S.players.find(p => p.id === myId); }
 function render(){
   show($('home'), false);
   show($('app'), true);
+  paintMeCorner();          // keep the header badge in step with the view
   $('codeText').textContent = S.code || '';
   show($('codePill'), !!S.code);
   // only worth offering when we know who you are — the list comes from your account
@@ -1782,6 +1807,20 @@ if (installBtn) installBtn.onclick = async () => {
   }
   $('instOv').classList.remove('hidden');
 };
+
+/* Anyone opening WordSpies on a phone gets one quiet offer to keep it, not just
+   the people who arrived on a friend's link. Chrome fires beforeinstallprompt a
+   moment after load, so wait for it rather than checking too early. Dismissing
+   it is remembered, so nobody is asked twice. */
+(function offerOnFirstMobileVisit(){
+  const phone = matchMedia('(max-width:820px)').matches
+    || /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
+  if (!phone || standalone) return;
+  const go = () => setTimeout(offerHomeScreen, 2200);
+  if (installPrompt) go();
+  else addEventListener('beforeinstallprompt', go, { once: true });
+  if (isIOS) go();                                     // iOS never fires the event
+})();
 
 </script>
 
