@@ -86,6 +86,14 @@ input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:n
   width:100%;background:#f1f3fa;border:2px solid transparent;border-radius:11px;
   padding:10px 12px;font-size:14px;transition:.18s;box-shadow:inset 0 1px 3px rgba(35,41,70,.05);
 }
+/* Logged in? The name belongs to the profile, so it isn't typed over here.
+   Padlock on the right, cursor stays an arrow, and a tap explains itself. */
+.fld.locked{
+  cursor:default;color:var(--muted);font-weight:600;
+  background:#eef0f8 url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7290' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='11' rx='2'/%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E") no-repeat right 12px center;
+  padding-right:34px;
+}
+.fld.locked:focus{border-color:transparent;box-shadow:inset 0 1px 3px rgba(35,41,70,.05)}
 .fld:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(61,123,255,.14)}
 .fld::placeholder{color:var(--faint);font-weight:400}
 .lbl{font-size:10.9px;font-weight:400;color:var(--muted);margin-bottom:6px;display:block;letter-spacing:1.2px;text-transform:uppercase}
@@ -1010,6 +1018,27 @@ function showDeadRoom(){
 const RETURNING = (() => { try { return localStorage.getItem('ws_acct') === '1'; } catch(e){ return false; } })();
 const rememberAccount = () => { try { localStorage.setItem('ws_acct', '1'); } catch(e){} };
 
+// Your profile name is your identity across the wall, your friends list and every
+// scoreboard — so once you're logged in it's filled in here and left alone. The
+// field goes read-only with a padlock, and tapping it points at the one place
+// that can actually change it rather than leaving a dead, unresponsive box.
+function lockNameToProfile(name){
+  const inp = $('nameInput');
+  if (!inp) return;
+  inp.value = name;
+  inp.placeholder = name;
+  inp.readOnly = true;
+  inp.classList.add('locked');
+  inp.setAttribute('aria-readonly', 'true');
+  inp.title = 'This is your profile name — change it on your profile';
+  inp.onmousedown = e => { e.preventDefault(); inp.blur();
+    toast('That\'s your profile name — change it under 👥 Social → Me'); };
+  const lbl = inp.previousElementSibling;
+  if (lbl && lbl.classList.contains('lbl')) {
+    lbl.innerHTML = 'Your name <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· from your profile ✓</span>';
+  }
+}
+
 function paintSignin(){
   const si = $('signin'), am = $('asMe');
   if (!si || !am) return;
@@ -1075,8 +1104,7 @@ async function setupPlayGoogle(){
           SOC_ME = j.me;
           rememberAccount();
           try { localStorage.setItem('ws_name', j.me.name || ''); } catch(e){}
-          const inp = $('nameInput');
-          if (inp && j.me.name) { inp.value = j.me.name; inp.placeholder = j.me.name; }
+          if (j.me.name) lockNameToProfile(j.me.name);
           paintSignin(); paintMeCorner();
           toast('👋 Hi ' + (j.me.name || 'spy') + '! Your games are saved from now on');
           // Came in on a friend's link? Seat them now instead of making them tap again.
@@ -1110,17 +1138,10 @@ Promise.all([
   // We may already be in a room by the time this answers, so reveal the pill now.
   if (SOC_ME && S && S.code) show($('invPill'), true);
 
-  // Logged into WordSpies Social? Use the profile name automatically — no need
-  // to type it again. (Still editable if they fancy a nickname for one game.)
-  if (SOC_ME && SOC_ME.name) {
-    const inp = $('nameInput');
-    if (inp) {
-      inp.value = SOC_ME.name;
-      inp.placeholder = SOC_ME.name;
-      const lbl = inp.previousElementSibling;
-      if (lbl && lbl.classList.contains('lbl')) lbl.innerHTML = 'Your name <span style="font-weight:400;color:var(--sub)">· from your profile ✓</span>';
-    }
-  }
+  // Logged into WordSpies Social? The profile name is who you are, so it's
+  // filled in and locked — one identity across the wall, your friends list and
+  // every scoreboard, rather than a different nickname each game.
+  if (SOC_ME && SOC_ME.name) lockNameToProfile(SOC_ME.name);
 
   // 🧪 Test mode: skip the home screen entirely — make a room and stock it with
   // three dummy players, so the wheel and the win→profile loop can be tried
