@@ -126,11 +126,24 @@ function mount(app, redis) {
   // (Also honours a manual `verified: true` flag set directly on a user.)
   const FOUNDER_CUTOFF = Date.parse('2026-07-26T00:00:00Z');
   const isVerified = u => u.verified === true || (u.createdAt && u.createdAt < FOUNDER_CUTOFF);
+
+  // 👑 Kings — the people who were here from the start, by name. They get a crown
+  // instead of the blue tick, because a tick everyone else also has says nothing.
+  // Matched on the display name, lowercased and trimmed, so it lands the moment
+  // they sign up rather than needing their account to exist first. A `king: true`
+  // set directly on a user works too, if you ever want to crown someone by hand.
+  const KINGS = new Set(['ayoub', 'xman', 'ali', 'pray', 'dem', 'sibi', 'rami', 'earlin', 'ana']);
+  const isKing = u => u.king === true || KINGS.has(String(u.name || '').trim().toLowerCase());
+
+  // A king's crown replaces the tick rather than sitting beside it — two badges on
+  // one name is noise, and the crown is the rarer thing.
+  const marks = u => ({ king: isKing(u), verified: isKing(u) ? false : isVerified(u) });
+
   const pub = u => ({ id: u.id, name: u.name, bio: u.bio || '', location: u.location || '',
     country: u.country || '', cc: u.cc || '',
     photo: u.photo || null, createdAt: u.createdAt, games: u.games || 0, wins: u.wins || 0,
     age: calcAge(u.birthdate), birthdate: u.birthdate || null,
-    verified: isVerified(u) });
+    ...marks(u) });
 
   // ---- simple rate limit (per ip per route bucket) ----
   const hits = new Map();
@@ -797,7 +810,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         }
         out.push({
           id: u.id, name: u.name, photo: u.photo || null, cc: u.cc || '',
-          verified: isVerified(u),
+          ...marks(u),
           online: await db.exists('soc:online:' + u.id),
           // what they are to you — the panel shows this under the name
           rel: fset.has(id) && rset.has(id) ? 'friend'
@@ -917,7 +930,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         const last = await db.lrange('soc:msgs:' + cid(me.id, o), -1, -1);
         out.push({
           id: u.id, name: u.name, photo: u.photo || null, cc: u.cc || '',
-          verified: isVerified(u),
+          ...marks(u),
           online: await db.exists('soc:online:' + o),
           last: last.length ? JSON.parse(last[0]) : null,
           unread: parseInt(await db.get('soc:unread:' + me.id + ':' + o)) || 0
@@ -943,7 +956,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       await db.set('soc:read:' + convo + ':' + me.id, String(Date.now()));
       const theirRead = parseInt(await db.get('soc:read:' + convo + ':' + o)) || 0;
       res.json({
-        user: { id: u.id, name: u.name, photo: u.photo || null, verified: isVerified(u), online: await db.exists('soc:online:' + o) },
+        user: { id: u.id, name: u.name, photo: u.photo || null, ...marks(u), online: await db.exists('soc:online:' + o) },
         messages: msgs,
         theirRead
       });
