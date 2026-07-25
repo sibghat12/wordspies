@@ -259,6 +259,13 @@ function remaining(room, team) {
   return room.board.cards.filter(c => c.color === team && !c.revealed).length;
 }
 
+// 👑 The people this whole thing was built for. They wear a crown instead of the
+// blue tick — a tick that nearly everyone has stopped meaning anything. Kept in
+// step with the same list in social.js. The crown needs a real signed-in account
+// behind it, so nobody can put on a name in the join box and borrow one.
+const KINGS = new Set(['ayoub', 'xman', 'ali', 'pray', 'dem', 'sibi', 'rami', 'earlin', 'ana']);
+const isKingName = p => !!p.socUid && KINGS.has(String(p.name || '').trim().toLowerCase());
+
 // Public view of the room. Spymasters (and everyone when the game is over)
 // also receive card colors.
 function publicState(room, forPlayer) {
@@ -276,7 +283,7 @@ function publicState(room, forPlayer) {
     catalog: CATALOG,
     players: [...room.players.values()].map(p => ({
       id: p.id, name: p.name, team: p.team, role: p.role, connected: p.connected, avatar: p.avatar, avatarSeed: p.avatarSeed, watcher: !!p.watcher,
-      photo: p.photo || null, verified: !!p.socUid
+      photo: p.photo || null, verified: !!p.socUid && !isKingName(p), king: isKingName(p)
     })),
     board: room.board ? {
       startingTeam: room.board.startingTeam,
