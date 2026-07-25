@@ -590,7 +590,27 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     try {
       const u = await userFromReq(req);
       if (!u) return res.status(401).json({ error: 'Please log in.' });
-      const { bio, location, birthdate } = req.body || {};
+      const { name, bio, location, birthdate } = req.body || {};
+
+      // Your name is your identity here — it's on the wall, in every chat and on
+      // the scoreboard — so changing it is allowed but it moves the uniqueness
+      // index with it, otherwise the old name would stay reserved forever and
+      // someone else could claim the new one at the same moment.
+      if (name !== undefined) {
+        const nm = String(name).trim();
+        if (nm !== u.name) {
+          if (limited(req, 'rename', 6)) return res.status(429).json({ error: 'Too many changes — wait a minute.' });
+          if (!/^[a-zA-Z0-9_ ]{3,15}$/.test(nm)) return res.status(400).json({ error: 'Name: 3–15 letters, numbers or spaces.' });
+          if (nm.toLowerCase() !== u.name.toLowerCase()) {
+            const holder = await db.get('soc:uname:' + nm.toLowerCase());
+            if (holder && holder !== u.id) return res.status(409).json({ error: 'That name is taken.' });
+            await db.del('soc:uname:' + u.name.toLowerCase());
+            await db.set('soc:uname:' + nm.toLowerCase(), u.id);
+          }
+          u.name = nm;                        // same letters, new capitals is fine too
+        }
+      }
+
       if (bio !== undefined) u.bio = String(bio).slice(0, 200);
       if (location !== undefined) u.location = String(location).slice(0, 40);
       if (birthdate !== undefined) {
