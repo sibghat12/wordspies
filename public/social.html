@@ -1415,6 +1415,7 @@ body.chatlock #a2hs{display:none}
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
+<script src="/a2hs.js" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
@@ -1432,33 +1433,18 @@ body.chatlock #a2hs{display:none}
   const remember  = () => { try { localStorage.setItem('ws_a2hs', 'no'); } catch(e){} };
 
   function offer(){
-    if (shown || standalone || dismissed()) return;
+    if (shown || standalone || dismissed() || window.__a2hsDone) return;
     if (!prompt && !isIOS) return;                       // this browser can't install us
     shown = true;
     setTimeout(() => bar.classList.add('on'), 2200);
   }
-  // On a phone, don't make them find a button — the instant Chrome says we're
-  // installable, open its own install sheet. One tap and WordSpies is in their
-  // apps. If Chrome won't open the sheet unsolicited, the slim bar is the tap
-  // that makes it. A refusal is remembered either way.
-  const phone = matchMedia('(max-width:820px)').matches
-    || /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
-  function force(){
-    if (!prompt || standalone || dismissed() || !phone) return false;
-    const p = prompt;
-    prompt = null;                                       // the event is single-use
-    try {
-      Promise.resolve(p.prompt()).catch(() => { prompt = p; offer(); });
-    } catch (e) { prompt = p; return false; }
-    p.userChoice
-      .catch(() => ({ outcome: 'dismissed' }))
-      .then(r => { if (r.outcome !== 'accepted') remember(); })
-      .finally(() => { if (window.enablePushQuietly) enablePushQuietly(); });
-    return true;
-  }
-  addEventListener('beforeinstallprompt', e => { e.preventDefault(); prompt = e; if (!force()) offer(); });
+  // Asking is the install wall's job now — /a2hs.js puts a sheet in front of
+  // every phone visitor that has to be answered before anything else happens,
+  // and it is the same sheet on the landing page and in the game. This file
+  // keeps only the slim bar, for the desktop visitor who taps the install
+  // button and for anyone the wall has deliberately left alone.
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); prompt = e; if (!window.__a2hsDone) offer(); });
   addEventListener('appinstalled', () => { bar.classList.remove('on'); remember(); });
-  if (isIOS) offer();
 
   el('a2hsNo').onclick = () => { bar.classList.remove('on'); remember(); };
   // No confirming, no explaining — the tap is the answer. Chrome's own install
