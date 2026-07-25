@@ -201,7 +201,44 @@ body.authmodal{overflow:hidden}
 .sw[disabled]{opacity:.45;cursor:default}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%)}
-.gamelink{display:block;margin:6px 24px 22px;text-align:center;text-decoration:none;color:var(--accent);font-weight:600;font-size:13.5px}
+/* ---------- the way through to the game ---------- */
+/* The whole point of this community is the game, and the only route to it used
+   to be a pale line of pink text at the very bottom of the page — under every
+   spy on the wall, easy to scroll past forever. So the invitation moves to the
+   top, dressed as what it actually is: the main thing you came here to do. */
+.playcta{display:flex;align-items:center;gap:13px;margin:2px 20px 14px;padding:14px 16px;border-radius:18px;
+  text-decoration:none;color:#fff;background:linear-gradient(118deg,#f4697f 0%,#e8506b 54%,#d33a5c 100%);
+  box-shadow:0 8px 22px rgba(232,80,107,.26);transition:transform .16s,box-shadow .16s}
+.playcta:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(232,80,107,.34)}
+.playcta:active{transform:translateY(0) scale(.994)}
+.playcta .pi{flex:none;width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:21px;line-height:1}
+.playcta .pt{flex:1;min-width:0}
+.playcta .pt b{display:block;font-size:15px;font-weight:800;letter-spacing:.1px}
+.playcta .pt span{display:block;font-size:12.2px;font-weight:500;opacity:.9;margin-top:2px;line-height:1.35}
+.playcta .pa{flex:none;font-size:20px;font-weight:700;opacity:.95;transition:transform .2s}
+.playcta:hover .pa{transform:translateX(4px)}
+/* On a wide screen a bare arrow floating a thousand pixels from the words looks
+   like an accident, so out there it grows into a proper pill you can aim at. */
+@media(min-width:900px){
+  .playcta{margin:2px 8px 18px;padding:17px 22px}
+  .playcta .pt b{font-size:16.5px}
+  .playcta .pt span{font-size:12.8px}
+  .playcta .pa{background:#fff;color:var(--accent);font-size:14px;font-weight:800;
+    padding:11px 20px;border-radius:99px;box-shadow:0 3px 10px rgba(0,0,0,.14)}
+  .playcta .pa::before{content:'New game '}
+  .playcta:hover .pa{transform:translateX(3px)}
+}
+
+/* The old bottom link stays for anyone who scrolls all the way down, but as a
+   tidy bordered pill rather than a stray sentence pretending to be a button. */
+.gamelink{display:block;width:fit-content;margin:10px auto 22px;padding:10px 20px;border-radius:99px;
+  border:1.5px solid var(--accent);text-align:center;text-decoration:none;color:var(--accent);
+  font-weight:700;font-size:13.5px;transition:background .15s,color .15s}
+.gamelink:hover{background:var(--accent);color:#fff}
+/* Desktop already has two ways through — the banner up top and the sticky rail
+   button that never leaves the screen. A third at the foot is just noise. */
+@media(min-width:900px){.gamelink{display:none}}
 
 /* presence + chat */
 .tabbar button{position:relative}
@@ -357,6 +394,14 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
         <span id="meAvSmall"></span>
       </div>
     </div>
+    <a class="playcta" href="/play?from=social">
+      <span class="pi">🎮</span>
+      <span class="pt">
+        <b>Start a game</b>
+        <span>Make a room and invite your spies</span>
+      </span>
+      <span class="pa" aria-hidden="true">→</span>
+    </a>
     <div class="walllay">
       <!-- desktop only: you, the room's pulse, and who's winning -->
       <aside class="wallside" id="wallSide"></aside>
