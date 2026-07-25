@@ -420,6 +420,10 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
       <div><b id="mySince">—</b><span>Joined</span></div>
     </div>
     <div style="padding:0 24px">
+      <!-- Your name lives here and nowhere else. Everywhere it appears — the wall,
+           the play page, chats, the scoreboard — reads from this one field. -->
+      <div class="field"><input id="fMyName" maxlength="15" placeholder="Your name" autocomplete="off">
+        <div style="font-size:10.6px;color:var(--muted);margin:5px 0 0 4px">This is the name everyone sees, in games and on the wall.</div></div>
       <div class="field"><input id="fBirth" type="date" placeholder="Your birthdate (optional)"></div>
       <div class="field"><input id="fLoc" maxlength="40" placeholder="Your city (optional)"></div>
       <div class="field"><textarea id="fBio" maxlength="200" rows="3" placeholder="Say something about yourself…"></textarea></div>
@@ -462,6 +466,9 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let ME = null, MEMBERS = [], mode = 'signup', GUEST = false;
+// Browsing as a guest replaces the chip at the top with a "Log in / Join"
+// prompt. We keep the real one here so logging in can put it straight back.
+let guestChipHtml = null;
 
 // Guests can browse the wall and open profiles — anything social needs a login.
 function requireLogin(msg){
@@ -595,6 +602,19 @@ function enterApp(justJoined){
   const xc = $('authClose'); if (xc) xc.remove();
   $('vAuth').classList.add('hidden');
   $('vApp').classList.remove('hidden');
+
+  // If they'd been browsing as a guest, the chip up top was swapped for a
+  // "Log in / Join" prompt — and that threw away the avatar and name elements
+  // paintMe writes into. Put the real chip back first, or paintMe dies on the
+  // missing element and the page sits there still offering a login until you
+  // refresh it by hand. That was the bug.
+  const chip = document.querySelector('.mechip');
+  if (chip && guestChipHtml !== null) {
+    chip.innerHTML = guestChipHtml;
+    chip.onclick = () => showTab('me');
+    guestChipHtml = null;
+  }
+
   paintMe(); loadMembers();
   pingLoop(); if (!window.__pingT) window.__pingT = setInterval(pingLoop, 25000);
   if (!ME.photo) {
@@ -615,13 +635,16 @@ function enterApp(justJoined){
 }
 function paintMe(){
   const tick = ME.verified ? '<span class="vtick">✓</span>' : '';
-  $('meAvSmall').innerHTML = avatarHtml(ME, 34);
-  $('meName').innerHTML = esc(ME.name) + tick;
+  // Belt and braces: the chip at the top gets swapped out in guest mode, so
+  // never let a missing element here abort everything that comes after it.
+  if ($('meAvSmall')) $('meAvSmall').innerHTML = avatarHtml(ME, 34);
+  if ($('meName')) $('meName').innerHTML = esc(ME.name) + tick;
   $('myAv').innerHTML = avatarHtml(ME, 104, 'big');
   $('myName').innerHTML = esc(ME.name) + tick;
   $('myGames').textContent = ME.games; $('myWins').textContent = ME.wins;
   $('myRate').textContent = winRate(ME);
   $('mySince').textContent = new Date(ME.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+  $('fMyName').value = ME.name || '';
   $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
   $('myEmail').textContent = ME.location || 'Add your city below';
 }
@@ -1170,8 +1193,11 @@ function openMemberObj(m){
 async function saveProfile(){
   try {
     const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ bio: $('fBio').value, location: $('fLoc').value, birthdate: $('fBirth').value }) });
-    ME = j.me; paintMe(); loadMembers(); toast('✓ Profile saved');
+      body: JSON.stringify({ name: $('fMyName').value, bio: $('fBio').value,
+                             location: $('fLoc').value, birthdate: $('fBirth').value }) });
+    const renamed = ME.name !== j.me.name;
+    ME = j.me; paintMe(); loadMembers();
+    toast(renamed ? '✓ You\'re ' + j.me.name + ' now — everywhere' : '✓ Profile saved');
   } catch(e){ toast(e.message); }
 }
 
@@ -1244,6 +1270,7 @@ async function setupGoogle(){
     $('vApp').classList.remove('hidden');
     const chip = document.querySelector('.mechip');
     if (chip) {
+      guestChipHtml = chip.innerHTML;      // remember the real one — see enterApp
       chip.onclick = () => requireLogin('👋 Welcome! Log in or join in seconds');
       chip.innerHTML = '<span class="mename" style="padding-right:8px">👋 Log in / Join</span>';
     }
