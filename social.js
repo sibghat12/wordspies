@@ -414,14 +414,24 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       { key: v.priv, dsaEncoding: 'ieee-p1363' }));
     return `vapid t=${head}.${body}.${sig}, k=${v.pub}`;
   }
+  // Which screen is which. Presence used to be a single flag per account, so a
+  // laptop tab left open all day silenced the phone in your pocket — nobody was
+  // looking at either, and nothing ever buzzed. Each open page now reports the
+  // push endpoint it owns, and only that one endpoint goes quiet, and only
+  // while the page is genuinely on screen.
+  const epKey = ep => 'soc:at:' + crypto.createHash('sha1').update(ep).digest('hex').slice(0, 20);
+
   async function sendPush(uid, kind, title, body, url) {
     try {
       const eps = await db.smembers('soc:push:' + uid);
       if (!eps.length) return;
+      const live = [];
+      for (const ep of eps) if (!(await db.exists(epKey(ep)))) live.push(ep);
+      if (!live.length) return;   // every screen they own is already in front of them
       const v = await vapidKeys();
       // what the knock was about — the worker collects this in a moment
       await db.set('soc:pushq:' + uid, JSON.stringify({ kind, title, body, url }), 600);
-      for (const ep of eps) {
+      for (const ep of live) {
         try {
           const r = await fetch(ep, {
             method: 'POST',
@@ -677,6 +687,15 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const u = await userFromReq(req);
       if (!u) return res.status(401).json({ error: 'Please log in.' });
       await db.set('soc:online:' + u.id, '1', 60);
+      // ...and, separately, whether *this* screen is the one being looked at.
+      // Old clients send no body at all; they simply never claim a screen, so
+      // they keep getting push, which is the safe way round to be wrong.
+      const b = req.body || {};
+      const ep = String(b.endpoint || '');
+      if (ep) {
+        if (b.visible === false) await db.del(epKey(ep));
+        else await db.set(epKey(ep), '1', 90);
+      }
       let unread = 0;
       for (const o of await db.smembers('soc:convos:' + u.id)) {
         unread += parseInt(await db.get('soc:unread:' + u.id + ':' + o)) || 0;
@@ -721,8 +740,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
             btn: 'See who it is', btnUrl: SITE + '/social',
             note: 'We only send these when you\'re not already in the app.'
           }));
-        if (!(await db.exists('soc:online:' + id)))
-          sendPush(id, 'follow', '👋 New follower', me.name + ' started following you', '/social');
+        sendPush(id, 'follow', '👋 New follower', me.name + ' started following you', '/social');
       }
       res.json({ ok: true, followers: await db.scard('soc:followers:' + id) });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
@@ -844,9 +862,8 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
             btn: 'Join the game', btnUrl: link,
             note: 'We only send these when you\'re not already in the app.'
           }));
-        if (!(await db.exists('soc:online:' + to)))
-          sendPush(to, 'invite', '🎮 ' + me.name + ' invited you',
-            'Tap to join the game', '/play?room=' + code);
+        sendPush(to, 'invite', '🎮 ' + me.name + ' invited you',
+          'Tap to join the game', '/play?room=' + code);
         sent.push(to);
       }
       res.json({ ok: true, sent: sent.length, ids: sent });
@@ -879,10 +896,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
           btn: 'Check message', btnUrl: SITE + '/social#chat=' + me.id,
           note: 'We only send these when you\'re not already in the app.'
         }));
-      if (!(await db.exists('soc:online:' + to)))   // they're looking at it right now — no need to buzz
-        sendPush(to, 'msg', '💬 ' + me.name,
-          kind === 'text' ? text.slice(0, 120) : (kind === 'gif' ? 'Sent a GIF' : 'Sent you something'),
-          '/social#chat=' + me.id);
+      // sendPush decides per device: whichever screen they're actually looking
+      // at stays quiet, every other one buzzes
+      sendPush(to, 'msg', '💬 ' + me.name,
+        kind === 'text' ? text.slice(0, 120) : (kind === 'gif' ? 'Sent a GIF' : 'Sent you something'),
+        '/social#chat=' + me.id);
       res.json({ ok: true, msg });
     } catch (e) { console.error('social message:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
