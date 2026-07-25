@@ -3,7 +3,7 @@
   "name": "WordSpies — word game with friends",
   "short_name": "WordSpies",
   "description": "Free online word team game — play with friends, no sign-up.",
-  "start_url": "/play?src=app",
+  "start_url": "/social?src=app",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
