@@ -645,7 +645,9 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         }
       }
       out.sort((a, b) => b.createdAt - a.createdAt);
-      res.json({ members: out });
+      // the wall's Follow buttons need to know who you already follow
+      const me = await userFromReq(req);
+      res.json({ members: out, following: me ? await db.smembers('soc:following:' + me.id) : [] });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
