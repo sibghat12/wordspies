@@ -302,12 +302,14 @@ function mount(app, redis) {
   const MAIL_FROM = process.env.SOC_MAIL_FROM || 'WordSpies <onboarding@resend.dev>';
   const MAIL_NAME = process.env.SOC_MAIL_NAME || 'WordSpies';
   const MAIL_EMAIL = process.env.SOC_MAIL_EMAIL || 'sibghat726@gmail.com';
-  async function sendMail(to, subject, text) {
+  async function sendMail(to, subject, text, html) {
     if (BREVO_KEY) {
+      const payload = { sender: { name: MAIL_NAME, email: MAIL_EMAIL }, to: [{ email: to }], subject, textContent: text };
+      if (html) payload.htmlContent = html;
       const r = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ sender: { name: MAIL_NAME, email: MAIL_EMAIL }, to: [{ email: to }], subject, textContent: text })
+        body: JSON.stringify(payload)
       });
       if (!r.ok) console.error('brevo:', r.status, await r.text());
       return r.ok;
@@ -316,22 +318,60 @@ function mount(app, redis) {
       const r = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: MAIL_FROM, to: [to], subject, text })
+        body: JSON.stringify(html ? { from: MAIL_FROM, to: [to], subject, text, html }
+                                  : { from: MAIL_FROM, to: [to], subject, text })
       });
       if (!r.ok) console.error('resend:', r.status, await r.text());
       return r.ok;
     }
     return false;
   }
+
+  // ---- 💌 the look of our email ---------------------------------------------
+  // Tables and inline styles, because Gmail and Outlook throw away stylesheets.
+  // One logo, one line, one button — nothing to read, just something to tap.
+  const SITE = 'https://wordspies.co.uk';
+  const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  // `peek` is the grey line a phone shows under the subject. It never renders
+  // in the body — it just decides whether the notification is worth opening.
+  function mailHtml({ peek, heading, line, btn, btnUrl, code, note }) {
+    const cell = 'font-family:' + FONT + ';';
+    const action = code
+      ? `<div style="${cell}display:inline-block;background:#fafafa;border:1px solid #ececef;border-radius:14px;padding:16px 28px;font-size:30px;font-weight:700;letter-spacing:7px;color:#16181f">${esc(code)}</div>`
+      : `<a href="${btnUrl}" style="${cell}display:inline-block;background:#e8506b;color:#ffffff;font-size:15px;font-weight:600;line-height:1;text-decoration:none;padding:15px 34px;border-radius:999px">${btn}</a>`;
+    return `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<meta name="color-scheme" content="light only"></head>
+<body style="margin:0;padding:0;background:#fafafa;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${esc(peek)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fafafa">
+<tr><td align="center" style="padding:34px 16px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:440px;background:#ffffff;border:1px solid #ececef;border-radius:20px">
+<tr><td align="center" style="padding:36px 32px 0">
+<img src="${SITE}/icon-192.png" width="58" height="58" alt="WordSpies" style="display:block;border:0;border-radius:15px"></td></tr>
+<tr><td align="center" style="${cell}padding:22px 32px 0;font-size:22px;line-height:1.25;font-weight:700;color:#16181f;letter-spacing:-.2px">${heading}</td></tr>
+<tr><td align="center" style="${cell}padding:10px 32px 0;font-size:15px;line-height:1.55;color:#5c6270">${line}</td></tr>
+<tr><td align="center" style="padding:26px 32px 0">${action}</td></tr>
+<tr><td align="center" style="${cell}padding:20px 32px 34px;font-size:12px;line-height:1.5;color:#9aa0ab">${note || ''}</td></tr>
+</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:440px">
+<tr><td align="center" style="${cell}padding:18px 8px 0;font-size:12px;color:#9aa0ab">
+WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordspies.co.uk</a></td></tr>
+</table>
+</td></tr></table></body></html>`;
+  }
+
   // one notification email per person per type per hour, and only when they're away
-  async function notifyUser(uid, type, subject, text, skipIfOnline) {
+  async function notifyUser(uid, type, subject, text, skipIfOnline, html) {
     try {
       if (skipIfOnline && await db.exists('soc:online:' + uid)) return;
       if (await db.exists('soc:notified:' + uid + ':' + type)) return;
       const u = JSON.parse(await db.get('soc:user:' + uid) || 'null');
       if (!u || !u.email) return;
       await db.set('soc:notified:' + uid + ':' + type, '1', 3600);
-      sendMail(u.email, subject, text).catch(e => console.error('notify mail:', e.message));
+      sendMail(u.email, subject, text, html).catch(e => console.error('notify mail:', e.message));
     } catch (e) { console.error('notify:', e.message); }
   }
 
@@ -438,8 +478,15 @@ function mount(app, redis) {
       if (!BREVO_KEY && !RESEND_KEY) return res.status(503).json({ error: 'Password reset email isn\'t set up yet — if you signed up with this email on Google, use "Sign in with Google", or contact contact@wordspies.co.uk.' });
       const code = String(Math.floor(100000 + Math.random() * 900000));
       await db.set('soc:reset:' + email, bcrypt.hashSync(code, 8), 900); // 15 min
-      const ok = await sendMail(email, 'Your WordSpies reset code: ' + code,
-        `Hi!\n\nYour WordSpies Social password reset code is: ${code}\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— WordSpies`);
+      const ok = await sendMail(email, code + ' is your WordSpies code',
+        `Your WordSpies password reset code is ${code}.\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— WordSpies`,
+        mailHtml({
+          peek: 'Expires in 15 minutes.',
+          heading: 'Your reset code',
+          line: 'Type this into WordSpies to set a new password.',
+          code,
+          note: 'Expires in 15 minutes. If you didn\'t ask for this, ignore this email — nothing has changed.'
+        }));
       if (!ok) return res.status(502).json({ error: 'Could not send the email — try again shortly.' });
       res.json({ ok: true });
     } catch (e) { console.error('social forgot:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
@@ -645,8 +692,15 @@ function mount(app, redis) {
       await db.sadd('soc:following:' + me.id, id);
       await db.sadd('soc:followers:' + id, me.id);
       if (!already) {
-        notifyUser(id, 'follow', '🎉 ' + me.name + ' started following you on WordSpies',
-          `Hi!\n\n${me.name} just started following you on WordSpies Social.\n\nSee who's around: https://wordspies.co.uk/social\n\n— WordSpies`, false);
+        notifyUser(id, 'follow', me.name + ' started following you',
+          `${me.name} started following you on WordSpies.\n\nSee who it is: ${SITE}/social\n\n— WordSpies`, false,
+          mailHtml({
+            peek: 'Say hello, or follow them back.',
+            heading: 'New follower',
+            line: '<b style="color:#16181f">' + esc(me.name) + '</b> started following you on WordSpies.',
+            btn: 'See who it is', btnUrl: SITE + '/social',
+            note: 'We only ever send one of these an hour, and never when you\'re already online.'
+          }));
         sendPush(id, 'follow', '👋 New follower', me.name + ' started following you', '/social');
       }
       res.json({ ok: true, followers: await db.scard('soc:followers:' + id) });
@@ -783,8 +837,15 @@ function mount(app, redis) {
       await db.sadd('soc:convos:' + me.id, to);
       await db.sadd('soc:convos:' + to, me.id);
       await db.incr('soc:unread:' + to + ':' + me.id);
-      notifyUser(to, 'msg', '💬 New message from ' + me.name + ' on WordSpies',
-        `Hi!\n\n${me.name} sent you a message on WordSpies Social.\n\nRead and reply here: https://wordspies.co.uk/social\n\n— WordSpies`, true);
+      notifyUser(to, 'msg', me.name + ' sent you a message',
+        `${me.name} sent you a message on WordSpies.\n\nRead and reply: ${SITE}/social#chat=${me.id}\n\n— WordSpies`, true,
+        mailHtml({
+          peek: 'Tap to read and reply on WordSpies.',
+          heading: 'New message',
+          line: '<b style="color:#16181f">' + esc(me.name) + '</b> sent you a message on WordSpies.',
+          btn: 'Check message', btnUrl: SITE + '/social#chat=' + me.id,
+          note: 'We only ever send one of these an hour, and never when you\'re already online.'
+        }));
       if (!(await db.exists('soc:online:' + to)))   // they're looking at it right now — no need to buzz
         sendPush(to, 'msg', '💬 ' + me.name,
           kind === 'text' ? text.slice(0, 120) : (kind === 'gif' ? 'Sent a GIF' : 'Sent you something'),
