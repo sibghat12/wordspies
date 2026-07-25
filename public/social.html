@@ -202,6 +202,24 @@ body.authmodal{overflow:hidden}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%)}
 /* ---------- the way through to the game ---------- */
+/* 🟢 The Community opens in its own tab now, so wandering over here never kills
+   the game — but a tab you cannot see may as well not exist, and people were
+   losing their room. This bar is the thread back: it only appears while a room
+   is genuinely live, it names the code so you know which one, and it sits above
+   everything else because finding your way back beats anything else on screen. */
+.livebar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:12px;
+  padding:11px 20px;text-decoration:none;color:#06301b;
+  background:linear-gradient(100deg,#c4f5d8 0%,#a7edc4 100%);
+  border-bottom:1px solid rgba(6,48,27,.13);box-shadow:0 4px 14px rgba(6,48,27,.09)}
+.livebar:active{filter:brightness(.97)}
+.livebar .lbd{flex:none;width:10px;height:10px;border-radius:50%;background:#12a15c;animation:lbpulse 1.9s infinite}
+@keyframes lbpulse{0%{box-shadow:0 0 0 0 rgba(18,161,92,.65)}70%{box-shadow:0 0 0 9px rgba(18,161,92,0)}100%{box-shadow:0 0 0 0 rgba(18,161,92,0)}}
+.livebar .lbt{flex:1;min-width:0}
+.livebar .lbt b{display:block;font-size:13.6px;font-weight:800;letter-spacing:.1px}
+.livebar .lbt span{display:block;font-size:11.8px;font-weight:600;opacity:.78;margin-top:1px}
+.livebar .lba{flex:none;font-size:17px;font-weight:800;opacity:.8}
+@media(min-width:700px){.livebar{padding:12px 26px}.livebar .lbt b{font-size:14.4px}}
+
 /* The whole point of this community is the game, and the only route to it used
    to be a pale line of pink text at the very bottom of the page — under every
    spy on the wall, easy to scroll past forever. So the invitation moves to the
@@ -247,6 +265,11 @@ body.authmodal{overflow:hidden}
 @media(min-width:700px){.badge{top:3px;right:11px}}
 .dot{display:inline-block;width:9px;height:9px;background:var(--green);border-radius:50%;margin-left:6px;vertical-align:middle}
 .vtick{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#1d9bf0,#0b7fd6);color:#fff;font-size:9.5px;font-weight:800;margin-left:5px;vertical-align:middle;box-shadow:0 1px 4px rgba(29,155,240,.45);flex:none}
+/* 👑 The King badge. It sits where the blue tick would have gone and takes its
+   place entirely — a tick that almost everyone here has stopped saying anything,
+   and two badges on one name just reads as clutter. Gold, slightly raised, and
+   the crown is drawn as text so it renders the same on every phone. */
+.ktick{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:linear-gradient(135deg,#ffd977,#e8a92b);font-size:9.5px;margin-left:5px;vertical-align:middle;box-shadow:0 1px 5px rgba(214,150,20,.5);flex:none;line-height:1}
 .citem{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--line);background:#fff}
 .citem:hover{background:#fbfbfc}
 .cav{position:relative;display:inline-block}
@@ -398,6 +421,13 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 <!-- ============ APP ============ -->
 <div id="vApp" class="wrap hidden">
 
+  <!-- 🟢 you walked over here mid-game and the room is still sitting there -->
+  <a class="livebar hidden" id="liveBar" href="/play">
+    <span class="lbd"></span>
+    <span class="lbt"><b id="liveBarT">Your game is still running</b><span id="liveBarS"></span></span>
+    <span class="lba" aria-hidden="true">→</span>
+  </a>
+
   <!-- wall -->
   <div id="tabWall">
     <div class="head">
@@ -426,6 +456,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
             <button class="fchip" data-f="online">🟢 Online</button>
             <button class="fchip" data-f="nearby">📍 Nearby</button>
             <button class="fchip" data-f="new">New</button>
+            <button class="fchip" data-f="kings"><span class="ktick" style="margin:0 4px 0 0">👑</span>Kings</button>
             <button class="fchip" data-f="special"><span class="vtick" style="margin:0 4px 0 0">✓</span>Special</button>
           </div>
         </div>
@@ -571,6 +602,37 @@ function requireLogin(msg){
   $('vAuth').classList.remove('hidden');
   window.scrollTo(0,0);
 }
+
+// ---------- 🟢 the game you left running in the other tab ----------
+// The game page writes a note in localStorage for as long as it is sat in a
+// room, and clears it the moment you exit. Same origin, so we can just read it.
+// The note can go stale if that tab was closed without a clean exit, which is
+// why anything older than a few hours is treated as gone rather than offered.
+const LIVE_KEY = 'ws_live';
+const LIVE_MAX_AGE = 6 * 60 * 60 * 1000;
+function readLive(){
+  try {
+    const j = JSON.parse(localStorage.getItem(LIVE_KEY) || 'null');
+    if (!j || !j.code) return null;
+    if (!j.at || Date.now() - j.at > LIVE_MAX_AGE) return null;
+    return j;
+  } catch(e){ return null; }
+}
+function paintLive(){
+  const bar = $('liveBar');
+  if (!bar) return;
+  const j = readLive();
+  if (!j) { bar.classList.add('hidden'); return; }
+  $('liveBarT').textContent = j.state === 'playing' ? '🎮 Your game is still running' : '🎮 You are still in a room';
+  $('liveBarS').textContent = 'Room ' + j.code + ' · tap to go back to it';
+  bar.classList.remove('hidden');
+}
+// The other tab writing or clearing the note fires this in here, so the bar
+// appears and disappears in step with the game without anybody refreshing.
+window.addEventListener('storage', e => { if (e.key === LIVE_KEY) paintLive(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) paintLive(); });
+setInterval(paintLive, 20000);
+paintLive();
 
 let toastT = null;
 function toast(m){ const t = $('toastEl'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2600); }
@@ -727,8 +789,17 @@ function enterApp(justJoined){
     $('fBio').focus();
   } else showTab('wall');
 }
+// The one place that decides what goes after somebody's name. A crown outranks a
+// tick and replaces it, so this never returns both. Everything that draws a name
+// goes through here, which is why the badge can never end up on one list and not
+// another.
+function mark(u){
+  if (!u) return '';
+  if (u.king) return '<span class="ktick" title="King — one of the originals">👑</span>';
+  return u.verified ? '<span class="vtick" title="Founding member">✓</span>' : '';
+}
 function paintMe(){
-  const tick = ME.verified ? '<span class="vtick">✓</span>' : '';
+  const tick = mark(ME);
   // Belt and braces: the chip at the top gets swapped out in guest mode, so
   // never let a missing element here abort everything that comes after it.
   if ($('meAvSmall')) $('meAvSmall').innerHTML = avatarHtml(ME, 34);
@@ -1001,7 +1072,7 @@ async function refreshChats(){
       <div class="citem${c.id === curChat ? ' sel' : ''}" onclick="openChatWith('${c.id}')">
         <span class="cav">${avatarHtml(c, 46)}${c.online ? '<span class="dot cdot"></span>' : ''}</span>
         <div class="cmid">
-          <div class="cname">${esc(c.name)}${c.verified ? '<span class="vtick">✓</span>' : ''}</div>
+          <div class="cname">${esc(c.name)}${mark(c)}</div>
           <div class="cprev">${c.last ? (c.last.f === ME.id ? 'You: ' : '') + (c.last.k === 'gif' ? '🖼 GIF' : esc(c.last.x.slice(0, 46))) : 'Say hello 👋'}</div>
         </div>
         <div class="cright">
@@ -1047,7 +1118,7 @@ async function refreshChat(first){
   try {
     const j = await api('/chat/' + curChat);
     $('chAv').innerHTML = avatarHtml(j.user, 38);
-    $('chName').innerHTML = esc(j.user.name) + (j.user.verified ? '<span class="vtick">✓</span>' : '');
+    $('chName').innerHTML = esc(j.user.name) + mark(j.user);
     $('chState').innerHTML = j.user.online ? '<span style="color:var(--green)">● online</span>' : 'offline';
     if (j.messages.length !== lastMsgCount || j.theirRead !== lastTheirRead) {
       const box = $('msgs');
@@ -1188,7 +1259,11 @@ function renderWall(){
   if (wallFilter === 'online') list = list.filter(m => m.online);
   else if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
   else if (wallFilter === 'new') list = list.filter(m => Date.now() - m.createdAt < WEEK7);
-  else if (wallFilter === 'special') list = list.filter(m => m.verified);
+  else if (wallFilter === 'kings') list = list.filter(m => m.king);
+  // Special means "wearing something" — a crown counts, and since the crown
+  // replaces the tick rather than adding to it, kings would otherwise fall out
+  // of this list the moment they were promoted.
+  else if (wallFilter === 'special') list = list.filter(m => m.verified || m.king);
   // Sort by win rate (best players first), then by games played
   list.sort((a, b) => {
     const aRate = a.games ? (a.wins / a.games) : 0;
@@ -1216,7 +1291,7 @@ function renderWall(){
       <div class="pcirc ${m.online ? 'live ' : ''}${m.photo ? '' : 'g' + hue(m.name)}">
         ${m.photo ? `<img src="${esc(m.photo)}" loading="lazy">` : `<div class="pcircph">${esc(m.name[0].toUpperCase())}</div>`}
       </div>
-      <div class="pnm">${esc(m.name)}${m.verified ? '<span class="vtick">✓</span>' : ''}${m.online ? '<span class="dot"></span>' : ''}</div>
+      <div class="pnm">${esc(m.name)}${mark(m)}${m.online ? '<span class="dot"></span>' : ''}</div>
       <div class="psub">${countryPart}${agePart}</div>
       <div class="psub2">${statsLine || 'No games yet'}</div>
       <div class="pacts">${mine
@@ -1258,7 +1333,7 @@ function renderSide(){
   const meCard = (ME && !GUEST) ? `
     <div class="sbcard sbme">
       ${avatarHtml(ME, 64)}
-      <div class="sbname">${esc(ME.name)}${ME.verified ? '<span class="vtick">✓</span>' : ''}</div>
+      <div class="sbname">${esc(ME.name)}${mark(ME)}</div>
       <div class="sbloc">${flag(ME.cc)} ${esc(ME.location || ME.country || 'Somewhere on Earth')}</div>
       <div class="sbstats">
         <div><b>${ME.games || 0}</b><span>Games</span></div>
@@ -1331,7 +1406,7 @@ function openMemberObj(m){
   if (ME && m.id === ME.id) { showTab('me'); return; }
   curMember = m.id;
   $('mAv').innerHTML = avatarHtml(m, 104, 'big');
-  $('mName').innerHTML = esc(m.name) + (m.verified ? '<span class="vtick">✓</span>' : '') + (m.age ? ' <span style="color:var(--faint);font-weight:600">· ' + m.age + '</span>' : '');
+  $('mName').innerHTML = esc(m.name) + mark(m) + (m.age ? ' <span style="color:var(--faint);font-weight:600">· ' + m.age + '</span>' : '');
   $('mLoc').textContent = flag(m.cc) + ' ' + (m.location || m.country || 'Somewhere on Earth');
   $('mGames').textContent = m.games; $('mWins').textContent = m.wins;
   $('mRate').textContent = winRate(m);
