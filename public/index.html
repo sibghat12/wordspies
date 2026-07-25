@@ -769,6 +769,15 @@ b,strong{font-weight:600}
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const qp = new URLSearchParams(location.search);
+// Opening the home-screen icon should land you with your people, not on a page
+// asking you to start a game. New installs go straight to /social via the
+// manifest; this catches the ones installed back when it still pointed here.
+// Only the app's own launch URL is redirected — the Play shortcut and every
+// shared room link carry on to the board untouched.
+if (qp.get('src') === 'app' && !qp.get('room')
+  && (matchMedia('(display-mode: standalone)').matches || navigator.standalone === true)) {
+  location.replace('/social?src=app');
+}
 const DEMO = qp.has('test') || qp.has('demo');
 const socket = io();
 let S = null, myId = null, tick = null, selCount = 1;
