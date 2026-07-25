@@ -128,6 +128,14 @@ input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:n
 
 /* ---------- lobby ---------- */
 .lgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+/* The wheel belongs beside the team cards, not buried under the timer — this is
+   where you're standing when you're wondering who plays with whom. */
+.spinrow{margin:0 0 12px}
+.spinbtn{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;border:1.5px dashed #ccd2e2;background:#fff;border-radius:16px;padding:13px 16px;font-family:inherit;font-size:15.5px;font-weight:400;color:var(--ink);cursor:pointer;box-shadow:var(--sh-sm);transition:border-color .15s,background .15s,transform .12s}
+.spinbtn .ssub{font-size:11.5px;font-weight:400;color:var(--muted)}
+.spinbtn:hover:not(:disabled){border-color:#0b57ff;background:#f5f8ff;transform:translateY(-1px)}
+.spinbtn:active:not(:disabled){transform:translateY(0)}
+.spinbtn:disabled{cursor:default;opacity:.7;border-style:solid}
 @media(max-width:720px){.lgrid{grid-template-columns:1fr}}
 /* No coloured cap on the cards — the heading carries the team, and a plain
    white card with a faintly tinted border reads calmer and more grown-up. */
@@ -520,6 +528,7 @@ b,strong{font-weight:600}
 .spinres{margin-top:14px;color:#fff;font-size:14px;font-weight:500;min-height:22px;opacity:0;transition:opacity .3s}
 .spinres.on{opacity:1}
 .spinres .sr{color:#ffb3c0} .spinres .sb{color:#a9c6ff}
+.spinres .spyline{margin-top:7px;font-size:12.5px;color:rgba(255,255,255,.8)}
 
 </style>
 </head>
@@ -596,6 +605,9 @@ b,strong{font-weight:600}
           </div>
         </div>
       </div>
+      <div class="spinrow hidden" id="spinRow">
+        <button class="spinbtn" id="spinBtn">🎡 Spin the wheel<span class="ssub" id="spinSub">Shuffles everyone in the room across both teams and re-picks the spymasters</span></button>
+      </div>
       <div class="card setup">
         <h4>🗂 WORD CATEGORIES</h4>
         <div class="catdd" id="catDD">
@@ -610,7 +622,6 @@ b,strong{font-weight:600}
           <button data-t="0">Off</button><button data-t="60">1 min</button><button data-t="120">2 min</button><button data-t="180">3 min</button>
         </div>
         <hr>
-        <button class="btn btn-light startbtn hidden" id="spinBtn" style="margin-bottom:8px">🎡 Spin for teams</button>
         <button class="btn btn-green startbtn" id="startBtn">Start game</button>
         <div class="waitmsg hidden" id="waitMsg">The host starts the game</div>
       </div>
@@ -894,8 +905,15 @@ socket.on('teamsSpun', ({ order }) => {
   svg.style.transform = `rotate(${wheelRot}deg)`;
 
   const redN = order.filter(p => p.team === 'red').length;
+  // Naming the two spymasters is the whole point of the spin — the counts alone
+  // left everyone squinting at the lobby afterwards to work out who got the seat.
+  const spy = t => {
+    const s = order.find(p => p.team === t && p.role === 'spymaster');
+    return s ? esc(s.name) : '—';
+  };
   setTimeout(() => {
-    res.innerHTML = `<span class="sr">Red ${redN}</span> vs <span class="sb">Blue ${order.length - redN}</span>`;
+    res.innerHTML = `<span class="sr">Red ${redN}</span> vs <span class="sb">Blue ${order.length - redN}</span>`
+      + `<div class="spyline">🕵 Spymasters: <span class="sr">${spy('red')}</span> &amp; <span class="sb">${spy('blue')}</span></div>`;
     res.classList.add('on');
   }, 2500);
   setTimeout(() => show(ov, false), 3500);
@@ -1785,9 +1803,14 @@ function renderLobby(){
   if (ready) sb.textContent = 'Start game';
   else sb.innerHTML = '⏳ Waiting for friends to join…<span class="sub">Need 4 players — a spymaster and a guesser on each team</span>';
   show(sb, isHost);
-  // The wheel only makes sense with enough people to actually split up.
+  // The wheel only makes sense with enough people to actually split up. Everyone
+  // sees it — hiding it from guests just made them ask the host what happened.
   const seatable = S.players.filter(p => !p.watcher).length;
-  show($('spinBtn'), isHost && seatable >= 2);
+  show($('spinRow'), seatable >= 2);
+  $('spinBtn').disabled = !isHost;
+  $('spinSub').textContent = isHost
+    ? 'Shuffles everyone in the room across both teams and re-picks the spymasters'
+    : 'The host spins this to shuffle the teams';
   show($('waitMsg'), !isHost);
 }
 
