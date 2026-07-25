@@ -46,10 +46,14 @@
     + 'background:rgba(12,14,20,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);'
     + 'font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}'
     + '#wsWall.on{display:flex}'
-    + '#wsWall .ws-card{background:#fff;color:#16181f;width:100%;max-width:440px;border-radius:24px 24px 0 0;'
-    + 'padding:26px 22px calc(22px + env(safe-area-inset-bottom));text-align:center;box-sizing:border-box;'
-    + 'box-shadow:0 -12px 44px rgba(0,0,0,.3);animation:wsUp .34s cubic-bezier(.2,.8,.3,1) both}'
-    + '@media(min-width:560px){#wsWall{align-items:center}#wsWall .ws-card{border-radius:24px;margin:0 18px}}'
+    // Lifted clear of the bottom edge — flush to the screen it read as though it
+    // had slipped off. 30px of air, plus whatever the phone's home indicator
+    // needs, and rounded on all four corners now that it floats.
+    + '#wsWall .ws-card{background:#fff;color:#16181f;width:calc(100% - 28px);max-width:440px;border-radius:24px;'
+    + 'padding:26px 22px 24px;text-align:center;box-sizing:border-box;'
+    + 'margin:0 0 calc(30px + env(safe-area-inset-bottom));'
+    + 'box-shadow:0 14px 44px rgba(0,0,0,.3);animation:wsUp .34s cubic-bezier(.2,.8,.3,1) both}'
+    + '@media(min-width:560px){#wsWall{align-items:center}#wsWall .ws-card{margin:0 18px}}'
     + '@keyframes wsUp{from{transform:translateY(26px);opacity:0}to{transform:none;opacity:1}}'
     + '#wsWall img.ws-ic{width:66px;height:66px;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.16)}'
     + '#wsWall h2{font-size:19px;font-weight:800;margin:14px 0 7px;line-height:1.3}'
