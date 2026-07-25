@@ -281,6 +281,10 @@ input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:n
 .cnt b{font-size:19px;font-weight:600;font-family:'Fredoka';line-height:1}
 .cnt span{font-size:10px;font-weight:400;opacity:.85;letter-spacing:1px;text-transform:uppercase;order:2}
 .log{padding:13px;display:flex;flex-direction:column;height:390px}
+/* Shorter while you're waiting — the lobby already has two team cards and the
+   settings above it, and a 390px well of mostly-empty feed just looks like
+   something failed to load. */
+.log.lobbychat{height:262px;margin-top:12px}
 .log h4{font-size:10px;color:var(--muted);font-weight:400;margin-bottom:8px;letter-spacing:2px}
 .feed{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;font-size:12.2px;font-weight:400;line-height:1.45;overscroll-behavior:contain}
 .feed::-webkit-scrollbar{width:4px}.feed::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
@@ -389,6 +393,10 @@ body.ingame #meCorner{display:none !important}
 #a2hs .go{background:#fff;color:#16181f;border:none;border-radius:9px;padding:8px 13px;font-size:11.7px;
   font-weight:400;cursor:pointer;white-space:nowrap}
 #a2hs .no{background:none;border:none;color:#7b8296;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}
+/* The bar is pinned to the bottom of the screen, so whatever ends the page has
+   to leave room underneath it — otherwise it sits on top of the lobby chat's
+   input, which is the one thing people are trying to reach down there. */
+body.a2hsbar .wrap{padding-bottom:82px}
 
 /* ---------- 👥 invite friends ---------- */
 .invpanel{max-width:400px;width:100%;padding:20px 18px 16px;text-align:left;display:flex;flex-direction:column;max-height:82vh}
@@ -633,6 +641,11 @@ b,strong{font-weight:600}
         <button class="btn btn-green startbtn" id="startBtn">Start game</button>
         <div class="waitmsg hidden" id="waitMsg">The host starts the game</div>
       </div>
+      <!-- Waiting for people to turn up is the longest part of most rooms, so the
+           chat comes down here to keep them company. It's the same card as the
+           one in the game sidebar, moved — see placeChat(). Below the Start
+           button on purpose: nothing should push that further down the page. -->
+      <div id="lobbyChatSlot"></div>
     </div>
 
     <!-- game -->
@@ -656,19 +669,24 @@ b,strong{font-weight:600}
           </div>
         </div>
         <div class="sidebox">
-          <div class="card log">
-            <h4>💬 GAME CHAT</h4>
-            <div class="feed" id="feed"></div>
-            <div class="quickreacts hidden" id="quickReacts"></div>
-            <div class="emojipanel hidden" id="emojiPanel"></div>
-            <div class="chat">
-              <button id="emojiTrigger" class="emojibtn" type="button" aria-label="Emojis &amp; reactions">🙂</button>
-              <input class="fld" id="chatInput" maxlength="200" placeholder="Say something…" autocomplete="off" enterkeyhint="send">
-              <button id="chatSend" class="chatsend" aria-label="Send">➤</button>
-            </div>
-          </div>
+          <div id="gameChatSlot"></div>
           <div class="ad-slot" id="ad-side"><!-- ad code goes here --></div>
         </div>
+      </div>
+    </div>
+
+    <!-- The one and only chat. It lives here, outside both views, and gets moved
+         into whichever slot is on screen — lobby while you wait, sidebar once
+         the board is up. One feed, one input, one scroll position. -->
+    <div class="card log" id="chatCard">
+      <h4 id="chatHead">💬 GAME CHAT</h4>
+      <div class="feed" id="feed"></div>
+      <div class="quickreacts hidden" id="quickReacts"></div>
+      <div class="emojipanel hidden" id="emojiPanel"></div>
+      <div class="chat">
+        <button id="emojiTrigger" class="emojibtn" type="button" aria-label="Emojis &amp; reactions">🙂</button>
+        <input class="fld" id="chatInput" maxlength="200" placeholder="Say something…" autocomplete="off" enterkeyhint="send">
+        <button id="chatSend" class="chatsend" aria-label="Send">➤</button>
       </div>
     </div>
   </div>
@@ -1610,11 +1628,12 @@ function offerHomeScreen(){
   if (!installPrompt && !isIOS) return;                // browser can't install this
   try { if (localStorage.getItem('ws_a2hs') === 'no') return; } catch(e){}
   a2hsShown = true;
-  setTimeout(() => $('a2hs').classList.add('on'), 1400);
+  setTimeout(() => { $('a2hs').classList.add('on'); document.body.classList.add('a2hsbar'); }, 1400);
   track('a2hs_shown', {});
 }
 function hideHomeScreenBar(remember){
   $('a2hs').classList.remove('on');
+  document.body.classList.remove('a2hsbar');
   if (remember) { try { localStorage.setItem('ws_a2hs', 'no'); } catch(e){} }
 }
 $('a2hsNo').onclick = () => { hideHomeScreenBar(true); track('a2hs_dismissed', {}); };
@@ -1790,6 +1809,7 @@ function render(){
   show($('game'), playing || over);
   show($('winOv'), over);
 
+  placeChat();
   renderStrip();
   if (S.state === 'lobby') renderLobby();
   if (playing || over) { renderBoard(); renderStatus(); renderCounts(); }
@@ -1797,6 +1817,23 @@ function render(){
   renderFeed();
   if (over) renderWin();
   if (S.state === 'lobby') stopTick();
+}
+
+// ---------- one chat, two homes ----------
+// People turn up in a room minutes before anyone presses Start, and until now
+// they had nothing to say it with — the chat only existed inside the game view.
+// Running a second feed would mean two inputs, two sets of ids and two scroll
+// positions to keep honest, so the same card simply moves house: under the team
+// cards while you wait, back into the sidebar once the board is up.
+function placeChat(){
+  const card = $('chatCard');
+  if (!card) return;
+  const lobby = S.state === 'lobby';
+  const home = $(lobby ? 'lobbyChatSlot' : 'gameChatSlot');
+  if (home && card.parentNode !== home) home.appendChild(card);
+  card.classList.toggle('lobbychat', lobby);
+  $('chatHead').textContent = lobby ? '💬 LOBBY CHAT' : '💬 GAME CHAT';
+  $('chatInput').placeholder = lobby ? 'Say hello while you wait…' : 'Say something…';
 }
 
 function renderStrip(){
