@@ -67,15 +67,27 @@ body.authmodal{overflow:hidden}
 .head{display:flex;align-items:center;justify-content:space-between;padding:22px 20px 12px}
 .mechip{display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 6px 5px 14px}
 .mechip .mename{font-weight:700;font-size:13.5px;letter-spacing:-.1px}
-.tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:11px 8px calc(14px + env(safe-area-inset-bottom));z-index:10}
-.tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--ink);background:none;border:none}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:7px 8px calc(10px + env(safe-area-inset-bottom));z-index:10}
+/* Inactive tabs are grey and the active one is ink-dark: before this the only
+   difference was font-weight, which is far too quiet to tell you where you are. */
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:var(--faint);background:none;border:none;padding:6px 16px;border-radius:14px;transition:color .15s,background .15s}
 .tabbar button.on{color:var(--ink);font-weight:800}
-.tabbar .ico{font-size:19px;display:none}
+.tabbar .ico{font-size:20px;display:block;line-height:1}
+/* Your own face is the quickest thing to spot in a row of icons, so the Profile
+   tab wears your photo instead of a generic silhouette — ringed when you're on it. */
+.tabav{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;line-height:1;font-size:19px;transition:box-shadow .15s}
+.tabav .av,.tabav .avph{width:24px !important;height:24px !important;font-size:11px !important}
+.tabbar button.on .tabav{box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--ink)}
+.tdot{position:absolute;top:3px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px #fff}
 /* desktop: navigation moves to the top like a website header */
 @media(min-width:700px){
-  .tabbar{top:0;bottom:auto;border-top:none;border-bottom:1px solid var(--line);padding:12px 8px;justify-content:center;gap:52px}
-  .tabbar button{flex-direction:row;gap:8px;font-size:13.5px}
-  .tabbar .ico{font-size:17px;display:none}
+  .tabbar{top:0;bottom:auto;border-top:none;border-bottom:1px solid var(--line);padding:8px;justify-content:center;gap:14px}
+  .tabbar button{flex-direction:row;gap:9px;font-size:13.5px;padding:9px 18px}
+  .tabbar button.on{background:#f3f4f7}
+  .tabbar .ico{font-size:18px}
+  .tabav{width:26px;height:26px}
+  .tabav .av,.tabav .avph{width:26px !important;height:26px !important;font-size:12px !important}
+  .tdot{top:5px;right:12px}
   .wrap{padding-top:58px;padding-bottom:40px}
 }
 
@@ -122,10 +134,15 @@ body.authmodal{overflow:hidden}
 .sect .ln{flex:1;height:1px;background:var(--line)}
 .prate{position:absolute;top:10px;right:10px;background:#eef9f3;color:#12925c;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px}
 .pcirc.live{outline:2px solid var(--green);outline-offset:2px}
-.pacts{display:none;gap:7px;margin-top:13px}
-.pacts button{flex:1;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:11.5px;font-weight:700;padding:8px 0;color:var(--ink);white-space:nowrap}
-.pacts button.msg{background:var(--accent);color:#fff;border-color:var(--accent)}
-.pacts button.fol.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* Quiet buttons. Two solid slabs of pink and black on every single card made the
+   wall shout; the faces are the content, so the actions sit back and wait. */
+.pacts{display:none;gap:6px;margin-top:11px}
+.pacts button{flex:1;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:10.5px;font-weight:700;padding:5px 0;color:var(--sub);white-space:nowrap;transition:background .13s,color .13s,border-color .13s}
+.pacts button:hover{border-color:#d8dae0;background:#fafbfc}
+.pacts button.msg{color:var(--accent);border-color:#f2d6dd}
+.pacts button.msg:hover{background:#fdf2f4;border-color:var(--accent)}
+.pacts button.fol{color:var(--ink)}
+.pacts button.fol.on{background:#f4f5f7;color:var(--faint);border-color:transparent}
 .pacts button:disabled{opacity:.55}
 .sbcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:13px}
 .sbme{text-align:center;padding-top:20px}
@@ -188,8 +205,9 @@ body.authmodal{overflow:hidden}
 
 /* presence + chat */
 .tabbar button{position:relative}
-.badge{position:absolute;top:-2px;right:-12px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px}
-@media(min-width:700px){.badge{top:-6px}}
+.badge{position:absolute;top:1px;right:9px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 0 2px #fff}
+.badge.live{background:var(--green)}
+@media(min-width:700px){.badge{top:3px;right:11px}}
 .dot{display:inline-block;width:9px;height:9px;background:var(--green);border-radius:50%;margin-left:6px;vertical-align:middle}
 .vtick{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#1d9bf0,#0b7fd6);color:#fff;font-size:9.5px;font-weight:800;margin-left:5px;vertical-align:middle;box-shadow:0 1px 4px rgba(29,155,240,.45);flex:none}
 .citem{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--line);background:#fff}
@@ -454,9 +472,9 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   <a class="gamelink" href="/play?from=social">🎮 &nbsp;Jump into a game →</a>
 
   <div class="tabbar">
-    <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community</button>
+    <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge live hidden" id="wallBadge"></span></button>
     <button id="tbChats" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
-    <button id="tbMe" onclick="showTab('me')"><span class="ico">👤</span>Me</button>
+    <button id="tbMe" onclick="showTab('me')"><span class="ico tabav" id="tbMeAv">👤</span>Profile<span class="tdot hidden" id="meDot"></span></button>
   </div>
 </div>
 
@@ -647,6 +665,22 @@ function paintMe(){
   $('fMyName').value = ME.name || '';
   $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
   $('myEmail').textContent = ME.location || 'Add your city below';
+  paintTabs();
+}
+// The tab bar is the one thing on screen at all times, so it earns its keep:
+// your own face marks the Profile tab, a dot nags while your profile is still
+// half-finished, and a green count says how many spies are about right now.
+function paintTabs(){
+  const av = $('tbMeAv');
+  if (av) av.innerHTML = ME ? avatarHtml(ME, 24) : '👤';
+  const dot = $('meDot');
+  if (dot) dot.classList.toggle('hidden', !ME || !!(ME.photo && ME.bio && ME.location));
+  const wb = $('wallBadge');
+  if (wb) {
+    const n = (MEMBERS || []).filter(m => m.online && (!ME || m.id !== ME.id)).length;
+    wb.textContent = n > 9 ? '9+' : n;
+    wb.classList.toggle('hidden', !n);
+  }
 }
 let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0, lastTheirRead = 0;
 
@@ -1018,6 +1052,7 @@ async function loadMembers(){
     MEMBERS = j.members;
     FOLLOWING = new Set(j.following || []);
     renderWall();
+    paintTabs();
   } catch(e){}
 }
 const flag = cc => (cc && cc.length === 2) ? [...cc.toUpperCase()].map(c => String.fromCodePoint(127397 + c.charCodeAt(0))).join('') : '🌍';
