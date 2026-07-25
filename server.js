@@ -357,7 +357,11 @@ function startGame(room) {
   room.clue = null;
   room.turn = { team: room.board.startingTeam, phase: 'clue' };
   room.spySwapped = {}; // each team gets one emergency spymaster swap per game
-  room.log = [];
+  // The board arriving shouldn't cut the room off mid-sentence. Wiping the log
+  // clears out the moves of the last game, which is right, but the chat people
+  // were having while they waited carries on into this one — so the last few
+  // lines of it come with us.
+  room.log = room.log.filter(e => e.type === 'chat').slice(-6);
   addLog(room, { type: 'start', team: room.board.startingTeam });
   armTimer(room);
 }
