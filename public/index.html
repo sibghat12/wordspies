@@ -489,6 +489,12 @@ body.ingame #meCorner{display:none !important}
 .pp .av.mine:active{transform:scale(.94)}
 .side{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
 .vsx{font-family:'Fredoka';font-weight:400;color:var(--faint);font-size:11.3px;margin:0 auto;padding:0 5px}
+/* 👑 The King badge, drawn rather than typed. An emoji renders differently on
+   every phone and sat oddly against the names; this is one shape in one gold and
+   it matches the badge on the Community page exactly. */
+.ktick{display:inline-block;width:14px;height:12px;margin-left:4px;vertical-align:-1px;fill:url(#kgold);flex:none}
+/* the team chips are a flex row with their own gap — the badge must not add a second one */
+.pchip .ktick{margin-left:0}
 .pchip{display:flex;align-items:center;gap:5px;padding:3px 9px 3px 4px;border-radius:99px;font-size:11.3px;font-weight:400;border:2px solid var(--line);background:#f7f8fc;transition:transform .12s var(--spring)}
 .pchip:hover{transform:translateY(-2px)}
 .pchip.redp{border-color:#ffb9c6;background:#fff5f7}
@@ -549,6 +555,14 @@ b,strong{font-weight:600}
 </style>
 </head>
 <body>
+
+<!-- The gold the King crowns are drawn in — the same definition as on the
+     Community page, so the badge is identical wherever you meet it. -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs>
+  <linearGradient id="kgold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffe08a"/><stop offset=".5" stop-color="#f3ae1d"/><stop offset="1" stop-color="#d1870a"/>
+  </linearGradient>
+</defs></svg>
 
 <!-- ============ HOME ============ -->
 <div id="home">
@@ -806,6 +820,13 @@ let S = null, myId = null, tick = null, selCount = 1;
 const $ = id => document.getElementById(id);
 const show = (el, on) => el.classList.toggle('hidden', !on);
 const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+// The crown worn by the Kings. Kept as one string so every place that draws a
+// name gets the identical badge and none of them can quietly drift.
+const KING_SVG = '<svg class="ktick" viewBox="0 0 24 21" role="img" aria-label="King">'
+  + '<path d="M2.6 5.8 7.2 11 12 3 16.8 11 21.4 5.8 20.2 14.4H3.8Z"/>'
+  + '<rect x="3.6" y="15.4" width="16.8" height="3.4" rx="1.4"/>'
+  + '<circle cx="2.6" cy="4.4" r="2"/><circle cx="12" cy="2.1" r="2.1"/><circle cx="21.4" cy="4.4" r="2"/>'
+  + '</svg>';
 
 // ---------- cute vector avatars (deterministic per player) ----------
 const HATS = ['#20263b','#7c3aed','#e63956','#0f7500','#b45309','#0e7490','#be185d','#4338ca','#9d174d','#166534'];
@@ -1638,7 +1659,7 @@ function paintMeCorner(){
     ? '<img src="' + esc(SOC_ME.photo) + '" alt="">'
     : esc((SOC_ME.name || '?').charAt(0).toUpperCase());
   $('meBtn').title = SOC_ME.name || 'Your account';
-  $('meMenuName').textContent = (SOC_ME.name || 'Player') + (SOC_ME.king ? ' 👑' : SOC_ME.verified ? ' ✓' : '');
+  $('meMenuName').innerHTML = esc(SOC_ME.name || 'Player') + (SOC_ME.king ? KING_SVG : SOC_ME.verified ? ' ✓' : '');
   $('meMenuProfile').href = '/social#member=' + encodeURIComponent(SOC_ME.id);
   $('meCorner').style.display = 'block';
 }
@@ -1699,7 +1720,7 @@ function renderInvite(){
       : `<div class="av">${esc((p.name || '?').charAt(0).toUpperCase())}</div>`;
     return `<div class="invrow${on ? ' on' : ''}${done ? ' sent' : ''}" data-id="${esc(p.id)}">
       ${av}
-      <div class="nm"><b>${esc(p.name || 'Player')}${p.king ? ' 👑' : p.verified ? ' ✓' : ''}</b><span>${done ? 'Invited ✓' : esc(p.rel || '')}</span></div>
+      <div class="nm"><b>${esc(p.name || 'Player')}${p.king ? KING_SVG : p.verified ? ' ✓' : ''}</b><span>${done ? 'Invited ✓' : esc(p.rel || '')}</span></div>
       ${p.online ? '<div class="dot" title="Online now"></div>' : ''}
       <div class="tick">${on ? '✓' : ''}</div>
     </div>`;
@@ -1853,7 +1874,7 @@ function renderStrip(){
   if (!inGame || !m) return;
   const roleTxt = m.role === 'spymaster' ? '🕵️ Spymaster' : 'Guesser';
   const chip = p => `<span class="pchip ${p.team === 'red' ? 'redp' : p.team === 'blue' ? 'bluep' : ''}${p.connected ? '' : ' off'}" title="${esc(p.name)}">` +
-    avSVG(p, 24) + `${esc(p.name)}${p.king ? ' 👑' : ''}${p.role === 'spymaster' ? ' 🕵️' : ''}${p.id === S.hostId ? ' ⭐' : ''}</span>`;
+    avSVG(p, 24) + `${esc(p.name)}${p.king ? KING_SVG : ''}${p.role === 'spymaster' ? ' 🕵️' : ''}${p.id === S.hostId ? ' ⭐' : ''}</span>`;
   const reds = S.players.filter(p => p.team === 'red').map(chip).join('');
   const blues = S.players.filter(p => p.team === 'blue').map(chip).join('');
   el.innerHTML = `<span class="mepill">${avSVG(m, 32)}<span>${esc(m.name)} · ${roleTxt}</span></span>` +
@@ -1904,7 +1925,7 @@ function renderLobby(){
       d.className = 'pp' + (p.connected ? '' : ' dim');
       const mine = p.id === myId;
       d.innerHTML = `<span class="av${mine ? ' mine' : ''}"${mine ? ' title="Tap for a new look 🎲"' : ''}>${avSVG(p, 34)}</span>` +
-        `<span>${esc(p.name)}${p.king ? ' <span title="King">👑</span>' : ''}${mine ? ' (you)' : ''}${p.id === S.hostId ? ' <span title="Host">⭐</span>' : ''}</span>` +
+        `<span>${esc(p.name)}${p.king ? KING_SVG : ''}${mine ? ' (you)' : ''}${p.id === S.hostId ? ' <span title="Host">⭐</span>' : ''}</span>` +
         `<span class="role${p.role === 'spymaster' ? ' spy' : ''}">${p.role === 'spymaster' ? '🕵️‍♀️ Spymaster' : 'Guesser'}</span>` +
         (isHost && !mine ? `<button class="kickx" title="Remove from team">✕</button>` : '');
       if (mine) d.querySelector('.av.mine').onclick = () => socket.emit('shuffleAvatar');
