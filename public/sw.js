@@ -58,7 +58,7 @@ self.addEventListener('push', e => {
       const r = await fetch('/api/social/push/peek', { credentials: 'include', cache: 'no-store' });
       if (r.ok) n = (await r.json()).n;
     } catch (err) {}
-    const title = (n && n.title) || 'WordSpies Social';
+    const title = (n && n.title) || 'WordSpies';
     const body  = (n && n.body)  || 'You have something new.';
     const url   = (n && n.url)   || '/social';
     await self.registration.showNotification(title, {
