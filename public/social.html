@@ -1508,7 +1508,13 @@ body.chatlock #a2hs{display:none}
       return;
     }
     if (window.enablePushQuietly) enablePushQuietly();    // iOS: at least take the notifications
-    if (!isIOS) {                                        // Android fallback: menu steps
+    // Safari puts Add to Home Screen behind the ••• button, Chrome behind the
+    // Share icon, Android behind the ⋮ menu — /a2hs.js works out which.
+    if (window.wsInstallSteps) {
+      const steps = window.wsInstallSteps();
+      el('a2hsS1').innerHTML = '<b>1.</b> ' + steps.one;
+      el('a2hsS2').innerHTML = '<b>2.</b> ' + steps.two;
+    } else if (!isIOS) {                                 // Android fallback: menu steps
       el('a2hsS1').innerHTML = '<b>1.</b> Open your browser’s <b>menu</b> (⋮ or ···).';
       el('a2hsS2').innerHTML = '<b>2.</b> Choose <b>Install app</b> or <b>Add to Home screen</b>.';
     }
