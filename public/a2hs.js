@@ -19,6 +19,32 @@
  * same button turns the card into the three Share → Add to Home Screen steps,
  * which is the whole of what Apple permits.
  */
+/* The steps are not the same on every phone, and telling someone to tap a
+   button that isn't there is worse than saying nothing. Safari keeps Add to
+   Home Screen behind the ••• button in the bottom bar these days; Chrome,
+   Edge and Firefox on iPhone keep it behind the Share icon, and on both it
+   can be a row down under View More. Everything else — Android — has it in
+   the ⋮ menu. Whoever needs to show instructions asks here, so all three
+   pages say the same true thing. */
+window.wsInstallSteps = function () {
+  var ua = navigator.userAgent || '';
+  var ios = /iphone|ipad|ipod/i.test(ua)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!ios) return {
+    one: 'Open your browser’s <b>menu</b> — the <b>⋮</b> or <b>•••</b> button.',
+    two: 'Choose <b>Install app</b> or <b>Add to Home screen</b>.'
+  };
+  var alt = /CriOS/i.test(ua) ? 'Chrome' : /EdgiOS/i.test(ua) ? 'Edge' : /FxiOS/i.test(ua) ? 'Firefox' : '';
+  if (alt) return {
+    one: 'Tap the <b>Share</b> icon in ' + alt + ' — the square with an arrow coming out of the top.',
+    two: 'Tap <b>Add to Home Screen</b>. Tap <b>View More</b> or scroll down if you don’t see it.'
+  };
+  return {
+    one: 'Tap the <b>•••</b> button at the bottom of Safari — the <b>Share</b> icon on older iPhones.',
+    two: 'Tap <b>Add to Home Screen</b>. Tap <b>View More</b> or scroll down if you don’t see it.'
+  };
+};
+
 (function () {
   if (window.__a2hsWall) return;                 // never twice on one page
   window.__a2hsWall = 1;
@@ -84,8 +110,8 @@
       '<p class="ws-sub" id="wsWallP">It opens full-screen like a real app, and it’s how your friends’ ' +
         'messages reach you. One tap — no app store, nothing to download.</p>' +
       '<div id="wsWallSteps" class="ws-steps" style="display:none">' +
-        '<p><i>1</i><span>Tap the <b>Share</b> button at the bottom of Safari.</span></p>' +
-        '<p><i>2</i><span>Scroll down and tap <b>Add to Home Screen</b>.</span></p>' +
+        '<p><i>1</i><span id="wsWallS1"></span></p>' +
+        '<p><i>2</i><span id="wsWallS2"></span></p>' +
         '<p><i>3</i><span>Tap <b>Add</b> — WordSpies lands on your home screen.</span></p>' +
       '</div>' +
       '<button class="ws-go" id="wsWallGo">Add to my apps</button>' +
@@ -144,6 +170,9 @@
       // iPhone: no install API exists, so the card becomes the instructions and
       // the button becomes the way out.
       if (el('wsWallSteps').style.display === 'none') {
+        var steps = window.wsInstallSteps();               // Safari and Chrome differ — ask which
+        el('wsWallS1').innerHTML = steps.one;
+        el('wsWallS2').innerHTML = steps.two;
         el('wsWallH').textContent = 'Two taps and it’s yours';
         el('wsWallP').style.display = 'none';
         el('wsWallSteps').style.display = 'block';
