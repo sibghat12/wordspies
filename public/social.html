@@ -260,7 +260,20 @@ body.authmodal{overflow:hidden}
 .chathead{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
 @media(min-width:700px){.chathead{top:49px}}
 .back2{background:var(--ink);color:#fff;border:none;font-size:17px;width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.chname{font-weight:800;font-size:15px}
+.chwho{min-width:0;overflow:hidden}
+/* On a phone the chat takes the whole screen and the tab bar goes away with
+   it, which left no way out of a conversation except the ← that only goes as
+   far as the chat list. This is the door back to the Community, sitting in the
+   header where you're already looking. On a wide screen the tab bar is still
+   on show, so it stands down. */
+.chwall{margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;gap:5px;
+  background:var(--ink);color:#fff;border:none;border-radius:99px;
+  font-size:12.4px;font-weight:700;padding:9px 15px;min-height:40px;cursor:pointer;white-space:nowrap;
+  box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.chwall:active{transform:translateY(1px)}
+@media(max-width:380px){.chwall{font-size:11.4px;padding:8px 12px;gap:4px}}
+.splitview .chwall{display:none}
+.chname{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chstate{font-size:11px;color:var(--faint)}
 .msgs{padding:14px 16px 150px;display:flex;flex-direction:column;gap:8px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .mb{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;min-width:0}
@@ -455,7 +468,8 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
     <div class="chathead">
       <button class="back2" onclick="showTab('chats')">←</button>
       <span id="chAv"></span>
-      <div><div class="chname" id="chName"></div><div class="chstate" id="chState"></div></div>
+      <div class="chwho"><div class="chname" id="chName"></div><div class="chstate" id="chState"></div></div>
+      <button class="chwall" id="chWall" onclick="showTab('wall')">👥 Community</button>
     </div>
     <div class="msgs" id="msgs"></div>
     <button class="jumpnew" id="jumpNew" onclick="toBottom($('msgs'))">↓ New messages</button>
@@ -505,6 +519,17 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
       <div class="setrow">
         <div class="sc"><b>Push notifications</b><span id="pushWhy">Get told even when WordSpies is closed.</span></div>
         <button class="sw" id="swPush" onclick="togglePush()" aria-label="Push notifications"></button>
+      </div>
+    </div>
+    <!-- 📲 The install offer used to float over the tab bar, on top of the
+         Community button. It lives here now — a settings row you come to when
+         you want it, instead of a thing that lands on what you were tapping.
+         Hidden once the app is installed, or where the browser can't do it. -->
+    <div class="setbox" id="instBox" style="display:none">
+      <div class="seth">App</div>
+      <div class="setrow">
+        <div class="sc"><b>Add to home screen</b><span>Opens full-screen, like a real app — no app store.</span></div>
+        <button class="btn btn-dark" id="a2hsGo" style="width:auto;padding:9px 18px;flex:none">Add</button>
       </div>
     </div>
     <div style="padding:0 24px;margin-top:20px">
@@ -1425,32 +1450,17 @@ async function setupGoogle(){
      Same offer as the game page, so whichever door someone comes through on a
      phone, they get one chance to keep the app. Dismissing it sticks. -->
 <style>
-#a2hs{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(190%);z-index:70;
-  display:flex;align-items:center;gap:11px;width:calc(100vw - 24px);max-width:430px;
-  background:var(--ink);color:#fff;padding:10px 12px 10px 12px;border-radius:16px;
-  box-shadow:0 12px 34px rgba(0,0,0,.32);transition:transform .34s cubic-bezier(.2,.8,.3,1)}
-#a2hs.on{transform:translateX(-50%)}
-#a2hs>img{width:38px;height:38px;border-radius:10px;flex:none}
-#a2hs .t{flex:1;min-width:0;line-height:1.3}
-#a2hs .t b{display:block;font-size:12.8px;font-weight:700}
-#a2hs .t span{font-size:10.8px;color:rgba(255,255,255,.62);font-weight:500}
-#a2hs .go{background:#fff;color:var(--ink);border:none;border-radius:99px;font-size:12.3px;font-weight:800;padding:9px 16px;flex:none}
-#a2hs .no{background:none;border:none;color:rgba(255,255,255,.55);font-size:18px;line-height:1;padding:4px 2px;flex:none}
+/* The slim "add to your home screen" bar has been removed. It floated just
+   above the tab bar, which put it squarely on top of the Community button —
+   the most-tapped control on the page — and it was asking a question the
+   full-screen install wall in /a2hs.js has already asked. One ask, and
+   nothing parked over the menu. */
 #a2hsSteps{position:fixed;inset:0;z-index:90;background:rgba(20,22,28,.55);display:flex;align-items:center;justify-content:center;padding:22px}
 #a2hsSteps .card{background:#fff;border-radius:20px;padding:24px 22px;max-width:360px;width:100%}
 #a2hsSteps h3{font-size:17px;font-weight:800;margin-bottom:14px}
 #a2hsSteps p{font-size:13.2px;color:var(--sub);line-height:1.65;margin-bottom:9px}
 #a2hsSteps .btn{margin-top:14px}
-@media(min-width:900px){#a2hs{bottom:22px}}
-/* never park it on top of the message box */
-body.chatlock #a2hs{display:none}
 </style>
-<div id="a2hs">
-  <img src="/icon-192.png" alt="">
-  <div class="t"><b>Add WordSpies to your home screen</b><span>Opens like an app — no app store</span></div>
-  <button class="go" id="a2hsGo">Add</button>
-  <button class="no" id="a2hsNo" title="Not now">×</button>
-</div>
 <div id="a2hsSteps" class="hidden">
   <div class="card">
     <h3>📲 Install WordSpies</h3>
@@ -1468,35 +1478,31 @@ body.chatlock #a2hs{display:none}
     addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
   }
   const el = id => document.getElementById(id);
-  const bar = el('a2hs');
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // iPadOS lies
-  let prompt = null, shown = false;
+  let prompt = null;
 
-  const dismissed = () => { try { return localStorage.getItem('ws_a2hs') === 'no'; } catch(e){ return false; } };
-  const remember  = () => { try { localStorage.setItem('ws_a2hs', 'no'); } catch(e){} };
+  const remember = () => { try { localStorage.setItem('ws_a2hs', 'no'); } catch(e){} };
 
+  // Asking is the install wall's job — /a2hs.js puts a sheet in front of every
+  // phone visitor that has to be answered before anything else happens, and it
+  // is the same sheet on the landing page and in the game. All that's left
+  // here is the row in your profile, for whenever you decide you want it.
+  const box = el('instBox');
   function offer(){
-    if (shown || standalone || dismissed() || window.__a2hsDone) return;
+    if (!box || standalone) return;
     if (!prompt && !isIOS) return;                       // this browser can't install us
-    shown = true;
-    setTimeout(() => bar.classList.add('on'), 2200);
+    box.style.display = '';
   }
-  // Asking is the install wall's job now — /a2hs.js puts a sheet in front of
-  // every phone visitor that has to be answered before anything else happens,
-  // and it is the same sheet on the landing page and in the game. This file
-  // keeps only the slim bar, for the desktop visitor who taps the install
-  // button and for anyone the wall has deliberately left alone.
-  addEventListener('beforeinstallprompt', e => { e.preventDefault(); prompt = e; if (!window.__a2hsDone) offer(); });
-  addEventListener('appinstalled', () => { bar.classList.remove('on'); remember(); });
+  offer();
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); prompt = e; offer(); });
+  addEventListener('appinstalled', () => { if (box) box.style.display = 'none'; remember(); });
 
-  el('a2hsNo').onclick = () => { bar.classList.remove('on'); remember(); };
   // No confirming, no explaining — the tap is the answer. Chrome's own install
   // sheet opens straight away and the notification ask follows it in the same
   // breath, so you're done in one go instead of three.
   el('a2hsGo').onclick = () => {
-    bar.classList.remove('on');
     if (prompt) {
       const p = prompt;
       prompt = null;                                     // the event is single-use
