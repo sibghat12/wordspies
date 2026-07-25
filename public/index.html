@@ -2206,18 +2206,37 @@ if (installBtn) installBtn.onclick = async () => {
   $('instOv').classList.remove('hidden');
 };
 
-/* Anyone opening WordSpies on a phone gets one quiet offer to keep it, not just
-   the people who arrived on a friend's link. Chrome fires beforeinstallprompt a
-   moment after load, so wait for it rather than checking too early. Dismissing
-   it is remembered, so nobody is asked twice. */
+/* Anyone opening WordSpies on a phone gets the offer to keep it, not just the
+   people who arrived on a friend's link — and on Android, straight away rather
+   than behind a bar of ours first. Chrome only hands over the install sheet once
+   it has decided we're installable, so that event is the cue: the moment it
+   lands, ask. If Chrome insists on a tap first we fall back to the slim bar,
+   which is a tap. Either way a refusal is remembered, so nobody is asked twice.
+   iOS has no install API at all — there the bar, and its Share → Add steps, is
+   the only route Apple offers. */
+function askedAlready(){ try { return localStorage.getItem('ws_a2hs') === 'no'; } catch(e){ return false; } }
+function forceInstall(){
+  if (!installPrompt || standalone || askedAlready()) return false;
+  const p = installPrompt;
+  installPrompt = null;                                // a prompt event is single-use
+  try {
+    Promise.resolve(p.prompt()).catch(() => { installPrompt = p; offerHomeScreen(); });
+  } catch (e) { installPrompt = p; return false; }
+  track('a2hs_shown', { auto: 1 });
+  p.userChoice.then(r => {
+    track('a2hs_result', { outcome: r.outcome, auto: 1 });
+    if (r.outcome !== 'accepted') { try { localStorage.setItem('ws_a2hs', 'no'); } catch(e){} }
+  }).catch(() => {});
+  return true;
+}
 (function offerOnFirstMobileVisit(){
   const phone = matchMedia('(max-width:820px)').matches
     || /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
   if (!phone || standalone) return;
-  const go = () => setTimeout(offerHomeScreen, 2200);
+  if (isIOS) { setTimeout(offerHomeScreen, 2200); return; }
+  const go = () => { if (!forceInstall()) setTimeout(offerHomeScreen, 2200); };
   if (installPrompt) go();
   else addEventListener('beforeinstallprompt', go, { once: true });
-  if (isIOS) go();                                     // iOS never fires the event
 })();
 
 </script>
