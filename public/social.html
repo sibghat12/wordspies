@@ -635,6 +635,12 @@ function enterApp(justJoined){
 
   paintMe(); loadMembers();
   pingLoop(); if (!window.__pingT) window.__pingT = setInterval(pingLoop, 25000);
+  // the moment you swipe away, say so — a push should land straight away, not
+  // after the next tick, and the moment you come back it should fall silent
+  if (!window.__visT) {
+    window.__visT = 1;
+    document.addEventListener('visibilitychange', () => { pingLoop(); });
+  }
   if (!ME.photo) {
     // a photo is required before joining the community wall
     showTab('me');
@@ -860,24 +866,49 @@ async function enablePushQuietly(){
 }
 
 let lastFollowers = null;
+
+// Which screen is this? The server needs to tell your phone from your laptop,
+// otherwise one forgotten open tab keeps every device silent. We hand it the
+// push endpoint this page owns — the same string it would send a notification
+// to — so it can skip exactly the screen you're looking at and buzz the rest.
+let PUSH_EP = null;
+async function myEndpoint(){
+  if (PUSH_EP) return PUSH_EP;
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = reg && await reg.pushManager.getSubscription();
+    PUSH_EP = sub ? sub.endpoint : null;
+  } catch(e){}
+  return PUSH_EP;
+}
+
 async function pingLoop(){
   if (!ME) return;
   try {
-    const j = await api('/ping', { method: 'POST' });
+    const ep = await myEndpoint();
+    // "loaded" is not "looking" — a backgrounded app should still buzz
+    const j = await api('/ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visible: !document.hidden, endpoint: ep || '' })
+    });
     updateBadge(j.unread);
     const away = document.hidden || (!curChat && $('tabChat').classList.contains('hidden'));
     if (j.unread > lastUnread && away) {
       soundMsg();
-      if ('Notification' in window && Notification.permission === 'granted')
-        new Notification('WordSpies Social 💬', { body: 'You have a new message!', icon: '/icon-192.png' });
+      // only stand in for push where there is no push — otherwise you'd get
+      // told twice about the same message
+      if (!PUSH_EP && 'Notification' in window && Notification.permission === 'granted')
+        new Notification('WordSpies 💬', { body: 'You have a new message!', icon: '/icon-192.png' });
     }
     lastUnread = j.unread;
     // a new follower is worth a nudge too — the count is the cheapest signal we have
     if (typeof j.followers === 'number') {
       if (lastFollowers !== null && j.followers > lastFollowers) {
         soundFollow();
-        if ('Notification' in window && Notification.permission === 'granted' && document.hidden)
-          new Notification('WordSpies Social 👋', { body: 'Someone new is following you!', icon: '/icon-192.png' });
+        if (!PUSH_EP && 'Notification' in window && Notification.permission === 'granted' && document.hidden)
+          new Notification('WordSpies 👋', { body: 'Someone new is following you!', icon: '/icon-192.png' });
       }
       lastFollowers = j.followers;
     }
@@ -1406,7 +1437,26 @@ body.chatlock #a2hs{display:none}
     shown = true;
     setTimeout(() => bar.classList.add('on'), 2200);
   }
-  addEventListener('beforeinstallprompt', e => { e.preventDefault(); prompt = e; offer(); });
+  // On a phone, don't make them find a button — the instant Chrome says we're
+  // installable, open its own install sheet. One tap and WordSpies is in their
+  // apps. If Chrome won't open the sheet unsolicited, the slim bar is the tap
+  // that makes it. A refusal is remembered either way.
+  const phone = matchMedia('(max-width:820px)').matches
+    || /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
+  function force(){
+    if (!prompt || standalone || dismissed() || !phone) return false;
+    const p = prompt;
+    prompt = null;                                       // the event is single-use
+    try {
+      Promise.resolve(p.prompt()).catch(() => { prompt = p; offer(); });
+    } catch (e) { prompt = p; return false; }
+    p.userChoice
+      .catch(() => ({ outcome: 'dismissed' }))
+      .then(r => { if (r.outcome !== 'accepted') remember(); })
+      .finally(() => { if (window.enablePushQuietly) enablePushQuietly(); });
+    return true;
+  }
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); prompt = e; if (!force()) offer(); });
   addEventListener('appinstalled', () => { bar.classList.remove('on'); remember(); });
   if (isIOS) offer();
 
