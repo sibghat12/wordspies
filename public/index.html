@@ -109,11 +109,16 @@ input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:n
 /* ---------- lobby ---------- */
 .lgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 @media(max-width:720px){.lgrid{grid-template-columns:1fr}}
-.team{padding:17px;border-radius:22px;position:relative;overflow:hidden;background:#fff;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.04)}
-.team::before{content:'';position:absolute;inset:0 0 auto 0;height:6px}
-.team.redt::before{background:linear-gradient(90deg,var(--red),#ff8fa3)}
-.team.bluet::before{background:linear-gradient(90deg,var(--blue),#7ba6ff)}
-.team h3{font-family:'Fredoka';font-size:16.5px;font-weight:400;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+/* No coloured cap on the cards — the heading carries the team, and a plain
+   white card with a faintly tinted border reads calmer and more grown-up. */
+.team{padding:17px;border-radius:18px;position:relative;overflow:hidden;background:#fff;box-shadow:var(--sh);border:1px solid var(--line)}
+.team.redt{border-color:#f0d4da}
+.team.bluet{border-color:#cfdcf7}
+.team h3{font-family:'Fredoka';font-size:16.5px;font-weight:400;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+/* a small solid disc instead of an emoji heart — same signal, less noise */
+.team h3::before{content:'';width:9px;height:9px;border-radius:50%;flex:none}
+.team.redt h3::before{background:var(--red)}
+.team.bluet h3::before{background:var(--blue)}
 .team.redt h3{color:var(--red-ink)} .team.bluet h3{color:var(--blue-ink)}
 .team h3 .cnt2{margin-left:auto;font-size:11.3px;color:var(--faint);font-family:'Nunito';font-weight:400}
 .pp{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13.5px;font-weight:400}
@@ -290,6 +295,41 @@ input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:n
 .winov .cnt{min-width:104px}
 .confetti{position:absolute;top:-20px;font-size:14.8px;animation:fall linear infinite;pointer-events:none}
 @keyframes fall{to{transform:translateY(560px) rotate(680deg);opacity:.15}}
+
+/* ---------- 🙋 who you're signed in as (top-right) ---------- */
+#meCorner{position:fixed;top:14px;right:14px;z-index:9998;display:none}
+#meCorner .mebtn{width:38px;height:38px;border-radius:50%;padding:0;border:2px solid #fff;background:#e6e9f2;
+  box-shadow:0 3px 14px rgba(35,41,70,.22);cursor:pointer;overflow:hidden;display:flex;align-items:center;
+  justify-content:center;font-size:15px;color:var(--muted);font-weight:400}
+#meCorner .mebtn img{width:100%;height:100%;object-fit:cover;display:block}
+/* The badge floats over the top-right of the header. Only the first row of the
+   header reaches that far, so nudge just that row clear — padding the whole
+   header would squeeze the button row and make it wrap for no reason. */
+body.mecorner #codePill,body.mecorner #invPill{margin-right:46px}
+#meMenu{position:absolute;top:46px;right:0;min-width:190px;background:#fff;border:1px solid var(--line);
+  border-radius:14px;box-shadow:0 12px 34px rgba(35,41,70,.18);padding:6px;display:none}
+#meMenu.on{display:block}
+#meMenu .who{padding:9px 11px 8px;border-bottom:1px solid var(--line);margin-bottom:5px}
+#meMenu .who b{display:block;font-size:12.6px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#meMenu .who span{font-size:10.4px;color:var(--faint);font-weight:400}
+#meMenu a,#meMenu button{display:block;width:100%;text-align:left;padding:8px 11px;border-radius:9px;font-size:12.2px;
+  font-weight:400;color:var(--ink);background:none;border:none;cursor:pointer;text-decoration:none}
+#meMenu a:hover,#meMenu button:hover{background:#f1f3fa}
+#meMenu button.out{color:#c62828}
+@media(max-width:720px){#meCorner{top:10px;right:10px}#meCorner .mebtn{width:34px;height:34px}}
+
+/* ---------- 📲 add to home screen (slim bar for link visitors) ---------- */
+#a2hs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%) translateY(140%);z-index:70;
+  display:flex;align-items:center;gap:11px;width:calc(100vw - 24px);max-width:430px;box-sizing:border-box;
+  background:#16181f;color:#fff;padding:10px 12px 10px 14px;border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .32s cubic-bezier(.2,.8,.3,1)}
+#a2hs.on{transform:translateX(-50%) translateY(0)}
+#a2hs .t{font-size:11.7px;font-weight:400;line-height:1.45}
+#a2hs .t b{font-weight:400;display:block}
+#a2hs .t span{color:#9aa1b2;font-size:10.4px}
+#a2hs .go{background:#fff;color:#16181f;border:none;border-radius:9px;padding:8px 13px;font-size:11.7px;
+  font-weight:400;cursor:pointer;white-space:nowrap}
+#a2hs .no{background:none;border:none;color:#7b8296;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}
 
 /* ---------- 👥 invite friends ---------- */
 .invpanel{max-width:400px;width:100%;padding:20px 18px 16px;text-align:left;display:flex;flex-direction:column;max-height:82vh}
@@ -486,7 +526,7 @@ b,strong{font-weight:600}
     <div id="lobby">
       <div class="lgrid">
         <div class="team redt">
-          <h3>❤️ Red team <span class="cnt2" id="redCount"></span></h3>
+          <h3>Red team <span class="cnt2" id="redCount"></span></h3>
           <div id="redList"></div>
           <div class="teambtns">
             <button data-team="red" data-role="operative">Join red</button>
@@ -494,7 +534,7 @@ b,strong{font-weight:600}
           </div>
         </div>
         <div class="team bluet">
-          <h3>💙 Blue team <span class="cnt2" id="blueCount"></span></h3>
+          <h3>Blue team <span class="cnt2" id="blueCount"></span></h3>
           <div id="blueList"></div>
           <div class="teambtns">
             <button data-team="blue" data-role="operative">Join blue</button>
@@ -597,6 +637,24 @@ b,strong{font-weight:600}
       </section>
     <div style="text-align:center;margin-top:18px"><button class="btn btn-dark" onclick="toggleAbout(false)" style="min-width:150px">Close</button></div>
   </div>
+</div>
+
+<!-- 🙋 signed-in badge: just your photo, tucked in the corner -->
+<div id="meCorner">
+  <button class="mebtn" id="meBtn" title="Your account"></button>
+  <div id="meMenu">
+    <div class="who"><b id="meMenuName"></b><span>Signed in</span></div>
+    <a id="meMenuProfile" href="/social">My profile</a>
+    <a href="/social">WordSpies Social</a>
+    <button class="out" id="meLogout">Log out</button>
+  </div>
+</div>
+
+<!-- 📲 add to home screen — offered to people who arrive on an invite link -->
+<div id="a2hs">
+  <div class="t"><b>Add WordSpies to your home screen</b><span>Opens like an app — no app store</span></div>
+  <button class="go" id="a2hsGo">Add</button>
+  <button class="no" id="a2hsNo" title="Not now">×</button>
 </div>
 
 <!-- 👥 invite friends — pick people from WordSpies Social, send the link in-app -->
@@ -912,6 +970,7 @@ Promise.all([
     : Promise.resolve(null)
 ]).then(([mj, rj]) => {
   SOC_ME = (mj && mj.me) || null;
+  paintMeCorner();
   // We may already be in a room by the time this answers, so reveal the pill now.
   if (SOC_ME && S && S.code) show($('invPill'), true);
 
@@ -1102,6 +1161,60 @@ $('watchPill').onclick = () => {
   );
 };
 
+// ---------- 🙋 signed-in badge ----------
+// Just your photo in the corner, so it's always obvious which account you're
+// playing as. Tapping it opens the small menu — profile, Social, log out.
+function paintMeCorner(){
+  document.body.classList.toggle('mecorner', !!SOC_ME);
+  if (!SOC_ME) { $('meCorner').style.display = 'none'; return; }
+  $('meBtn').innerHTML = SOC_ME.photo
+    ? '<img src="' + esc(SOC_ME.photo) + '" alt="">'
+    : esc((SOC_ME.name || '?').charAt(0).toUpperCase());
+  $('meBtn').title = SOC_ME.name || 'Your account';
+  $('meMenuName').textContent = (SOC_ME.name || 'Player') + (SOC_ME.verified ? ' ✓' : '');
+  $('meMenuProfile').href = '/social#member=' + encodeURIComponent(SOC_ME.id);
+  $('meCorner').style.display = 'block';
+}
+$('meBtn').onclick = e => { e.stopPropagation(); $('meMenu').classList.toggle('on'); };
+addEventListener('click', () => $('meMenu').classList.remove('on'));
+$('meMenu').onclick = e => e.stopPropagation();
+$('meLogout').onclick = () => {
+  fetch('/api/social/logout', { method: 'POST' })
+    .catch(() => {})
+    .then(() => location.reload());
+};
+
+// ---------- 📲 add to home screen ----------
+// The install button on the home screen is fine for people who start there,
+// but someone tapped straight into a game from a friend's link never sees it.
+// So once they're actually in the room, slide up a slim bar. Dismiss sticks.
+let a2hsShown = false;
+function offerHomeScreen(){
+  if (a2hsShown || standalone) return;                 // already installed — nothing to offer
+  if (!installPrompt && !isIOS) return;                // browser can't install this
+  try { if (localStorage.getItem('ws_a2hs') === 'no') return; } catch(e){}
+  a2hsShown = true;
+  setTimeout(() => $('a2hs').classList.add('on'), 1400);
+  track('a2hs_shown', {});
+}
+function hideHomeScreenBar(remember){
+  $('a2hs').classList.remove('on');
+  if (remember) { try { localStorage.setItem('ws_a2hs', 'no'); } catch(e){} }
+}
+$('a2hsNo').onclick = () => { hideHomeScreenBar(true); track('a2hs_dismissed', {}); };
+$('a2hsGo').onclick = async () => {
+  hideHomeScreenBar(false);
+  if (installPrompt) {
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
+    installPrompt = null;                              // the event is single-use
+    track('a2hs_result', { outcome });
+    if (outcome !== 'accepted') hideHomeScreenBar(true);
+    return;
+  }
+  $('instOv').classList.remove('hidden');              // iOS — show the Share → Add steps
+};
+
 // ---------- 👥 invite friends ----------
 // Pick people from your WordSpies Social circle and drop the room link straight
 // into their chat. No email, no share sheet — they see it next time they open
@@ -1247,6 +1360,9 @@ function render(){
   show($('codePill'), !!S.code);
   // only worth offering when we know who you are — the list comes from your account
   show($('invPill'), !!S.code && !!SOC_ME);
+  // Arrived on a friend's link? They never saw the home screen's install button,
+  // so offer it here — once they're actually in the room and it's worth keeping.
+  if (S.code && inviteCode) offerHomeScreen();
   show($('watchPill'), !!S.watchCode);
   $('scoreRed').textContent = S.score.red;
   $('scoreBlue').textContent = S.score.blue;
