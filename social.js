@@ -691,7 +691,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       await db.sadd('soc:followers:' + id, me.id);
       if (!already) {
         notifyUser(id, 'follow', me.name + ' started following you',
-          `${me.name} started following you on WordSpies.\n\nSee who it is: ${SITE}/social\n\n— WordSpies`, false,
+          `${me.name} started following you on WordSpies.\n\nSee who it is: ${SITE}/social\n\n— WordSpies`, true,
           mailHtml({
             peek: 'Say hello, or follow them back.',
             heading: 'New follower',
@@ -699,7 +699,8 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
             btn: 'See who it is', btnUrl: SITE + '/social',
             note: 'We only send these when you\'re not already in the app.'
           }));
-        sendPush(id, 'follow', '👋 New follower', me.name + ' started following you', '/social');
+        if (!(await db.exists('soc:online:' + id)))
+          sendPush(id, 'follow', '👋 New follower', me.name + ' started following you', '/social');
       }
       res.json({ ok: true, followers: await db.scard('soc:followers:' + id) });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
@@ -775,10 +776,10 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     } catch (e) { console.error('social people:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
-  // Drop the invite link into each person's chat. In-app only — no email, so
-  // inviting eight people costs them nothing but a message they'll see next
-  // time they open the app. The chat renders /play?room=CODE as a Join button
-  // already, so the text doubles as a one-tap entry into the game.
+  // Drop the invite link into each person's chat. The chat renders
+  // /play?room=CODE as a Join button already, so the text doubles as a one-tap
+  // entry into the game. Anyone who isn't in the app right now also gets a
+  // push and an email — a game only starts if people actually turn up.
   api.post('/invite', async (req, res) => {
     try {
       const me = await userFromReq(req);
@@ -812,6 +813,18 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         await db.sadd('soc:convos:' + me.id, to);
         await db.sadd('soc:convos:' + to, me.id);
         await db.incr('soc:unread:' + to + ':' + me.id);
+        notifyUser(to, 'invite', me.name + ' invited you to a game',
+          `${me.name} invited you to a game of WordSpies.\n\nJoin them: ${link}\n\n— WordSpies`, true,
+          mailHtml({
+            peek: 'They\'re waiting for you — tap to join.',
+            heading: 'Game invite',
+            line: '<b style="color:#16181f">' + esc(me.name) + '</b> invited you to a game of WordSpies.',
+            btn: 'Join the game', btnUrl: link,
+            note: 'We only send these when you\'re not already in the app.'
+          }));
+        if (!(await db.exists('soc:online:' + to)))
+          sendPush(to, 'invite', '🎮 ' + me.name + ' invited you',
+            'Tap to join the game', '/play?room=' + code);
         sent.push(to);
       }
       res.json({ ok: true, sent: sent.length, ids: sent });
