@@ -328,6 +328,26 @@ body.ingame #meCorner{display:none !important}
 #socBtn .sqn{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:720px){#socBtn .sqn{display:none}#socBtn:has(img){padding:3px;border-radius:50%}#socBtn img{width:25px;height:25px;margin:0}}
 
+/* ---------- 🔐 log in before you play ----------
+   Anyone with a profile gets one tap to bring their wins, photo and friends
+   with them. Everyone else scrolls past it to the name box, exactly as before. */
+#signin .siT{margin:0 0 3px;font-size:13.4px;font-weight:600;color:var(--ink);text-align:center}
+#signin .siS{margin:0 0 12px;font-size:11.4px;font-weight:400;color:var(--muted);text-align:center;line-height:1.5}
+#gPlay{display:flex;justify-content:center;min-height:44px}
+#signin .siAlt{margin:10px 0 0;text-align:center;font-size:11px;font-weight:400;color:var(--muted)}
+#signin .siAlt a{color:var(--muted);text-decoration:underline;cursor:pointer}
+#signin .siOr{display:flex;align-items:center;gap:9px;margin:16px 0 14px;color:var(--faint);
+  font-size:10.5px;font-weight:500;letter-spacing:.03em;text-transform:uppercase}
+#signin .siOr span{flex:1;height:1px;background:var(--line)}
+/* Already logged in? No pitch — just a quiet reminder of who you are. */
+#asMe{display:flex;align-items:center;gap:9px;background:#f1f3fa;border-radius:13px;padding:8px 11px;margin:0 0 14px}
+#asMe img,#asMe .ph{width:32px;height:32px;border-radius:50%;flex:none;object-fit:cover;display:block}
+#asMe .ph{background:#20263b;color:#fff;font-size:14px;line-height:32px;text-align:center;font-weight:600}
+#asMe .t{flex:1;min-width:0;line-height:1.35}
+#asMe .t b{display:block;font-size:12.4px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#asMe .t span{font-size:10.4px;color:var(--muted);font-weight:400}
+#asMe .sw{font-size:10.4px;color:var(--muted);text-decoration:underline;flex:none;background:none;border:none;cursor:pointer;padding:2px}
+
 /* ---------- 📲 add to home screen (slim bar for link visitors) ---------- */
 #a2hs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%) translateY(140%);z-index:70;
   display:flex;align-items:center;gap:11px;width:calc(100vw - 24px);max-width:430px;box-sizing:border-box;
@@ -496,6 +516,14 @@ b,strong{font-weight:600}
       <h1 class="logo" style="margin:0;cursor:pointer" onclick="location.href='/'" title="WordSpies home"><span class="r">Word</span><span class="b">Spies</span></h1>
       <p style="margin:6px 0 0;font-size:13.1px;font-weight:400;color:var(--muted)">The free online Codenames-style word game</p>
       <div class="card homecard">
+        <div id="signin" class="hidden">
+          <p class="siT" id="siT">Play as yourself</p>
+          <p class="siS" id="siS">Log in and your name, photo, wins and friends all save to your profile.</p>
+          <div id="gPlay"></div>
+          <p class="siAlt" id="siAlt">Signed up with email? <a id="siEmail" href="/social">Log in</a></p>
+          <div class="siOr"><span></span>or play as a guest<span></span></div>
+        </div>
+        <div id="asMe" class="hidden"></div>
         <label class="lbl">Your name</label>
         <input class="fld" id="nameInput" maxlength="20" placeholder="Type your name" autocomplete="off">
         <div class="gap"></div>
@@ -972,6 +1000,102 @@ function showDeadRoom(){
   cb.style.cssText = 'width:100%;font-size:13.9px;padding:14px;opacity:1';
 }
 
+// ---------- 🔐 log in before you play ----------
+// Someone who already has a profile shouldn't have to retype their name and
+// watch the win land on nobody's record. Offer the same one-tap Google login
+// the Social page uses, right on the card — and leave the guest name box
+// underneath untouched for everyone who just wants to play.
+// We remember that this browser has seen a logged-in profile, so a returning
+// member gets "welcome back" rather than a pitch aimed at strangers.
+const RETURNING = (() => { try { return localStorage.getItem('ws_acct') === '1'; } catch(e){ return false; } })();
+const rememberAccount = () => { try { localStorage.setItem('ws_acct', '1'); } catch(e){} };
+
+function paintSignin(){
+  const si = $('signin'), am = $('asMe');
+  if (!si || !am) return;
+
+  if (SOC_ME) {                                        // logged in — no pitch needed
+    si.classList.add('hidden');
+    am.classList.remove('hidden');
+    am.innerHTML = (SOC_ME.photo
+        ? '<img src="' + esc(SOC_ME.photo) + '" alt="">'
+        : '<div class="ph">' + esc((SOC_ME.name || '?').charAt(0).toUpperCase()) + '</div>')
+      + '<div class="t"><b>' + esc(SOC_ME.name || 'You') + '</b>'
+      + '<span>Logged in — your wins are saved</span></div>'
+      + '<button class="sw" id="asMeOut" type="button">Not you?</button>';
+    $('asMeOut').onclick = () => {
+      fetch('/api/social/logout', { method: 'POST' }).catch(() => {}).then(() => location.reload());
+    };
+    return;
+  }
+
+  am.classList.add('hidden');
+  if (wantGuest || DEMO) { si.classList.add('hidden'); return; }   // they've already said "guest"
+  if (RETURNING) {
+    $('siT').textContent = '👋 Welcome back';
+    $('siS').textContent = 'Log in to carry on with your wins, photo and friends.';
+  }
+  const back = encodeURIComponent(location.pathname + location.search);
+  $('siEmail').href = '/social?login=1&next=' + back;
+  si.classList.remove('hidden');
+}
+
+// Google's button is drawn into an iframe at a fixed pixel width, so measure
+// the card rather than guessing and having it overhang on a small phone.
+async function setupPlayGoogle(){
+  if (SOC_ME || wantGuest || DEMO) return;
+  const box = $('gPlay'); if (!box) return;
+  // Google unreachable or not configured: drop the button and make the one
+  // remaining route the headline, rather than leaving a dangling "or".
+  const emailOnly = () => {
+    box.style.display = 'none';
+    $('siS').textContent = RETURNING
+      ? 'Log in to carry on with your wins, photo and friends.'
+      : 'Already have a profile? Log in so your wins and friends save.';
+    $('siAlt').innerHTML = '<a id="siEmail" href="' + $('siEmail').getAttribute('href') + '">Log in to my profile →</a>';
+  };
+  try {
+    const cfg = await fetch('/api/social/config').then(r => r.json());
+    if (!cfg.google) return emailOnly();                // no Google key configured
+    await new Promise((ok, no) => {
+      const s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+      s.onload = ok; s.onerror = no; document.head.appendChild(s);
+    });
+    google.accounts.id.initialize({
+      client_id: cfg.google,
+      callback: async resp => {
+        try {
+          const r = await fetch('/api/social/google', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential: resp.credential })
+          });
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok || !j.me) throw new Error(j.error || 'Sign-in failed — try again?');
+          SOC_ME = j.me;
+          rememberAccount();
+          try { localStorage.setItem('ws_name', j.me.name || ''); } catch(e){}
+          const inp = $('nameInput');
+          if (inp && j.me.name) { inp.value = j.me.name; inp.placeholder = j.me.name; }
+          paintSignin(); paintMeCorner();
+          toast('👋 Hi ' + (j.me.name || 'spy') + '! Your games are saved from now on');
+          // Came in on a friend's link? Seat them now instead of making them tap again.
+          if (inviteCode && !savedSessionFor(inviteCode)) {
+            showJoiningAs(j.me, inviteCode);
+            autoJoinCode = inviteCode;
+            fireAutoJoin();
+          }
+        } catch(e){ toast(e.message || 'Sign-in failed — try again?'); }
+      }
+    });
+    const w = Math.max(220, Math.min(340, box.clientWidth || 300));
+    google.accounts.id.renderButton(box, {
+      theme: 'outline', size: 'large', shape: 'pill',
+      text: RETURNING ? 'signin_with' : 'continue_with', logo_alignment: 'left', width: w
+    });
+  } catch(e){ emailOnly(); }           // offline or blocked — the guest box still works
+}
+
 // Ask who they are and whether the room is still alive, together.
 Promise.all([
   fetch('/api/social/me').then(r => r.json()).catch(() => null),
@@ -980,7 +1104,9 @@ Promise.all([
     : Promise.resolve(null)
 ]).then(([mj, rj]) => {
   SOC_ME = (mj && mj.me) || null;
+  if (SOC_ME) rememberAccount();
   paintMeCorner();
+  paintSignin();
   // We may already be in a room by the time this answers, so reveal the pill now.
   if (SOC_ME && S && S.code) show($('invPill'), true);
 
@@ -1008,10 +1134,10 @@ Promise.all([
     return;
   }
 
-  if (!inviteCode || DEMO) return;
+  if (!inviteCode || DEMO) { setupPlayGoogle(); return; }
   if (rj && rj.exists === false) { showDeadRoom(); return; }   // expired — don't pretend
   if (savedSessionFor(inviteCode)) return;                     // rejoin already owns this socket
-  if (!SOC_ME || wantGuest) return;                            // guests keep the name form
+  if (!SOC_ME || wantGuest) { setupPlayGoogle(); return; }      // guests keep the name form
   showJoiningAs(SOC_ME, inviteCode);
   autoJoinCode = inviteCode;
   fireAutoJoin();
