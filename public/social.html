@@ -135,8 +135,7 @@ body.authmodal{overflow:hidden}
 .sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s}
 .sw.on{background:var(--green)}
 .sw.on::after{transform:translateX(18px)}
-.setrow .sbtn{flex:none;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer}
-.setrow .sbtn[disabled]{background:#c9cdd9;cursor:default}
+.sw[disabled]{opacity:.45;cursor:default}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .gamelink{display:block;margin:6px 24px 22px;text-align:center;text-decoration:none;color:var(--accent);font-weight:600;font-size:13.5px}
@@ -360,7 +359,7 @@ body.authmodal{overflow:hidden}
       </div>
       <div class="setrow">
         <div class="sc"><b>Push notifications</b><span id="pushWhy">Get told even when WordSpies is closed.</span></div>
-        <button class="sbtn" id="pushBtn" onclick="enablePush()">Turn on</button>
+        <button class="sw" id="swPush" onclick="togglePush()" aria-label="Push notifications"></button>
       </div>
     </div>
     <div style="padding:0 24px;margin-top:20px">
@@ -635,19 +634,18 @@ async function pushState(){
   if (!reg) return 'off';
   return (await reg.pushManager.getSubscription()) ? 'on' : 'off';
 }
+// The same switch as Sound, so the row reads as one setting you flick, not a
+// button that changes its own label at you.
 async function paintPush(){
-  const b = $('pushBtn'), why = $('pushWhy');
-  if (!b) return;
+  const s = $('swPush'), why = $('pushWhy');
+  if (!s) return;
   const st = await pushState();
-  if (st === 'unsupported') { b.textContent = 'Not available'; b.disabled = true;
-    why.textContent = 'This browser can\'t do push notifications.'; return; }
-  if (st === 'blocked') { b.textContent = 'Blocked'; b.disabled = true;
-    why.textContent = 'Notifications are blocked — turn them back on in your browser settings.'; return; }
-  b.disabled = false;
-  b.textContent = st === 'on' ? 'Turn off' : 'Turn on';
-  why.textContent = st === 'on'
-    ? 'On — we\'ll let you know about messages and new followers.'
-    : 'Get told even when WordSpies is closed.';
+  s.classList.toggle('on', st === 'on');
+  s.disabled = st === 'unsupported';
+  why.textContent =
+      st === 'unsupported' ? 'This browser can\'t do push notifications.'
+    : st === 'on'          ? 'On — we\'ll tell you about messages and new followers.'
+    :                        'Get told even when WordSpies is closed.';
 }
 const b64ToU8 = s => {
   const p = (s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
@@ -655,10 +653,18 @@ const b64ToU8 = s => {
   for (let i = 0; i < raw.length; i++) u[i] = raw.charCodeAt(i);
   return u;
 };
-async function enablePush(){
-  const b = $('pushBtn');
+const BLOCKED_HINT = 'Notifications are off in your browser — allow them for wordspies.co.uk';
+async function togglePush(){
+  const s = $('swPush');
   try {
-    if (await pushState() === 'on') {                    // second tap = turn it off again
+    const st = await pushState();
+    if (st === 'unsupported') return;
+    // Once you've said no to the browser's own prompt, the site is never allowed
+    // to ask again — only you can undo it. So flick the switch back and say where
+    // the setting lives, instead of parking a dead "Blocked" label in the row.
+    if (st === 'blocked') { s.classList.remove('on'); toast(BLOCKED_HINT); return; }
+    if (st === 'on') {                                   // flick off
+      s.classList.remove('on');                          // move now, tidy up after
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = reg && await reg.pushManager.getSubscription();
       if (sub) {
@@ -666,11 +672,15 @@ async function enablePush(){
           body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {});
         await sub.unsubscribe();
       }
+      toast('Push notifications off');
       return paintPush();
     }
-    b.disabled = true; b.textContent = '…';
+    s.classList.add('on');                               // optimistic — paintPush corrects it if this fails
     const perm = await Notification.requestPermission();
-    if (perm !== 'granted') return paintPush();
+    if (perm !== 'granted') {
+      if (perm === 'denied') toast(BLOCKED_HINT);
+      return paintPush();
+    }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
     const reg = await navigator.serviceWorker.register('/sw.js');
