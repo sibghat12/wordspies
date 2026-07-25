@@ -351,9 +351,6 @@ body.mecorner #codePill,body.mecorner #invPill{margin-right:46px}
 /* Inside a game the floating badge would land on top of the score pill, so it
    steps aside and your photo rides in the header row instead. */
 body.ingame #meCorner{display:none !important}
-#socBtn img{width:24px;height:24px;border-radius:50%;object-fit:cover;display:block;margin:-3px 0 -3px -5px}
-#socBtn .sqn{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:720px){#socBtn .sqn{display:none}#socBtn:has(img){padding:3px;border-radius:50%}#socBtn img{width:25px;height:25px;margin:0}}
 /* Once you're inside a game the only thing on screen is the game, and people
    were getting stuck there — the way back to the Community was a bare 👥 that
    nobody read as a door. So it says Community, in words, in the dark pill that
@@ -363,6 +360,14 @@ body.ingame #meCorner{display:none !important}
 #commBtn:hover{color:#fff;background:#000}
 @media(max-width:720px){#commBtn{font-size:11.2px;padding:7px 12px;min-height:34px;gap:4px}}
 @media(max-width:480px){#commBtn{font-size:10.6px;padding:6px 11px;min-height:32px}}
+
+/* The Community always opens in its own tab, so the game you left behind is
+   still sitting there. This green dot on the button is the reminder that it is
+   — it only shows while a game is actually live, and it breathes so it reads as
+   "running now" rather than as decoration. */
+#commLive{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 0 rgba(61,220,132,.7);margin-left:7px;flex:none;display:inline-block;animation:livepulse 1.9s infinite}
+#commLive[hidden]{display:none}
+@keyframes livepulse{0%{box-shadow:0 0 0 0 rgba(61,220,132,.75)}70%{box-shadow:0 0 0 7px rgba(61,220,132,0)}100%{box-shadow:0 0 0 0 rgba(61,220,132,0)}}
 
 /* ---------- 🔐 log in before you play ----------
    Where this block sits is the whole argument. A stranger came here to play, so
@@ -591,8 +596,7 @@ b,strong{font-weight:600}
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
         <button class="helpbtn" id="leaveBtn" title="Exit this game">🚪 Exit game</button>
-        <a class="helpbtn" id="commBtn" href="/social" title="Back to the Community" style="text-decoration:none">👥 Community</a>
-        <a class="helpbtn" id="socBtn" href="/social" title="WordSpies Social" style="text-decoration:none">👥</a>
+        <a class="helpbtn" id="commBtn" href="/social" target="_blank" rel="noopener" title="Open the Community in a new tab — this game keeps running here" style="text-decoration:none">👥 Community<span id="commLive" hidden></span></a>
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
@@ -949,7 +953,7 @@ socket.on('teamsSpun', ({ order }) => {
 socket.on('state', st => {
   if (DEMO) return;
   const was = prevGameState;
-  S = st; render(); soundAndTitle(); renderTestBar();
+  S = st; render(); soundAndTitle(); renderTestBar(); noteLiveGame();
   if (S) {
     if (S.state === 'playing' && was !== 'playing') {
       gameStartTs = Date.now();
@@ -1426,18 +1430,60 @@ function getName(){
   try { localStorage.setItem('ws_name', n); } catch(e){}
   return n;
 }
+// ---------- 🟢 "there is a game running in the other tab" ----------
+// The Community button opens in its own tab now, which means the game does not
+// go away when you wander off to it — and that is exactly the thing people
+// forget. So the game tab leaves a note in localStorage saying which room is
+// live, the Community tab reads it and offers a way straight back, and the note
+// is torn up the moment the room is left or finished. Both tabs are the same
+// origin, so this costs nothing and needs no server round trip.
+const LIVE_KEY = 'ws_live';
+function noteLiveGame(){
+  const dot = $('commLive');
+  const live = S && S.code && (S.state === 'lobby' || S.state === 'playing');
+  if (live) {
+    try { localStorage.setItem(LIVE_KEY, JSON.stringify({ code: S.code, state: S.state, at: Date.now() })); } catch(e){}
+    if (dot) { dot.hidden = false; }
+    const b = $('commBtn');
+    if (b) b.title = S.state === 'playing'
+      ? 'Opens in a new tab — your game in ' + S.code + ' keeps running here'
+      : 'Opens in a new tab — you are still in room ' + S.code;
+  } else {
+    clearLiveGame();
+  }
+}
+function clearLiveGame(){
+  try { localStorage.removeItem(LIVE_KEY); } catch(e){}
+  const dot = $('commLive');
+  if (dot) dot.hidden = true;
+  const b = $('commBtn');
+  if (b) b.title = 'Open the Community in a new tab — this game keeps running here';
+}
+window.addEventListener('pagehide', () => { /* keep the note: a refresh should not lose the room */ });
+
 $('newGameBtn').onclick = () => {
-  if (!window.confirm('Start a fresh game with a new room code?')) return;
+  // You cannot quietly end up in two games at once. If a room is already open,
+  // say which one is about to be abandoned — the code is the part people
+  // recognise — and only then exit it properly and make the new one.
+  const inRoom = !!(S && S.code);
+  const msg = inRoom
+    ? 'Leave ' + S.code + (S.state === 'playing' ? ' — a game is running there' : '') + ' and start a fresh one?'
+    : 'Start a fresh game with a new room code?';
+  if (!window.confirm(msg)) return;
   const n = (localStorage.getItem('ws_name') || '').trim();
   try { localStorage.removeItem('ws_sess'); } catch(e){}
+  // Leave first. Socket.IO delivers in order, so the server has us out of the
+  // old room before it ever reads the create — no chance of holding both.
   socket.emit('leaveRoom');
   S = null;
+  clearLiveGame();
   if (n) { socket.emit('create', { name: n }); track('game_created', { source: 'new_game_button' }); }
   else location.href = '/play';
 };
 $('leaveBtn').onclick = () => {
   if (!confirmLeave()) return;
   try { localStorage.removeItem('ws_sess'); } catch(e){}
+  clearLiveGame();
   socket.emit('leaveRoom');
   location.href = '/play';
 };
@@ -1583,27 +1629,16 @@ function paintMeCorner(){
   // badge does. Either way your face is in the corner and it's obvious who
   // you're signed in as.
   document.body.classList.toggle('ingame', !$('app').classList.contains('hidden'));
-  const sb = $('socBtn');
-  if (sb) {
-    // In a game the floating corner badge is hidden, so this is the only way
-    // back to your own profile — send it straight there rather than to the
-    // wall, which the Community button next to it already covers. Signed out
-    // there is no profile to go to, so it steps aside entirely.
-    sb.innerHTML = SOC_ME
-      ? (SOC_ME.photo ? '<img src="' + esc(SOC_ME.photo) + '" alt="">'
-                      : '<span style="margin-left:-2px">👤</span>')
-        + '<span class="sqn">' + esc(SOC_ME.name || 'You') + '</span>'
-      : '👥';
-    sb.href = SOC_ME ? '/social#member=' + encodeURIComponent(SOC_ME.id) : '/social';
-    sb.style.display = SOC_ME ? '' : 'none';
-    sb.title = SOC_ME ? 'Signed in as ' + (SOC_ME.name || 'you') + ' — open your profile' : 'WordSpies Social';
-  }
+  // The avatar that used to sit in the game header is gone. It was a second way
+  // through to the Community, and unlike the button beside it that one opened in
+  // this very tab — so tapping your own face was the quickest way to walk out of
+  // a game you were in the middle of. One route out, and it opens somewhere else.
   if (!SOC_ME) { $('meCorner').style.display = 'none'; return; }
   $('meBtn').innerHTML = SOC_ME.photo
     ? '<img src="' + esc(SOC_ME.photo) + '" alt="">'
     : esc((SOC_ME.name || '?').charAt(0).toUpperCase());
   $('meBtn').title = SOC_ME.name || 'Your account';
-  $('meMenuName').textContent = (SOC_ME.name || 'Player') + (SOC_ME.verified ? ' ✓' : '');
+  $('meMenuName').textContent = (SOC_ME.name || 'Player') + (SOC_ME.king ? ' 👑' : SOC_ME.verified ? ' ✓' : '');
   $('meMenuProfile').href = '/social#member=' + encodeURIComponent(SOC_ME.id);
   $('meCorner').style.display = 'block';
 }
@@ -1664,7 +1699,7 @@ function renderInvite(){
       : `<div class="av">${esc((p.name || '?').charAt(0).toUpperCase())}</div>`;
     return `<div class="invrow${on ? ' on' : ''}${done ? ' sent' : ''}" data-id="${esc(p.id)}">
       ${av}
-      <div class="nm"><b>${esc(p.name || 'Player')}${p.verified ? ' ✓' : ''}</b><span>${done ? 'Invited ✓' : esc(p.rel || '')}</span></div>
+      <div class="nm"><b>${esc(p.name || 'Player')}${p.king ? ' 👑' : p.verified ? ' ✓' : ''}</b><span>${done ? 'Invited ✓' : esc(p.rel || '')}</span></div>
       ${p.online ? '<div class="dot" title="Online now"></div>' : ''}
       <div class="tick">${on ? '✓' : ''}</div>
     </div>`;
@@ -1818,7 +1853,7 @@ function renderStrip(){
   if (!inGame || !m) return;
   const roleTxt = m.role === 'spymaster' ? '🕵️ Spymaster' : 'Guesser';
   const chip = p => `<span class="pchip ${p.team === 'red' ? 'redp' : p.team === 'blue' ? 'bluep' : ''}${p.connected ? '' : ' off'}" title="${esc(p.name)}">` +
-    avSVG(p, 24) + `${esc(p.name)}${p.role === 'spymaster' ? ' 🕵️' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>`;
+    avSVG(p, 24) + `${esc(p.name)}${p.king ? ' 👑' : ''}${p.role === 'spymaster' ? ' 🕵️' : ''}${p.id === S.hostId ? ' ⭐' : ''}</span>`;
   const reds = S.players.filter(p => p.team === 'red').map(chip).join('');
   const blues = S.players.filter(p => p.team === 'blue').map(chip).join('');
   el.innerHTML = `<span class="mepill">${avSVG(m, 32)}<span>${esc(m.name)} · ${roleTxt}</span></span>` +
@@ -1869,7 +1904,7 @@ function renderLobby(){
       d.className = 'pp' + (p.connected ? '' : ' dim');
       const mine = p.id === myId;
       d.innerHTML = `<span class="av${mine ? ' mine' : ''}"${mine ? ' title="Tap for a new look 🎲"' : ''}>${avSVG(p, 34)}</span>` +
-        `<span>${esc(p.name)}${mine ? ' (you)' : ''}${p.id === S.hostId ? ' 👑' : ''}</span>` +
+        `<span>${esc(p.name)}${p.king ? ' <span title="King">👑</span>' : ''}${mine ? ' (you)' : ''}${p.id === S.hostId ? ' <span title="Host">⭐</span>' : ''}</span>` +
         `<span class="role${p.role === 'spymaster' ? ' spy' : ''}">${p.role === 'spymaster' ? '🕵️‍♀️ Spymaster' : 'Guesser'}</span>` +
         (isHost && !mine ? `<button class="kickx" title="Remove from team">✕</button>` : '');
       if (mine) d.querySelector('.av.mine').onclick = () => socket.emit('shuffleAvatar');
