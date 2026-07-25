@@ -263,7 +263,7 @@ function remaining(room, team) {
 // blue tick — a tick that nearly everyone has stopped meaning anything. Kept in
 // step with the same list in social.js. The crown needs a real signed-in account
 // behind it, so nobody can put on a name in the join box and borrow one.
-const KINGS = new Set(['ayoub', 'xman', 'ali', 'pray', 'dem', 'sibi', 'rami', 'earlin', 'ana']);
+const KINGS = new Set(['ayoub', 'xman', 'ali', 'pray', 'dem', 'sibi', 'rami', 'earlin', 'ana', 'karina']);
 const isKingName = p => !!p.socUid && KINGS.has(String(p.name || '').trim().toLowerCase());
 
 // Public view of the room. Spymasters (and everyone when the game is over)
