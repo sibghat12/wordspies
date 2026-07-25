@@ -363,14 +363,12 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
 </td></tr></table></body></html>`;
   }
 
-  // one notification email per person per type per hour, and only when they're away
+  // an email every time, as long as they're not already in the app
   async function notifyUser(uid, type, subject, text, skipIfOnline, html) {
     try {
       if (skipIfOnline && await db.exists('soc:online:' + uid)) return;
-      if (await db.exists('soc:notified:' + uid + ':' + type)) return;
       const u = JSON.parse(await db.get('soc:user:' + uid) || 'null');
       if (!u || !u.email) return;
-      await db.set('soc:notified:' + uid + ':' + type, '1', 3600);
       sendMail(u.email, subject, text, html).catch(e => console.error('notify mail:', e.message));
     } catch (e) { console.error('notify:', e.message); }
   }
@@ -699,7 +697,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
             heading: 'New follower',
             line: '<b style="color:#16181f">' + esc(me.name) + '</b> started following you on WordSpies.',
             btn: 'See who it is', btnUrl: SITE + '/social',
-            note: 'We only ever send one of these an hour, and never when you\'re already online.'
+            note: 'We only send these when you\'re not already in the app.'
           }));
         sendPush(id, 'follow', '👋 New follower', me.name + ' started following you', '/social');
       }
@@ -844,7 +842,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
           heading: 'New message',
           line: '<b style="color:#16181f">' + esc(me.name) + '</b> sent you a message on WordSpies.',
           btn: 'Check message', btnUrl: SITE + '/social#chat=' + me.id,
-          note: 'We only ever send one of these an hour, and never when you\'re already online.'
+          note: 'We only send these when you\'re not already in the app.'
         }));
       if (!(await db.exists('soc:online:' + to)))   // they're looking at it right now — no need to buzz
         sendPush(to, 'msg', '💬 ' + me.name,
