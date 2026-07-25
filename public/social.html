@@ -837,6 +837,27 @@ async function togglePush(){
   } catch (e) { toast('Couldn\'t turn on push.'); }
   paintPush();
 }
+// Putting WordSpies on your home screen and wanting to hear from it are the same
+// wish, so the Add button does both — no second question, no second switch to go
+// and find. Silent by design: if you say no to the browser, nothing is said back.
+async function enablePushQuietly(){
+  try {
+    if (!ME) return;                                     // subscriptions belong to an account
+    if (await pushState() !== 'off') return;             // unsupported, blocked, or already on
+    if (Notification.permission === 'default'
+      && await Notification.requestPermission() !== 'granted') return paintPush();
+    if (Notification.permission !== 'granted') return;
+    const { key } = await api('/push/key');
+    if (!key) return;
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
+    await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(sub.toJSON()) });
+    toast('Added ✓ Notifications are on too');
+  } catch (e) {}
+  paintPush();
+}
 
 let lastFollowers = null;
 async function pingLoop(){
@@ -1390,15 +1411,22 @@ body.chatlock #a2hs{display:none}
   if (isIOS) offer();
 
   el('a2hsNo').onclick = () => { bar.classList.remove('on'); remember(); };
-  el('a2hsGo').onclick = async () => {
+  // No confirming, no explaining — the tap is the answer. Chrome's own install
+  // sheet opens straight away and the notification ask follows it in the same
+  // breath, so you're done in one go instead of three.
+  el('a2hsGo').onclick = () => {
     bar.classList.remove('on');
     if (prompt) {
-      prompt.prompt();
-      const r = await prompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
+      const p = prompt;
       prompt = null;                                     // the event is single-use
-      if (r.outcome !== 'accepted') remember();
+      p.prompt();                                        // fire inside the tap, before any await
+      p.userChoice
+        .catch(() => ({ outcome: 'dismissed' }))
+        .then(r => { if (r.outcome !== 'accepted') remember(); })
+        .finally(() => { if (window.enablePushQuietly) enablePushQuietly(); });
       return;
     }
+    if (window.enablePushQuietly) enablePushQuietly();    // iOS: at least take the notifications
     if (!isIOS) {                                        // Android fallback: menu steps
       el('a2hsS1').innerHTML = '<b>1.</b> Open your browser’s <b>menu</b> (⋮ or ···).';
       el('a2hsS2').innerHTML = '<b>2.</b> Choose <b>Install app</b> or <b>Add to Home screen</b>.';
