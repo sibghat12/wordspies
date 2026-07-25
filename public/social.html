@@ -98,13 +98,17 @@ body.authmodal{overflow:hidden}
 .fchips{display:flex;gap:7px;flex-wrap:wrap}
 .fchip{display:inline-flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:99px;padding:9px 14px;font-size:12.5px;font-weight:700;color:var(--sub)}
 .fchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* The crown chip carries no label — the crown says it. Slightly tighter sides so
+   it reads as a round badge next to the worded chips rather than a gap. */
+.fchip.ico{padding:9px 12px}
+.fchip.ico .ktick{margin:0}
 .wall{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 20px 30px}
 .pcard{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 12px 18px;text-align:center;cursor:pointer;transition:transform .14s ease,box-shadow .14s ease}
 .pcard:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.08)}
 .pcirc{width:104px;height:104px;border-radius:50%;overflow:hidden;margin:0 auto 12px;box-shadow:0 6px 18px rgba(0,0,0,.14);border:3px solid #fff;outline:1px solid var(--line)}
 .pcirc img{width:100%;height:100%;object-fit:cover;display:block}
 .pcircph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:rgba(255,255,255,.92)}
-.pnm{font-weight:800;font-size:15px;color:var(--ink);letter-spacing:-.2px}
+.pnm{font-weight:500;font-size:15px;color:var(--ink);letter-spacing:-.2px}
 .psub{color:var(--sub);font-size:12.5px;font-weight:600;margin-top:3px}
 .psub2{color:var(--faint);font-size:11.5px;font-weight:500;margin-top:2px}
 .pw{position:relative;height:216px;overflow:hidden;background:#eceef2}
@@ -147,7 +151,7 @@ body.authmodal{overflow:hidden}
 .sbcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:13px}
 .sbme{text-align:center;padding-top:20px}
 .sbme .av,.sbme .avph{margin:0 auto 10px}
-.sbname{font-weight:800;font-size:15.5px;letter-spacing:-.2px}
+.sbname{font-weight:500;font-size:15.5px;letter-spacing:-.2px}
 .sbloc{color:var(--faint);font-size:12px;font-weight:600;margin-top:3px}
 .sbstats{display:flex;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
 .sbstats div{flex:1}
@@ -175,7 +179,7 @@ body.authmodal{overflow:hidden}
 .prof{margin-top:-52px;text-align:center;padding:0 24px}
 .prof .pav{position:relative;display:inline-block}
 .prof .big{width:104px;height:104px;border:4px solid var(--bg);font-size:38px}
-.prof h2{font-size:21px;margin-top:10px;font-weight:800;letter-spacing:-.4px}
+.prof h2{font-size:21px;margin-top:10px;font-weight:500;letter-spacing:-.4px}
 .prof .loc{color:var(--faint);font-weight:500;font-size:12.5px;margin-top:3px}
 .stats{display:flex;margin:18px 24px;border:1px solid var(--line);border-radius:14px;background:#fff;flex-wrap:wrap}
 .stats>div{flex:1;min-width:45%;padding:13px 0;text-align:center}
@@ -266,16 +270,19 @@ body.authmodal{overflow:hidden}
 .dot{display:inline-block;width:9px;height:9px;background:var(--green);border-radius:50%;margin-left:6px;vertical-align:middle}
 .vtick{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#1d9bf0,#0b7fd6);color:#fff;font-size:9.5px;font-weight:800;margin-left:5px;vertical-align:middle;box-shadow:0 1px 4px rgba(29,155,240,.45);flex:none}
 /* 👑 The King badge. It sits where the blue tick would have gone and takes its
-   place entirely — a tick that almost everyone here has stopped saying anything,
-   and two badges on one name just reads as clutter. Gold, slightly raised, and
-   the crown is drawn as text so it renders the same on every phone. */
-.ktick{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:linear-gradient(135deg,#ffd977,#e8a92b);font-size:9.5px;margin-left:5px;vertical-align:middle;box-shadow:0 1px 5px rgba(214,150,20,.5);flex:none;line-height:1}
+   place entirely — two badges on one name just reads as clutter, and the crown is
+   the rarer thing. A real drawn crown rather than an emoji sat in a coloured
+   disc — the disc made it look like a sticker pinned on the name, and emoji come
+   out different on every phone. This is one shape, filled with the gold above, and
+   it sits straight on the background so the name still reads as a name. */
+.ktick{display:inline-block;width:15px;height:13px;margin-left:5px;vertical-align:-1px;fill:url(#kgold);flex:none}
+.prof h2 .ktick{width:19px;height:16.5px;vertical-align:-1.5px;margin-left:7px}
 .citem{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--line);background:#fff}
 .citem:hover{background:#fbfbfc}
 .cav{position:relative;display:inline-block}
 .cdot{position:absolute;bottom:1px;right:1px;margin:0;box-shadow:0 0 0 2px #fff}
 .cmid{flex:1;min-width:0}
-.cname{font-weight:700;font-size:14.5px}
+.cname{font-weight:500;font-size:14.5px}
 .cprev{color:var(--faint);font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cright{text-align:right}
 .ctime{color:var(--faint);font-size:10.5px}
@@ -384,6 +391,15 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 </head>
 <body>
 
+<!-- The one gold the crowns are drawn in. Defined once up here and referenced by
+     every badge on the page, so there is a single place to change the colour and
+     no chance of two crowns drifting apart. -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs>
+  <linearGradient id="kgold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffe08a"/><stop offset=".5" stop-color="#f3ae1d"/><stop offset="1" stop-color="#d1870a"/>
+  </linearGradient>
+</defs></svg>
+
 <!-- ============ AUTH ============ -->
 <div id="vAuth" class="auth hidden">
   <div class="logo">WordSpies <em>Social</em></div>
@@ -456,8 +472,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
             <button class="fchip" data-f="online">🟢 Online</button>
             <button class="fchip" data-f="nearby">📍 Nearby</button>
             <button class="fchip" data-f="new">New</button>
-            <button class="fchip" data-f="kings"><span class="ktick" style="margin:0 4px 0 0">👑</span>Kings</button>
-            <button class="fchip" data-f="special"><span class="vtick" style="margin:0 4px 0 0">✓</span>Special</button>
+            <button class="fchip ico" data-f="kings" title="Kings" aria-label="Kings"><svg class="ktick" viewBox="0 0 24 21" aria-hidden="true"><path d="M2.6 5.8 7.2 11 12 3 16.8 11 21.4 5.8 20.2 14.4H3.8Z"/><rect x="3.6" y="15.4" width="16.8" height="3.4" rx="1.4"/><circle cx="2.6" cy="4.4" r="2"/><circle cx="12" cy="2.1" r="2.1"/><circle cx="21.4" cy="4.4" r="2"/></svg></button>
           </div>
         </div>
         <div id="wallBody"></div>
@@ -793,9 +808,14 @@ function enterApp(justJoined){
 // tick and replaces it, so this never returns both. Everything that draws a name
 // goes through here, which is why the badge can never end up on one list and not
 // another.
+const KING_SVG = '<svg class="ktick" viewBox="0 0 24 21" role="img" aria-label="King">'
+  + '<path d="M2.6 5.8 7.2 11 12 3 16.8 11 21.4 5.8 20.2 14.4H3.8Z"/>'
+  + '<rect x="3.6" y="15.4" width="16.8" height="3.4" rx="1.4"/>'
+  + '<circle cx="2.6" cy="4.4" r="2"/><circle cx="12" cy="2.1" r="2.1"/><circle cx="21.4" cy="4.4" r="2"/>'
+  + '</svg>';
 function mark(u){
   if (!u) return '';
-  if (u.king) return '<span class="ktick" title="King — one of the originals">👑</span>';
+  if (u.king) return KING_SVG;
   return u.verified ? '<span class="vtick" title="Founding member">✓</span>' : '';
 }
 function paintMe(){
@@ -1260,10 +1280,6 @@ function renderWall(){
   else if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
   else if (wallFilter === 'new') list = list.filter(m => Date.now() - m.createdAt < WEEK7);
   else if (wallFilter === 'kings') list = list.filter(m => m.king);
-  // Special means "wearing something" — a crown counts, and since the crown
-  // replaces the tick rather than adding to it, kings would otherwise fall out
-  // of this list the moment they were promoted.
-  else if (wallFilter === 'special') list = list.filter(m => m.verified || m.king);
   // Sort by win rate (best players first), then by games played
   list.sort((a, b) => {
     const aRate = a.games ? (a.wins / a.games) : 0;
