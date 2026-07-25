@@ -291,6 +291,26 @@ input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:n
 .confetti{position:absolute;top:-20px;font-size:14.8px;animation:fall linear infinite;pointer-events:none}
 @keyframes fall{to{transform:translateY(560px) rotate(680deg);opacity:.15}}
 
+/* ---------- 👥 invite friends ---------- */
+.invpanel{max-width:400px;width:100%;padding:20px 18px 16px;text-align:left;display:flex;flex-direction:column;max-height:82vh}
+.invpanel h2{font-family:'Fredoka';font-size:16.5px;font-weight:400;margin-bottom:3px}
+.invpanel .sub{font-size:11.7px;color:var(--muted);font-weight:400;margin-bottom:12px;line-height:1.5}
+.invlist{overflow-y:auto;flex:1;margin:0 -6px;padding:0 6px;min-height:60px}
+.invrow{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:12px;cursor:pointer;transition:background .14s}
+.invrow:hover{background:#f1f3fa}
+.invrow.on{background:var(--blue-soft)}
+.invrow .av{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#e6e9f2;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted)}
+.invrow .nm{flex:1;min-width:0}
+.invrow .nm b{display:block;font-size:12.6px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.invrow .nm span{font-size:10.4px;color:var(--faint);font-weight:400}
+.invrow .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:none}
+.invrow .tick{width:20px;height:20px;border-radius:6px;border:1.5px solid #d3d8e6;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+.invrow.on .tick{background:var(--blue);border-color:var(--blue)}
+.invrow.sent{opacity:.55;cursor:default}
+.invpanel .empty{font-size:12.2px;color:var(--muted);font-weight:400;text-align:center;padding:22px 8px;line-height:1.6}
+.invfoot{display:flex;gap:8px;margin-top:12px}
+.invfoot .btn{flex:1;font-size:12.6px;padding:9px}
+
 /* ---------- toast ---------- */
 #toast{
   position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -449,6 +469,7 @@ b,strong{font-weight:600}
     <div class="top">
       <div class="logo"><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp" id="codePillLab">Copy invite link</span></div>
+      <div class="codepill hidden" id="invPill"><span class="cp" id="invPillLab">👥 Invite friends</span></div>
       <div class="codepill" id="watchPill" style="display:none"><span class="cp" id="watchPillLab">👁 Copy watch-only link</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
@@ -575,6 +596,19 @@ b,strong{font-weight:600}
         <details><summary style="font-weight:400;font-size:12.2px;cursor:pointer">Can I play on my phone?</summary><p style="font-size:12.2px;line-height:1.6;padding-top:6px">Yes, WordSpies works on any modern phone, tablet or computer browser — and friends can mix devices in the same game.</p></details>
       </section>
     <div style="text-align:center;margin-top:18px"><button class="btn btn-dark" onclick="toggleAbout(false)" style="min-width:150px">Close</button></div>
+  </div>
+</div>
+
+<!-- 👥 invite friends — pick people from WordSpies Social, send the link in-app -->
+<div id="invOv" class="ov hidden" onclick="if(event.target===this)closeInvite()">
+  <div class="card invpanel">
+    <h2>👥 Invite friends</h2>
+    <div class="sub" id="invSub">People you follow, follow you, or have chatted with.</div>
+    <div class="invlist" id="invList"></div>
+    <div class="invfoot">
+      <button class="btn btn-light" onclick="closeInvite()">Close</button>
+      <button class="btn btn-green" id="invSend">Send invite</button>
+    </div>
   </div>
 </div>
 
@@ -878,6 +912,8 @@ Promise.all([
     : Promise.resolve(null)
 ]).then(([mj, rj]) => {
   SOC_ME = (mj && mj.me) || null;
+  // We may already be in a room by the time this answers, so reveal the pill now.
+  if (SOC_ME && S && S.code) show($('invPill'), true);
 
   // Logged into WordSpies Social? Use the profile name automatically — no need
   // to type it again. (Still editable if they fancy a nickname for one game.)
@@ -1045,20 +1081,16 @@ function copyLink(link, copiedMsg) {
     .then(() => toast(copiedMsg))
     .catch(() => toast(link));
 }
-// If the device can open a real share sheet, say so on the button — "Share
-// invite" sets the right expectation (a contact picker), "Copy" doesn't.
+// The watch link can use the native sheet — there's no in-app equivalent for
+// spectators. The invite pill stays a plain copy: people expect the code and
+// the link on their clipboard, and "Invite friends" now covers picking people.
 if (navigator.share) {
-  $('codePillLab').textContent = '📤 Share invite';
   $('watchPillLab').textContent = '👁 Share watch-only link';
 }
 $('codePill').onclick = () => {
   if (!S || !S.code) return;
-  shareLink(
-    location.origin + '/play?room=' + S.code,
-    'Join my WordSpies game! Room ' + S.code,
-    'Invite link copied ✓',
-    'invite_shared'
-  );
+  track('invite_copied', {});
+  copyLink(location.origin + '/play?room=' + S.code, 'Invite link copied ✓');
 };
 $('watchPill').onclick = () => {
   if (!S || !S.watchCode) return;
@@ -1068,6 +1100,86 @@ $('watchPill').onclick = () => {
     '👁 Watch-only link copied — viewers can\'t join or see the code',
     'watch_link_shared'
   );
+};
+
+// ---------- 👥 invite friends ----------
+// Pick people from your WordSpies Social circle and drop the room link straight
+// into their chat. No email, no share sheet — they see it next time they open
+// the app, and the chat already renders /play?room=CODE as a one-tap Join button.
+let invPicked = new Set();      // who's ticked right now
+let invSent = new Set();        // who we've already invited this game
+let invPeople = [];
+
+$('invPill').onclick = openInvite;
+
+function openInvite(){
+  if (!S || !S.code || !SOC_ME) return;
+  invPicked = new Set();
+  show($('invOv'), true);
+  $('invList').innerHTML = '<div class="empty">Loading your people…</div>';
+  $('invSend').disabled = true;
+  track('invite_panel_opened', {});
+  fetch('/api/social/people')
+    .then(r => r.json())
+    .then(j => { invPeople = (j && j.people) || []; renderInvite(); })
+    .catch(() => { $('invList').innerHTML = '<div class="empty">Couldn\'t load your list. Try again in a moment.</div>'; });
+}
+function closeInvite(){ show($('invOv'), false); }
+
+function renderInvite(){
+  const list = $('invList');
+  if (!invPeople.length){
+    list.innerHTML = '<div class="empty">No one here yet.<br>Follow a few people on <a href="/social" style="color:var(--blue)">WordSpies Social</a> and they\'ll show up.</div>';
+    $('invSend').disabled = true;
+    return;
+  }
+  list.innerHTML = invPeople.map(p => {
+    const done = invSent.has(p.id);
+    const on = invPicked.has(p.id);
+    const av = p.photo
+      ? `<img class="av" src="${esc(p.photo)}" alt="" loading="lazy">`
+      : `<div class="av">${esc((p.name || '?').charAt(0).toUpperCase())}</div>`;
+    return `<div class="invrow${on ? ' on' : ''}${done ? ' sent' : ''}" data-id="${esc(p.id)}">
+      ${av}
+      <div class="nm"><b>${esc(p.name || 'Player')}${p.verified ? ' ✓' : ''}</b><span>${done ? 'Invited ✓' : esc(p.rel || '')}</span></div>
+      ${p.online ? '<div class="dot" title="Online now"></div>' : ''}
+      <div class="tick">${on ? '✓' : ''}</div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.invrow').forEach(row => {
+    const id = row.dataset.id;
+    if (invSent.has(id)) return;                    // already invited — leave it alone
+    row.onclick = () => {
+      invPicked.has(id) ? invPicked.delete(id) : invPicked.add(id);
+      renderInvite();
+    };
+  });
+  $('invSend').disabled = !invPicked.size;
+  $('invSend').textContent = invPicked.size ? 'Send invite (' + invPicked.size + ')' : 'Send invite';
+}
+
+$('invSend').onclick = () => {
+  if (!invPicked.size || !S || !S.code) return;
+  const ids = [...invPicked];
+  $('invSend').disabled = true;
+  $('invSend').textContent = 'Sending…';
+  fetch('/api/social/invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: S.code, ids })
+  })
+    .then(r => r.json())
+    .then(j => {
+      if (!j || j.error) { toast(j && j.error ? j.error : 'Couldn\'t send that.', 'bad'); renderInvite(); return; }
+      if (!j.sent) { toast('Couldn\'t reach them — try refreshing.', 'bad'); renderInvite(); return; }
+      (j.ids || []).forEach(id => invSent.add(id));
+      invPicked = new Set();
+      track('invite_sent', { n: j.sent || 0 });
+      toast(j.sent === 1 ? 'Invite sent ✓' : 'Invites sent to ' + j.sent + ' people ✓', 'good');
+      renderInvite();
+      if (j.sent) setTimeout(closeInvite, 700);
+    })
+    .catch(() => { toast('Couldn\'t send that — check your connection.', 'bad'); renderInvite(); });
 };
 
 // ---------- clue numbers ----------
@@ -1133,6 +1245,8 @@ function render(){
   show($('app'), true);
   $('codeText').textContent = S.code || '';
   show($('codePill'), !!S.code);
+  // only worth offering when we know who you are — the list comes from your account
+  show($('invPill'), !!S.code && !!SOC_ME);
   show($('watchPill'), !!S.watchCode);
   $('scoreRed').textContent = S.score.red;
   $('scoreBlue').textContent = S.score.blue;
