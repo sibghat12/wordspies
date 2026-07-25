@@ -354,6 +354,15 @@ body.ingame #meCorner{display:none !important}
 #socBtn img{width:24px;height:24px;border-radius:50%;object-fit:cover;display:block;margin:-3px 0 -3px -5px}
 #socBtn .sqn{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:720px){#socBtn .sqn{display:none}#socBtn:has(img){padding:3px;border-radius:50%}#socBtn img{width:25px;height:25px;margin:0}}
+/* Once you're inside a game the only thing on screen is the game, and people
+   were getting stuck there — the way back to the Community was a bare 👥 that
+   nobody read as a door. So it says Community, in words, in the dark pill that
+   the eye lands on first. It keeps its label on a phone too; this is the one
+   button that must never shrink into a mystery glyph. */
+#commBtn{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700;font-size:12.6px;padding:8px 15px;min-height:36px;white-space:nowrap}
+#commBtn:hover{color:#fff;background:#000}
+@media(max-width:720px){#commBtn{font-size:11.2px;padding:7px 12px;min-height:34px;gap:4px}}
+@media(max-width:480px){#commBtn{font-size:10.6px;padding:6px 11px;min-height:32px}}
 
 /* ---------- 🔐 log in before you play ----------
    Where this block sits is the whole argument. A stranger came here to play, so
@@ -381,22 +390,11 @@ body.ingame #meCorner{display:none !important}
 #asMe .t span{font-size:10.4px;color:var(--muted);font-weight:400}
 #asMe .sw{font-size:10.4px;color:var(--muted);text-decoration:underline;flex:none;background:none;border:none;cursor:pointer;padding:2px}
 
-/* ---------- 📲 add to home screen (slim bar for link visitors) ---------- */
-#a2hs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%) translateY(140%);z-index:70;
-  display:flex;align-items:center;gap:11px;width:calc(100vw - 24px);max-width:430px;box-sizing:border-box;
-  background:#16181f;color:#fff;padding:10px 12px 10px 14px;border-radius:14px;
-  box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .32s cubic-bezier(.2,.8,.3,1)}
-#a2hs.on{transform:translateX(-50%) translateY(0)}
-#a2hs .t{font-size:11.7px;font-weight:400;line-height:1.45}
-#a2hs .t b{font-weight:400;display:block}
-#a2hs .t span{color:#9aa1b2;font-size:10.4px}
-#a2hs .go{background:#fff;color:#16181f;border:none;border-radius:9px;padding:8px 13px;font-size:11.7px;
-  font-weight:400;cursor:pointer;white-space:nowrap}
-#a2hs .no{background:none;border:none;color:#7b8296;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}
-/* The bar is pinned to the bottom of the screen, so whatever ends the page has
-   to leave room underneath it — otherwise it sits on top of the lobby chat's
-   input, which is the one thing people are trying to reach down there. */
-body.a2hsbar .wrap{padding-bottom:82px}
+/* The slim "add to your home screen" bar used to live here. It was a floating
+   thing pinned over the bottom of the page, which meant it sat on top of
+   whatever you were actually trying to tap. The full-screen install wall in
+   /a2hs.js asks every phone visitor properly now, so the bar was asking a
+   second time and getting in the way to do it. Gone. */
 
 /* ---------- 👥 invite friends ---------- */
 .invpanel{max-width:400px;width:100%;padding:20px 18px 16px;text-align:left;display:flex;flex-direction:column;max-height:82vh}
@@ -575,7 +573,7 @@ b,strong{font-weight:600}
           <p class="siAlt hidden" id="siGuest"><a id="siGuestGo" role="button" tabindex="0">Not you? Join as a guest instead →</a></p>
         </div>
       </div>
-      <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button><a class="helpbtn" href="/social" style="text-decoration:none">👥 Social</a><button class="helpbtn hidden" id="installBtn" title="Install WordSpies on your device">📲 Install app</button></div>
+      <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button><a class="helpbtn" href="/social" style="text-decoration:none">👥 Community</a><button class="helpbtn hidden" id="installBtn" title="Install WordSpies on your device">📲 Install app</button></div>
       <p class="foot" style="font-size:11.3px;font-weight:400;color:var(--faint);line-height:1.6"><a href="/about" style="color:var(--muted);text-decoration:underline">About</a> · <a href="/privacy" style="color:var(--muted);text-decoration:underline">Privacy</a> · <a href="/terms" style="color:var(--muted);text-decoration:underline">Terms</a> · <a href="/blog" style="color:var(--muted);text-decoration:underline">Blog</a><br><span style="color:var(--ink)">© 2026 WordSpies. All rights reserved.</span></p>
       <div class="ad-slot" id="ad-home"><!-- ad code goes here --></div>
     </div>
@@ -593,6 +591,7 @@ b,strong{font-weight:600}
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
         <button class="helpbtn" id="leaveBtn" title="Exit this game">🚪 Exit game</button>
+        <a class="helpbtn" id="commBtn" href="/social" title="Back to the Community" style="text-decoration:none">👥 Community</a>
         <a class="helpbtn" id="socBtn" href="/social" title="WordSpies Social" style="text-decoration:none">👥</a>
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
@@ -739,13 +738,6 @@ b,strong{font-weight:600}
     <a href="/social">WordSpies Social</a>
     <button class="out" id="meLogout">Log out</button>
   </div>
-</div>
-
-<!-- 📲 add to home screen — offered to people who arrive on an invite link -->
-<div id="a2hs">
-  <div class="t"><b>Add WordSpies to your home screen</b><span>Opens like an app — no app store</span></div>
-  <button class="go" id="a2hsGo">Add</button>
-  <button class="no" id="a2hsNo" title="Not now">×</button>
 </div>
 
 <!-- 👥 invite friends — pick people from WordSpies Social, send the link in-app -->
@@ -1593,12 +1585,18 @@ function paintMeCorner(){
   document.body.classList.toggle('ingame', !$('app').classList.contains('hidden'));
   const sb = $('socBtn');
   if (sb) {
+    // In a game the floating corner badge is hidden, so this is the only way
+    // back to your own profile — send it straight there rather than to the
+    // wall, which the Community button next to it already covers. Signed out
+    // there is no profile to go to, so it steps aside entirely.
     sb.innerHTML = SOC_ME
       ? (SOC_ME.photo ? '<img src="' + esc(SOC_ME.photo) + '" alt="">'
                       : '<span style="margin-left:-2px">👤</span>')
         + '<span class="sqn">' + esc(SOC_ME.name || 'You') + '</span>'
       : '👥';
-    sb.title = SOC_ME ? 'Signed in as ' + (SOC_ME.name || 'you') + ' — open Social' : 'WordSpies Social';
+    sb.href = SOC_ME ? '/social#member=' + encodeURIComponent(SOC_ME.id) : '/social';
+    sb.style.display = SOC_ME ? '' : 'none';
+    sb.title = SOC_ME ? 'Signed in as ' + (SOC_ME.name || 'you') + ' — open your profile' : 'WordSpies Social';
   }
   if (!SOC_ME) { $('meCorner').style.display = 'none'; return; }
   $('meBtn').innerHTML = SOC_ME.photo
@@ -1619,36 +1617,12 @@ $('meLogout').onclick = () => {
 };
 
 // ---------- 📲 add to home screen ----------
-// The install button on the home screen is fine for people who start there,
-// but someone tapped straight into a game from a friend's link never sees it.
-// So once they're actually in the room, slide up a slim bar. Dismiss sticks.
-let a2hsShown = false;
-function offerHomeScreen(){
-  if (a2hsShown || standalone || window.__a2hsDone) return;   // installed, or the wall already asked
-  if (!installPrompt && !isIOS) return;                // browser can't install this
-  try { if (localStorage.getItem('ws_a2hs') === 'no') return; } catch(e){}
-  a2hsShown = true;
-  setTimeout(() => { $('a2hs').classList.add('on'); document.body.classList.add('a2hsbar'); }, 1400);
-  track('a2hs_shown', {});
-}
-function hideHomeScreenBar(remember){
-  $('a2hs').classList.remove('on');
-  document.body.classList.remove('a2hsbar');
-  if (remember) { try { localStorage.setItem('ws_a2hs', 'no'); } catch(e){} }
-}
-$('a2hsNo').onclick = () => { hideHomeScreenBar(true); track('a2hs_dismissed', {}); };
-$('a2hsGo').onclick = async () => {
-  hideHomeScreenBar(false);
-  if (installPrompt) {
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
-    installPrompt = null;                              // the event is single-use
-    track('a2hs_result', { outcome });
-    if (outcome !== 'accepted') hideHomeScreenBar(true);
-    return;
-  }
-  $('instOv').classList.remove('hidden');              // iOS — show the Share → Add steps
-};
+// This used to slide a slim bar up from the bottom of the room. It has been
+// taken out: the install wall in /a2hs.js already stops every phone visitor
+// on the way in, and a second ask floating over the bottom of the screen was
+// covering the buttons people were reaching for. The 📲 Install app button on
+// the home screen is still there for anyone who wants to ask for it.
+function offerHomeScreen(){}
 
 
 // ---------- 👥 invite friends ----------
