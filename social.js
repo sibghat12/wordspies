@@ -147,6 +147,32 @@ function mount(app, redis) {
   const api = express.Router();
   api.use(express.json({ limit: '8kb' }));
 
+  // 🔁 Sliding sessions — stay logged in for as long as you keep coming back.
+  // The 90 days used to be counted from the moment you signed in and never
+  // moved, so someone who played every single day was still thrown out on day
+  // 90 for no reason. Now every visit pushes the expiry back to a full 90 days
+  // from today: you only ever get logged out after 90 days of real silence.
+  //
+  // Both halves have to move together — the cookie in the browser and the
+  // token record in Redis — otherwise one outlives the other and the session
+  // dies early anyway. We do it at most once a day per session (a cheap marker
+  // key with a 1-day TTL) so a chatty page doing twenty calls a minute doesn't
+  // rewrite the session twenty times a minute.
+  api.use(async (req, res, next) => {
+    try {
+      const t = cookies(req).soc_sess;
+      if (t && /^[a-f0-9]{48}$/.test(t) && !(await db.exists('soc:sessrf:' + t))) {
+        const uid = await db.get('soc:sess:' + t);
+        if (uid) {
+          await db.set('soc:sess:' + t, uid, SESS_TTL);   // no `expire` in the db shim — re-set to refresh
+          await db.set('soc:sessrf:' + t, '1', 60 * 60 * 24);
+          setSess(res, t);
+        }
+      }
+    } catch (e) { /* never let a refresh failure block the actual request */ }
+    next();
+  });
+
   api.get('/config', (req, res) => res.json({ google: GOOGLE_CLIENT_ID, giphy: process.env.SOC_GIPHY_KEY || null }));
 
   // suggestion for the "your city" field, from the visitor's IP
@@ -308,6 +334,101 @@ function mount(app, redis) {
       sendMail(u.email, subject, text).catch(e => console.error('notify mail:', e.message));
     } catch (e) { console.error('notify:', e.message); }
   }
+
+  // ---- 📣 web push ----------------------------------------------------------
+  // Real push, so a message or a new follower reaches you with the app shut.
+  //
+  // Two decisions worth explaining. First, the server makes its own VAPID
+  // keypair on first boot and keeps it in the database — the same idea as an
+  // SSH host key. Nobody has to generate one by hand or paste it into a config
+  // file, and it survives restarts because it's stored, not regenerated.
+  //
+  // Second, we send *payload-less* pushes. Encrypting a payload means pulling
+  // in a crypto dependency and getting aes128gcm exactly right; instead the
+  // push is an empty knock, and the service worker asks us what it was about.
+  // The wording never sits in a third party's queue, which is nicer anyway.
+  const b64u = b => Buffer.from(b).toString('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const VAPID_SUB = 'mailto:' + (process.env.SOC_MAIL_FROM || 'contact@wordspies.co.uk').replace(/^.*<|>.*$/g, '');
+  let VAPID = null;
+  async function vapidKeys() {
+    if (VAPID) return VAPID;
+    const raw = await db.get('soc:vapid');
+    if (raw) { VAPID = JSON.parse(raw); return VAPID; }
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+    const der = publicKey.export({ type: 'spki', format: 'der' });
+    VAPID = {
+      pub: b64u(der.subarray(der.length - 65)),          // the raw uncompressed point is the tail of the SPKI
+      priv: privateKey.export({ type: 'pkcs8', format: 'pem' })
+    };
+    await db.set('soc:vapid', JSON.stringify(VAPID));
+    return VAPID;
+  }
+  function vapidAuth(endpoint, v) {
+    const head = b64u(JSON.stringify({ typ: 'JWT', alg: 'ES256' }));
+    const body = b64u(JSON.stringify({
+      aud: new URL(endpoint).origin,
+      exp: Math.floor(Date.now() / 1000) + 12 * 3600,
+      sub: VAPID_SUB
+    }));
+    // push services want the raw r||s pair, not the DER wrapper Node defaults to
+    const sig = b64u(crypto.sign('sha256', Buffer.from(head + '.' + body),
+      { key: v.priv, dsaEncoding: 'ieee-p1363' }));
+    return `vapid t=${head}.${body}.${sig}, k=${v.pub}`;
+  }
+  async function sendPush(uid, kind, title, body, url) {
+    try {
+      const eps = await db.smembers('soc:push:' + uid);
+      if (!eps.length) return;
+      const v = await vapidKeys();
+      // what the knock was about — the worker collects this in a moment
+      await db.set('soc:pushq:' + uid, JSON.stringify({ kind, title, body, url }), 600);
+      for (const ep of eps) {
+        try {
+          const r = await fetch(ep, {
+            method: 'POST',
+            headers: { Authorization: vapidAuth(ep, v), TTL: '900', Urgency: 'normal' }
+          });
+          // the browser threw this subscription away — stop writing to it
+          if (r.status === 404 || r.status === 410) await db.srem('soc:push:' + uid, ep);
+          else if (!r.ok) console.error('push:', r.status, (await r.text()).slice(0, 120));
+        } catch (e) { console.error('push send:', e.message); }
+      }
+    } catch (e) { console.error('push:', e.message); }
+  }
+
+  api.get('/push/key', async (req, res) => {
+    try { res.json({ key: (await vapidKeys()).pub }); }
+    catch (e) { res.json({ key: null }); }
+  });
+  api.post('/push/subscribe', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      const ep = String((req.body || {}).endpoint || '');
+      if (!/^https:\/\/[^\s]{10,900}$/.test(ep)) return res.status(400).json({ error: 'Bad subscription.' });
+      await db.sadd('soc:push:' + u.id, ep);
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+  api.post('/push/unsubscribe', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      await db.srem('soc:push:' + u.id, String((req.body || {}).endpoint || ''));
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+  // the service worker calls this the instant a push lands, to find out what to say
+  api.get('/push/peek', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.json({ n: null });
+      const raw = await db.get('soc:pushq:' + u.id);
+      if (raw) await db.del('soc:pushq:' + u.id);
+      res.json({ n: raw ? JSON.parse(raw) : null });
+    } catch (e) { res.json({ n: null }); }
+  });
   api.post('/forgot', async (req, res) => {
     try {
       if (limited(req, 'fp', 4)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
@@ -493,7 +614,7 @@ function mount(app, redis) {
       for (const o of await db.smembers('soc:convos:' + u.id)) {
         unread += parseInt(await db.get('soc:unread:' + u.id + ':' + o)) || 0;
       }
-      res.json({ unread });
+      res.json({ unread, followers: await db.scard('soc:followers:' + u.id) });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
@@ -523,8 +644,11 @@ function mount(app, redis) {
       const already = await db.sismember('soc:followers:' + id, me.id);
       await db.sadd('soc:following:' + me.id, id);
       await db.sadd('soc:followers:' + id, me.id);
-      if (!already) notifyUser(id, 'follow', '🎉 ' + me.name + ' started following you on WordSpies',
-        `Hi!\n\n${me.name} just started following you on WordSpies Social.\n\nSee who's around: https://wordspies.co.uk/social\n\n— WordSpies`, false);
+      if (!already) {
+        notifyUser(id, 'follow', '🎉 ' + me.name + ' started following you on WordSpies',
+          `Hi!\n\n${me.name} just started following you on WordSpies Social.\n\nSee who's around: https://wordspies.co.uk/social\n\n— WordSpies`, false);
+        sendPush(id, 'follow', '👋 New follower', me.name + ' started following you', '/social');
+      }
       res.json({ ok: true, followers: await db.scard('soc:followers:' + id) });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -661,6 +785,10 @@ function mount(app, redis) {
       await db.incr('soc:unread:' + to + ':' + me.id);
       notifyUser(to, 'msg', '💬 New message from ' + me.name + ' on WordSpies',
         `Hi!\n\n${me.name} sent you a message on WordSpies Social.\n\nRead and reply here: https://wordspies.co.uk/social\n\n— WordSpies`, true);
+      if (!(await db.exists('soc:online:' + to)))   // they're looking at it right now — no need to buzz
+        sendPush(to, 'msg', '💬 ' + me.name,
+          kind === 'text' ? text.slice(0, 120) : (kind === 'gif' ? 'Sent a GIF' : 'Sent you something'),
+          '/social#chat=' + me.id);
       res.json({ ok: true, msg });
     } catch (e) { console.error('social message:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
