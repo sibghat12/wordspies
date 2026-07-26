@@ -262,6 +262,7 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="/watch.js"></script>
 <script>
 (function(){
 const $ = id => document.getElementById(id);
@@ -304,10 +305,14 @@ function connect(){
   socket = io('/meld');
   socket.on('state', st => { S = st; render(); });
   socket.on('seated', d => { myId = d.you; history.replaceState(null, '', '/meld?room=' + d.code); });
+  watchWire(socket, render);
   socket.on('err', d => flash(d && d.msg));
   socket.on('disconnect', () => { const w = $('waitTxt'); if (w) w.textContent = 'Reconnecting…'; });
   return socket;
 }
+// Arriving on a ?watch= link: open the socket straight away, because there is
+// no button to press on the way in — looking in IS the whole visit.
+if (WATCH_CODE) connect();
 
 function flash(msg){
   if (!msg) return;
@@ -429,6 +434,7 @@ function render(){
   // it hanging over the next round.
   const key = S.state + ':' + S.round;
   if (key !== lastKey) { lastKey = key; clearTimeout(flash.t); show($('playErr'), false); show($('homeErr'), false); }
+  watchEyes(S.watchers);
   show($('home'), false);
   show($('lobby'), S.state === 'lobby');
   show($('play'), S.state === 'playing');
