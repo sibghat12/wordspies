@@ -493,11 +493,17 @@ function mount(app, io, opts) {
   // lock. `W` is a holder rather than a plain variable only so the shared
   // helper can write into each connection's own closure.
   const spectate = (socket, table, pub, broad, W, seated) => {
-    socket.on('watch', (data) => {
+    socket.on('watch', async (data) => {
       if (W.r || seated()) return;
       const r = table.get(String((data && data.code) || '').trim().toUpperCase());
       if (!r) { socket.emit('err', { msg: 'That game has already finished.' }); return; }
-      (r.watchers || (r.watchers = new Set())).add(socket.id);
+      // Know who's looking before we list them: wait for the identity lookup,
+      // then re-check — the socket may have taken a seat while we waited.
+      await socket.ready;
+      if (W.r || seated()) return;
+      const p = socket.profile;
+      (r.watchers || (r.watchers = new Map()))
+        .set(socket.id, p && p.uid ? { uid: p.uid, name: p.name, photo: p.photo } : null);
       W.r = r;
       socket.join(r.code);
       socket.emit('watching', { code: r.code });
@@ -531,6 +537,11 @@ function mount(app, io, opts) {
     });
   };
   const eyes = (r) => (r.watchers ? r.watchers.size : 0);
+  // Who those eyes belong to. Signed-in watchers show as themselves so the
+  // players can follow them back; everyone else is just an anonymous spy.
+  const crowd = (r) => (r.watchers
+    ? [...r.watchers.values()].map(w => (w && w.uid ? { uid: w.uid, name: w.name, photo: w.photo } : null))
+    : []);
 
   // Identity is borrowed, not reimplemented: signed-in players get seated
   // under their own name and photo, guests type a name and play anyway.
@@ -562,7 +573,7 @@ function mount(app, io, opts) {
       tokens: r.tokens,
       turn: r.turn, dice: r.dice, rolled: r.rolled,
       moves: r.moves, last: r.last, winner: r.winner,
-      order: r.order, hostId: r.hostId, watchers: eyes(r)
+      order: r.order, hostId: r.hostId, watchers: eyes(r), crowd: crowd(r)
     };
   }
 
@@ -815,7 +826,7 @@ function mount(app, io, opts) {
         const p = id ? r.players.get(id) : null;
         return { seat: i, id: id || null, name: p ? p.name : null, photo: p ? (p.photo || null) : null, bot: p ? !!p.bot : false, connected: p ? !!p.connected : false };
       }),
-      hostId: r.hostId, watchers: eyes(r)
+      hostId: r.hostId, watchers: eyes(r), crowd: crowd(r)
     };
   }
   const fbroad = (r) => { r.touched = Date.now(); fnsp.to(r.code).emit('state', fourPublic(r)); };
@@ -976,7 +987,7 @@ function mount(app, io, opts) {
         const p = id ? r.players.get(id) : null;
         return { seat: i, id: id || null, name: p ? p.name : null, photo: p ? (p.photo || null) : null, bot: p ? !!p.bot : false, connected: p ? !!p.connected : false };
       }),
-      hostId: r.hostId, watchers: eyes(r)
+      hostId: r.hostId, watchers: eyes(r), crowd: crowd(r)
     };
   }
   const pbroad = (r) => { r.touched = Date.now(); pnsp.to(r.code).emit('state', poolPublic(r)); };
