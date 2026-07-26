@@ -36,7 +36,7 @@ function page() {
   return `<!DOCTYPE html>
 <html lang="en"><head>
 ${GA}
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>WordSpies — Play a Free Codenames-Style Word Game Online With Friends</title>
 <meta name="description" content="WordSpies is a free online Codenames-style word game. Create a room in seconds, share a 4-letter code, and play with 4–10+ friends on any phone or laptop. No sign-up, no download.">
 <meta name="keywords" content="codenames online, codenames game, free codenames, word game online, play codenames with friends, online party game, codenames style game, spymaster game, word guessing game">
@@ -173,6 +173,19 @@ cursor:pointer;opacity:0;animation:tilein .5s var(--spring) both;transition:tran
 details{background:#fff;border-radius:16px;padding:18px 22px;box-shadow:var(--sh);margin-bottom:12px}
 summary{font-weight:700;font-size:16px;cursor:pointer}
 details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;line-height:1.65}
+/* the arcade strip in the hero — the fastest possible answer to "what else
+   is here": four more games, each one tap away */
+.arcstrip{margin-top:22px;display:flex;flex-wrap:wrap;gap:9px}
+@media(max-width:860px){.arcstrip{justify-content:center}}
+.arcstrip a{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid rgba(35,41,70,.1);
+  border-radius:999px;padding:9px 15px;font-size:13.5px;font-weight:700;color:var(--ink);text-decoration:none;
+  box-shadow:var(--sh);transition:transform .16s var(--spring)}
+.arcstrip a:hover{transform:translateY(-2px)}
+.arcstrip .lbl{font-size:12px;font-weight:600;color:var(--muted);width:100%;margin-bottom:-2px}
+@media(max-width:860px){.arcstrip .lbl{text-align:center}}
+/* game cards */
+.gamecard{display:block;text-decoration:none;color:var(--ink)}
+.gamecard .ico{font-size:34px;margin-bottom:12px}
 /* cta band */
 footer{padding:36px 0 44px;text-align:center;color:var(--muted);font-size:13.5px;font-weight:500;line-height:2}
 footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
@@ -183,7 +196,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
     <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
     <div class="navlinks">
       <a class="hideSm" href="/#how">How to play</a>
-      <a class="hideSm" href="/about">About</a>
+      <a href="/games">Games</a>
       <a href="/social">Social</a>
       <a href="/blog">Blog</a>
       <a class="btn small" href="/play">▶ Play Codenames</a>
@@ -201,6 +214,13 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
       <div class="playersrow">
         <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>
         <div class="cap"><b>Friends & families</b> play WordSpies<br>at game nights and on video calls.</div>
+      </div>
+      <div class="arcstrip">
+        <span class="lbl">Only two of you? Or on your own? There's more:</span>
+        <a href="/ludo">🎲 Ludo</a>
+        <a href="/pool">🎱 8-Ball Pool</a>
+        <a href="/four">🔴 Connect 4</a>
+        <a href="/meld">🧠 Mind Meld</a>
       </div>
     </div>
     <div class="demo" aria-hidden="true">${demoTiles}</div>
@@ -224,6 +244,21 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
     <div class="step"><div class="n">1</div><h3>Create &amp; invite</h3><p>Start a room and share the 4-letter code or invite link. Friends join instantly from their phones.</p></div>
     <div class="step"><div class="n">2</div><h3>Clue &amp; guess</h3><p>Spymasters give one-word clues like "OCEAN · 2". Teammates debate, then tap the words they think match.</p></div>
     <div class="step"><div class="n">3</div><h3>Dodge the assassin</h3><p>Find all your team's words first to win — but tap the hidden assassin word and you lose instantly. 💀</p></div>
+  </div>
+</div></div>
+
+<div class="band white"><div class="wrap">
+  <h2 class="sec-h">One link, a whole game night</h2>
+  <p class="sec-sub">WordSpies is the main event — but the table has more on it, whether you're alone, two of you, or a full house.</p>
+  <div class="grid3">
+    <a class="card gamecard" href="/ludo"><div class="ico">🎲</div><h3>Ludo — 2 to 4 players</h3><p>The board race everyone grew up with. Play friends with a shared link, and bots fill any empty seat — so even one person gets a full four-way game.</p></a>
+    <a class="card gamecard" href="/pool"><div class="ico">🎱</div><h3>8-Ball Pool — 1 or 2</h3><p>Real physics on a shared table. Pot your balls, then the 8 — against a friend, or a bot that occasionally misses just like your friends do.</p></a>
+    <a class="card gamecard" href="/four"><div class="ico">🔴</div><h3>Connect 4 &amp; Mind Meld</h3><p>Connect 4 in thirty-second rounds against a friend or the bot — and Mind Meld, the two-player game where you try to type the same word at the same moment.</p></a>
+  </div>
+  <div class="grid3" style="margin-top:18px">
+    <div class="card"><div class="ico">👥</div><h3>A community, not just a lobby</h3><p>Make a profile, follow the people you play with, and chat between games. Your name and photo follow you into every game on the site.</p></div>
+    <div class="card"><div class="ico">💬</div><h3>Chat & invitations</h3><p>Message friends directly, invite them to a room with one link, and get a push notification the moment someone wants a rematch.</p></div>
+    <div class="card"><div class="ico">📲</div><h3>Lives on your home screen</h3><p>Add WordSpies to your phone in one tap — it opens full-screen like a real app and your friends' invites reach you even when the site is closed.</p></div>
   </div>
 </div></div>
 
@@ -260,7 +295,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 </div></div>
 
 <div class="wrap"><footer>
-  <a href="/play">Play</a> · <a href="/social">Social</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
+  <a href="/play">Play</a> · <a href="/games">Games</a> · <a href="/social">Social</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
   © 2026 WordSpies. All rights reserved.
 </footer></div>
 <script>
