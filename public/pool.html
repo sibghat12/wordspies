@@ -13,15 +13,16 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
+  --edge:#e6e6ef; --accent-d:#c33d55;
   --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
   --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33;
   --felt:#2e8b57; --rail:#5d3a1a;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+body{font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
   -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
   padding:0 14px calc(28px + env(safe-area-inset-bottom))}
 .wrap{width:100%;max-width:640px;flex:1;display:flex;flex-direction:column}
@@ -71,6 +72,49 @@ canvas{display:block;width:100%;height:auto;border-radius:8px}
 .aimrow button{min-height:46px;padding:0 22px;width:auto}
 .statusln{text-align:center;font-size:13.4px;font-weight:600;margin:12px 0 2px;min-height:20px}
 .bigword{font-size:32px;font-weight:800;letter-spacing:-1px;text-align:center;margin:12px 0 4px}
+
+/* ── the block kit ────────────────────────────────────────────────────────
+   One toy-brick look across the whole arcade. Cards and buttons sit on a
+   solid edge rather than a soft shadow, so they read as objects you can
+   press down, and the type is one pair everywhere: Fredoka for anything you
+   take in at a glance, Nunito for everything you actually read. */
+h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:-.3px}
+h1{font-size:28px;line-height:1.13}
+header{gap:8px;flex-wrap:nowrap}
+header .logo{font-family:'Fredoka',system-ui,sans-serif;font-size:17px;font-weight:600;
+  letter-spacing:-.2px;white-space:nowrap;flex:none}
+/* two side-links plus a wordmark is a squeeze on a small phone — let the
+   links give up the width rather than the name of the game */
+@media (max-width:430px){
+  header .logo{font-size:15.5px}
+  .tinylink{font-size:11.8px;padding:7px 10px}
+}
+p.lede{font-size:14.5px;font-weight:500;line-height:1.6}
+
+.card{border:2px solid var(--edge);border-radius:24px;
+  box-shadow:0 5px 0 var(--edge),0 14px 28px rgba(22,24,31,.055)}
+
+.btn{border-radius:18px;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:16.5px;
+  letter-spacing:.1px;box-shadow:0 4px 0 rgba(9,10,16,.28);
+  transition:transform .09s ease,box-shadow .09s ease,filter .12s}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 rgba(9,10,16,.28)}
+.btn-dark{box-shadow:0 4px 0 #000}
+.btn-accent{box-shadow:0 4px 0 var(--accent-d)}
+.btn-line{border:2px solid var(--edge);box-shadow:0 4px 0 var(--edge)}
+.btn-line:active:not(:disabled){box-shadow:0 0 0 var(--edge)}
+.btn:disabled{box-shadow:0 4px 0 rgba(9,10,16,.12)}
+
+input[type=text]{border:2px solid var(--edge);border-radius:16px;font-size:16px;font-weight:600}
+input[type=text]::placeholder{font-weight:500}
+
+.tinylink{border:2px solid var(--edge);font-weight:700;box-shadow:0 3px 0 var(--edge);
+  transition:transform .09s ease,box-shadow .09s ease}
+.tinylink:active{transform:translateY(3px);box-shadow:0 0 0 var(--edge)}
+
+.seat,.lseat{border-width:2px;border-radius:16px}
+.codebox{border:2.5px dashed #dcdce8;border-radius:20px}
+.codebox .code{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:7px}
+label.fl{font-weight:800}
 </style>
 </head>
 <body>
@@ -147,6 +191,9 @@ const COLORS = {1:'#f5b52e',2:'#3b6fe0',3:'#e8506b',4:'#7a4fd4',5:'#f07e26',6:'#
                 9:'#f5b52e',10:'#3b6fe0',11:'#e8506b',12:'#7a4fd4',13:'#f07e26',14:'#22a06b',15:'#a33a3a'};
 
 let socket = null, S = null, myId = null, ME = null;
+// Am I this person? Only if I actually have an id — an empty seat is null,
+// and null === null would seat every spectator by accident.
+const isMe = (id) => !!myId && id === myId;
 let aim = Math.PI, anim = null, dragging = false, placing = false;
 
 fetch('/api/social/me').then(r => r.json()).then(d => {
@@ -215,7 +262,7 @@ if (pre) {
 }
 
 const cv = $('cv'), cx = cv.getContext('2d');
-const meIdx = () => S ? S.seats.findIndex(s => s.id === myId) : -1;
+const meIdx = () => S ? S.seats.findIndex(s => isMe(s.id)) : -1;
 const myTurn = () => S && meIdx() + 1 === S.turn;
 
 // ── sizing ───────────────────────────────────────────────────────────────
@@ -342,7 +389,7 @@ addEventListener('touchend', () => { dragging = false; placing = false; });
 
 function render() {
   if (!S) return;
-  const seated = S.seats.some(s => s.id === myId);
+  const seated = S.seats.some(s => isMe(s.id));
   const playing = S.state === 'playing' || S.state === 'over';
   const eyeing = isWatching();
   watchEyes(S.watchers);
@@ -355,7 +402,7 @@ function render() {
   sizeCanvas();
 
   $('seats').innerHTML = S.seats.map((s, i) => {
-    const nm = s.name ? (s.id === myId ? s.name + ' (you)' : s.name) : '…';
+    const nm = s.name ? (isMe(s.id) ? s.name + ' (you)' : s.name) : '…';
     const g = S.groups[i] ? (S.groups[i] === 'solid' ? '● solids' : '◐ stripes') : '';
     const cls = S.state === 'playing' && S.turn === i + 1 ? 'seat turn' : 'seat';
     return '<div class="' + cls + '"><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span><span class="grp">' + g + ' &nbsp;' + S.scores[i] + '</span></div>';
