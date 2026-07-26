@@ -1,1 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Ludo — WordSpies Games</title>
+<meta name="description" content="Ludo online — play with 2 to 4 friends using a shared link, or fill the empty seats with bots. Roll, race, and send each other home.">
+<meta name="theme-color" content="#fafafa">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33;
+  --lred:#e8506b; --lgreen:#27ae60; --lyellow:#f5b52e; --lblue:#3b6fe0;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
+  padding:0 14px calc(28px + env(safe-area-inset-bottom))}
+.wrap{width:100%;max-width:560px;flex:1;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:16px 0 14px}
+header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px}
+header .sp{flex:1}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+h1{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1.15}
+p.lede{font-size:14px;color:var(--sub);line-height:1.62;margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:0;
+  border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:-.2px}
+.btn:disabled{opacity:.42;cursor:default}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn-accent{background:var(--accent);color:#fff}
+.row{display:flex;gap:10px}
+.row .btn{width:auto;flex:1}
+input[type=text]{width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;
+  font-family:inherit;font-size:15px;padding:0 16px;color:var(--ink);outline:none}
+input[type=text]:focus{border-color:#c9c4f4}
+label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin:16px 0 7px}
+.err{font-size:12.8px;color:var(--err);margin-top:10px;font-weight:500}
+.hidden{display:none !important}
+.mut{font-size:12.5px;color:var(--faint);margin-top:12px;text-align:center;line-height:1.6}
+.center{text-align:center}
+.codebox{border:2px dashed #d8d4f6;border-radius:16px;padding:18px;text-align:center;margin:16px 0}
+.codebox .code{font-size:34px;font-weight:800;letter-spacing:8px}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.waitdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse 1.3s infinite}
 
+/* lobby seats */
+.lseat{display:flex;align-items:center;gap:11px;border:1.5px solid var(--line);border-radius:14px;padding:11px 14px;margin-top:9px}
+.lseat .cdot{flex:none;width:16px;height:16px;border-radius:50%}
+.lseat .nm{font-size:13.6px;font-weight:600;flex:1}
+.lseat .x{font-size:12px;color:var(--faint);cursor:pointer;padding:4px 8px}
+.lseat.empty{border-style:dashed;color:var(--faint)}
+.lseat.empty .nm{font-weight:500;font-size:12.8px}
+.addbot{font-size:12.5px;font-weight:600;color:#5b4fd4;cursor:pointer;white-space:nowrap}
+
+/* the board — a 15×15 grid drawn with positioned divs */
+.board{position:relative;width:100%;aspect-ratio:1;background:#fff;border-radius:16px;overflow:hidden;
+  box-shadow:0 12px 30px rgba(20,23,42,.12);border:1px solid var(--line)}
+.bcell{position:absolute;width:6.6667%;height:6.6667%;border:0.5px solid #e7e7ea}
+.bzone{position:absolute;border-radius:0}
+.tok{position:absolute;width:5.4%;height:5.4%;border-radius:50%;border:2.5px solid #fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.28);transition:left .45s cubic-bezier(.3,.8,.4,1),top .45s cubic-bezier(.3,.8,.4,1);
+  z-index:5;cursor:default}
+.tok.mv{cursor:pointer;animation:hop .8s infinite;z-index:7}
+@keyframes hop{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+.seatsbar{display:flex;gap:8px;margin-bottom:12px}
+.sseat{flex:1;display:flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:7px 9px;min-width:0;transition:border-color .2s}
+.sseat.turn{border-color:var(--ink);box-shadow:0 3px 10px rgba(20,23,42,.09)}
+.sseat .cdot{flex:none;width:12px;height:12px;border-radius:50%}
+.sseat .nm{font-size:11.6px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sseat .hm{margin-left:auto;font-size:11px;font-weight:800;color:var(--sub)}
+.dicebar{display:flex;align-items:center;gap:12px;margin-top:14px}
+.die{flex:none;width:54px;height:54px;border-radius:14px;background:#fff;border:2px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800}
+.die.rolling{animation:shake .5s infinite}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.dicebar .btn{flex:1;min-height:54px}
+.statusln{text-align:center;font-size:13.4px;font-weight:600;margin:12px 0 2px;min-height:20px}
+.bigword{font-size:32px;font-weight:800;letter-spacing:-1px;text-align:center;margin:12px 0 4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🎲 Ludo</div>
+    <div class="sp"></div>
+    <a class="tinylink" href="/games">🎮 All games</a>
+  </header>
+
+  <!-- home -->
+  <div id="home">
+    <div class="card">
+      <h1>The board game everyone already knows.</h1>
+      <p class="lede">Roll a six to get out, race your four tokens round the board, and land on your friends to send them home. Two to four players — invite friends with a link, and bots happily take any empty seat.</p>
+      <div id="nameBox">
+        <label class="fl" for="nameIn">Your name</label>
+        <input type="text" id="nameIn" maxlength="18" placeholder="e.g. Ayoub" autocomplete="off">
+      </div>
+      <div id="meRow" class="hidden" style="display:flex;align-items:center;gap:10px;margin-top:16px">
+        <img id="meImg" style="width:34px;height:34px;border-radius:50%;object-fit:cover" alt="">
+        <span style="font-size:13.5px;font-weight:600">Playing as <span id="meNm"></span></span>
+      </div>
+      <label class="fl">New table</label>
+      <button class="btn btn-accent" id="createBtn">Start a game</button>
+      <div class="row" style="margin-top:10px">
+        <input type="text" id="codeIn" maxlength="4" placeholder="CODE" style="flex:1;text-transform:uppercase;text-align:center;letter-spacing:4px;font-weight:700">
+        <button class="btn btn-line" id="joinBtn" style="flex:1.6">Join</button>
+      </div>
+      <div class="err hidden" id="homeErr"></div>
+    </div>
+    <p class="mut">On your own? Start a game and add three bots — it’s a real match, and the bots take no prisoners.</p>
+  </div>
+
+  <!-- lobby -->
+  <div id="lobby" class="hidden">
+    <div class="card">
+      <h2 style="font-size:17px;font-weight:700" class="center">Who’s playing?</h2>
+      <div class="codebox"><div style="font-size:11.5px;font-weight:700;letter-spacing:.09em;color:var(--faint);text-transform:uppercase;margin-bottom:6px">Room code</div><div class="code" id="lobbyCode"></div></div>
+      <div id="lobbySeats"></div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn btn-line" id="shareBtn">📤 Invite</button>
+        <button class="btn btn-dark" id="startBtn">Start</button>
+      </div>
+      <div class="err hidden" id="lobbyErr"></div>
+      <p class="mut" id="lobbyHint"></p>
+    </div>
+  </div>
+
+  <!-- the game -->
+  <div id="play" class="hidden">
+    <div class="seatsbar" id="seatsBar"></div>
+    <div class="board" id="board"></div>
+    <div class="dicebar">
+      <div class="die" id="die">🎲</div>
+      <button class="btn btn-dark" id="rollBtn">Roll</button>
+    </div>
+    <div class="statusln" id="statusLn"></div>
+    <div class="err hidden center" id="playErr"></div>
+    <div id="overRow" class="hidden">
+      <div class="bigword" id="overTxt"></div>
+      <div class="center" style="font-size:13px;color:var(--sub);margin-bottom:14px" id="overSub"></div>
+      <button class="btn btn-dark" id="againBtn">Play again</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const show = (el, on) => el.classList.toggle('hidden', !on);
+
+// The exact same geometry the server uses — position p is steps from your own
+// start, and these tables turn p into a square on the 15×15 board.
+const TRACK = [[6,1],[6,2],[6,3],[6,4],[6,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[6,9],[6,10],[6,11],[6,12],[6,13],[6,14],[7,14],[8,14],[8,13],[8,12],[8,11],[8,10],[8,9],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[13,6],[12,6],[11,6],[10,6],[9,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0]];
+const STARTS = [0, 13, 26, 39];
+const HOMERUN = [[[7,1],[7,2],[7,3],[7,4],[7,5]],[[1,7],[2,7],[3,7],[4,7],[5,7]],[[7,13],[7,12],[7,11],[7,10],[7,9]],[[13,7],[12,7],[11,7],[10,7],[9,7]]];
+const BASE = [[[1,1],[1,4],[4,1],[4,4]],[[1,10],[1,13],[4,10],[4,13]],[[10,10],[10,13],[13,10],[13,13]],[[10,1],[10,4],[13,1],[13,4]]];
+const SAFE = new Set([0,13,26,39,8,21,34,47]);
+const CSSC = ['var(--lred)','var(--lgreen)','var(--lyellow)','var(--lblue)'];
+const SOFT = ['#fdeef1','#e9f7ef','#fef6e3','#eaf0fd'];
+const LBL = ['Red','Green','Yellow','Blue'];
+
+let socket = null, S = null, myId = null, ME = null, mySeat = -1;
+
+fetch('/api/social/me').then(r => r.json()).then(d => {
+  if (d && d.me) {
+    ME = d.me;
+    show($('nameBox'), false); show($('meRow'), true);
+    $('meNm').textContent = ME.name;
+    if (ME.photo) $('meImg').src = ME.photo; else $('meImg').style.display = 'none';
+    if (AUTOGO && pre) conn().emit('join', { code: pre.toUpperCase(), name: ME.name });
+  }
+}).catch(() => {});
+
+function conn() {
+  if (socket) return socket;
+  socket = io('/ludo');
+  socket.on('state', st => { S = st; render(); });
+  socket.on('seated', d => { myId = d.you; mySeat = d.seat; history.replaceState(null, '', '/ludo?room=' + d.code); });
+  socket.on('err', d => flash(d.msg));
+  return socket;
+}
+let flashT = null;
+function flash(msg) {
+  const el = !$('play').classList.contains('hidden') ? $('playErr')
+           : !$('lobby').classList.contains('hidden') ? $('lobbyErr') : $('homeErr');
+  el.textContent = msg; show(el, true);
+  clearTimeout(flashT); flashT = setTimeout(() => show(el, false), 3200);
+}
+const myName = () => (ME && ME.name) || $('nameIn').value.trim();
+function needName() { if (!myName()) { flash('Type your name first.'); return true; } return false; }
+
+$('createBtn').onclick = () => { if (needName()) return; conn().emit('create', { name: myName() }, () => {}); };
+$('joinBtn').onclick = () => {
+  if (needName()) return;
+  const code = $('codeIn').value.trim().toUpperCase();
+  if (code.length !== 4) return flash('The code is 4 letters.');
+  conn().emit('join', { code, name: myName() });
+};
+$('shareBtn').onclick = () => {
+  const url = location.origin + '/ludo?room=' + S.code;
+  if (navigator.share) navigator.share({ title: 'Ludo', text: 'Ludo — grab a seat at my table. One tap, no signup.', url }).catch(() => {});
+  else navigator.clipboard.writeText(url).then(() => flash('Link copied.'));
+};
+$('startBtn').onclick = () => socket.emit('start');
+$('rollBtn').onclick = () => socket.emit('roll');
+$('againBtn').onclick = () => socket.emit('rematch');
+
+const AUTOGO = new URLSearchParams(location.search).get('go') === '1';
+const pre = new URLSearchParams(location.search).get('room');
+if (pre) {
+  $('codeIn').value = pre.toUpperCase();
+  fetch('/api/ludo/' + pre.toUpperCase()).then(r => r.json()).then(d => {
+    if (d.exists && d.host) $('joinBtn').textContent = 'Join ' + d.host;
+    if (!d.exists) flash('No game with that code. It may have finished.');
+  }).catch(() => {});
+}
+
+// ── the board, drawn once ────────────────────────────────────────────────
+const board = $('board');
+const CELL = 100 / 15;
+const pos = (r, c) => 'left:' + (c * CELL) + '%;top:' + (r * CELL) + '%;';
+(function buildBoard() {
+  let html = '';
+  // the four base quarters
+  const quads = [[0,0],[0,9],[9,9],[9,0]];
+  quads.forEach(([r, c], i) => {
+    html += '<div class="bzone" style="' + pos(r, c) + 'width:' + (6 * CELL) + '%;height:' + (6 * CELL) + '%;background:' + SOFT[i] + ';border-radius:18px"></div>';
+  });
+  // center home
+  html += '<div class="bzone" style="' + pos(6, 6) + 'width:' + (3 * CELL) + '%;height:' + (3 * CELL) + '%;background:#f2f0fb;display:flex;align-items:center;justify-content:center;font-size:20px">🏠</div>';
+  // track cells
+  TRACK.forEach(([r, c], i) => {
+    let bg = '#fff', extra = '';
+    const startSeat = STARTS.indexOf(i);
+    if (startSeat >= 0) bg = SOFT[startSeat];
+    if (SAFE.has(i) && startSeat < 0) extra = 'display:flex;align-items:center;justify-content:center;font-size:9px;color:#c8c5da;';
+    html += '<div class="bcell" style="' + pos(r, c) + 'background:' + bg + ';' + extra + '">' + (extra ? '★' : '') + '</div>';
+  });
+  // home runs
+  HOMERUN.forEach((cells, s) => {
+    cells.forEach(([r, c]) => {
+      html += '<div class="bcell" style="' + pos(r, c) + 'background:' + SOFT[s] + '"></div>';
+    });
+  });
+  // base circles where waiting tokens sit
+  BASE.forEach((cells, s) => {
+    cells.forEach(([r, c]) => {
+      html += '<div class="bcell" style="' + pos(r, c) + 'border-radius:50%;background:#fff;border:1.5px solid ' + '#e2dff2' + '"></div>';
+    });
+  });
+  board.innerHTML = html;
+  // 16 tokens on top
+  for (let s = 0; s < 4; s++) for (let t = 0; t < 4; t++) {
+    const d = document.createElement('div');
+    d.className = 'tok'; d.id = 'tok' + s + t;
+    d.style.background = CSSC[s];
+    d.onclick = () => {
+      if (!S || S.state !== 'playing') return;
+      if (S.seats[S.turn] && S.seats[S.turn].id === myId && S.moves.some(m => m.token === t) && S.turn === s) {
+        socket.emit('move', { token: t });
+      }
+    };
+    board.appendChild(d);
+  }
+})();
+
+// Where does seat s's token at position p sit on the board?
+function cellOf(s, p, t) {
+  if (p === -1) return BASE[s][t];
+  if (p <= 50) return TRACK[(STARTS[s] + p) % 52];
+  if (p <= 55) return HOMERUN[s][p - 51];
+  return [7, 7];                                  // home — the middle
+}
+
+function render() {
+  if (!S) return;
+  const seated = S.seats.some(x => x.id === myId);
+  show($('home'), !seated);
+  show($('lobby'), seated && S.state === 'lobby');
+  show($('play'), seated && (S.state === 'playing' || S.state === 'over'));
+
+  if (seated && S.state === 'lobby') {
+    $('lobbyCode').textContent = S.code;
+    const iAmHost = S.hostId === myId;
+    $('lobbySeats').innerHTML = S.seats.slice(0, S.cap).map(s => {
+      if (!s.id) return '<div class="lseat empty"><span class="cdot" style="background:' + CSSC[s.seat] + ';opacity:.35"></span><span class="nm">Empty seat — share the link' + (iAmHost ? ', or <span class="addbot" onclick="socket.emit(\'addBot\')">add a bot 🤖</span>' : '') + '</span></div>';
+      const nm = s.id === myId ? s.name + ' (you)' : s.name;
+      const kick = s.bot && iAmHost ? '<span class="x" onclick="socket.emit(\'kickBot\',{seat:' + s.seat + '})">✕</span>' : '';
+      return '<div class="lseat"><span class="cdot" style="background:' + CSSC[s.seat] + '"></span><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span>' + kick + '</div>';
+    }).join('');
+    $('startBtn').disabled = !iAmHost;
+    $('lobbyHint').textContent = iAmHost
+      ? 'Start when everyone’s in. Bots fill any seat you leave empty.'
+      : 'Waiting for ' + (S.seats.find(x => x.id === S.hostId) || {}).name + ' to start the game…';
+    return;
+  }
+  if (!seated || S.state === 'lobby') return;
+
+  // seat bar
+  $('seatsBar').innerHTML = S.seats.filter(s => s.id).map(s => {
+    const cls = S.state === 'playing' && S.turn === s.seat ? 'sseat turn' : 'sseat';
+    const nm = s.id === myId ? 'You' : s.name;
+    return '<div class="' + cls + '"><span class="cdot" style="background:' + CSSC[s.seat] + '"></span><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span><span class="hm">' + s.home + '/4</span></div>';
+  }).join('');
+
+  // tokens
+  const stacks = {};
+  for (let s = 0; s < 4; s++) for (let t = 0; t < 4; t++) {
+    const el = $('tok' + s + t);
+    if (!S.seats[s] || !S.seats[s].id) { el.style.display = 'none'; continue; }
+    el.style.display = '';
+    const p = S.tokens[s][t];
+    const [r, c] = cellOf(s, p, t);
+    const key = r + ':' + c;
+    const n = stacks[key] || 0; stacks[key] = n + 1;
+    const off = n * 1.1;                          // stacked tokens fan out slightly
+    el.style.left = (c * CELL + 0.65 + off) + '%';
+    el.style.top = (r * CELL + 0.65 - off) + '%';
+    const mine = S.state === 'playing' && S.turn === s && S.seats[s].id === myId;
+    el.classList.toggle('mv', mine && S.rolled && S.moves.some(m => m.token === t));
+  }
+
+  // dice + status
+  const turnSeat = S.seats[S.turn];
+  const myTurn = turnSeat && turnSeat.id === myId;
+  $('die').textContent = S.rolled && S.dice ? ['','⚀','⚁','⚂','⚃','⚄','⚅'][S.dice] : '🎲';
+  $('die').classList.toggle('rolling', S.state === 'playing' && !S.rolled && myTurn);
+  $('rollBtn').disabled = !(S.state === 'playing' && myTurn && !S.rolled);
+
+  if (S.state === 'playing') {
+    show($('overRow'), false);
+    if (myTurn && !S.rolled) $('statusLn').textContent = 'Your turn — roll!';
+    else if (myTurn && S.moves.length) $('statusLn').textContent = 'You rolled a ' + S.dice + ' — tap a bouncing token.';
+    else if (myTurn) $('statusLn').textContent = 'Rolled a ' + S.dice + ' — nothing can move. Unlucky.';
+    else if (S.last && S.last.none) $('statusLn').innerHTML = '<span class="waitdot"></span>' + esc(turnSeat ? turnSeat.name : '') + '’s turn…';
+    else $('statusLn').innerHTML = '<span class="waitdot"></span>' + esc(turnSeat ? turnSeat.name : '') + (S.rolled ? ' rolled a ' + S.dice + '…' : ' is rolling…');
+    if (S.last && S.last.captured && S.last.captured.length && !S._saidCap) {
+      S._saidCap = true;
+      flash(LBL[S.last.seat] + ' sent ' + LBL[S.last.captured[0].seat] + ' home! 💥');
+    }
+  } else if (S.state === 'over') {
+    show($('overRow'), true);
+    const w = S.seats[S.winner];
+    const iWon = w && w.id === myId;
+    $('overTxt').textContent = iWon ? 'You win! 🎉' : (w ? esc(w.name) + ' wins.' : 'Game over.');
+    $('overSub').textContent = iWon ? 'All four home first. Champion of the table.' : 'All four home. Demand a rematch.';
+    $('statusLn').textContent = '';
+  }
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+</script>
+<script src="/a2hs.js" defer></script>
+</body>
+</html>
