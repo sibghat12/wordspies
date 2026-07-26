@@ -110,6 +110,7 @@ canvas{display:block;width:100%;border-radius:8px}
       <div class="codebox"><div style="font-size:11.5px;font-weight:700;letter-spacing:.09em;color:var(--faint);text-transform:uppercase;margin-bottom:6px">Room code</div><div class="code" id="lobbyCode"></div></div>
       <button class="btn btn-dark" id="shareBtn">📤 Send the link</button>
       <button class="btn btn-line" id="copyBtn" style="margin-top:10px">Copy link</button>
+      <div id="friendRow" class="hidden"></div>
       <p class="mut"><span class="waitdot"></span>Waiting for your friend — or <a href="#" id="lobbyBot">play the bot instead</a></p>
     </div>
   </div>
@@ -329,5 +330,7 @@ function render() {
 function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
 </script>
 <script src="/a2hs.js" defer></script>
+<script>window.WS_GAME = { slug: 'pool', label: '🎱 8-Ball Pool' };</script>
+<script src="/invite.js" defer></script>
 </body>
 </html>
