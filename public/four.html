@@ -1,1 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Connect 4 — WordSpies Games</title>
+<meta name="description" content="Connect 4 online — play a friend with a shared link, or take on the bot. Four in a row wins.">
+<meta name="theme-color" content="#fafafa">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33;
+  --p1:#e8506b; --p2:#f5b52e; --board:#3b4a9f;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
+  padding:0 16px calc(28px + env(safe-area-inset-bottom))}
+.wrap{width:100%;max-width:520px;flex:1;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:16px 0 14px}
+header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px}
+header .sp{flex:1}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+.card+.card{margin-top:14px}
+h1{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1.15}
+p.lede{font-size:14px;color:var(--sub);line-height:1.62;margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:0;
+  border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:-.2px}
+.btn:disabled{opacity:.42;cursor:default}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn-accent{background:var(--accent);color:#fff}
+.row{display:flex;gap:10px}
+.row .btn{width:auto;flex:1}
+input[type=text]{width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;
+  font-family:inherit;font-size:15px;padding:0 16px;color:var(--ink);outline:none}
+input[type=text]:focus{border-color:#c9c4f4}
+label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin:16px 0 7px}
+.err{font-size:12.8px;color:var(--err);margin-top:10px;font-weight:500}
+.hidden{display:none !important}
+.mut{font-size:12.5px;color:var(--faint);margin-top:12px;text-align:center;line-height:1.6}
 
+/* seats above the board */
+.seats{display:flex;gap:10px;margin-bottom:14px}
+.seat{flex:1;display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:9px 12px;transition:border-color .2s,box-shadow .2s}
+.seat.turn{border-color:var(--ink);box-shadow:0 3px 12px rgba(20,23,42,.09)}
+.seat .dot{flex:none;width:17px;height:17px;border-radius:50%}
+.seat .nm{font-size:13px;font-weight:600;letter-spacing:-.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .sc{margin-left:auto;font-size:13px;font-weight:800;color:var(--sub)}
+
+/* the board itself */
+.boardBox{background:var(--board);border-radius:18px;padding:10px;box-shadow:0 12px 30px rgba(30,40,100,.25)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cell{aspect-ratio:1;border-radius:50%;background:#fafafa;position:relative;transition:background .12s;cursor:pointer}
+.cell.p1{background:var(--p1)}
+.cell.p2{background:var(--p2)}
+.cell.winln{box-shadow:0 0 0 3.5px #fff inset,0 0 14px rgba(255,255,255,.75)}
+.cell.hint::after{content:'';position:absolute;inset:28%;border-radius:50%;background:rgba(255,255,255,.35)}
+.statusln{text-align:center;font-size:13.6px;font-weight:600;margin:14px 0 4px;min-height:20px}
+.statusln .waitdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;animation:pulse 1.3s infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* lobby + win reuse */
+.codebox{border:2px dashed #d8d4f6;border-radius:16px;padding:18px;text-align:center;margin:16px 0}
+.codebox .code{font-size:34px;font-weight:800;letter-spacing:8px}
+.bigword{font-size:34px;font-weight:800;letter-spacing:-1px;text-align:center;margin:10px 0 4px}
+.center{text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🔴 Connect 4</div>
+    <div class="sp"></div>
+    <a class="tinylink" href="/games">🎮 All games</a>
+  </header>
+
+  <!-- ── home ─────────────────────────────────────────────────────────── -->
+  <div id="home">
+    <div class="card">
+      <h1>Four in a row wins.</h1>
+      <p class="lede">Take turns dropping a piece into a column. First to line up four — across, down or diagonally — takes the game. Play a friend with a link, or the bot right now.</p>
+      <div id="nameBox">
+        <label class="fl" for="nameIn">Your name</label>
+        <input type="text" id="nameIn" maxlength="18" placeholder="e.g. Ayoub" autocomplete="off">
+      </div>
+      <div id="meRow" class="hidden" style="display:flex;align-items:center;gap:10px;margin-top:16px">
+        <img id="meImg" style="width:34px;height:34px;border-radius:50%;object-fit:cover" alt="">
+        <span style="font-size:13.5px;font-weight:600">Playing as <span id="meNm"></span></span>
+      </div>
+      <label class="fl">Against the bot</label>
+      <div class="row">
+        <button class="btn btn-line" onclick="startBot('easy')">😌 Easy</button>
+        <button class="btn btn-dark" onclick="startBot('normal')">🙂 Normal</button>
+        <button class="btn btn-line" onclick="startBot('hard')">😈 Hard</button>
+      </div>
+      <label class="fl">Against a friend</label>
+      <button class="btn btn-accent" id="createBtn">Start a game &amp; invite</button>
+      <div class="row" style="margin-top:10px">
+        <input type="text" id="codeIn" maxlength="4" placeholder="CODE" style="flex:1;text-transform:uppercase;text-align:center;letter-spacing:4px;font-weight:700">
+        <button class="btn btn-line" id="joinBtn" style="flex:1.6">Join</button>
+      </div>
+      <div class="err hidden" id="homeErr"></div>
+    </div>
+    <p class="mut">Nothing to install, nothing to sign up for. A game takes about two minutes.</p>
+  </div>
+
+  <!-- ── lobby ────────────────────────────────────────────────────────── -->
+  <div id="lobby" class="hidden">
+    <div class="card center">
+      <h2 style="font-size:17px;font-weight:700">Your table is ready</h2>
+      <div class="codebox"><div style="font-size:11.5px;font-weight:700;letter-spacing:.09em;color:var(--faint);text-transform:uppercase;margin-bottom:6px">Room code</div><div class="code" id="lobbyCode"></div></div>
+      <button class="btn btn-dark" id="shareBtn">📤 Send the link</button>
+      <button class="btn btn-line" id="copyBtn" style="margin-top:10px">Copy link</button>
+      <p class="mut"><span class="waitdot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse 1.3s infinite"></span>Waiting for your friend — or <a href="#" id="lobbyBot">play the bot instead</a></p>
+    </div>
+  </div>
+
+  <!-- ── the game ─────────────────────────────────────────────────────── -->
+  <div id="play" class="hidden">
+    <div class="seats" id="seats"></div>
+    <div class="boardBox"><div class="grid" id="grid"></div></div>
+    <div class="statusln" id="statusLn"></div>
+    <div class="err hidden center" id="playErr"></div>
+    <div id="overRow" class="hidden">
+      <div class="bigword" id="overTxt"></div>
+      <div class="center" style="font-size:13px;color:var(--sub);margin-bottom:14px" id="overSub"></div>
+      <button class="btn btn-dark" id="againBtn">Go again</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const show = (el, on) => el.classList.toggle('hidden', !on);
+let socket = null, S = null, myId = null, ME = null;
+
+fetch('/api/social/me').then(r => r.json()).then(d => {
+  if (d && d.me) {
+    ME = d.me;
+    show($('nameBox'), false); show($('meRow'), true);
+    $('meNm').textContent = ME.name;
+    if (ME.photo) $('meImg').src = ME.photo; else $('meImg').style.display = 'none';
+    // Arrived from a chat invite while signed in? Straight to the table —
+    // no forms between "tap the link" and "you're in".
+    if (AUTOGO && pre) conn().emit('join', { code: pre.toUpperCase(), name: ME.name });
+  }
+}).catch(() => {});
+
+function conn() {
+  if (socket) return socket;
+  socket = io('/four');
+  socket.on('state', st => { S = st; render(); });
+  socket.on('seated', d => { myId = d.you; history.replaceState(null, '', '/four?room=' + d.code); });
+  socket.on('err', d => flash(d.msg));
+  return socket;
+}
+let flashT = null;
+function flash(msg) {
+  const el = $('play').classList.contains('hidden') ? $('homeErr') : $('playErr');
+  el.textContent = msg; show(el, true);
+  clearTimeout(flashT); flashT = setTimeout(() => show(el, false), 3200);
+}
+const myName = () => (ME && ME.name) || $('nameIn').value.trim();
+function needName() { if (!myName()) { flash('Type your name first.'); return true; } return false; }
+
+$('createBtn').onclick = () => { if (needName()) return; conn().emit('create', { name: myName() }, () => {}); };
+$('joinBtn').onclick = () => {
+  if (needName()) return;
+  const code = $('codeIn').value.trim().toUpperCase();
+  if (code.length !== 4) return flash('The code is 4 letters.');
+  conn().emit('join', { code, name: myName() });
+};
+function startBot(level) {
+  if (needName()) return;
+  conn().emit('create', { name: myName() }, () => socket.emit('addBot', { level }));
+}
+$('lobbyBot').onclick = e => { e.preventDefault(); socket && socket.emit('addBot', { level: 'normal' }); };
+$('shareBtn').onclick = () => {
+  const url = location.origin + '/four?room=' + S.code;
+  if (navigator.share) navigator.share({ title: 'Connect 4', text: 'Play me at Connect 4 — one tap, no signup.', url }).catch(() => {});
+  else copyLink();
+};
+function copyLink() {
+  navigator.clipboard.writeText(location.origin + '/four?room=' + S.code).then(() => flash('Link copied.'));
+}
+$('copyBtn').onclick = copyLink;
+$('againBtn').onclick = () => socket.emit('rematch');
+
+// joining from a link
+const AUTOGO = new URLSearchParams(location.search).get('go') === '1';
+const pre = new URLSearchParams(location.search).get('room');
+if (pre) {
+  $('codeIn').value = pre.toUpperCase();
+  fetch('/api/four/' + pre.toUpperCase()).then(r => r.json()).then(d => {
+    if (d.exists && d.host) $('joinBtn').textContent = 'Join ' + d.host;
+    if (d.exists && d.full) flash('That game already has two players.');
+    if (!d.exists) flash('No game with that code. It may have finished.');
+  }).catch(() => {});
+}
+
+// board cells, built once
+const grid = $('grid');
+for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++) {
+  const d = document.createElement('div');
+  d.className = 'cell'; d.dataset.c = c;
+  d.onclick = () => {
+    if (!S || S.state !== 'playing') return;
+    const idx = S.seats.findIndex(s => s.id === myId);
+    if (idx < 0 || idx + 1 !== S.turn) return flash('Not your turn.');
+    socket.emit('drop', { col: c });
+  };
+  grid.appendChild(d);
+}
+
+function render() {
+  if (!S) return;
+  const seated = S.seats.some(s => s.id === myId);
+  const playing = S.state === 'playing' || S.state === 'over';
+  show($('home'), !seated || S.state === 'gone');
+  show($('lobby'), seated && S.state === 'lobby');
+  show($('play'), seated && playing);
+  if (seated && S.state === 'lobby') $('lobbyCode').textContent = S.code;
+  if (!playing) return;
+
+  // seats
+  $('seats').innerHTML = S.seats.map((s, i) => {
+    const col = i === 0 ? 'var(--p1)' : 'var(--p2)';
+    const nm = s.name ? (s.id === myId ? s.name + ' (you)' : s.name) : '…';
+    const cls = S.state === 'playing' && S.turn === i + 1 ? 'seat turn' : 'seat';
+    return '<div class="' + cls + '"><span class="dot" style="background:' + col + '"></span><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span><span class="sc">' + S.scores[i] + '</span></div>';
+  }).join('');
+
+  // board
+  const cells = grid.children;
+  const winSet = new Set((S.line || []).map(([r, c]) => r * 7 + c));
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++) {
+    const el = cells[r * 7 + c], v = S.board[r][c];
+    el.className = 'cell' + (v === 1 ? ' p1' : v === 2 ? ' p2' : '') + (winSet.has(r * 7 + c) ? ' winln' : '');
+  }
+
+  // status + game over
+  const meIdx = S.seats.findIndex(s => s.id === myId);
+  if (S.state === 'playing') {
+    show($('overRow'), false);
+    const mine = meIdx + 1 === S.turn;
+    $('statusLn').innerHTML = mine ? 'Your move — tap a column.' : '<span class="waitdot"></span>' + esc(S.seats[S.turn - 1].name || 'They') + ' is thinking…';
+  } else {
+    show($('overRow'), true);
+    if (!S.winner) { $('overTxt').textContent = 'A draw.'; $('overSub').textContent = 'The whole board, and nobody got four. Respect.'; }
+    else if (S.winner === meIdx + 1) { $('overTxt').textContent = 'You win! 🎉'; $('overSub').textContent = 'Four in a row. Clean.'; }
+    else { $('overTxt').textContent = esc(S.seats[S.winner - 1].name || 'They') + ' wins.'; $('overSub').textContent = 'Rematch and make it right.'; }
+    $('statusLn').textContent = '';
+  }
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+</script>
+<script src="/a2hs.js" defer></script>
+</body>
+</html>
