@@ -1,1 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Games — WordSpies</title>
+<meta name="description" content="Five games, one place. WordSpies for the whole group, Ludo and 8-ball pool with friends or against the bot, Connect 4, and Mind Meld for two.">
+<meta name="theme-color" content="#fafafa">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:title" content="WordSpies Games">
+<meta property="og:description" content="Ludo, 8-ball pool, Connect 4, Mind Meld and WordSpies — play with friends or against the bot.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --accent:#e8506b; --bg:#fafafa; --green:#22c07a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
+  padding:0 16px calc(30px + env(safe-area-inset-bottom));
+}
+.wrap{width:100%;max-width:560px}
+header{display:flex;align-items:center;gap:10px;padding:16px 0 6px}
+header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px}
+header .sp{flex:1}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap}
+.tinylink:active{background:#f3f3f5}
+h1{font-size:26px;font-weight:800;letter-spacing:-.9px;line-height:1.16;margin:18px 0 6px}
+p.lede{font-size:13.8px;color:var(--sub);line-height:1.6;margin-bottom:18px}
 
+/* One card per game. The chips answer the only question that matters when
+   you're choosing — how many of you there are right now. */
+.game{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:20px;
+  padding:16px;text-decoration:none;color:var(--ink);transition:transform .15s,border-color .15s,box-shadow .15s}
+.game+.game{margin-top:12px}
+.game:hover{transform:translateY(-2px);border-color:#ddd9fb;box-shadow:0 10px 26px rgba(20,23,42,.07)}
+.game .gi{flex:none;width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1}
+.game .gt{flex:1;min-width:0}
+.game .gt b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.3px}
+.game .gt span{display:block;font-size:12.3px;color:var(--sub);margin-top:3px;line-height:1.5}
+.game .chips{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex:none}
+.chip{font-size:10.6px;font-weight:600;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.chip.bot{background:#eef7ef;color:#1c7c33}
+.chip.ppl{background:#f1effd;color:#5b4fd4}
+.game .ga{display:none}
+.sect{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin:22px 0 10px}
+.foot{margin-top:26px;text-align:center;font-size:12.3px;color:var(--faint);line-height:1.7}
+.foot a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🕵️ WordSpies</div>
+    <div class="sp"></div>
+    <a class="tinylink" href="/social">👥 Community</a>
+  </header>
+
+  <h1>Pick a game.</h1>
+  <p class="lede">Alone, with one friend, or the whole group — there’s a game for however many of you there are. Every one of them works with a shared link, and the bot fills any empty seat.</p>
+
+  <div class="sect">The big one</div>
+  <a class="game" href="/play">
+    <span class="gi" style="background:#fdeef1">🕵️</span>
+    <span class="gt"><b>WordSpies</b><span>Two teams, secret words, one wrong guess from disaster. The party game.</span></span>
+    <span class="chips"><span class="chip ppl">4–10+ friends</span></span>
+  </a>
+
+  <div class="sect">Quick games</div>
+  <a class="game" href="/ludo">
+    <span class="gi" style="background:#fff4e5">🎲</span>
+    <span class="gt"><b>Ludo</b><span>The classic board race. Roll, move, and send each other home.</span></span>
+    <span class="chips"><span class="chip ppl">2–4 friends</span><span class="chip bot">or vs bots</span></span>
+  </a>
+  <a class="game" href="/pool">
+    <span class="gi" style="background:#e8f6ee">🎱</span>
+    <span class="gt"><b>8-Ball Pool</b><span>Real physics. Pot your balls, then the 8 — and don’t sink the cue.</span></span>
+    <span class="chips"><span class="chip ppl">2 friends</span><span class="chip bot">or vs the bot</span></span>
+  </a>
+  <a class="game" href="/four">
+    <span class="gi" style="background:#eef2fd">🔴</span>
+    <span class="gt"><b>Connect 4</b><span>Drop pieces, make four in a row, block theirs. Thirty-second rounds.</span></span>
+    <span class="chips"><span class="chip ppl">2 friends</span><span class="chip bot">or vs the bot</span></span>
+  </a>
+  <a class="game" href="/meld">
+    <span class="gi" style="background:#f3f1fe">🧠</span>
+    <span class="gt"><b>Mind Meld</b><span>Both type a word at the same time. Try to say the same one.</span></span>
+    <span class="chips"><span class="chip ppl">exactly 2</span></span>
+  </a>
+
+  <div class="foot">
+    Signed in? You’re seated under your own name and photo automatically.<br>
+    <a href="/social">Meet people to play with in the Community →</a>
+  </div>
+</div>
+<script src="/a2hs.js" defer></script>
+</body>
+</html>
