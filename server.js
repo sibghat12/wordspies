@@ -47,6 +47,16 @@ app.use(express.static(path.join(__dirname, 'public'), {
 }));
 app.get('/healthz', (req, res) => res.send('ok'));
 
+// Which build is this? The value is just the moment the process started —
+// every deploy restarts the server, so a change here means "there is a newer
+// site than the one you loaded". /a2hs.js polls it and refreshes stale pages,
+// which is what stops installed apps living on last week's version.
+const BOOT_VERSION = String(Date.now());
+app.get('/api/version', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ v: BOOT_VERSION });
+});
+
 // Is this invite link still good? Lets the page tell "expired" from "live"
 // before it tries to seat anyone. The code is already in the visitor's URL,
 // so this leaks nothing — and it deliberately never exposes the watch code.
@@ -105,6 +115,18 @@ if (process.env.REDIS_URL) {
 // fails to load, the game itself keeps running untouched.
 let social = null;
 try { social = require('./social').mount(app, redis) || null; } catch (e) { console.error('social module failed to load (game unaffected):', e.message); }
+
+// 🧠 Mind Meld — the two-player side game at /meld. Same deal as social: its
+// own module, its own socket namespace, its own rooms. If it fails to load the
+// main game does not notice. It borrows nothing but the identity lookup, so a
+// signed-in player is seated under their own name and photo.
+try { require('./meld').mount(app, io, { identify: resolveSocialIdentity }); }
+catch (e) { console.error('meld module failed to load (game unaffected):', e.message); }
+
+// 🎲 The arcade — Ludo, Connect 4 and 8-ball pool, at /games. Same isolation
+// rules again: own namespaces, own rooms, borrows only the identity lookup.
+try { require('./arcade').mount(app, io, { identify: resolveSocialIdentity }); }
+catch (e) { console.error('arcade module failed to load (game unaffected):', e.message); }
 
 // 🧪 Unlocks the test hatch: /play?test=<this>. Lives here rather than in the
 // client bundle so it isn't discoverable by reading the page source. Set
