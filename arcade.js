@@ -280,7 +280,9 @@ function c4Best(board, me, depth) {
 // the kitchen table uses them either.
 
 const POOL_W = 1000, POOL_H = 500;          // table space; pages scale to fit
-const BALL_R = 14, POCKET_R = 26;
+// chunkier balls and slightly kinder pockets — the table reads better on a
+// phone this way, and potting stops feeling like threading a needle
+const BALL_R = 16, POCKET_R = 30;
 const FRICTION = 0.988, STOP = 0.06, MAX_POWER = 26;
 const POCKETS = [
   [22, 22], [POOL_W / 2, 14], [POOL_W - 22, 22],
