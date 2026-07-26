@@ -192,6 +192,7 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
       <div class="codebox"><div class="lbl">Room code</div><div class="code" id="lobbyCode">····</div></div>
       <button class="btn btn-dark" id="shareBtn" style="margin-top:14px">Send the link</button>
       <button class="btn btn-line" id="copyBtn" style="margin-top:10px">Copy link</button>
+      <div id="friendRow" class="hidden"></div>
       <div class="waiting"><span class="dot"></span> Waiting for your second player…</div>
     </div>
   </div>
@@ -495,5 +496,7 @@ function confetti(){
 })();
 </script>
 <script src="/a2hs.js" defer></script>
+<script>window.WS_GAME = { slug: 'meld', label: '🧠 Mind Meld' };</script>
+<script src="/invite.js" defer></script>
 </body>
 </html>
