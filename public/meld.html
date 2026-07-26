@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Mind Meld — say the same word as your friend</title>
+<meta name="description" content="A two-player word game. You and a friend both type a word at the same time and try to say the same one. When you don't, you both aim for the word in between — and keep going until your minds meet.">
+<meta name="theme-color" content="#fafafa">
+<link rel="icon" href="/favicon.ico">
+<meta property="og:title" content="Mind Meld — a two-player word game">
+<meta property="og:description" content="Both type a word at the same time. Try to say the same one. Keep going until you do.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33;
+  --mine:#6b5ce8; --theirs:#0fa3b1;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:clip;max-width:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
+  padding:0 16px calc(28px + env(safe-area-inset-bottom));
+}
+.wrap{width:100%;max-width:520px;flex:1;display:flex;flex-direction:column}
+
+/* ── top bar ─────────────────────────────────────────────────────────── */
+header{display:flex;align-items:center;gap:10px;padding:16px 0 14px}
+header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:7px}
+header .logo span{font-size:17px}
+header .sp{flex:1}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap}
+.tinylink:active{background:#f3f3f5}
+
+/* ── shared bits ─────────────────────────────────────────────────────── */
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+.card + .card{margin-top:14px}
+h1{font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1.15}
+h2{font-size:16px;font-weight:600;letter-spacing:-.3px}
+p.lede{font-size:14px;color:var(--sub);line-height:1.62;margin-top:10px}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:52px;border:0;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;
+  cursor:pointer;letter-spacing:-.2px;
+}
+.btn:disabled{opacity:.42;cursor:default}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-dark:active:not(:disabled){background:#2c3040}
+.btn-line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn-line:active:not(:disabled){background:#f4f4f6}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:active:not(:disabled){background:#d2415b}
+.row{display:flex;gap:10px}
+.row .btn{width:auto;flex:1}
+input[type=text]{
+  width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;
+  padding:0 15px;font-family:inherit;font-size:16px;font-weight:500;color:var(--ink);outline:0;
+}
+input[type=text]:focus{border-color:#c9cbd2}
+input[type=text]::placeholder{color:var(--faint);font-weight:400}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 0 7px 3px;letter-spacing:.1px}
+.hidden{display:none !important}
+.err{background:#fff1f1;border:1px solid #f3d2d2;color:#a02a2a;border-radius:12px;padding:11px 13px;font-size:13px;font-weight:500;margin-top:12px;line-height:1.5}
+
+/* ── how it works ────────────────────────────────────────────────────── */
+.rules{margin-top:16px;border-top:1px solid var(--line);padding-top:15px}
+.rules li{list-style:none;display:flex;gap:11px;font-size:13.2px;color:var(--sub);line-height:1.6;margin-bottom:9px}
+.rules li b{color:var(--ink);font-weight:600}
+.rules .n{
+  flex:none;width:20px;height:20px;border-radius:999px;background:var(--ink);color:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px
+}
+
+/* ── lobby / share ───────────────────────────────────────────────────── */
+.codebox{
+  text-align:center;padding:22px 16px;border:1px dashed #d8d9de;border-radius:16px;background:#fcfcfd;margin-top:4px
+}
+.codebox .lbl{font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:1.2px;text-transform:uppercase}
+.codebox .code{font-size:40px;font-weight:800;letter-spacing:7px;margin-top:6px;padding-left:7px}
+.waiting{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--sub);font-weight:500;margin-top:16px;justify-content:center}
+.dot{width:7px;height:7px;border-radius:999px;background:var(--accent);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
+/* ── players ─────────────────────────────────────────────────────────── */
+.seats{display:flex;gap:10px;margin-bottom:14px}
+.seat{
+  flex:1;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 12px;
+  display:flex;align-items:center;gap:9px;min-width:0
+}
+.seat.empty{border-style:dashed;background:transparent}
+.av{width:30px;height:30px;border-radius:999px;background:#eceef3;flex:none;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--sub)}
+.seat .nm{font-size:13.5px;font-weight:500;letter-spacing:-.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.seat .st{font-size:11.5px;color:var(--faint);font-weight:500;margin-top:1px}
+.seat.in .st{color:var(--green);font-weight:600}
+.seat.me{border-color:#dcd8fb;background:#faf9ff}
+
+/* ── the round ───────────────────────────────────────────────────────── */
+.roundno{font-size:11.5px;font-weight:700;color:var(--faint);letter-spacing:1.4px;text-transform:uppercase;text-align:center;margin-bottom:12px}
+.pair{display:flex;align-items:stretch;gap:9px}
+.pw{flex:1;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 12px;text-align:center;min-width:0}
+.pw .who{font-size:11px;font-weight:600;color:var(--faint);letter-spacing:.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw .wd{font-size:19px;font-weight:700;letter-spacing:-.5px;margin-top:5px;word-break:break-word;line-height:1.2}
+.pw.a .wd{color:var(--mine)}
+.pw.b .wd{color:var(--theirs)}
+.plus{align-self:center;font-size:15px;font-weight:700;color:var(--faint);flex:none}
+.ask{text-align:center;font-size:14.5px;font-weight:600;letter-spacing:-.25px;margin:16px 0 4px;line-height:1.5}
+.ask small{display:block;font-size:12.8px;font-weight:400;color:var(--sub);margin-top:6px;line-height:1.6}
+
+.locked{
+  display:flex;align-items:center;gap:10px;background:#f5f3ff;border:1px solid #e2ddfb;
+  border-radius:14px;padding:13px 14px;min-height:52px
+}
+.locked .w{font-size:16px;font-weight:700;letter-spacing:-.3px;flex:1;min-width:0;word-break:break-word;color:var(--mine)}
+.locked button{background:none;border:0;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--sub);cursor:pointer;padding:6px 4px;text-decoration:underline;flex:none}
+
+/* ── history ─────────────────────────────────────────────────────────── */
+.hist{margin-top:16px}
+.hist h3{font-size:11.5px;font-weight:700;color:var(--faint);letter-spacing:1.3px;text-transform:uppercase;margin-bottom:9px}
+.hrow{display:flex;align-items:center;gap:8px;font-size:13px;padding:7px 0;border-bottom:1px solid #f2f2f4}
+.hrow:last-child{border-bottom:0}
+.hrow .r{font-size:11px;font-weight:700;color:var(--faint);width:18px;flex:none}
+.hrow .x{color:var(--faint);font-size:11px;flex:none}
+.hrow b{font-weight:600;letter-spacing:-.2px;word-break:break-word}
+.hrow .h1w{color:var(--mine)}
+.hrow .h2w{color:var(--theirs)}
+
+/* ── win ─────────────────────────────────────────────────────────────── */
+.win{text-align:center;padding:30px 20px}
+.win .kick{font-size:11.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent)}
+.win .word{font-size:38px;font-weight:800;letter-spacing:-1.4px;margin:8px 0 4px;word-break:break-word;line-height:1.1}
+.win .tt{font-size:17px;font-weight:700;letter-spacing:-.4px;margin-top:14px}
+.win .ln{font-size:13.5px;color:var(--sub);line-height:1.6;margin-top:6px}
+.win .rn{font-size:12.5px;color:var(--faint);font-weight:600;margin-top:14px}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.confetti i{position:absolute;width:8px;height:13px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.15}}
+
+.foot{text-align:center;font-size:12px;color:var(--faint);line-height:1.6;padding:22px 8px 0}
+.foot a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo"><span>🧠</span> Mind Meld</div>
+    <div class="sp"></div>
+    <a class="tinylink" href="/games">🎮 All games</a>
+    <a class="tinylink" href="/social">👥 Community</a>
+  </header>
+
+  <!-- ══ HOME ══════════════════════════════════════════════════════════ -->
+  <div id="home">
+    <div class="card">
+      <h1>Say the same word<br>as your friend.</h1>
+      <p class="lede">You both type a word at the same time. You are not trying to be clever — you are trying to type the <b>same word</b> as each other. You won't. So then you both aim for the word sitting between the two you just said, and you keep going until your minds meet.</p>
+
+      <ul class="rules">
+        <li><span class="n">1</span><span>Round one, you both type <b>any word at all</b>. Reveal together.</span></li>
+        <li><span class="n">2</span><span>Different words? Now you both type the word <b>in between</b> them.</span></li>
+        <li><span class="n">3</span><span>No word twice, and you never see theirs first. Fewest rounds wins the bragging.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div id="nameWrap">
+        <label class="fl" for="nameIn">Your name</label>
+        <input type="text" id="nameIn" maxlength="18" placeholder="What should they call you?" autocomplete="nickname">
+      </div>
+      <div id="meWrap" class="hidden" style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div class="av" id="meAv"></div>
+        <div><div style="font-size:14px;font-weight:500" id="meNm"></div><div style="font-size:11.5px;color:var(--faint)">Signed in</div></div>
+      </div>
+      <button class="btn btn-dark" id="createBtn" style="margin-top:12px">Start a game</button>
+      <div class="row" style="margin-top:10px">
+        <input type="text" id="codeIn" maxlength="4" placeholder="CODE" style="text-transform:uppercase;letter-spacing:3px;font-weight:700;text-align:center;flex:1;min-width:0" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button class="btn btn-line" id="joinBtn" style="flex:0 0 40%">Join</button>
+      </div>
+      <div id="homeErr" class="err hidden"></div>
+    </div>
+  </div>
+
+  <!-- ══ LOBBY ═════════════════════════════════════════════════════════ -->
+  <div id="lobby" class="hidden">
+    <div class="card">
+      <h2>Get your friend in</h2>
+      <p class="lede" style="margin-top:7px">Send them the link. The game starts the second they arrive — there is nothing to press.</p>
+      <div class="codebox"><div class="lbl">Room code</div><div class="code" id="lobbyCode">····</div></div>
+      <button class="btn btn-dark" id="shareBtn" style="margin-top:14px">Send the link</button>
+      <button class="btn btn-line" id="copyBtn" style="margin-top:10px">Copy link</button>
+      <div class="waiting"><span class="dot"></span> Waiting for your second player…</div>
+    </div>
+  </div>
+
+  <!-- ══ PLAY ══════════════════════════════════════════════════════════ -->
+  <div id="play" class="hidden">
+    <div class="seats" id="seats"></div>
+
+    <div class="card">
+      <div class="roundno" id="roundNo">Round 1</div>
+
+      <div id="pairBox" class="hidden">
+        <div class="pair">
+          <div class="pw a"><div class="who" id="pwAWho"></div><div class="wd" id="pwAWd"></div></div>
+          <div class="plus">+</div>
+          <div class="pw b"><div class="who" id="pwBWho"></div><div class="wd" id="pwBWd"></div></div>
+        </div>
+      </div>
+
+      <div class="ask" id="askText"></div>
+
+      <div id="inputBox" style="margin-top:14px">
+        <div class="row">
+          <input type="text" id="wordIn" maxlength="32" placeholder="Your word" autocomplete="off" autocapitalize="none" spellcheck="false" style="flex:1;min-width:0">
+          <button class="btn btn-accent" id="sendBtn" style="flex:0 0 34%">Lock in</button>
+        </div>
+      </div>
+
+      <div id="lockedBox" class="locked hidden" style="margin-top:14px">
+        <span style="font-size:15px">🔒</span>
+        <div class="w" id="lockedWord"></div>
+        <button id="unpickBtn">change</button>
+      </div>
+
+      <div id="playErr" class="err hidden"></div>
+      <div class="waiting hidden" id="waitOther"><span class="dot"></span> <span id="waitTxt">Waiting for them…</span></div>
+    </div>
+
+    <div class="card hist hidden" id="histCard">
+      <h3>What you have said</h3>
+      <div id="histList"></div>
+    </div>
+  </div>
+
+  <!-- ══ WON ═══════════════════════════════════════════════════════════ -->
+  <div id="won" class="hidden">
+    <div class="card win">
+      <div class="kick">Mind meld</div>
+      <div class="word" id="winWord"></div>
+      <div class="tt" id="winTitle"></div>
+      <div class="ln" id="winLine"></div>
+      <div class="rn" id="winRounds"></div>
+    </div>
+    <div class="card">
+      <button class="btn btn-dark" id="againBtn">Go again</button>
+      <button class="btn btn-line" id="shareWin" style="margin-top:10px">Share the result</button>
+    </div>
+    <div class="card hist" id="winHistCard">
+      <h3>How you got there</h3>
+      <div id="winHistList"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    Part of <a href="/">WordSpies</a> — free, no sign-up needed to play.
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
+const show = (el, on) => el.classList.toggle('hidden', !on);
+
+let socket = null, S = null, myId = null, ME = null;
+let confettiDone = false;   // so the win screen only fires the confetti once
+
+// What I locked in this round. It lives here rather than in the state from the
+// server, because the server deliberately never sends a word back to anyone
+// until both are in — that is the entire game. So the page remembers its own.
+let myWord = '';
+
+// ── who am I ──────────────────────────────────────────────────────────
+// If they are signed in to the Community, use that name and photo and never
+// ask. Everyone else just types a name — a two-minute word game is no place
+// to demand an account.
+fetch('/api/social/me', { cache:'no-store' })
+  .then(r => r.json())
+  .then(d => {
+    if (!d || !d.me) { try { $('nameIn').value = localStorage.getItem('meld_name') || ''; } catch(e){} return; }
+    ME = d.me;
+    show($('nameWrap'), false);
+    show($('meWrap'), true);
+    $('meNm').textContent = ME.name || 'You';
+    if (ME.photo) $('meAv').innerHTML = '<img class="av" src="' + esc(ME.photo) + '" alt="">';
+    else $('meAv').textContent = (ME.name || '?').trim().charAt(0).toUpperCase();
+    // Came here from a chat invite while signed in? Straight in, no forms.
+    if (new URLSearchParams(location.search).get('go') === '1' && /^[A-Z0-9]{4}$/.test(urlCode)) {
+      connect().emit('join', { code: urlCode, name: ME.name });
+    }
+  })
+  .catch(() => {});
+
+const myName = () => (ME && ME.name) || $('nameIn').value.trim();
+
+function connect(){
+  if (socket) return socket;
+  socket = io('/meld');
+  socket.on('state', st => { S = st; render(); });
+  socket.on('seated', d => { myId = d.you; history.replaceState(null, '', '/meld?room=' + d.code); });
+  socket.on('err', d => flash(d && d.msg));
+  socket.on('disconnect', () => { const w = $('waitTxt'); if (w) w.textContent = 'Reconnecting…'; });
+  return socket;
+}
+
+function flash(msg){
+  if (!msg) return;
+  const box = S ? $('playErr') : $('homeErr');
+  box.textContent = msg;
+  show(box, true);
+  clearTimeout(flash.t);
+  flash.t = setTimeout(() => show(box, false), 3600);
+}
+
+// ── home ──────────────────────────────────────────────────────────────
+$('createBtn').onclick = () => {
+  const n = myName();
+  if (!n) { flash('Put a name in first — they need to know who they are melding with.'); $('nameIn').focus(); return; }
+  try { localStorage.setItem('meld_name', n); } catch(e){}
+  $('createBtn').disabled = true;
+  connect().emit('create', { name: n }, () => { $('createBtn').disabled = false; });
+};
+
+function doJoin(code){
+  const n = myName();
+  if (!n) { flash('Put a name in first.'); $('nameIn').focus(); return; }
+  try { localStorage.setItem('meld_name', n); } catch(e){}
+  connect().emit('join', { code: code, name: n }, r => {
+    if (r && r.error === 'gone') flash('No game with that code — it may have finished.');
+    if (r && r.error === 'full') flash('That game already has its two players.');
+  });
+}
+$('joinBtn').onclick = () => {
+  const c = $('codeIn').value.trim().toUpperCase();
+  if (c.length !== 4) return flash('The code is four characters.');
+  doJoin(c);
+};
+$('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
+$('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('createBtn').click(); });
+
+// Arriving on a shared link: fill the code in and, once we know their name,
+// walk them straight in.
+const urlCode = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase();
+if (/^[A-Z0-9]{4}$/.test(urlCode)) {
+  $('codeIn').value = urlCode;
+  fetch('/api/meld/' + urlCode, { cache:'no-store' }).then(r => r.json()).then(d => {
+    if (!d.exists) return flash('That game has finished. Start a fresh one.');
+    if (d.full) return flash('That game already has its two players.');
+    $('joinBtn').textContent = 'Join ' + (d.host ? d.host : 'game');
+  }).catch(() => {});
+}
+
+// ── the share link ────────────────────────────────────────────────────
+const link = () => location.origin + '/meld?room=' + (S ? S.code : '');
+$('shareBtn').onclick = async () => {
+  const url = link();
+  const text = 'Play Mind Meld with me — we both type a word and try to say the same one. ' + url;
+  if (navigator.share) { try { await navigator.share({ title:'Mind Meld', text: text }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+  copy(url, $('shareBtn'), 'Send the link');
+};
+$('copyBtn').onclick = () => copy(link(), $('copyBtn'), 'Copy link');
+function copy(txt, btn, label){
+  const done = () => { btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = label; }, 1600); };
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done).catch(fallback);
+  else fallback();
+  function fallback(){
+    const t = document.createElement('textarea');
+    t.value = txt; t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); done(); } catch(e){ btn.textContent = txt; }
+    document.body.removeChild(t);
+  }
+}
+
+// ── playing ───────────────────────────────────────────────────────────
+$('sendBtn').onclick = () => {
+  const w = $('wordIn').value.trim();
+  if (!w) { $('wordIn').focus(); return; }
+  myWord = w;
+  socket.emit('word', { word: w });
+  $('wordIn').value = '';
+};
+$('wordIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('sendBtn').click(); });
+$('unpickBtn').onclick = () => { $('wordIn').value = myWord; myWord = ''; socket.emit('unpick'); };
+$('againBtn').onclick = () => { myWord = ''; confettiDone = false; socket.emit('rematch'); };
+$('shareWin').onclick = async () => {
+  if (!S || !S.meld) return;
+  const text = 'We both said "' + S.meld.word + '" in ' + S.meld.rounds + ' round' + (S.meld.rounds === 1 ? '' : 's') + '. 🧠 Mind Meld — ' + location.origin + '/meld';
+  if (navigator.share) { try { await navigator.share({ title:'Mind Meld', text: text }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+  copy(text, $('shareWin'), 'Share the result');
+};
+
+// ── drawing ───────────────────────────────────────────────────────────
+function avatar(p){
+  if (p.photo) return '<img class="av" src="' + esc(p.photo) + '" alt="">';
+  return '<div class="av">' + esc((p.name || '?').trim().charAt(0).toUpperCase()) + '</div>';
+}
+
+function renderSeats(){
+  const html = S.players.map(p => {
+    const mine = p.id === myId;
+    const st = !p.connected ? 'away' : (p.ready ? 'locked in ✓' : (S.state === 'playing' ? 'thinking…' : 'ready'));
+    return '<div class="seat' + (mine ? ' me' : '') + (p.ready ? ' in' : '') + '">' + avatar(p) +
+      '<div style="min-width:0"><div class="nm">' + esc(p.name) + (mine ? ' (you)' : '') + '</div><div class="st">' + st + '</div></div></div>';
+  }).join('');
+  const gap = S.players.length < 2 ? '<div class="seat empty"><div class="av">+</div><div class="nm" style="color:var(--faint)">Empty seat</div></div>' : '';
+  $('seats').innerHTML = html + gap;
+}
+
+function rowsHTML(list){
+  return list.map(h =>
+    '<div class="hrow"><span class="r">' + h.round + '</span>' +
+    '<b class="h1w">' + esc(h.a.word) + '</b><span class="x">' + (h.matched ? '=' : '↔') + '</span>' +
+    '<b class="h2w">' + esc(h.b.word) + '</b></div>'
+  ).reverse().join('');
+}
+
+let lastKey = '';
+function render(){
+  if (!S) return;
+  // The moment the round or the screen changes, any complaint on screen is
+  // about something that has already happened — clear it rather than leaving
+  // it hanging over the next round.
+  const key = S.state + ':' + S.round;
+  if (key !== lastKey) { lastKey = key; clearTimeout(flash.t); show($('playErr'), false); show($('homeErr'), false); }
+  show($('home'), false);
+  show($('lobby'), S.state === 'lobby');
+  show($('play'), S.state === 'playing');
+  show($('won'), S.state === 'won');
+  $('lobbyCode').textContent = S.code;
+
+  if (S.state === 'playing') {
+    renderSeats();
+    $('roundNo').textContent = 'Round ' + S.round;
+
+    const p = S.prompt;
+    show($('pairBox'), !!p);
+    if (p) {
+      $('pwAWho').textContent = p.a.name;  $('pwAWd').textContent = p.a.word;
+      $('pwBWho').textContent = p.b.name;  $('pwBWd').textContent = p.b.word;
+      $('askText').innerHTML = 'What is the word in between?<small>Not one of those two — the one they make you think of. Type it at the same time as they do.</small>';
+    } else {
+      $('askText').innerHTML = 'Type any word at all.<small>Truly any word. This is only the starting point — the game begins when you see how far apart you both were.</small>';
+    }
+
+    const meP = S.players.find(x => x.id === myId);
+    const them = S.players.find(x => x.id !== myId);
+    const locked = !!(meP && meP.ready);
+    if (!locked) myWord = '';                       // the round moved on
+    show($('inputBox'), !locked);
+    show($('lockedBox'), locked);
+    if (locked) {
+      $('lockedWord').textContent = myWord || '…';
+      show($('unpickBtn'), !(them && them.ready));
+    }
+    show($('waitOther'), locked && !!them);
+    if (them) $('waitTxt').textContent = them.ready ? 'Revealing…' : 'Waiting for ' + them.name + '…';
+
+    show($('histCard'), S.history.length > 0);
+    $('histList').innerHTML = rowsHTML(S.history);
+    if (!locked) setTimeout(() => { const w = $('wordIn'); if (w && document.activeElement !== w && window.innerWidth > 700) w.focus(); }, 30);
+  }
+
+  if (S.state === 'won' && S.meld) {
+    $('winWord').textContent = S.meld.word;
+    $('winTitle').textContent = S.meld.title;
+    $('winLine').textContent = S.meld.line;
+    $('winRounds').textContent = S.meld.rounds + ' round' + (S.meld.rounds === 1 ? '' : 's');
+    $('winHistList').innerHTML = rowsHTML(S.history);
+    if (!confettiDone) { confettiDone = true; confetti(); }
+  }
+}
+
+function confetti(){
+  const box = document.createElement('div');
+  box.className = 'confetti';
+  const cols = ['#e8506b','#6b5ce8','#0fa3b1','#22c07a','#f5b53d'];
+  for (let i = 0; i < 46; i++) {
+    const b = document.createElement('i');
+    b.style.left = Math.random()*100 + 'vw';
+    b.style.top = '-20px';
+    b.style.background = cols[i % cols.length];
+    b.style.animationDuration = (1.5 + Math.random()*1.4) + 's';
+    b.style.animationDelay = (Math.random()*0.5) + 's';
+    box.appendChild(b);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 3600);
+}
+})();
+</script>
+<script src="/a2hs.js" defer></script>
+</body>
+</html>
