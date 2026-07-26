@@ -257,6 +257,68 @@ body.authmodal{overflow:hidden}
 /* The games bar sits directly under the big pink one: every game on the site,
    one tap away, in a row that scrolls sideways on a phone. Outlined pills
    rather than filled cards so it never competes with "Start a game". */
+/* The arcade strip: one bright card per game, each with a straight way in and
+   a "challenge" that picks a friend, sets the table, and drops the invite in
+   your chat with them. This is the game night shelf, not a list of links. */
+.garcade{display:flex;gap:11px;margin:-6px 20px 18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  padding:2px 2px 6px;scroll-snap-type:x proximity}
+.garcade::-webkit-scrollbar{display:none}
+.gcard{flex:none;width:150px;border-radius:18px;padding:14px 13px 12px;color:#fff;position:relative;overflow:hidden;
+  scroll-snap-align:start;box-shadow:0 8px 20px rgba(20,23,42,.16);transition:transform .16s}
+.gcard:hover{transform:translateY(-2px)}
+.gcard::before{content:'';position:absolute;right:-22px;top:-22px;width:86px;height:86px;border-radius:50%;background:rgba(255,255,255,.14)}
+.gcard .gi{font-size:26px;line-height:1}
+.gcard .gn{font-size:14.5px;font-weight:800;letter-spacing:-.3px;margin-top:8px}
+.gcard .gd{font-size:10.8px;font-weight:500;opacity:.85;margin-top:2px;line-height:1.45;min-height:31px}
+.gcard .gbtns{display:flex;gap:6px;margin-top:10px}
+.gcard .gbtns a,.gcard .gbtns button{flex:1;border:0;border-radius:10px;font-family:inherit;font-size:11.5px;font-weight:700;
+  padding:8px 0;text-align:center;cursor:pointer;text-decoration:none;letter-spacing:-.1px}
+.gcard .gplay{background:#fff;color:#16181f}
+.gcard .gch{background:rgba(255,255,255,.22);color:#fff}
+.gcard.g-ludo{background:linear-gradient(150deg,#3b6fe0,#2b4fb0)}
+.gcard.g-pool{background:linear-gradient(150deg,#1d8f5f,#0e6b44)}
+.gcard.g-four{background:linear-gradient(150deg,#4c5ec7,#2c3a85)}
+.gcard.g-meld{background:linear-gradient(150deg,#6b5ce8,#4d3fc0)}
+.gcard.g-spy{background:linear-gradient(150deg,#e8506b,#c22e4d)}
+.gcard.g-all{background:#16181f;display:flex;flex-direction:column;align-items:center;justify-content:center;width:104px;text-align:center;text-decoration:none}
+.gcard.g-all .gi{font-size:23px}
+.gcard.g-all .gn{font-size:12.5px;margin-top:7px}
+@media(min-width:900px){ .garcade{margin:-8px 8px 22px} .gcard{width:164px} }
+
+/* the refresh button — only in the installed app, where there's no browser
+   reload button. One tap: newest code, newest people, newest messages. */
+.pwaref{border:0;background:var(--ink);color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;
+  padding:9px 15px;border-radius:999px;cursor:pointer;letter-spacing:-.1px;box-shadow:0 4px 12px rgba(20,23,42,.18)}
+.pwaref:active{transform:scale(.95)}
+.pwaref.spin{opacity:.6}
+
+/* the Games tab — the shelf as a full page */
+.gp-head{padding:8px 22px 0}
+.gp-head h2{font-size:22px;font-weight:800;letter-spacing:-.6px}
+.gp-head p{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.55}
+.ggrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:16px 20px 26px}
+.ggrid .gcard{width:auto}
+.ggrid .g-spy{grid-column:1/-1}
+.ggrid .g-spy .gd{min-height:0}
+@media(min-width:900px){ .ggrid{grid-template-columns:repeat(3,1fr);padding:16px 8px 26px} }
+
+/* the challenge sheet — pick a friend, we do the rest */
+.chwrap{position:fixed;inset:0;background:rgba(22,24,31,.45);z-index:96;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.chsheet{background:#fff;width:100%;max-width:440px;border-radius:22px 22px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));max-height:72vh;display:flex;flex-direction:column}
+@media(min-width:700px){ .chwrap{align-items:center} .chsheet{border-radius:22px} }
+.chsheet h3{font-size:16.5px;font-weight:800;letter-spacing:-.4px}
+.chsheet .chsub{font-size:12.3px;color:var(--sub);margin-top:4px;line-height:1.5}
+.chlist{margin-top:14px;overflow-y:auto;flex:1}
+.chrow{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:10px 4px;cursor:pointer;font-family:inherit;text-align:left;border-radius:12px}
+.chrow:hover{background:#f7f6fd}
+.chrow .cav{flex:none;width:42px;height:42px;border-radius:50%;background:#f3f1fe;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:16px;color:#6b5ce8;overflow:hidden;position:relative}
+.chrow .cav img{width:100%;height:100%;object-fit:cover;display:block}
+.chrow .cav .od{position:absolute;right:0;bottom:0;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid #fff}
+.chrow .cnm{font-size:14px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chrow .cgo{font-size:12px;font-weight:700;color:#6b5ce8;white-space:nowrap}
+.chempty{font-size:13px;color:var(--sub);text-align:center;padding:26px 10px;line-height:1.6}
+.chx{position:absolute;top:14px;right:16px;border:0;background:#f2f1f7;width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;color:var(--sub)}
 .gamesbar{display:flex;gap:8px;margin:-6px 20px 16px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
 .gamesbar::-webkit-scrollbar{display:none}
 .gamesbar a{flex:none;display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;background:#fff;
@@ -378,7 +440,7 @@ body.authmodal{overflow:hidden}
 body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:none}
 .composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:7px;padding:10px 14px;background:var(--bg);border-top:1px solid var(--line);z-index:12}
 @media(min-width:700px){.composer{bottom:0}}
-.composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:10px 16px;font-size:14px;min-width:0}
+.composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:9px 16px;font-size:16px;min-width:0}
 .cbtn{background:#fff;border:1px solid var(--line);border-radius:99px;min-width:40px;height:40px;font-size:15px;font-weight:800;flex-shrink:0}
 .cbtn.send{background:var(--accent);color:#fff;border:none}
 .picker{position:fixed;bottom:132px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:496px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.14);padding:12px;z-index:13;max-height:290px;overflow-y:auto}
@@ -487,6 +549,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   <div id="tabWall">
     <div class="head">
       <div class="logo">WordSpies <em>Social</em></div>
+      <button id="pwaRefresh" class="pwaref hidden" onclick="pwaRefresh()">↻ Refresh</button>
       <div class="mechip" onclick="showTab('me')">
         <span class="mename" id="meName"></span>
         <span id="meAvSmall"></span>
@@ -500,12 +563,36 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
       </span>
       <span class="pa" aria-hidden="true">→</span>
     </a>
-    <div class="gamesbar" aria-label="More games">
-      <a href="/ludo"><span>🎲</span>Ludo</a>
-      <a href="/pool"><span>🎱</span>8-Ball</a>
-      <a href="/four"><span>🔴</span>Connect 4</a>
-      <a href="/meld"><span>🧠</span>Mind Meld</a>
-      <a href="/games" class="all"><span>🎮</span>All games</a>
+    <div class="garcade" aria-label="Games">
+      <div class="gcard g-ludo">
+        <div class="gi">🎲</div><div class="gn">Ludo</div>
+        <div class="gd">2–4 players. Race home, send friends back.</div>
+        <div class="gbtns"><a class="gplay" href="/ludo">Play</a><button class="gch" onclick="openChallenge('ludo','🎲 Ludo')">⚔️ Invite</button></div>
+      </div>
+      <div class="gcard g-pool">
+        <div class="gi">🎱</div><div class="gn">8-Ball Pool</div>
+        <div class="gd">Aim, power, pot. You vs one friend or the bot.</div>
+        <div class="gbtns"><a class="gplay" href="/pool">Play</a><button class="gch" onclick="openChallenge('pool','🎱 8-Ball Pool')">⚔️ Invite</button></div>
+      </div>
+      <div class="gcard g-four">
+        <div class="gi">🔴</div><div class="gn">Connect 4</div>
+        <div class="gd">Drop pieces, line up four. Quick and vicious.</div>
+        <div class="gbtns"><a class="gplay" href="/four">Play</a><button class="gch" onclick="openChallenge('four','🔴 Connect 4')">⚔️ Invite</button></div>
+      </div>
+      <div class="gcard g-meld">
+        <div class="gi">🧠</div><div class="gn">Mind Meld</div>
+        <div class="gd">Both type a word. Try to say the same one.</div>
+        <div class="gbtns"><a class="gplay" href="/meld">Play</a><button class="gch" onclick="openChallenge('meld','🧠 Mind Meld')">⚔️ Invite</button></div>
+      </div>
+      <a class="gcard g-all" href="#games" onclick="showTab('games');return false"><div class="gi">🎮</div><div class="gn">All games</div></a>
+    </div>
+    <div class="chwrap hidden" id="chWrap" onclick="if(event.target===this)closeChallenge()">
+      <div class="chsheet" style="position:relative">
+        <button class="chx" onclick="closeChallenge()">✕</button>
+        <h3 id="chTitle">Challenge a friend</h3>
+        <div class="chsub" id="chSub">Pick someone — we set the table, the invite lands in your chat with them, and you take your seat.</div>
+        <div class="chlist" id="chList"></div>
+      </div>
     </div>
     <div class="walllay">
       <!-- desktop only: you, the room's pulse, and who's winning -->
@@ -523,6 +610,41 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
         </div>
         <div id="wallBody"></div>
         <div class="empty hidden" id="wallEmpty">No spies found yet.<br>You're one of the first — invite your friends!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GAMES — the whole shelf, one tap from anywhere ═══ -->
+  <div id="tabGames" class="hidden">
+    <div class="gp-head">
+      <h2>Game night 🎮</h2>
+      <p>Play right now, or hit ⚔️ Invite — we set the table and the challenge lands straight in your chat with them.</p>
+    </div>
+    <div class="ggrid">
+      <div class="gcard g-spy">
+        <div class="gi">🕵️</div><div class="gn">WordSpies</div>
+        <div class="gd">The main event — two teams, secret words, one-word clues. 4+ players.</div>
+        <div class="gbtns"><a class="gplay" href="/play?from=social">Play</a></div>
+      </div>
+      <div class="gcard g-ludo">
+        <div class="gi">🎲</div><div class="gn">Ludo</div>
+        <div class="gd">2–4 players. Race home, send friends back.</div>
+        <div class="gbtns"><a class="gplay" href="/ludo">Play</a><button class="gch" onclick="openChallenge('ludo','🎲 Ludo')">⚔️ Invite</button></div>
+      </div>
+      <div class="gcard g-pool">
+        <div class="gi">🎱</div><div class="gn">8-Ball Pool</div>
+        <div class="gd">Aim, power, pot. You vs one friend or the bot.</div>
+        <div class="gbtns"><a class="gplay" href="/pool">Play</a><button class="gch" onclick="openChallenge('pool','🎱 8-Ball Pool')">⚔️ Invite</button></div>
+      </div>
+      <div class="gcard g-four">
+        <div class="gi">🔴</div><div class="gn">Connect 4</div>
+        <div class="gd">Drop pieces, line up four. Quick and vicious.</div>
+        <div class="gbtns"><a class="gplay" href="/four">Play</a><button class="gch" onclick="openChallenge('four','🔴 Connect 4')">⚔️ Invite</button></div>
+      </div>
+      <div class="gcard g-meld">
+        <div class="gi">🧠</div><div class="gn">Mind Meld</div>
+        <div class="gd">Both type a word. Try to say the same one.</div>
+        <div class="gbtns"><a class="gplay" href="/meld">Play</a><button class="gch" onclick="openChallenge('meld','🧠 Mind Meld')">⚔️ Invite</button></div>
       </div>
     </div>
   </div>
@@ -643,6 +765,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 
   <div class="tabbar">
     <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge live hidden" id="wallBadge"></span></button>
+    <button id="tbGames" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
     <button id="tbChats" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
     <button id="tbMe" onclick="showTab('me')"><span class="ico tabav" id="tbMeAv">👤</span>Profile<span class="tdot hidden" id="meDot"></span></button>
   </div>
@@ -700,6 +823,26 @@ function paintLive(){
 // appears and disappears in step with the game without anybody refreshing.
 window.addEventListener('storage', e => { if (e.key === LIVE_KEY) paintLive(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) paintLive(); });
+// The installed app has no reload button, so we give it one: fresh code,
+// fresh people, fresh messages, one tap. Only shows when running standalone.
+if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+  $('pwaRefresh').classList.remove('hidden');
+}
+function pwaRefresh(){
+  $('pwaRefresh').classList.add('spin');
+  $('pwaRefresh').textContent = '↻ …';
+  location.reload();
+}
+// Coming back to the installed app after it sat in the background: pull fresh
+// data for whatever screen is open, so nobody stares at stale messages.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  try {
+    if (!$('tabChat').classList.contains('hidden')) { lastMsgCount = -1; refreshChat(); }
+    if (!$('tabChats').classList.contains('hidden')) refreshChats();
+    if (!$('tabWall').classList.contains('hidden')) loadMembers();
+  } catch(e){}
+});
 setInterval(paintLive, 20000);
 paintLive();
 
@@ -915,13 +1058,14 @@ function showTab(t){
     toast('📷 Add your photo first — then you join the wall');
   }
   clearInterval(chatTimer); chatTimer = null;
-  [['tabWall','wall'],['tabMe','me'],['tabMember','member'],['tabChats','chats'],['tabChat','chat']]
+  [['tabWall','wall'],['tabGames','games'],['tabMe','me'],['tabMember','member'],['tabChats','chats'],['tabChat','chat']]
     .forEach(([id, key]) => $(id).classList.toggle('hidden', t !== key));
   // desktop: show the chat list AND the open chat side by side
   const split = window.innerWidth >= 900 && curChat && (t === 'chat' || t === 'chats');
   $('vApp').classList.toggle('splitview', !!split);
   if (split) { $('tabChats').classList.remove('hidden'); $('tabChat').classList.remove('hidden'); }
   $('tbWall').classList.toggle('on', t === 'wall');
+  $('tbGames').classList.toggle('on', t === 'games');
   $('tbMe').classList.toggle('on', t === 'me');
   $('tbChats').classList.toggle('on', t === 'chats' || t === 'chat');
   $('vApp').classList.toggle('chatmode', t === 'chats' || t === 'chat');
@@ -1247,15 +1391,24 @@ addEventListener('orientationchange', () => setTimeout(fitChat, 250));
 
 // Render a message: GIFs as images, game invite links as a big Join button,
 // other links clickable. Everything is escaped first.
+const GAME_TAGS = {
+  play: ['🕵️', 'WordSpies'], ludo: ['🎲', 'Ludo'], four: ['🔴', 'Connect 4'],
+  pool: ['🎱', '8-Ball Pool'], meld: ['🧠', 'Mind Meld']
+};
 function msgBody(m){
   if (m.k === 'gif') return `<img src="${esc(m.x)}" loading="lazy">`;
-  const gm = m.x.match(/(?:https?:\/\/[^\s]+)?\/play\?room=([A-Za-z0-9]{4})/);
-  if (gm) {
-    const code = gm[1].toUpperCase();
-    const rest = esc(m.x.replace(gm[0], '').trim());
-    return (rest ? rest + ' ' : '') + `<a class="ginvite" href="/play?room=${code}" target="_blank" rel="noopener">🎮 Tap to join my game · ${code}</a>`;
-  }
-  return esc(m.x).replace(/(https?:\/\/[^\s]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
+  // Any game invite — WordSpies or the arcade — becomes a big tappable Join
+  // card, and a message can hold several of them. The regex runs on the
+  // escaped text, so & in the URL appears as &amp; here.
+  let found = false;
+  let out = esc(m.x).replace(/(?:https?:\/\/[^\s<]+)?\/(play|ludo|four|pool|meld)\?room=([A-Za-z0-9]{4})(?:&amp;go=1)?/g, (all, g, code) => {
+    found = true;
+    const [ic, nm] = GAME_TAGS[g];
+    const c = code.toUpperCase();
+    return `<a class="ginvite" href="/${g}?room=${c}${g === 'play' ? '' : '&go=1'}" target="_blank" rel="noopener">${ic} Join my ${nm} game · ${c}</a>`;
+  });
+  if (found) return out;
+  return out.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
 }
 
 // 🎮 in the chat: go create a room, come back with the invite link.
@@ -1322,6 +1475,54 @@ async function gameInvite(game, label){
   } catch(e){ toast(e.message || 'Could not set up the game.'); }
 }
 function hidePickers(){ $('emojiPick').classList.add('hidden'); $('gamePick').classList.add('hidden'); }
+
+// ---------- the challenge sheet ----------
+// The arcade cards' ⚔️ Invite: pick a friend from the people you follow and
+// chat with, we create the table, drop the invite in that chat, and walk you
+// to your seat. The friend gets the push; their tap lands them opposite you.
+let chGame = null, chLabel = '', chBusy = false;
+async function openChallenge(game, label){
+  if (GUEST) { requireLogin('⚔️ Log in to challenge your friends at ' + label); return; }
+  chGame = game; chLabel = label; chBusy = false;
+  $('chTitle').textContent = label + ' — challenge a friend';
+  $('chList').innerHTML = '<div class="chempty">Finding your people…</div>';
+  $('chWrap').classList.remove('hidden');
+  try {
+    const j = await api('/people');
+    const people = (j && j.people) || [];
+    if (!people.length) {
+      $('chList').innerHTML = '<div class="chempty">Nobody to challenge yet.<br>Follow some spies on the wall, or chat with someone first — then they show up here.</div>';
+      return;
+    }
+    $('chList').innerHTML = people.slice(0, 40).map(u => `
+      <button class="chrow" onclick="sendChallenge('${u.id}', this)">
+        <span class="cav">${u.photo ? `<img src="${esc(u.photo)}" alt="">` : esc((u.name || '?')[0].toUpperCase())}${u.online ? '<span class="od"></span>' : ''}</span>
+        <span class="cnm">${esc(u.name)}</span>
+        <span class="cgo">${u.online ? '🟢 online' : 'Challenge →'}</span>
+      </button>`).join('');
+  } catch(e){
+    $('chList').innerHTML = '<div class="chempty">' + esc(e.message || 'Could not load your friends.') + '</div>';
+  }
+}
+function closeChallenge(){ $('chWrap').classList.add('hidden'); chGame = null; }
+async function sendChallenge(to, btn){
+  if (!chGame || chBusy) return;
+  chBusy = true;
+  btn.querySelector('.cgo').textContent = 'Setting up…';
+  try {
+    const r = await fetch('/api/' + chGame + '/new', { method:'POST' }).then(x => x.json());
+    if (!r || !r.code) throw new Error('Could not set up the game.');
+    const url = location.origin + '/' + chGame + '?room=' + r.code + '&go=1';
+    await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to, kind:'text', text: chLabel + ' — I’ve set up a table. Tap to play me: ' + url }) });
+    btn.querySelector('.cgo').textContent = 'Sent ✓';
+    setTimeout(() => { location.href = url; }, 350);
+  } catch(e){
+    chBusy = false;
+    btn.querySelector('.cgo').textContent = 'Try again';
+    toast(e.message || 'Could not set up the game.');
+  }
+}
 
 // ---------- follow ----------
 async function toggleFollow(){
@@ -1615,6 +1816,8 @@ function maybeWelcome(){
   setTimeout(maybeWelcome, 900);
   if (ME) {
     enterApp();
+    // deep link straight to the games shelf: /social#games
+    if (location.hash === '#games') showTab('games');
     // deep link back into a chat: /social#chat=<userId> (used by the game's Back button)
     const hm = location.hash.match(/^#chat=([a-f0-9]{6,24})$/);
     if (hm && ME.photo) {
