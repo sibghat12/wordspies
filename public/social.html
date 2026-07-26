@@ -1486,6 +1486,7 @@ async function openChallenge(game, label){
   chGame = game; chLabel = label; chBusy = false;
   $('chTitle').textContent = label + ' — challenge a friend';
   $('chList').innerHTML = '<div class="chempty">Finding your people…</div>';
+  if ($('chWrap').parentElement !== document.body) document.body.appendChild($('chWrap'));
   $('chWrap').classList.remove('hidden');
   try {
     const j = await api('/people');
