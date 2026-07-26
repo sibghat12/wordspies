@@ -122,7 +122,12 @@ function mount(app, io, opts) {
       used: room.used,
       meld: room.meld,                   // { word, rounds, title, line } once won
       hostId: room.hostId,
-      watchers: room.watchers ? room.watchers.size : 0
+      watchers: room.watchers ? room.watchers.size : 0,
+      // Who those eyes belong to — signed-in watchers by name and face so the
+      // players can follow them back, everyone else an anonymous spy.
+      crowd: room.watchers
+        ? [...room.watchers.values()].map(w => (w && w.uid ? { uid: w.uid, name: w.name, photo: w.photo } : null))
+        : []
     };
   }
 
@@ -183,11 +188,17 @@ function mount(app, io, opts) {
     // has never carried the unlocked words, only whether someone has locked
     // one in, so a watcher sees exactly what the other player sees.
     let watch = null;
-    socket.on('watch', (data) => {
+    socket.on('watch', async (data) => {
       if (room || watch) return;
       const r = rooms.get(String((data && data.code) || '').trim().toUpperCase());
       if (!r) { fail('That game has already finished.'); return; }
-      (r.watchers || (r.watchers = new Set())).add(socket.id);
+      // Know who's looking before we list them; re-check after the wait in
+      // case this socket sat down in the meantime.
+      await socket.ready;
+      if (room || watch) return;
+      const p = socket.profile;
+      (r.watchers || (r.watchers = new Map()))
+        .set(socket.id, p && p.uid ? { uid: p.uid, name: p.name, photo: p.photo } : null);
       watch = r;
       socket.join(r.code);
       socket.emit('watching', { code: r.code });
