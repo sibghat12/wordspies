@@ -478,6 +478,12 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 /* desktop: WhatsApp-style split — every chat on the left, the open one on the right */
 @media(min-width:900px){
   .splitview{display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;align-items:start}
+  /* every other child of the app shell — the live-room banner, the play link —
+     is a grid item too, and would otherwise eat the 360px column and shove the
+     chat list across the page. They get a full-width row of their own. */
+  .splitview > *{grid-column:1/-1}
+  .splitview > #tabChats{grid-column:1}
+  .splitview > #tabChat{grid-column:2;grid-row:auto}
   .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;position:sticky;top:74px}
   .splitview #tabChats .head{padding:18px 20px 10px}
   .splitview #tabChat{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;position:relative;height:calc(100vh - 130px);display:flex;flex-direction:column}
