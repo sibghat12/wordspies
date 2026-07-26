@@ -120,13 +120,72 @@ try { social = require('./social').mount(app, redis) || null; } catch (e) { cons
 // own module, its own socket namespace, its own rooms. If it fails to load the
 // main game does not notice. It borrows nothing but the identity lookup, so a
 // signed-in player is seated under their own name and photo.
-try { require('./meld').mount(app, io, { identify: resolveSocialIdentity }); }
+let meldMod = null;
+try { meldMod = require('./meld').mount(app, io, { identify: resolveSocialIdentity }) || null; }
 catch (e) { console.error('meld module failed to load (game unaffected):', e.message); }
 
 // 🎲 The arcade — Ludo, Connect 4 and 8-ball pool, at /games. Same isolation
 // rules again: own namespaces, own rooms, borrows only the identity lookup.
-try { require('./arcade').mount(app, io, { identify: resolveSocialIdentity }); }
+let arcadeMod = null;
+try { arcadeMod = require('./arcade').mount(app, io, { identify: resolveSocialIdentity }) || null; }
 catch (e) { console.error('arcade module failed to load (game unaffected):', e.message); }
+
+// ── Live ──────────────────────────────────────────────────────────────────
+// Every game actually being played right now, in one list. The point is that
+// an empty-looking site and a busy one should not look the same: if four
+// people are mid-game you should be able to see it, look in, and either ask
+// for a seat or just watch. Nothing in here is private — names and photos are
+// what players already show at the table, and no board position, hand or
+// spymaster key is included. Rooms with nobody but bots in them are skipped,
+// because "6 games live" is a lie if five of them are a computer alone.
+const teamName = t => t === 'red' ? 'Red' : t === 'blue' ? 'Blue' : null;
+function wordspiesLive() {
+  const out = [];
+  for (const r of rooms.values()) {
+    const seated = [...r.players.values()].filter(p => !p.watcher && p.connected);
+    if (!seated.length) continue;
+    const rem = r.board ? { red: remaining(r, 'red'), blue: remaining(r, 'blue') } : null;
+    out.push({
+      game: 'wordspies', icon: '🕵️', title: 'WordSpies',
+      code: r.code, href: '/play?room=' + r.code, watchHref: '/play?watch=' + r.code,
+      state: r.state, cap: null,
+      players: seated.map(p => ({
+        name: p.name, photo: p.photo || null, bot: false, connected: true, team: p.team || null
+      })),
+      seatsFree: null,
+      lead: r.state === 'over'
+        ? ((teamName(r.winner) || 'Nobody') + ' won it')
+        : (rem ? 'Red ' + rem.red + ' — Blue ' + rem.blue + ' left' : 'Picking teams'),
+      turnName: r.state === 'playing' && r.turn
+        ? teamName(r.turn.team) + (r.turn.phase === 'clue' ? ' — writing a clue' : ' — guessing')
+        : null,
+      watchers: [...r.players.values()].filter(p => p.watcher && p.connected).length,
+      since: r.lastActivity || Date.now()
+    });
+  }
+  return out;
+}
+
+app.get('/api/live', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  let games = [];
+  const add = (fn) => { try { if (fn) games = games.concat(fn() || []); } catch (e) { /* one game's bad day is not the tab's */ } };
+  add(wordspiesLive);
+  add(arcadeMod && arcadeMod.live);
+  add(meldMod && meldMod.live);
+  // Games actually being played first, then the ones still filling up, and
+  // within each the ones that moved most recently — a game someone touched a
+  // minute ago is far more worth looking at than one idling since lunchtime.
+  const rank = g => (g.state === 'playing' ? 0 : g.state === 'lobby' ? 1 : 2);
+  games.sort((a, b) => rank(a) - rank(b) || (b.since || 0) - (a.since || 0));
+  res.json({
+    games,
+    playing: games.filter(g => g.state === 'playing').length,
+    total: games.length,
+    people: games.reduce((n, g) => n + g.players.filter(p => !p.bot).length, 0),
+    watching: games.reduce((n, g) => n + (g.watchers || 0), 0)
+  });
+});
 
 // 🧪 Unlocks the test hatch: /play?test=<this>. Lives here rather than in the
 // client bundle so it isn't discoverable by reading the page source. Set
@@ -504,11 +563,18 @@ io.on('connection', (socket) => {
 
   // Watch-only entry: a secret link (?watch=Wxxxxxxxx) that shows the match
   // live — board, clues, players — but can never join a team or act.
-  socket.on('watch', guard(({ watchCode }) => {
+  // Since the Live tab, a plain room code works here too ({ code }). That is
+  // not a hole: the room code is the *join* code, so anyone holding it could
+  // already walk in and take a seat — arriving as a silent viewer instead is
+  // strictly the more polite door. The secret watchCode still exists for the
+  // case it was built for, handing someone a link that can only ever watch.
+  socket.on('watch', guard(({ watchCode, code }) => {
     if (room) return;
     watchCode = String(watchCode || '').trim().toUpperCase();
-    const r = [...rooms.values()].find(x => x.watchCode === watchCode);
-    if (!r) { socket.emit('errorMsg', 'This watch link is no longer valid.'); return; }
+    const plain = String(code || '').trim().toUpperCase();
+    const key = watchCode || plain;
+    const r = [...rooms.values()].find(x => x.watchCode === key) || (key ? rooms.get(key) : null);
+    if (!r) { socket.emit('errorMsg', 'This game is no longer running.'); return; }
     let n = [...r.players.values()].filter(p => p.watcher).length + 1;
     room = r;
     player = { id: socket.id, name: 'Viewer ' + n, team: null, role: 'operative', watcher: true, connected: true, avatar: pickAvatar(room), token: crypto.randomUUID() };
