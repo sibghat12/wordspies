@@ -328,7 +328,8 @@ function mount(app, io, opts) {
     const out = [];
     for (const r of rooms.values()) {
       const ps = [...r.players.values()];
-      if (!ps.length) continue;
+      // same rule as the arcade: nobody connected, nothing to look in on
+      if (!ps.some(p => p.connected)) continue;
       out.push({
         game: 'meld', icon: '🧠', title: 'Mind Meld', code: r.code, href: '/meld?room=' + r.code, watchHref: '/meld?watch=' + r.code,
         state: r.state, cap: 2,
