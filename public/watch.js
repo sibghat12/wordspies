@@ -48,7 +48,22 @@
       '  font:600 12.5px Inter,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.18)}',
       '.wknock{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top));',
       '  z-index:80;background:#16181f;color:#fff;border-radius:14px;padding:10px 16px;max-width:88vw;',
-      '  font:500 13.5px Inter,system-ui,sans-serif;box-shadow:0 10px 28px rgba(0,0,0,.3)}'
+      '  font:500 13.5px Inter,system-ui,sans-serif;box-shadow:0 10px 28px rgba(0,0,0,.3)}',
+      // The audience, by face and name. Opens under the eye pill.
+      '.wcrowd{position:fixed;top:calc(46px + env(safe-area-inset-top));right:12px;z-index:61;',
+      '  background:#16181f;color:#fff;border-radius:16px;padding:8px;width:228px;max-height:56vh;overflow-y:auto;',
+      '  font:500 13px Inter,system-ui,sans-serif;box-shadow:0 12px 30px rgba(0,0,0,.32)}',
+      '.wcrowd .wch{font:600 10.5px Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;',
+      '  opacity:.55;padding:4px 8px 7px}',
+      '.wcrowd .wrow{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:11px;color:#fff;',
+      '  text-decoration:none}',
+      'a.wrow:active,a.wrow:hover{background:rgba(255,255,255,.1)}',
+      '.wcrowd .wav{width:30px;height:30px;border-radius:50%;flex:none;background:#2a2d38;overflow:hidden;',
+      '  display:flex;align-items:center;justify-content:center;font-size:15px}',
+      '.wcrowd .wav img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.wcrowd .wnm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}',
+      '.wcrowd .wnm small{display:block;font-weight:500;font-size:10.5px;opacity:.55}',
+      '.wcrowd .wanon .wnm{opacity:.6;font-weight:500}'
     ].join('');
     document.head.appendChild(st);
   }
@@ -112,17 +127,52 @@
     socket.emit('watch', { code: CODE });
   };
 
-  // The eye count the players see. Nobody gets watched quietly.
-  window.watchEyes = function (n) {
+  // The eye count the players see. Nobody gets watched quietly — and now the
+  // eyes have faces: tap the pill and the audience is listed by name, each
+  // signed-in watcher a link to their profile where you can follow them or
+  // say hello. Watchers without an account are simply an anonymous spy.
+  var lastCrowd = [];
+  var esc = function (s) { return String(s).replace(/[<>&"]/g, function (c) { return { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]; }); };
+
+  function crowdHtml() {
+    var rows = lastCrowd.map(function (w) {
+      if (w && w.uid) {
+        var av = w.photo ? '<img src="' + esc(w.photo) + '" alt="">' : '🕵️';
+        return '<a class="wrow" href="/social#user=' + esc(w.uid) + '" target="_blank" rel="noopener">' +
+          '<span class="wav">' + av + '</span>' +
+          '<span class="wnm">' + esc(w.name || 'A spy') + '<small>Tap to follow or chat →</small></span></a>';
+      }
+      return '<div class="wrow wanon"><span class="wav">👤</span><span class="wnm">Anonymous spy</span></div>';
+    }).join('');
+    return '<div class="wch">👁 Watching now</div>' + rows;
+  }
+
+  function toggleCrowd() {
+    var p = document.getElementById('wcrowd');
+    if (p) { p.remove(); return; }
+    if (!lastCrowd.length) return;
+    p = document.createElement('div');
+    p.className = 'wcrowd';
+    p.id = 'wcrowd';
+    p.innerHTML = crowdHtml();
+    document.body.appendChild(p);
+  }
+
+  window.watchEyes = function (n, crowd) {
     n = n || 0;
+    lastCrowd = crowd || [];
     var el = document.getElementById('weyes');
-    if (!n || on) { if (el) el.remove(); return; }
+    var panel = document.getElementById('wcrowd');
+    if (!n || on) { if (el) el.remove(); if (panel) panel.remove(); return; }
     if (!el) {
       el = document.createElement('div');
       el.className = 'weyes';
       el.id = 'weyes';
+      el.style.cursor = 'pointer';
+      el.onclick = toggleCrowd;
       document.body.appendChild(el);
     }
-    el.textContent = '👁 ' + n + ' watching';
+    el.textContent = '👁 ' + n + ' watching ▾';
+    if (panel) panel.innerHTML = crowdHtml();   // keep an open list live
   };
 })();
