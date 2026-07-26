@@ -26,6 +26,34 @@
    can be a row down under View More. Everything else — Android — has it in
    the ⋮ menu. Whoever needs to show instructions asks here, so all three
    pages say the same true thing. */
+/* ---------- 🔄 staying fresh ----------
+   Installed apps and long-lived tabs resume the page they had, which is how
+   people end up playing last week's version and wondering where the new game
+   went. The server tells us which build it is; whenever this page comes back
+   into view we ask again, and if the answer has changed we reload once.
+   Never mid-match: a page can declare itself busy via window.wsIsBusy(),
+   and we hold the reload until it isn't. */
+(function () {
+  var current = null, stale = false;
+  function busy() {
+    try { return typeof window.wsIsBusy === 'function' && window.wsIsBusy(); }
+    catch (e) { return false; }
+  }
+  function maybeReload() {
+    if (stale && !busy()) { stale = false; location.reload(); }
+  }
+  function check() {
+    fetch('/api/version', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || !d.v) return;
+      if (current === null) { current = d.v; return; }
+      if (d.v !== current) { current = d.v; stale = true; maybeReload(); }
+    }).catch(function () {});
+  }
+  check();
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { check(); maybeReload(); } });
+  setInterval(function () { if (!document.hidden) { check(); maybeReload(); } }, 5 * 60 * 1000);
+})();
+
 window.wsInstallSteps = function () {
   var ua = navigator.userAgent || '';
   var ios = /iphone|ipad|ipod/i.test(ua)
@@ -49,9 +77,21 @@ window.wsInstallSteps = function () {
   if (window.__a2hsWall) return;                 // never twice on one page
   window.__a2hsWall = 1;
 
+  // "Not now" used to be forever, and forever turned out to be wrong: the
+  // whole point of installing is that messages and game invites actually
+  // reach people. So a no now lasts a day — long enough not to nag, short
+  // enough that everyone keeps being offered the door until they walk
+  // through it. (The old permanent 'no' value counts as expired.)
   var KEY = 'ws_a2hs';
-  var said = function () { try { return localStorage.getItem(KEY) === 'no'; } catch (e) { return false; } };
-  var sayNo = function () { try { localStorage.setItem(KEY, 'no'); } catch (e) {} };
+  var SNOOZE = 1000 * 60 * 60 * 24;
+  var said = function () {
+    try {
+      var v = localStorage.getItem(KEY);
+      if (!v || v === 'no') return false;
+      return (Date.now() - (+v || 0)) < SNOOZE;
+    } catch (e) { return false; }
+  };
+  var sayNo = function () { try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {} };
 
   var standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
