@@ -1199,7 +1199,7 @@ function mount(app, io, opts) {
 
     for (const r of ludoRooms.values()) {
       const seats = ludoPublic(r).seats;
-      if (!seats.some(s => s.name && !s.bot)) continue;
+      if (!seats.some(s => s.name && !s.bot && s.connected)) continue;
       const front = seats.filter(s => s.name).slice().sort((a, b) => b.home - a.home)[0];
       out.push({
         game: 'ludo', icon: '🎲', title: 'Ludo', code: r.code, href: '/ludo?room=' + r.code, watchHref: '/ludo?watch=' + r.code,
@@ -1218,7 +1218,7 @@ function mount(app, io, opts) {
 
     for (const r of fourRooms.values()) {
       const seats = fourPublic(r).seats;
-      if (!seats.some(s => s.name && !s.bot)) continue;
+      if (!seats.some(s => s.name && !s.bot && s.connected)) continue;
       let down = 0;
       for (const row of r.board) for (const v of row) if (v) down++;
       const series = r.scores[0] || r.scores[1] ? r.scores[0] + '–' + r.scores[1] + ' in the series' : null;
@@ -1236,7 +1236,7 @@ function mount(app, io, opts) {
 
     for (const r of poolRooms.values()) {
       const seats = poolPublic(r).seats;
-      if (!seats.some(s => s.name && !s.bot)) continue;
+      if (!seats.some(s => s.name && !s.bot && s.connected)) continue;
       let lead = 'Table open — no groups called yet';
       if (r.groups[0] && r.groups[1]) {
         const a = poolRemaining(r.balls, r.groups[0]), b = poolRemaining(r.balls, r.groups[1]);
