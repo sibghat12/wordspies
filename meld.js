@@ -121,7 +121,8 @@ function mount(app, io, opts) {
       history: room.history,
       used: room.used,
       meld: room.meld,                   // { word, rounds, title, line } once won
-      hostId: room.hostId
+      hostId: room.hostId,
+      watchers: room.watchers ? room.watchers.size : 0
     };
   }
 
@@ -175,6 +176,40 @@ function mount(app, io, opts) {
       : Promise.resolve();
 
     const fail = msg => socket.emit('err', { msg });
+
+    // Watching. A spectator joins the channel but never gets a seat, and every
+    // action handler here opens with `if (!room || !me) return` — so `room`
+    // staying null is the guard, not anything the page promises. publicState
+    // has never carried the unlocked words, only whether someone has locked
+    // one in, so a watcher sees exactly what the other player sees.
+    let watch = null;
+    socket.on('watch', (data) => {
+      if (room || watch) return;
+      const r = rooms.get(String((data && data.code) || '').trim().toUpperCase());
+      if (!r) { fail('That game has already finished.'); return; }
+      (r.watchers || (r.watchers = new Set())).add(socket.id);
+      watch = r;
+      socket.join(r.code);
+      socket.emit('watching', { code: r.code });
+      socket.emit('state', publicState(r));
+      broadcast(r);
+    });
+    socket.on('knock', () => {
+      if (!watch) return;
+      const now = Date.now();
+      if (now - (watch.lastKnock || 0) < 8000) return;
+      watch.lastKnock = now;
+      const prof = socket.profile;
+      socket.to(watch.code).emit('knock', {
+        name: safeName((prof && prof.name) || 'Someone'),
+        photo: (prof && prof.photo) || null
+      });
+    });
+    socket.on('disconnect', () => {
+      if (!watch) return;
+      const r = watch; watch = null;
+      if (r.watchers) { r.watchers.delete(socket.id); broadcast(r); }
+    });
 
     const seat = (r, name) => {
       const prof = socket.profile;
@@ -286,8 +321,34 @@ function mount(app, io, opts) {
     }
   }, 1000 * 60 * 10).unref?.();
 
+  // What the Live tab reads. The words in play never appear here — only the
+  // round number and whether each person has locked one in, which is exactly
+  // what the two players can see themselves.
+  function meldLive() {
+    const out = [];
+    for (const r of rooms.values()) {
+      const ps = [...r.players.values()];
+      if (!ps.length) continue;
+      out.push({
+        game: 'meld', icon: '🧠', title: 'Mind Meld', code: r.code, href: '/meld?room=' + r.code, watchHref: '/meld?watch=' + r.code,
+        state: r.state, cap: 2,
+        players: ps.map(p => ({ name: p.name, photo: p.photo || null, bot: false, connected: !!p.connected })),
+        seatsFree: Math.max(0, 2 - ps.length),
+        lead: r.meld ? ('Melded on "' + r.meld.word + '" in ' + r.meld.rounds)
+          : (r.state === 'playing'
+            ? 'Round ' + r.round + (r.prompt ? ' — linking ' + r.prompt.a.word + ' + ' + r.prompt.b.word : '')
+            : 'Waiting to start'),
+        turnName: null,
+        watchers: r.watchers ? r.watchers.size : 0,
+        since: r.touched || Date.now()
+      });
+    }
+    return out;
+  }
+
   console.log('meld module: mounted');
-  return { rooms };
+  return { rooms, live: meldLive };
 }
 
 module.exports = { mount, norm, verdict };
+
