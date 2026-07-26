@@ -30,8 +30,16 @@ app.use((req, res, next) => {
   next();
 });
 const landing = require('./landing');
+// The community IS the site now: the social app answers the front door —
+// games, community, chats and live games all one tap away. The old marketing
+// landing still exists at /home for anyone who wants the tour. Old share
+// links (wordspies.co.uk/?room=XXXX) still land at their game table.
 app.get('/', (req, res) => {
   if (req.query.room) return res.redirect('/play?room=' + encodeURIComponent(String(req.query.room).slice(0, 8)));
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'social.html'));
+});
+app.get('/home', (req, res) => {
   res.type('html').send(landing.page());
 });
 app.get('/play', (req, res) => {
