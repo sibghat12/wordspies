@@ -259,6 +259,16 @@ input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:n
 .tile.sassassin::after{content:'💀';position:absolute;top:5px;right:7px;font-size:10px;opacity:.8}
 
 .under{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+/* Stopping early is a real tactical choice — banking two right answers rather
+   than risking a third — so the control that does it is a proper button people
+   can see, not a faint one they scroll past. */
+.endturn{min-width:230px;padding:12px 20px;font-size:14.5px;border:1.5px solid var(--line)}
+.endturn .lg{color:var(--muted);font-weight:400;font-size:12.4px}
+.endturn.last{border-color:var(--red);color:var(--red-ink)}
+/* how many picks are left is the whole shape of the decision, so we say it */
+.gleft{background:#fff;border-radius:99px;padding:4px 12px;font-size:12.6px;font-weight:500;
+  box-shadow:var(--sh-sm);border:1px solid var(--line);color:var(--ink)}
+.gleft.last{color:var(--red-ink);border-color:var(--red)}
 .cluebar{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;width:100%}
 .cluebar .fld{max-width:250px;background:#fff;box-shadow:var(--sh-sm);border:1.5px solid var(--line)}
 .cluebar .fld:focus{border-color:var(--blue)}
@@ -677,7 +687,7 @@ b,strong{font-weight:600}
           <div class="statusbar" id="statusBar"></div>
           <div class="board" id="board"></div>
           <div class="under">
-            <button class="btn btn-light hidden" id="passBtn">End turn</button>
+            <button class="btn btn-light endturn hidden" id="passBtn">End turn</button>
             <div class="cluebar hidden" id="clueBar">
               <input class="fld" id="clueWord" maxlength="30" placeholder="One-word clue" autocomplete="off">
               <div class="nums" id="nums"></div>
@@ -2011,9 +2021,25 @@ function renderStatus(){
     }
   } else {
     html += `Clue: <span class="bigclue">${esc(S.clue.word)} <small>· ${S.clue.count}</small></span>`;
+    // How many picks are left is the whole shape of the decision — guess again,
+    // or stop while you're ahead — so we say it out loud instead of making
+    // people count backwards from the clue number. (guessesLeft can be Infinity,
+    // which arrives as null over JSON, so test it properly.)
+    const gl = S.clue.guessesLeft;
+    const inf = (gl === null || gl === undefined || !isFinite(gl));
     if (m && m.role === 'operative' && m.team === t.team) {
       html = `<span class="pulse"></span>Your turn! ` + html.replace('<span class="pulse"></span>','') + ` — tap a word`;
-      show($('passBtn'), true);
+      html += inf
+        ? ` <span class="gleft">guess as many as you like</span>`
+        : ` <span class="gleft${gl <= 1 ? ' last' : ''}">${gl} guess${gl === 1 ? '' : 'es'} left${gl <= 1 ? ' — this one ends the turn' : ''}</span>`;
+      const pb = $('passBtn');
+      pb.className = 'btn btn-light endturn' + (!inf && gl <= 1 ? ' last' : '');
+      pb.innerHTML = inf
+        ? `End turn <span class="lg">— stop here</span>`
+        : `End turn <span class="lg">— keep ${gl} guess${gl === 1 ? '' : 'es'} unused</span>`;
+      show(pb, true);
+    } else if (m && m.team === t.team) {
+      html += inf ? '' : ` <span class="gleft">${gl} guess${gl === 1 ? '' : 'es'} left</span>`;
     }
   }
   if (S.timerEnd) html += ` <span class="tmr" id="tmr"></span>`;
