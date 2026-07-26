@@ -7,7 +7,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Ludo — WordSpies Games</title>
-<meta name="description" content="Ludo online — play with 2 to 4 friends using a shared link, or fill the empty seats with bots. Roll, race, and send each other home.">
+<meta name="description" content="Ludo online — play with 2 to 4 friends using a shared link. Roll, race, and send each other home.">
 <meta name="theme-color" content="#fafafa">
 <link rel="icon" href="/favicon.ico">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -60,7 +60,13 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
 .lseat .x{font-size:12px;color:var(--faint);cursor:pointer;padding:4px 8px}
 .lseat.empty{border-style:dashed;color:var(--faint)}
 .lseat.empty .nm{font-weight:500;font-size:12.8px}
-.addbot{font-size:12.5px;font-weight:600;color:#5b4fd4;cursor:pointer;white-space:nowrap}
+/* the empty seats breathe, so the room reads as live rather than stuck */
+.lseat.empty .cdot{animation:seatwait 1.6s ease-in-out infinite}
+@keyframes seatwait{0%,100%{opacity:.22;transform:scale(.85)}50%{opacity:.6;transform:scale(1)}}
+.lseat.just{animation:seatpop .5s cubic-bezier(.34,1.4,.44,1)}
+@keyframes seatpop{0%{transform:scale(.94);background:#eef6ff}60%{transform:scale(1.015)}100%{transform:scale(1)}}
+.lcount{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:14px;font-size:12.6px;font-weight:600;color:var(--sub)}
+.lcount .pulse{width:7px;height:7px;border-radius:50%;background:#22b573;animation:seatwait 1.6s ease-in-out infinite}
 
 /* the board — a 15×15 grid drawn with positioned divs */
 .board{position:relative;width:100%;aspect-ratio:1;background:#fff;border-radius:16px;overflow:hidden;
@@ -100,7 +106,7 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
   <div id="home">
     <div class="card">
       <h1>The board game everyone already knows.</h1>
-      <p class="lede">Roll a six to get out, race your four tokens round the board, and land on your friends to send them home. Two to four players — invite friends with a link, and bots happily take any empty seat.</p>
+      <p class="lede">Roll a six to get out, race your four tokens round the board, and land on your friends to send them home. Two to four players — invite friends with a link and watch the seats fill up.</p>
       <div id="nameBox">
         <label class="fl" for="nameIn">Your name</label>
         <input type="text" id="nameIn" maxlength="18" placeholder="e.g. Ayoub" autocomplete="off">
@@ -117,7 +123,7 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
       </div>
       <div class="err hidden" id="homeErr"></div>
     </div>
-    <p class="mut">On your own? Start a game and add three bots — it’s a real match, and the bots take no prisoners.</p>
+    <p class="mut">Start a table, send the code to two or three friends, and watch them drop into the seats as they arrive.</p>
   </div>
 
   <!-- lobby -->
@@ -126,6 +132,7 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
       <h2 style="font-size:17px;font-weight:700" class="center">Who’s playing?</h2>
       <div class="codebox"><div style="font-size:11.5px;font-weight:700;letter-spacing:.09em;color:var(--faint);text-transform:uppercase;margin-bottom:6px">Room code</div><div class="code" id="lobbyCode"></div></div>
       <div id="lobbySeats"></div>
+      <div class="lcount" id="lobbyCount"><span class="pulse"></span><span id="lobbyCountT">Watching for players…</span></div>
       <div class="row" style="margin-top:16px">
         <button class="btn btn-line" id="shareBtn">📤 Invite</button>
         <button class="btn btn-dark" id="startBtn">Start</button>
@@ -171,6 +178,9 @@ const SOFT = ['#fdeef1','#e9f7ef','#fef6e3','#eaf0fd'];
 const LBL = ['Red','Green','Yellow','Blue'];
 
 let socket = null, S = null, myId = null, ME = null, mySeat = -1;
+// who was sitting down at the last paint, so we can tell a new arrival from a
+// seat that was already taken and light only the one that changed
+let seenSeats = new Set();
 
 fetch('/api/social/me').then(r => r.json()).then(d => {
   if (d && d.me) {
@@ -188,6 +198,20 @@ function conn() {
   socket.on('state', st => { S = st; render(); });
   socket.on('seated', d => { myId = d.you; mySeat = d.seat; history.replaceState(null, '', '/ludo?room=' + d.code); });
   socket.on('err', d => flash(d.msg));
+  // While we're sat in the lobby we keep asking the server who's there. The
+  // socket already pushes on every join, but a phone that slept, a flaky
+  // network or a dropped websocket can all lose that push — this makes sure
+  // the seats fill in on their own no matter what happened to the connection.
+  setInterval(() => {
+    if (!socket || !S || S.state !== 'lobby') return;
+    if (socket.connected) socket.emit('sync');
+    else socket.connect();
+  }, 3000);
+  // coming back to the tab shouldn't need a refresh either
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || !socket) return;
+    if (socket.connected) socket.emit('sync'); else socket.connect();
+  });
   return socket;
 }
 let flashT = null;
@@ -294,14 +318,25 @@ function render() {
     $('lobbyCode').textContent = S.code;
     const iAmHost = S.hostId === myId;
     $('lobbySeats').innerHTML = S.seats.slice(0, S.cap).map(s => {
-      if (!s.id) return '<div class="lseat empty"><span class="cdot" style="background:' + CSSC[s.seat] + ';opacity:.35"></span><span class="nm">Empty seat — share the link' + (iAmHost ? ', or <span class="addbot" onclick="socket.emit(\'addBot\')">add a bot 🤖</span>' : '') + '</span></div>';
+      if (!s.id) return '<div class="lseat empty"><span class="cdot" style="background:' + CSSC[s.seat] + '"></span><span class="nm">Waiting for a player — share the code or tap a friend below</span></div>';
       const nm = s.id === myId ? s.name + ' (you)' : s.name;
-      const kick = s.bot && iAmHost ? '<span class="x" onclick="socket.emit(\'kickBot\',{seat:' + s.seat + '})">✕</span>' : '';
-      return '<div class="lseat"><span class="cdot" style="background:' + CSSC[s.seat] + '"></span><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span>' + kick + '</div>';
+      // a seat that filled since the last paint gets a little pop, so you
+      // actually notice somebody arriving rather than having to compare rows
+      const fresh = seenSeats.size && !seenSeats.has(s.id) ? ' just' : '';
+      return '<div class="lseat' + fresh + '"><span class="cdot" style="background:' + CSSC[s.seat] + '"></span><span class="nm">' + esc(nm) + '</span></div>';
     }).join('');
+    const here = S.seats.slice(0, S.cap).filter(s => s.id).length;
+    const wasHere = seenSeats.size;
+    seenSeats = new Set(S.seats.filter(s => s.id).map(s => s.id));
+    if (here > wasHere && wasHere) flash('👋 ' + (here === S.cap ? 'Everyone’s in!' : 'Someone just took a seat'));
+    $('lobbyCountT').textContent = here >= S.cap
+      ? 'Table full — ' + here + ' of ' + S.cap + ' seated'
+      : here + ' of ' + S.cap + ' seated · watching for more…';
     $('startBtn').disabled = !iAmHost;
     $('lobbyHint').textContent = iAmHost
-      ? 'Start when everyone’s in. Bots fill any seat you leave empty.'
+      ? here < 2
+        ? 'Ludo needs two players. Share the code — seats fill in here the moment somebody joins.'
+        : 'Start whenever you like — you can begin with ' + here + ', or wait for the rest.'
       : 'Waiting for ' + (S.seats.find(x => x.id === S.hostId) || {}).name + ' to start the game…';
     return;
   }
