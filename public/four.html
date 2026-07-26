@@ -57,14 +57,29 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
 .seat .nm{font-size:13px;font-weight:600;letter-spacing:-.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .seat .sc{margin-left:auto;font-size:13px;font-weight:800;color:var(--sub)}
 
-/* the board itself */
-.boardBox{background:var(--board);border-radius:18px;padding:10px;box-shadow:0 12px 30px rgba(30,40,100,.25)}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.cell{aspect-ratio:1;border-radius:50%;background:#fafafa;position:relative;transition:background .12s;cursor:pointer}
-.cell.p1{background:var(--p1)}
-.cell.p2{background:var(--p2)}
-.cell.winln{box-shadow:0 0 0 3.5px #fff inset,0 0 14px rgba(255,255,255,.75)}
-.cell.hint::after{content:'';position:absolute;inset:28%;border-radius:50%;background:rgba(255,255,255,.35)}
+/* the board itself — a glossy plastic frame with punched holes, discs that
+   actually look like discs (rim, ridge ring, light spot), a bounce when one
+   drops in, and a ghost piece that previews your move before you commit. */
+.boardBox{background:linear-gradient(160deg,#4c5ec7 0%,#3b4a9f 45%,#2c3a85 100%);border-radius:22px;padding:12px;
+  box-shadow:0 18px 40px rgba(30,40,100,.35),inset 0 2px 1px rgba(255,255,255,.28),inset 0 -4px 8px rgba(10,16,50,.35)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.cell{aspect-ratio:1;border-radius:50%;position:relative;cursor:pointer;
+  background:radial-gradient(circle at 50% 42%,#ffffff 0%,#eef0f6 55%,#dfe2ec 100%);
+  box-shadow:inset 0 4px 8px rgba(16,22,60,.42),inset 0 -1px 2px rgba(255,255,255,.7)}
+.cell.p1,.cell.p2{box-shadow:inset 0 -5px 8px rgba(0,0,0,.28),inset 0 4px 6px rgba(255,255,255,.30),0 2px 4px rgba(10,16,50,.45)}
+.cell.p1{background:radial-gradient(circle at 34% 28%,#ff97aa 0%,#ef5c76 45%,#d63a58 78%,#b52a46 100%)}
+.cell.p2{background:radial-gradient(circle at 34% 28%,#ffdf8e 0%,#f7bc3e 45%,#e3a01a 78%,#c48708 100%)}
+.cell.p1::before,.cell.p2::before{content:'';position:absolute;inset:19%;border-radius:50%;
+  border:2.5px solid rgba(0,0,0,.15);box-shadow:inset 0 2px 5px rgba(255,255,255,.28),inset 0 -2px 4px rgba(0,0,0,.14)}
+.cell.p1::after,.cell.p2::after{content:'';position:absolute;left:20%;top:12%;width:30%;height:19%;border-radius:50%;
+  background:linear-gradient(rgba(255,255,255,.65),rgba(255,255,255,.05));transform:rotate(-20deg);filter:blur(.5px)}
+.cell.drop{animation:fall .55s cubic-bezier(.34,1.4,.44,1)}
+@keyframes fall{0%{transform:translateY(-480%)}62%{transform:translateY(0)}78%{transform:translateY(-9%)}100%{transform:translateY(0)}}
+.cell.winln{animation:winpulse 1s ease-in-out infinite;z-index:2}
+@keyframes winpulse{0%,100%{box-shadow:inset 0 0 0 3px #fff,0 0 10px rgba(255,255,255,.65)}
+  50%{box-shadow:inset 0 0 0 4.5px #fff,0 0 26px rgba(255,255,255,1)}}
+.cell.g1{background:radial-gradient(circle at 34% 28%,rgba(239,92,118,.5),rgba(214,58,88,.42) 70%);box-shadow:inset 0 3px 7px rgba(16,22,60,.3)}
+.cell.g2{background:radial-gradient(circle at 34% 28%,rgba(247,188,62,.55),rgba(227,160,26,.45) 70%);box-shadow:inset 0 3px 7px rgba(16,22,60,.3)}
 .statusln{text-align:center;font-size:13.6px;font-weight:600;margin:14px 0 4px;min-height:20px}
 .statusln .waitdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;animation:pulse 1.3s infinite}
 @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
@@ -121,6 +136,7 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
       <div class="codebox"><div style="font-size:11.5px;font-weight:700;letter-spacing:.09em;color:var(--faint);text-transform:uppercase;margin-bottom:6px">Room code</div><div class="code" id="lobbyCode"></div></div>
       <button class="btn btn-dark" id="shareBtn">📤 Send the link</button>
       <button class="btn btn-line" id="copyBtn" style="margin-top:10px">Copy link</button>
+      <div id="friendRow" class="hidden"></div>
       <p class="mut"><span class="waitdot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse 1.3s infinite"></span>Waiting for your friend — or <a href="#" id="lobbyBot">play the bot instead</a></p>
     </div>
   </div>
@@ -143,7 +159,7 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
 <script>
 const $ = id => document.getElementById(id);
 const show = (el, on) => el.classList.toggle('hidden', !on);
-let socket = null, S = null, myId = null, ME = null;
+let socket = null, S = null, myId = null, ME = null, prevBoard = null;
 
 fetch('/api/social/me').then(r => r.json()).then(d => {
   if (d && d.me) {
@@ -211,6 +227,23 @@ if (pre) {
 
 // board cells, built once
 const grid = $('grid');
+let ghostEl = null;
+function clearGhost() { if (ghostEl) { ghostEl.classList.remove('g1', 'g2'); ghostEl = null; } }
+// Hovering a column shows a faint disc where your piece would actually land —
+// you see the move before you commit to it.
+function showGhost(c) {
+  clearGhost();
+  if (!S || S.state !== 'playing') return;
+  const idx = S.seats.findIndex(s => s.id === myId);
+  if (idx < 0 || idx + 1 !== S.turn) return;
+  for (let r = 5; r >= 0; r--) {
+    if (S.board[r][c] === 0) {
+      ghostEl = grid.children[r * 7 + c];
+      ghostEl.classList.add(idx === 0 ? 'g1' : 'g2');
+      return;
+    }
+  }
+}
 for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++) {
   const d = document.createElement('div');
   d.className = 'cell'; d.dataset.c = c;
@@ -218,10 +251,13 @@ for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++) {
     if (!S || S.state !== 'playing') return;
     const idx = S.seats.findIndex(s => s.id === myId);
     if (idx < 0 || idx + 1 !== S.turn) return flash('Not your turn.');
+    clearGhost();
     socket.emit('drop', { col: c });
   };
+  d.onmouseenter = () => showGhost(c);
   grid.appendChild(d);
 }
+grid.addEventListener('mouseleave', clearGhost);
 
 function render() {
   if (!S) return;
@@ -241,13 +277,16 @@ function render() {
     return '<div class="' + cls + '"><span class="dot" style="background:' + col + '"></span><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span><span class="sc">' + S.scores[i] + '</span></div>';
   }).join('');
 
-  // board
+  // board — a piece that wasn't there last render falls in from the top
   const cells = grid.children;
   const winSet = new Set((S.line || []).map(([r, c]) => r * 7 + c));
   for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++) {
     const el = cells[r * 7 + c], v = S.board[r][c];
-    el.className = 'cell' + (v === 1 ? ' p1' : v === 2 ? ' p2' : '') + (winSet.has(r * 7 + c) ? ' winln' : '');
+    const fresh = v !== 0 && prevBoard && prevBoard[r][c] === 0;
+    el.className = 'cell' + (v === 1 ? ' p1' : v === 2 ? ' p2' : '') + (winSet.has(r * 7 + c) ? ' winln' : '') + (fresh ? ' drop' : '');
   }
+  prevBoard = S.board.map(row => row.slice());
+  ghostEl = null;                                  // className reset cleared it
 
   // status + game over
   const meIdx = S.seats.findIndex(s => s.id === myId);
@@ -266,5 +305,7 @@ function render() {
 function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
 </script>
 <script src="/a2hs.js" defer></script>
+<script>window.WS_GAME = { slug: 'four', label: '🔴 Connect 4' };</script>
+<script src="/invite.js" defer></script>
 </body>
 </html>
