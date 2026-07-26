@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- maximum-scale=1 is what stops iOS zooming the whole layout every time a
+     search box or message field gets focus; pinch-zoom still works. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>WordSpies Social — the community behind the game</title>
 <meta name="description" content="Meet the people you play WordSpies with. Create a profile, follow other spies, and chat between games.">
 <meta name="theme-color" content="#fafafa">
@@ -252,6 +254,43 @@ body.authmodal{overflow:hidden}
   .playcta:hover .pa{transform:translateX(3px)}
 }
 
+/* The games bar sits directly under the big pink one: every game on the site,
+   one tap away, in a row that scrolls sideways on a phone. Outlined pills
+   rather than filled cards so it never competes with "Start a game". */
+.gamesbar{display:flex;gap:8px;margin:-6px 20px 16px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.gamesbar::-webkit-scrollbar{display:none}
+.gamesbar a{flex:none;display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:999px;background:#fff;
+  border:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:12.8px;font-weight:600;letter-spacing:-.2px;
+  transition:transform .15s,border-color .15s}
+.gamesbar a:hover{transform:translateY(-1px);border-color:#dcd8fb}
+.gamesbar a span{font-size:15px;line-height:1}
+.gamesbar a.all{background:#16181f;color:#fff;border-color:#16181f}
+@media(min-width:900px){ .gamesbar{margin:-8px 8px 20px} }
+
+/* the one-time beta welcome */
+#wsWelcome{position:fixed;inset:0;z-index:120;background:rgba(16,18,26,.5);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  display:flex;align-items:center;justify-content:center;padding:22px;animation:wfade .3s both}
+@keyframes wfade{from{opacity:0}to{opacity:1}}
+#wsWelcome .wcard{background:#fff;border-radius:24px;padding:30px 26px 24px;max-width:400px;width:100%;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);animation:wpop .4s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes wpop{from{transform:scale(.92) translateY(14px);opacity:0}to{transform:none;opacity:1}}
+#wsWelcome .wemj{font-size:44px;line-height:1;margin-bottom:12px;animation:wwave 1.8s ease .5s 2}
+@keyframes wwave{0%,100%{transform:rotate(0)}25%{transform:rotate(16deg)}75%{transform:rotate(-8deg)}}
+#wsWelcome h3{font-size:20px;font-weight:600;letter-spacing:-.4px;margin-bottom:10px}
+#wsWelcome p{font-size:13.6px;color:var(--sub);line-height:1.7;margin-bottom:20px}
+#wsWelcome p b{color:var(--ink);font-weight:600}
+#wsWelcome .btn{width:100%}
+#wsWelcome .wsub{display:block;width:100%;background:none;border:0;color:var(--sub);font:inherit;font-size:12.8px;
+  font-weight:500;padding:13px 8px 2px;cursor:pointer}
+#wsWelcome .wsub:hover{color:var(--ink)}
+
+/* the chat's game picker rows */
+.gpick{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:12px;cursor:pointer;transition:background .12s}
+.gpick:hover{background:#f6f5fb}
+.gpick .gi{flex:none;width:38px;height:38px;border-radius:11px;background:#f3f1fe;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1}
+.gpick b{display:block;font-size:13.8px;font-weight:600;letter-spacing:-.2px}
+.gpick i{display:block;font-style:normal;font-size:11.6px;color:var(--sub);margin-top:1px}
+
 /* The old bottom link stays for anyone who scrolls all the way down, but as a
    tidy bordered pill rather than a stray sentence pretending to be a button. */
 .gamelink{display:block;width:fit-content;margin:10px auto 22px;padding:10px 20px;border-radius:99px;
@@ -461,6 +500,13 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
       </span>
       <span class="pa" aria-hidden="true">→</span>
     </a>
+    <div class="gamesbar" aria-label="More games">
+      <a href="/ludo"><span>🎲</span>Ludo</a>
+      <a href="/pool"><span>🎱</span>8-Ball</a>
+      <a href="/four"><span>🔴</span>Connect 4</a>
+      <a href="/meld"><span>🧠</span>Mind Meld</a>
+      <a href="/games" class="all"><span>🎮</span>All games</a>
+    </div>
     <div class="walllay">
       <!-- desktop only: you, the room's pulse, and who's winning -->
       <aside class="wallside" id="wallSide"></aside>
@@ -520,12 +566,20 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
     <div class="msgs" id="msgs"></div>
     <button class="jumpnew" id="jumpNew" onclick="toBottom($('msgs'))">↓ New messages</button>
     <div class="composer">
+      <button class="cbtn" onclick="toggleGamePick()" title="Invite to a game">🎮</button>
       <button class="cbtn" onclick="togglePicker()">😊</button>
-      <button class="cbtn" onclick="inviteToPlay()" title="Invite to a game">🎮</button>
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
       <button class="cbtn send" onclick="sendMsg()">➤</button>
     </div>
     <div class="picker hidden" id="emojiPick"></div>
+    <div class="picker hidden" id="gamePick">
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);padding:2px 4px 10px">Challenge them to…</div>
+      <div class="gpick" onclick="gameInvite('ludo','🎲 Ludo')"><span class="gi">🎲</span><span><b>Ludo</b><i>the classic board race — bots can fill seats</i></span></div>
+      <div class="gpick" onclick="gameInvite('pool','🎱 8-Ball Pool')"><span class="gi">🎱</span><span><b>8-Ball Pool</b><i>real physics, first to the 8-ball</i></span></div>
+      <div class="gpick" onclick="gameInvite('four','🔴 Connect 4')"><span class="gi">🔴</span><span><b>Connect 4</b><i>four in a row, thirty-second rounds</i></span></div>
+      <div class="gpick" onclick="gameInvite('meld','🧠 Mind Meld')"><span class="gi">🧠</span><span><b>Mind Meld</b><i>type the same word at the same time</i></span></div>
+      <div class="gpick" onclick="inviteToPlay()"><span class="gi">🕵️</span><span><b>WordSpies</b><i>the full party game — bring more friends</i></span></div>
+    </div>
   </div>
 
   <!-- my profile -->
@@ -1240,9 +1294,34 @@ function buildEmojis(){
 function togglePicker(){
   const em = $('emojiPick');
   em.classList.toggle('hidden');
+  $('gamePick').classList.add('hidden');
   if (!em.dataset.ready) { buildEmojis(); em.dataset.ready = 1; }
 }
-function hidePickers(){ $('emojiPick').classList.add('hidden'); }
+
+function toggleGamePick(){
+  $('gamePick').classList.toggle('hidden');
+  $('emojiPick').classList.add('hidden');
+}
+
+// 🎮 → pick a game → a table is set up, the invite lands in the chat as a
+// tappable link, and you're taken straight to your seat. Their tap on the
+// link does the same for them — no codes, no forms, no lobby-hunting.
+async function gameInvite(game, label){
+  if (!curChat) return;
+  hidePickers();
+  try {
+    const r = await fetch('/api/' + game + '/new', { method:'POST' }).then(x => x.json());
+    if (!r || !r.code) throw new Error('Could not set up the game.');
+    const url = location.origin + '/' + game + '?room=' + r.code + '&go=1';
+    await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to: curChat, kind:'text', text: label + ' — I’ve set up a table. Tap to play me: ' + url }) });
+    lastMsgCount = -1;
+    await refreshChat();
+    toBottom($('msgs'));
+    location.href = url;               // and off to your seat
+  } catch(e){ toast(e.message || 'Could not set up the game.'); }
+}
+function hidePickers(){ $('emojiPick').classList.add('hidden'); $('gamePick').classList.add('hidden'); }
 
 // ---------- follow ----------
 async function toggleFollow(){
@@ -1496,9 +1575,44 @@ async function setupGoogle(){
   } catch(e){}
 }
 
+// ---------- 👋 the beta welcome ----------
+// Shown exactly once per browser. Personal if we know who you are, warm
+// either way — and it puts a straight line between "I found a problem" and
+// the person who can fix it.
+function maybeWelcome(){
+  try { if (localStorage.getItem('ws_welcomed')) return; } catch(e){ return; }
+  const name = ME && ME.name ? ME.name.split(' ')[0] : null;
+  const el = document.createElement('div');
+  el.id = 'wsWelcome';
+  el.innerHTML =
+    '<div class="wcard">' +
+      '<div class="wemj">👋</div>' +
+      '<h3>' + (name ? 'Hi ' + esc(name) + ', welcome!' : 'Welcome!') + '</h3>' +
+      '<p>WordSpies is a <b>beta</b> — we’re polishing it every single day, and you’re part of that. ' +
+      'Spotted a bug? Got an idea? <b>Sibi</b> built this — find him in the Community and message him directly. ' +
+      'He reads everything. Thank you for being here 💛</p>' +
+      '<button class="btn btn-dark" id="wGo">Let’s go</button>' +
+      '<button class="wsub" id="wSibi">💬 Message Sibi some feedback</button>' +
+    '</div>';
+  document.body.appendChild(el);
+  const done = () => { try { localStorage.setItem('ws_welcomed','1'); } catch(e){} el.remove(); };
+  el.querySelector('#wGo').onclick = done;
+  el.querySelector('#wSibi').onclick = async () => {
+    done();
+    try {
+      const j = await api('/members');
+      const sibi = (j.members || []).find(m => m.name === 'Sibi');
+      if (!sibi) return;
+      if (ME) openChatWith(sibi.id);
+      else requireLogin('👋 Log in to message Sibi');
+    } catch(e){}
+  };
+}
+
 // ---------- boot ----------
 (async () => {
   try { ME = (await api('/me')).me; } catch(e){}
+  setTimeout(maybeWelcome, 900);
   if (ME) {
     enterApp();
     // deep link back into a chat: /social#chat=<userId> (used by the game's Back button)
