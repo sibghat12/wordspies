@@ -72,7 +72,10 @@ body.authmodal{overflow:hidden}
 .tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:7px 8px calc(10px + env(safe-area-inset-bottom));z-index:10}
 /* Inactive tabs are grey and the active one is ink-dark: before this the only
    difference was font-weight, which is far too quiet to tell you where you are. */
-.tabbar button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:var(--faint);background:none;border:none;padding:6px 16px;border-radius:14px;transition:color .15s,background .15s}
+/* five tabs now, so the padding has to give a little or the labels collide on
+   a small phone — the tap targets stay a comfortable height, they just narrow. */
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:var(--faint);background:none;border:none;padding:6px 9px;border-radius:14px;transition:color .15s,background .15s;min-width:0}
+@media(max-width:359px){ .tabbar button{padding:6px 5px;font-size:9.5px} }
 .tabbar button.on{color:var(--ink);font-weight:800}
 .tabbar .ico{font-size:20px;display:block;line-height:1}
 /* Your own face is the quickest thing to spot in a row of icons, so the Profile
@@ -301,6 +304,51 @@ body.authmodal{overflow:hidden}
 .ggrid .g-spy{grid-column:1/-1}
 .ggrid .g-spy .gd{min-height:0}
 @media(min-width:900px){ .ggrid{grid-template-columns:repeat(3,1fr);padding:16px 8px 26px} }
+
+/* live games — what is actually happening right now */
+.lv-head{padding:8px 22px 0}
+.lv-head h2{font-size:22px;font-weight:800;letter-spacing:-.6px}
+.lv-head p{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.55}
+.lv-stats{display:flex;gap:8px;padding:14px 20px 4px;flex-wrap:wrap}
+.lv-stat{flex:1;min-width:78px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.lv-stat b{display:block;font-size:20px;font-weight:800;letter-spacing:-.6px;line-height:1.1}
+.lv-stat span{font-size:11px;font-weight:600;color:var(--faint)}
+.lv-stat.hot b{color:var(--green)}
+.lv-list{padding:12px 20px 26px;display:flex;flex-direction:column;gap:11px}
+@media(min-width:900px){ .lv-stats{padding:14px 8px 4px} .lv-list{padding:12px 8px 26px;display:grid;grid-template-columns:repeat(2,1fr)} }
+.lvc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px 14px 12px;position:relative}
+.lvc .lvtop{display:flex;align-items:center;gap:9px}
+.lvc .lvi{flex:none;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;background:#f3f1fe}
+.lvc.g-ludo .lvi{background:#e7eefc}.lvc.g-pool .lvi{background:#e2f4ec}.lvc.g-four .lvi{background:#e8eafb}
+.lvc.g-meld .lvi{background:#eeebfd}.lvc.g-wordspies .lvi{background:#fdeaee}
+.lvc .lvn{flex:1;min-width:0;font-size:14.5px;font-weight:800;letter-spacing:-.3px}
+.lvc .lvn small{display:block;font-weight:600;font-size:11px;color:var(--faint);letter-spacing:0}
+.lvpill{flex:none;font-size:10px;font-weight:800;border-radius:99px;padding:4px 9px;background:#f1f2f5;color:var(--sub)}
+.lvpill.on{background:var(--green);color:#fff}
+.lvpill.done{background:#f1f2f5;color:var(--faint)}
+.lveyes{flex:none;font-size:11px;font-weight:700;color:var(--faint)}
+.lvwho{display:flex;align-items:center;gap:-4px;margin-top:11px;flex-wrap:wrap;row-gap:6px}
+.lvp{display:flex;align-items:center;gap:6px;background:#f7f7f9;border-radius:99px;padding:3px 10px 3px 3px;margin-right:6px;font-size:12px;font-weight:600;max-width:100%}
+.lvp span.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:96px}
+.lvp.turn{background:#16181f;color:#fff}
+.lvp.off{opacity:.5}
+.lvp .tag{font-size:9.5px;font-weight:800;opacity:.6}
+.lvlead{margin-top:10px;font-size:12.5px;font-weight:600;color:var(--sub);line-height:1.45}
+.lvbtns{display:flex;gap:7px;margin-top:12px}
+.lvbtns a{flex:1;border:0;border-radius:11px;font-family:inherit;font-size:12.5px;font-weight:700;padding:9px 0;min-height:38px;
+  display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer}
+.lvbtns .lvwatch{background:#16181f;color:#fff}
+.lvbtns .lvjoin{background:var(--green);color:#fff}
+.lv-empty{text-align:center;color:var(--faint);font-size:13px;line-height:1.7;padding:34px 30px 40px}
+.lv-empty .big{font-size:34px;display:block;margin-bottom:8px}
+.lvnudge{display:flex;align-items:center;gap:9px;margin:-4px 20px 14px;padding:11px 14px;border-radius:14px;background:#16181f;color:#fff;
+  text-decoration:none;font-size:13px;font-weight:600}
+.lvnudge b{flex:1;font-weight:700}
+.lvnudge .lvna{opacity:.6}
+@media(min-width:900px){ .lvnudge{margin:-4px 8px 16px} }
+.lvdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle;
+  animation:lvpulse 1.6s ease-in-out infinite}
+@keyframes lvpulse{0%,100%{opacity:1}50%{opacity:.25}}
 
 /* the challenge sheet — pick a friend, we do the rest */
 .chwrap{position:fixed;inset:0;background:rgba(22,24,31,.45);z-index:96;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
@@ -569,6 +617,11 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
       </span>
       <span class="pa" aria-hidden="true">→</span>
     </a>
+    <!-- A quiet nudge on the wall, only when there is genuinely something to
+         look at. Nobody finds a tab they have no reason to press. -->
+    <a class="lvnudge hidden" id="lvNudge" href="#live" onclick="showTab('live');return false">
+      <span class="lvdot"></span><b id="lvNudgeT"></b><span class="lvna" aria-hidden="true">→</span>
+    </a>
     <div class="garcade" aria-label="Games">
       <div class="gcard g-ludo">
         <div class="gi">🎲</div><div class="gn">Ludo</div>
@@ -617,6 +670,26 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
         <div id="wallBody"></div>
         <div class="empty hidden" id="wallEmpty">No spies found yet.<br>You're one of the first — invite your friends!</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══ LIVE — every game being played right now ═══ -->
+  <!-- The point of this screen is that a quiet site and a busy one should not
+       look identical. If four people are mid-game you should be able to see
+       that, look in on any of them, and either take a free seat or just
+       watch. Nothing here is private: names, photos and the score are what
+       the players are already showing each other at the table. -->
+  <div id="tabLive" class="hidden">
+    <div class="lv-head">
+      <h2>Live right now 📺</h2>
+      <p>Every game being played this second. Look in on any of them — take a free seat, or just watch.</p>
+    </div>
+    <div class="lv-stats" id="lvStats"></div>
+    <div class="lv-list" id="lvList"></div>
+    <div class="lv-empty hidden" id="lvEmpty">
+      <span class="big">🌙</span>
+      Nobody's playing at the moment.<br>Start one and you'll show up here — then anyone can drop in.
+      <div style="margin-top:16px"><a class="gplay" style="background:#16181f;color:#fff;border-radius:11px;padding:10px 20px;text-decoration:none;font-weight:700;font-size:13px" href="#games" onclick="showTab('games');return false">Pick a game →</a></div>
     </div>
   </div>
 
@@ -771,6 +844,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 
   <div class="tabbar">
     <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge live hidden" id="wallBadge"></span></button>
+    <button id="tbLive" onclick="showTab('live')"><span class="ico">📺</span>Live<span class="badge live hidden" id="liveBadge"></span></button>
     <button id="tbGames" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
     <button id="tbChats" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
     <button id="tbMe" onclick="showTab('me')"><span class="ico tabav" id="tbMeAv">👤</span>Profile<span class="tdot hidden" id="meDot"></span></button>
@@ -1053,6 +1127,7 @@ function paintTabs(){
   }
 }
 let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0, lastTheirRead = 0;
+let liveTimer = null;
 
 function showTab(t){
   if (GUEST && (t === 'chats' || t === 'chat' || t === 'me')) {
@@ -1064,13 +1139,15 @@ function showTab(t){
     toast('📷 Add your photo first — then you join the wall');
   }
   clearInterval(chatTimer); chatTimer = null;
-  [['tabWall','wall'],['tabGames','games'],['tabMe','me'],['tabMember','member'],['tabChats','chats'],['tabChat','chat']]
+  clearInterval(liveTimer); liveTimer = null;
+  [['tabWall','wall'],['tabLive','live'],['tabGames','games'],['tabMe','me'],['tabMember','member'],['tabChats','chats'],['tabChat','chat']]
     .forEach(([id, key]) => $(id).classList.toggle('hidden', t !== key));
   // desktop: show the chat list AND the open chat side by side
   const split = window.innerWidth >= 900 && curChat && (t === 'chat' || t === 'chats');
   $('vApp').classList.toggle('splitview', !!split);
   if (split) { $('tabChats').classList.remove('hidden'); $('tabChat').classList.remove('hidden'); }
   $('tbWall').classList.toggle('on', t === 'wall');
+  $('tbLive').classList.toggle('on', t === 'live');
   $('tbGames').classList.toggle('on', t === 'games');
   $('tbMe').classList.toggle('on', t === 'me');
   $('tbChats').classList.toggle('on', t === 'chats' || t === 'chat');
@@ -1087,8 +1164,95 @@ function showTab(t){
   } else if (t === 'chats') { refreshChats(); chatTimer = setInterval(refreshChats, 5000); askNotify(); }
   else if (t === 'chat') { refreshChat(true); chatTimer = setInterval(refreshChat, 3000); }
   if (t === 'me') { paintSound(); paintPush(); }
+  // Watching a list of live games only works if it's actually live: five
+  // seconds while you're looking at it, and the slower background tick below
+  // keeps the tab badge honest while you're somewhere else.
+  if (t === 'live') { refreshLive(); liveTimer = setInterval(refreshLive, 5000); }
   window.scrollTo(0,0);
 }
+
+// ---------- 📺 live games ----------
+// One list of everything being played anywhere on the site. The server builds
+// it (see /api/live) and deliberately leaves out anything the players can't
+// already see themselves — no board positions, no hands, no spymaster key,
+// and no rooms that are nothing but a bot playing alone.
+const LV_PILL = { playing: ['LIVE', 'on'], lobby: ['Filling up', ''], over: ['Finished', 'done'] };
+
+function lvCard(g){
+  const [pillT, pillC] = LV_PILL[g.state] || ['', ''];
+  const chips = (g.players || []).map(p => {
+    const isTurn = g.turnName && p.name === g.turnName;
+    return `<span class="lvp ${isTurn ? 'turn' : ''} ${p.connected ? '' : 'off'}">${avatarHtml(p, 22)}` +
+      `<span class="nm">${esc(p.name || '?')}</span>` +
+      (p.bot ? '<span class="tag">BOT</span>' : (p.team ? `<span class="tag">${esc(p.team[0].toUpperCase())}</span>` : '')) +
+      '</span>';
+  }).join('');
+
+  // A seat is offerable when the game says so. WordSpies reports null because
+  // it takes as many people as turn up; the arcade games count real chairs.
+  const open = g.state !== 'over' && (g.seatsFree === null || g.seatsFree > 0);
+  const seatLabel = g.seatsFree === null ? 'Join the game'
+    : g.seatsFree === 1 ? 'Take the free seat' : 'Take a seat';
+
+  return `<div class="lvc g-${esc(g.game)}">
+    <div class="lvtop">
+      <span class="lvi">${esc(g.icon || '🎮')}</span>
+      <span class="lvn">${esc(g.title)}<small>Room ${esc(g.code)}</small></span>
+      <span class="lvpill ${pillC}">${g.state === 'playing' ? '<i class="lvdot"></i>' : ''}${pillT}</span>
+    </div>
+    <div class="lvwho">${chips || '<span class="lvp">Empty table</span>'}</div>
+    <div class="lvlead">${esc(g.lead || '')}${g.turnName && g.state === 'playing' ? ` · <b>${esc(g.turnName)}</b> to play` : ''}${g.watchers ? ` · 👁 ${g.watchers} watching` : ''}</div>
+    <div class="lvbtns">
+      <a class="lvwatch" href="${esc(g.watchHref)}" target="_blank" rel="noopener">👁 Watch</a>
+      ${open ? `<a class="lvjoin" href="${esc(g.href)}" target="_blank" rel="noopener">${seatLabel}</a>` : ''}
+    </div>
+  </div>`;
+}
+
+function paintLiveGames(j){
+  const games = (j && j.games) || [];
+  const playing = (j && j.playing) || 0;
+
+  const b = $('liveBadge');
+  if (b) { b.textContent = playing > 9 ? '9+' : playing; b.classList.toggle('hidden', !playing); }
+
+  const nudge = $('lvNudge');
+  if (nudge) {
+    nudge.classList.toggle('hidden', !playing);
+    if (playing) $('lvNudgeT').textContent =
+      playing === 1 ? '1 game happening right now — look in' : playing + ' games happening right now — look in';
+  }
+
+  const list = $('lvList'), empty = $('lvEmpty'), stats = $('lvStats');
+  if (!list) return;
+  if (!games.length) {
+    list.innerHTML = ''; stats.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  // "How many games are going on" — answered before you scroll anything.
+  stats.innerHTML =
+    `<div class="lv-stat hot"><b>${playing}</b><span>${playing === 1 ? 'game live' : 'games live'}</span></div>` +
+    `<div class="lv-stat"><b>${j.total}</b><span>rooms open</span></div>` +
+    `<div class="lv-stat"><b>${j.people}</b><span>${j.people === 1 ? 'player' : 'players'}</span></div>` +
+    (j.watching ? `<div class="lv-stat"><b>${j.watching}</b><span>watching</span></div>` : '');
+  list.innerHTML = games.map(lvCard).join('');
+}
+
+let lvBusy = false;
+async function refreshLive(){
+  if (lvBusy) return;
+  lvBusy = true;
+  try {
+    const r = await fetch('/api/live', { cache: 'no-store' });
+    paintLiveGames(await r.json());
+  } catch(e){ /* offline for a moment — leave the last picture up */ }
+  lvBusy = false;
+}
+// Slower tick from anywhere else in the app, purely so the tab badge doesn't
+// lie about how many games are running while you're reading the wall.
+setInterval(() => { if (!document.hidden) refreshLive(); }, 20000);
 
 // ---------- presence + notifications ----------
 function updateBadge(n){
@@ -1821,10 +1985,14 @@ function maybeWelcome(){
 (async () => {
   try { ME = (await api('/me')).me; } catch(e){}
   setTimeout(maybeWelcome, 900);
+  refreshLive();                    // so the Live badge is honest immediately
+
   if (ME) {
     enterApp();
     // deep link straight to the games shelf: /social#games
     if (location.hash === '#games') showTab('games');
+    // /social#live — where the "Live" button on a watch bar sends you back to
+    if (location.hash === '#live') showTab('live');
     // deep link back into a chat: /social#chat=<userId> (used by the game's Back button)
     const hm = location.hash.match(/^#chat=([a-f0-9]{6,24})$/);
     if (hm && ME.photo) {
@@ -1847,7 +2015,8 @@ function maybeWelcome(){
       chip.innerHTML = '<span class="mename" style="padding-right:8px">👋 Log in / Join</span>';
     }
     loadMembers();
-    showTab('wall');
+    // Watching costs nothing and asks for nothing, so a guest lands here fine.
+    showTab(location.hash === '#live' ? 'live' : 'wall');
     await setupGoogle();
     // /social?login=1 — they clicked "Log in" on the play page, so open the
     // form rather than dropping them on the wall to hunt for it.
