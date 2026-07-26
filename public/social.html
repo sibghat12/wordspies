@@ -16,16 +16,17 @@
 <meta name="apple-mobile-web-app-title" content="WordSpies">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fredoka:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <style>
 :root{
+  --edge:#e6e6ef; --accent-d:#c33d55;
   --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
   --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow-x:clip;max-width:100%}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:pan-y}
+body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:pan-y}
 button{font-family:inherit;cursor:pointer}
 input,textarea{font-family:inherit;outline:none}
 .hidden{display:none !important}
@@ -542,6 +543,25 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .splitview .picker{position:absolute;bottom:76px;left:12px;right:12px;width:auto;max-width:none;transform:none}
   .citem.sel{background:#f4f5f7}
 }
+
+/* ── the block kit ────────────────────────────────────────────────────────
+   The same toy-brick language the game pages use, so walking from the
+   community into a game doesn't feel like changing websites. */
+.logo{font-family:'Fredoka',system-ui,sans-serif}
+h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:-.2px}
+.btn{border-radius:16px;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:16px;
+  box-shadow:0 4px 0 rgba(9,10,16,.26);transition:transform .09s ease,box-shadow .09s ease}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 rgba(9,10,16,.26)}
+.btn-dark{box-shadow:0 4px 0 #000}
+.btn-accent{box-shadow:0 4px 0 var(--accent-d)}
+.btn-line{border:2px solid var(--edge);box-shadow:0 4px 0 var(--edge)}
+.btn-line:active:not(:disabled){box-shadow:0 0 0 var(--edge)}
+.pillbtn{font-family:'Fredoka',system-ui,sans-serif;font-weight:500}
+.gcard{border-radius:22px;box-shadow:0 5px 0 rgba(9,10,16,.22),0 12px 24px rgba(22,24,31,.10)}
+.gcard:hover{transform:translateY(-3px);box-shadow:0 8px 0 rgba(9,10,16,.22),0 18px 30px rgba(22,24,31,.13)}
+.gcard .gn{font-family:'Fredoka',system-ui,sans-serif;font-size:15.5px;font-weight:600;letter-spacing:-.1px}
+.gcard .gbtns a,.gcard .gbtns button{border-radius:12px;font-weight:800}
+.gcard .gplay{box-shadow:0 3px 0 rgba(9,10,16,.18)}
 </style>
 </head>
 <body>
