@@ -497,6 +497,18 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 .em{background:none;border:none;font-size:22px;padding:5px;border-radius:8px}
 .em:hover{background:#f2f3f5}
 .mbtns{display:flex;gap:10px;padding:16px 24px 0}
+/* the ice-breaker — an empty chat offers a game instead of a blank stare */
+.icebrk{margin:auto;text-align:center;padding:26px 20px;max-width:330px;align-self:center}
+.icebrk .ib-e{font-size:38px}
+.icebrk .ib-t{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:19px;margin-top:8px}
+.icebrk .ib-s{font-size:12.5px;color:var(--sub);line-height:1.6;margin-top:6px}
+.icebrk .ib-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.icebrk .ib-g{border:0;border-radius:14px;padding:10px 14px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:13.5px;color:#fff;cursor:pointer}
+.icebrk .ib-g:active{filter:brightness(.94)}
+.ib-g.g-ludo{background:linear-gradient(150deg,#3b6fe0,#2b4fb0)}
+.ib-g.g-pool{background:linear-gradient(150deg,#1d8f5f,#0e6b44)}
+.ib-g.g-four{background:linear-gradient(150deg,#4c5ec7,#2c3a85)}
+.ib-g.g-meld{background:linear-gradient(150deg,#6b5ce8,#4d3fc0)}
 .ginvite{display:block;margin-top:6px;background:var(--ink);color:#fff !important;text-decoration:none;font-weight:700;font-size:13.5px;padding:10px 14px;border-radius:12px;text-align:center}
 .mb.me .ginvite{background:rgba(255,255,255,.22)}
 .mlink{color:inherit;text-decoration:underline;word-break:break-all}
@@ -550,18 +562,14 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 .logo{font-family:'Fredoka',system-ui,sans-serif}
 h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:-.2px}
 .btn{border-radius:16px;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:16px;
-  box-shadow:0 4px 0 rgba(9,10,16,.26);transition:transform .09s ease,box-shadow .09s ease}
-.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 rgba(9,10,16,.26)}
-.btn-dark{box-shadow:0 4px 0 #000}
-.btn-accent{box-shadow:0 4px 0 var(--accent-d)}
-.btn-line{border:2px solid var(--edge);box-shadow:0 4px 0 var(--edge)}
-.btn-line:active:not(:disabled){box-shadow:0 0 0 var(--edge)}
+  transition:filter .12s ease}
+.btn:active:not(:disabled){filter:brightness(.96)}
+.btn-line{border:2px solid var(--edge)}
 .pillbtn{font-family:'Fredoka',system-ui,sans-serif;font-weight:500}
-.gcard{border-radius:22px;box-shadow:0 5px 0 rgba(9,10,16,.22),0 12px 24px rgba(22,24,31,.10)}
-.gcard:hover{transform:translateY(-3px);box-shadow:0 8px 0 rgba(9,10,16,.22),0 18px 30px rgba(22,24,31,.13)}
+.gcard{border-radius:22px;box-shadow:0 12px 24px rgba(22,24,31,.10)}
+.gcard:hover{transform:translateY(-3px);box-shadow:0 18px 30px rgba(22,24,31,.13)}
 .gcard .gn{font-family:'Fredoka',system-ui,sans-serif;font-size:15.5px;font-weight:600;letter-spacing:-.1px}
 .gcard .gbtns a,.gcard .gbtns button{border-radius:12px;font-weight:800}
-.gcard .gplay{box-shadow:0 3px 0 rgba(9,10,16,.18)}
 </style>
 </head>
 <body>
@@ -1494,7 +1502,7 @@ async function refreshChats(){
 function openChatWith(id){
   if (GUEST) { requireLogin('💬 Log in to send messages'); return; }
   if (!id) return;
-  curChat = id; lastMsgCount = 0;
+  curChat = id; lastMsgCount = -1;   // -1 forces the first paint, even for an empty chat (the ice-breaker)
   $('msgs').innerHTML = ''; $('chName').textContent = '…'; $('chState').textContent = ''; $('chAv').innerHTML = '';
   showTab('chat');
 }
@@ -1537,7 +1545,7 @@ async function refreshChat(first){
       const grew = j.messages.length > lastMsgCount && lastMsgCount > 0;
 
       let lastDay = '', prev = null;
-      box.innerHTML = j.messages.map(m => {
+      box.innerHTML = !j.messages.length ? iceBreaker(j.user) : j.messages.map(m => {
         const mine = m.f === ME.id;
         const tick = mine ? (m.t <= j.theirRead ? TICK_SEEN : TICK_SENT) : '';
         const day = dayLabel(m.t);
@@ -1599,6 +1607,23 @@ function msgBody(m){
   });
   if (found) return out;
   return out.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
+}
+
+// An empty chat gets an ice-breaker instead of a blank stare: one tap sets a
+// table and drops the invite card right here, and you both just tap to play.
+function iceBreaker(u){
+  const nm = u && u.name ? esc(String(u.name).split(' ')[0]) : 'them';
+  return `<div class="icebrk">
+    <div class="ib-e">🧊</div>
+    <div class="ib-t">Break the ice</div>
+    <div class="ib-s">Say hi to ${nm} — or better, challenge them.<br>One tap sets up the game and drops the invite in this chat. You both just tap it to play.</div>
+    <div class="ib-row">
+      <button class="ib-g g-ludo" onclick="gameInvite('ludo','🎲 Ludo')">🎲 Ludo</button>
+      <button class="ib-g g-pool" onclick="gameInvite('pool','🎱 8-Ball Pool')">🎱 Pool</button>
+      <button class="ib-g g-four" onclick="gameInvite('four','🔴 Connect 4')">🔴 Connect 4</button>
+      <button class="ib-g g-meld" onclick="gameInvite('meld','🧠 Mind Meld')">🧠 Mind Meld</button>
+    </div>
+  </div>`;
 }
 
 // 🎮 in the chat: go create a room, come back with the invite link.
@@ -2013,6 +2038,19 @@ function maybeWelcome(){
     if (location.hash === '#games') showTab('games');
     // /social#live — where the "Live" button on a watch bar sends you back to
     if (location.hash === '#live') showTab('live');
+    // deep link straight to someone's profile: /social#user=<userId>
+    // (used by the watcher list on a game page — tap a face, land here,
+    // follow them or say hello). Members load in the background, so wait
+    // for the list before trying to open them.
+    const um = location.hash.match(/^#user=([a-f0-9]{6,24})$/);
+    if (um) {
+      history.replaceState(null, '', '/social');
+      (async () => {
+        for (let i = 0; i < 24 && !MEMBERS.length; i++) await new Promise(r => setTimeout(r, 250));
+        const m = MEMBERS.find(x => x.id === um[1]);
+        if (m) openMemberObj(m); else toast('Could not find that spy.');
+      })();
+    }
     // deep link back into a chat: /social#chat=<userId> (used by the game's Back button)
     const hm = location.hash.match(/^#chat=([a-f0-9]{6,24})$/);
     if (hm && ME.photo) {
