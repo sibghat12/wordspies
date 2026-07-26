@@ -13,15 +13,16 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
+  --edge:#e6e6ef; --accent-d:#c33d55;
   --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
   --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33;
   --lred:#e8506b; --lgreen:#27ae60; --lyellow:#f5b52e; --lblue:#3b6fe0;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+body{font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
   -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
   padding:0 14px calc(28px + env(safe-area-inset-bottom))}
 .wrap{width:100%;max-width:560px;flex:1;display:flex;flex-direction:column}
@@ -68,30 +69,137 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
 .lcount{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:14px;font-size:12.6px;font-weight:600;color:var(--sub)}
 .lcount .pulse{width:7px;height:7px;border-radius:50%;background:#22b573;animation:seatwait 1.6s ease-in-out infinite}
 
-/* the board — a 15×15 grid drawn with positioned divs */
-.board{position:relative;width:100%;aspect-ratio:1;background:#fff;border-radius:16px;overflow:hidden;
-  box-shadow:0 12px 30px rgba(20,23,42,.12);border:1px solid var(--line)}
-.bcell{position:absolute;width:6.6667%;height:6.6667%;border:0.5px solid #e7e7ea}
-.bzone{position:absolute;border-radius:0}
-.tok{position:absolute;width:5.4%;height:5.4%;border-radius:50%;border:2.5px solid #fff;
-  box-shadow:0 2px 6px rgba(0,0,0,.28);transition:left .45s cubic-bezier(.3,.8,.4,1),top .45s cubic-bezier(.3,.8,.4,1);
-  z-index:5;cursor:default}
-.tok.mv{cursor:pointer;animation:hop .8s infinite;z-index:7}
-@keyframes hop{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+/* ── the board ─────────────────────────────────────────────────────────────
+   A 15×15 grid drawn with positioned divs, dressed up to look like a real
+   boxed board: a dark lacquered frame, four raised corner yards with sunken
+   token wells, an arrowed track, and a proper four-triangle centre. */
+.boardwrap{position:relative;padding:9px;border-radius:26px;
+  background:linear-gradient(150deg,#3a3f57 0%,#20243a 45%,#171a2a 70%,#343954 100%);
+  box-shadow:0 20px 46px rgba(16,18,32,.30),0 1px 0 rgba(255,255,255,.18) inset;
+  transition:box-shadow .35s}
+.boardwrap::after{content:'';position:absolute;inset:9px;border-radius:17px;pointer-events:none;z-index:8;
+  box-shadow:0 0 0 1px rgba(255,255,255,.13) inset,0 10px 26px rgba(10,12,22,.16) inset}
+.boardwrap.live{box-shadow:0 20px 46px rgba(16,18,32,.30),0 1px 0 rgba(255,255,255,.18) inset,
+  0 0 0 3px var(--tc,transparent),0 0 26px -2px var(--tc,transparent)}
+.board{position:relative;width:100%;aspect-ratio:1;border-radius:17px;overflow:hidden;border:0;
+  background:radial-gradient(115% 115% at 28% 0%,#ffffff 0%,#f6f7fb 58%,#eceef7 100%)}
+.bcell{position:absolute;width:6.6667%;height:6.6667%;border:.5px solid rgba(24,26,44,.075);
+  display:flex;align-items:center;justify-content:center;line-height:1}
+.bcell .ar{font-size:7.5px;font-weight:900;opacity:.17;color:#2a2e46}
+.bcell.start{box-shadow:0 2px 5px rgba(20,23,42,.22) inset;border-color:rgba(255,255,255,.5)}
+.bcell.start .ar{opacity:.95;color:#fff;font-size:9px;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.bcell.lane .ar{opacity:.62;color:#fff;font-size:8.5px}
+.bcell.safe .st{font-size:10.5px;color:#f0b429;text-shadow:0 1px 1px rgba(0,0,0,.16)}
+
+/* corner yards */
+.yard{position:absolute;border-radius:20px;box-shadow:0 7px 16px rgba(20,23,42,.20),
+  0 1px 0 rgba(255,255,255,.45) inset}
+.yard::before{content:'';position:absolute;inset:0;border-radius:20px;
+  background:linear-gradient(150deg,rgba(255,255,255,.34),rgba(255,255,255,0) 46%,rgba(0,0,0,.20))}
+.yard i{position:absolute;inset:9.5%;border-radius:14px;background:rgba(255,255,255,.95);
+  box-shadow:0 3px 8px rgba(20,23,42,.16) inset}
+.well{position:absolute;width:6.6667%;height:6.6667%;border-radius:50%;
+  box-shadow:0 2px 5px rgba(20,23,42,.22) inset,0 1px 0 rgba(255,255,255,.9)}
+
+/* the centre — four triangles meeting in the middle, like the real thing */
+.hub{position:absolute;overflow:hidden;border-radius:9px;
+  box-shadow:0 5px 14px rgba(20,23,42,.24),0 0 0 1px rgba(255,255,255,.5) inset}
+.hub s{position:absolute;inset:0;display:block;text-decoration:none}
+.hub s::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(150deg,rgba(255,255,255,.30),rgba(0,0,0,.18))}
+.hub b{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:38%;height:38%;border-radius:50%;background:#fff;z-index:3;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:#f0b429;
+  box-shadow:0 2px 6px rgba(20,23,42,.28)}
+
+/* the pieces */
+.tok{position:absolute;width:5.4%;height:5.4%;border-radius:50%;z-index:5;cursor:default;
+  box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(16,18,32,.16),0 3px 7px rgba(16,18,32,.36);
+  transition:left .42s cubic-bezier(.34,1.15,.4,1),top .42s cubic-bezier(.34,1.15,.4,1),box-shadow .2s}
+.tok::before{content:'';position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(158deg,rgba(255,255,255,.60),rgba(255,255,255,.05) 46%,rgba(10,12,24,.28))}
+.tok::after{content:'';position:absolute;left:19%;top:13%;width:33%;height:25%;border-radius:50%;
+  background:rgba(255,255,255,.82)}
+.tok.mv{cursor:pointer;z-index:9;animation:hop .85s ease-in-out infinite;
+  box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(255,255,255,.9),0 0 15px 3px rgba(255,199,72,.95),
+    0 5px 10px rgba(16,18,32,.40)}
+@keyframes hop{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-14%) scale(1.15)}}
+
+/* the players along the top */
 .seatsbar{display:flex;gap:8px;margin-bottom:12px}
-.sseat{flex:1;display:flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:7px 9px;min-width:0;transition:border-color .2s}
-.sseat.turn{border-color:var(--ink);box-shadow:0 3px 10px rgba(20,23,42,.09)}
-.sseat .cdot{flex:none;width:12px;height:12px;border-radius:50%}
-.sseat .nm{font-size:11.6px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sseat .hm{margin-left:auto;font-size:11px;font-weight:800;color:var(--sub)}
+.sseat{flex:1;display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--line);
+  border-radius:13px;padding:8px 7px 8px 11px;min-width:0;position:relative;overflow:hidden;
+  transition:border-color .22s,box-shadow .22s,transform .22s}
+/* the colour lives in the stripe down the side, so the name gets the room */
+.sseat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sc,#ccc)}
+.sseat.turn{border-color:transparent;transform:translateY(-1px);
+  box-shadow:0 0 0 2px var(--sc,#ccc),0 7px 16px rgba(20,23,42,.14)}
+.sseat.turn::after{content:'';position:absolute;right:-14px;top:-14px;width:34px;height:34px;
+  border-radius:50%;background:var(--sc,#ccc);opacity:.13}
+.sseat .nm{font-size:11.6px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.sseat .hm{margin-left:auto;flex:none;font-size:10px;font-weight:800;color:#fff;
+  background:var(--sc,#ccc);border-radius:999px;padding:2px 6px;letter-spacing:-.2px}
+
+/* the dice — real pips, not a font glyph */
 .dicebar{display:flex;align-items:center;gap:12px;margin-top:14px}
-.die{flex:none;width:54px;height:54px;border-radius:14px;background:#fff;border:2px solid var(--ink);
-  display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800}
+.die{flex:none;width:64px;height:64px;border-radius:17px;border:0;padding:11px;
+  background:linear-gradient(152deg,#ffffff,#eef0f8);
+  box-shadow:0 5px 13px rgba(20,23,42,.20),0 0 0 1px rgba(20,23,42,.10) inset,
+    0 -3px 0 rgba(20,23,42,.05) inset,0 2px 0 rgba(255,255,255,.9) inset;
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:2px;
+  place-items:center}
+.die b{width:10px;height:10px;border-radius:50%;background:var(--ink);
+  box-shadow:0 1px 0 rgba(255,255,255,.55),0 1px 2px rgba(0,0,0,.3) inset}
+.die b.q{visibility:hidden}
+.die.idle{display:flex;align-items:center;justify-content:center;padding:0;font-size:31px}
 .die.rolling{animation:shake .5s infinite}
 @keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
-.dicebar .btn{flex:1;min-height:54px}
+.dicebar .btn{flex:1;min-height:64px}
 .statusln{text-align:center;font-size:13.4px;font-weight:600;margin:12px 0 2px;min-height:20px}
 .bigword{font-size:32px;font-weight:800;letter-spacing:-1px;text-align:center;margin:12px 0 4px}
+
+/* ── the block kit ────────────────────────────────────────────────────────
+   One toy-brick look across the whole arcade. Cards and buttons sit on a
+   solid edge rather than a soft shadow, so they read as objects you can
+   press down, and the type is one pair everywhere: Fredoka for anything you
+   take in at a glance, Nunito for everything you actually read. */
+h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:-.3px}
+h1{font-size:28px;line-height:1.13}
+header{gap:8px;flex-wrap:nowrap}
+header .logo{font-family:'Fredoka',system-ui,sans-serif;font-size:17px;font-weight:600;
+  letter-spacing:-.2px;white-space:nowrap;flex:none}
+/* two side-links plus a wordmark is a squeeze on a small phone — let the
+   links give up the width rather than the name of the game */
+@media (max-width:430px){
+  header .logo{font-size:15.5px}
+  .tinylink{font-size:11.8px;padding:7px 10px}
+}
+p.lede{font-size:14.5px;font-weight:500;line-height:1.6}
+
+.card{border:2px solid var(--edge);border-radius:24px;
+  box-shadow:0 5px 0 var(--edge),0 14px 28px rgba(22,24,31,.055)}
+
+.btn{border-radius:18px;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:16.5px;
+  letter-spacing:.1px;box-shadow:0 4px 0 rgba(9,10,16,.28);
+  transition:transform .09s ease,box-shadow .09s ease,filter .12s}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 rgba(9,10,16,.28)}
+.btn-dark{box-shadow:0 4px 0 #000}
+.btn-accent{box-shadow:0 4px 0 var(--accent-d)}
+.btn-line{border:2px solid var(--edge);box-shadow:0 4px 0 var(--edge)}
+.btn-line:active:not(:disabled){box-shadow:0 0 0 var(--edge)}
+.btn:disabled{box-shadow:0 4px 0 rgba(9,10,16,.12)}
+
+input[type=text]{border:2px solid var(--edge);border-radius:16px;font-size:16px;font-weight:600}
+input[type=text]::placeholder{font-weight:500}
+
+.tinylink{border:2px solid var(--edge);font-weight:700;box-shadow:0 3px 0 var(--edge);
+  transition:transform .09s ease,box-shadow .09s ease}
+.tinylink:active{transform:translateY(3px);box-shadow:0 0 0 var(--edge)}
+
+.seat,.lseat{border-width:2px;border-radius:16px}
+.codebox{border:2.5px dashed #dcdce8;border-radius:20px}
+.codebox .code{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:7px}
+label.fl{font-weight:800}
 </style>
 </head>
 <body>
@@ -146,9 +254,9 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
   <!-- the game -->
   <div id="play" class="hidden">
     <div class="seatsbar" id="seatsBar"></div>
-    <div class="board" id="board"></div>
+    <div class="boardwrap" id="boardWrap"><div class="board" id="board"></div></div>
     <div class="dicebar">
-      <div class="die" id="die">🎲</div>
+      <div class="die idle" id="die">🎲</div>
       <button class="btn btn-dark" id="rollBtn">Roll</button>
     </div>
     <div class="statusln" id="statusLn"></div>
@@ -175,10 +283,27 @@ const HOMERUN = [[[7,1],[7,2],[7,3],[7,4],[7,5]],[[1,7],[2,7],[3,7],[4,7],[5,7]]
 const BASE = [[[1,1],[1,4],[4,1],[4,4]],[[1,10],[1,13],[4,10],[4,13]],[[10,10],[10,13],[13,10],[13,13]],[[10,1],[10,4],[13,1],[13,4]]];
 const SAFE = new Set([0,13,26,39,8,21,34,47]);
 const CSSC = ['var(--lred)','var(--lgreen)','var(--lyellow)','var(--lblue)'];
+const HEX  = ['#e8506b','#27ae60','#f5b52e','#3b6fe0'];   // the same four, as real values
 const SOFT = ['#fdeef1','#e9f7ef','#fef6e3','#eaf0fd'];
 const LBL = ['Red','Green','Yellow','Blue'];
+// #rrggbb + an alpha like '.4' → rgba(), so the board can tint with its own colours
+function rgba(hex, a) {
+  return 'rgba(' + parseInt(hex.slice(1, 3), 16) + ',' + parseInt(hex.slice(3, 5), 16)
+       + ',' + parseInt(hex.slice(5, 7), 16) + ',' + a + ')';
+}
+// a real die face, drawn as pips on a 3×3 grid
+const PIPS = { 1:[5], 2:[1,9], 3:[1,5,9], 4:[1,3,7,9], 5:[1,3,5,7,9], 6:[1,3,4,6,7,9] };
+function dieFace(n) {
+  const on = PIPS[n] || [];
+  let h = '';
+  for (let i = 1; i <= 9; i++) h += '<b class="' + (on.indexOf(i) >= 0 ? '' : 'q') + '"></b>';
+  return h;
+}
 
 let socket = null, S = null, myId = null, ME = null, mySeat = -1;
+// Am I this person? Only if I actually have an id — an empty seat is null,
+// and null === null would seat every spectator by accident.
+const isMe = (id) => !!myId && id === myId;
 // who was sitting down at the last paint, so we can tell a new arrival from a
 // seat that was already taken and light only the one that changed
 let seenSeats = new Set();
@@ -259,33 +384,57 @@ if (pre) {
 const board = $('board');
 const CELL = 100 / 15;
 const pos = (r, c) => 'left:' + (c * CELL) + '%;top:' + (r * CELL) + '%;';
+// Which way does the track run at square i? Worked out from the next square
+// along, so the arrows can never disagree with the geometry above.
+function dirOf(i) {
+  const a = TRACK[i], b = TRACK[(i + 1) % 52];
+  const dr = b[0] - a[0], dc = b[1] - a[1];
+  if (Math.abs(dc) >= Math.abs(dr)) return dc > 0 ? '▶' : '◀';
+  return dr > 0 ? '▼' : '▲';
+}
+// The home run always points at the middle, so its arrow follows the lane.
+const LANEAR = ['▶', '▼', '◀', '▲'];
+// The four triangles of the centre, in the order the lanes arrive: red comes
+// in from the left, green from the top, yellow from the right, blue from below.
+const HUBCLIP = [
+  'polygon(0 0,0 100%,50% 50%)',        // 0 red    — left
+  'polygon(0 0,100% 0,50% 50%)',        // 1 green  — top
+  'polygon(100% 0,100% 100%,50% 50%)',  // 2 yellow — right
+  'polygon(0 100%,100% 100%,50% 50%)'   // 3 blue   — bottom
+];
 (function buildBoard() {
   let html = '';
-  // the four base quarters
-  const quads = [[0,0],[0,9],[9,9],[9,0]];
+  // the four corner yards — a raised colour block with a white pad inside
+  const quads = [[0, 0], [0, 9], [9, 9], [9, 0]];
   quads.forEach(([r, c], i) => {
-    html += '<div class="bzone" style="' + pos(r, c) + 'width:' + (6 * CELL) + '%;height:' + (6 * CELL) + '%;background:' + SOFT[i] + ';border-radius:18px"></div>';
+    html += '<div class="yard" style="' + pos(r, c) + 'width:' + (6 * CELL) + '%;height:' + (6 * CELL) + '%;'
+          + 'background:' + HEX[i] + '"><i></i></div>';
   });
-  // center home
-  html += '<div class="bzone" style="' + pos(6, 6) + 'width:' + (3 * CELL) + '%;height:' + (3 * CELL) + '%;background:#f2f0fb;display:flex;align-items:center;justify-content:center;font-size:20px">🏠</div>';
-  // track cells
+  // the centre: four triangles meeting in the middle with a white cap on top
+  html += '<div class="hub" style="' + pos(6, 6) + 'width:' + (3 * CELL) + '%;height:' + (3 * CELL) + '%">'
+        + HUBCLIP.map((cl, s) => '<s style="background:' + HEX[s] + ';clip-path:' + cl + '"></s>').join('')
+        + '<b>★</b></div>';
+  // the track, every square arrowed so you can see which way you are going
   TRACK.forEach(([r, c], i) => {
-    let bg = '#fff', extra = '';
     const startSeat = STARTS.indexOf(i);
-    if (startSeat >= 0) bg = SOFT[startSeat];
-    if (SAFE.has(i) && startSeat < 0) extra = 'display:flex;align-items:center;justify-content:center;font-size:9px;color:#c8c5da;';
-    html += '<div class="bcell" style="' + pos(r, c) + 'background:' + bg + ';' + extra + '">' + (extra ? '★' : '') + '</div>';
+    let cls = 'bcell', bg = '#fff', inner = '<span class="ar">' + dirOf(i) + '</span>';
+    if (startSeat >= 0) { cls += ' start'; bg = HEX[startSeat]; }
+    else if (SAFE.has(i)) { cls += ' safe'; bg = '#fffdf4'; inner = '<span class="st">★</span>'; }
+    html += '<div class="' + cls + '" style="' + pos(r, c) + 'background:' + bg + '">' + inner + '</div>';
   });
-  // home runs
+  // the home runs — colour deepening towards the middle
   HOMERUN.forEach((cells, s) => {
-    cells.forEach(([r, c]) => {
-      html += '<div class="bcell" style="' + pos(r, c) + 'background:' + SOFT[s] + '"></div>';
+    cells.forEach(([r, c], k) => {
+      const a = (0.52 + k * 0.12).toFixed(2);
+      html += '<div class="bcell lane" style="' + pos(r, c) + 'background:' + rgba(HEX[s], a) + '">'
+            + '<span class="ar">' + LANEAR[s] + '</span></div>';
     });
   });
-  // base circles where waiting tokens sit
+  // the wells the waiting pieces sit in
   BASE.forEach((cells, s) => {
     cells.forEach(([r, c]) => {
-      html += '<div class="bcell" style="' + pos(r, c) + 'border-radius:50%;background:#fff;border:1.5px solid ' + '#e2dff2' + '"></div>';
+      html += '<div class="well" style="' + pos(r, c) + 'background:' + rgba(HEX[s], '.16')
+            + ';border:2px solid ' + rgba(HEX[s], '.55') + '"></div>';
     });
   });
   board.innerHTML = html;
@@ -296,7 +445,7 @@ const pos = (r, c) => 'left:' + (c * CELL) + '%;top:' + (r * CELL) + '%;';
     d.style.background = CSSC[s];
     d.onclick = () => {
       if (!S || S.state !== 'playing') return;
-      if (S.seats[S.turn] && S.seats[S.turn].id === myId && S.moves.some(m => m.token === t) && S.turn === s) {
+      if (S.seats[S.turn] && isMe(S.seats[S.turn].id) && S.moves.some(m => m.token === t) && S.turn === s) {
         socket.emit('move', { token: t });
       }
     };
@@ -314,7 +463,7 @@ function cellOf(s, p, t) {
 
 function render() {
   if (!S) return;
-  const seated = S.seats.some(x => x.id === myId);
+  const seated = S.seats.some(x => isMe(x.id));
   const eyeing = isWatching();
   watchEyes(S.watchers);
   show($('home'), !seated && !eyeing);
@@ -323,10 +472,10 @@ function render() {
 
   if (seated && S.state === 'lobby') {
     $('lobbyCode').textContent = S.code;
-    const iAmHost = S.hostId === myId;
+    const iAmHost = isMe(S.hostId);
     $('lobbySeats').innerHTML = S.seats.slice(0, S.cap).map(s => {
       if (!s.id) return '<div class="lseat empty"><span class="cdot" style="background:' + CSSC[s.seat] + '"></span><span class="nm">Waiting for a player — share the code or tap a friend below</span></div>';
-      const nm = s.id === myId ? s.name + ' (you)' : s.name;
+      const nm = isMe(s.id) ? s.name + ' (you)' : s.name;
       // a seat that filled since the last paint gets a little pop, so you
       // actually notice somebody arriving rather than having to compare rows
       const fresh = seenSeats.size && !seenSeats.has(s.id) ? ' just' : '';
@@ -347,14 +496,26 @@ function render() {
       : 'Waiting for ' + (S.seats.find(x => x.id === S.hostId) || {}).name + ' to start the game…';
     return;
   }
-  if (!seated || S.state === 'lobby') return;
+  // Anyone at the table gets the board painted — and so does anyone watching,
+  // otherwise a ?watch= visitor is shown an empty frame.
+  if (!seated && !eyeing) return;
+  if (S.state === 'lobby') {                     // a watcher who got here early
+    $('seatsBar').innerHTML = '';
+    $('statusLn').innerHTML = '<span class="waitdot"></span>Waiting for the table to start…';
+    return;
+  }
 
   // seat bar
   $('seatsBar').innerHTML = S.seats.filter(s => s.id).map(s => {
     const cls = S.state === 'playing' && S.turn === s.seat ? 'sseat turn' : 'sseat';
-    const nm = s.id === myId ? 'You' : s.name;
-    return '<div class="' + cls + '"><span class="cdot" style="background:' + CSSC[s.seat] + '"></span><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span><span class="hm">' + s.home + '/4</span></div>';
+    const nm = isMe(s.id) ? 'You' : s.name;
+    return '<div class="' + cls + '" style="--sc:' + HEX[s.seat] + '"><span class="nm">'
+      + esc(nm) + (s.bot ? ' 🤖' : '') + '</span><span class="hm">' + s.home + '/4</span></div>';
   }).join('');
+  // the frame picks up whoever's turn it is, so you can tell at a glance
+  const bw = $('boardWrap');
+  bw.classList.toggle('live', S.state === 'playing');
+  bw.style.setProperty('--tc', rgba(HEX[S.turn] || HEX[0], '.55'));
 
   // tokens
   const stacks = {};
@@ -369,14 +530,16 @@ function render() {
     const off = n * 1.1;                          // stacked tokens fan out slightly
     el.style.left = (c * CELL + 0.65 + off) + '%';
     el.style.top = (r * CELL + 0.65 - off) + '%';
-    const mine = S.state === 'playing' && S.turn === s && S.seats[s].id === myId;
+    const mine = S.state === 'playing' && S.turn === s && isMe(S.seats[s].id);
     el.classList.toggle('mv', mine && S.rolled && S.moves.some(m => m.token === t));
   }
 
   // dice + status
   const turnSeat = S.seats[S.turn];
-  const myTurn = turnSeat && turnSeat.id === myId;
-  $('die').textContent = S.rolled && S.dice ? ['','⚀','⚁','⚂','⚃','⚄','⚅'][S.dice] : '🎲';
+  const myTurn = turnSeat && isMe(turnSeat.id);
+  const rolled = !!(S.rolled && S.dice);
+  $('die').classList.toggle('idle', !rolled);
+  $('die').innerHTML = rolled ? dieFace(S.dice) : '🎲';
   $('die').classList.toggle('rolling', S.state === 'playing' && !S.rolled && myTurn);
   $('rollBtn').disabled = !(S.state === 'playing' && myTurn && !S.rolled);
 
@@ -394,7 +557,7 @@ function render() {
   } else if (S.state === 'over') {
     show($('overRow'), true);
     const w = S.seats[S.winner];
-    const iWon = w && w.id === myId;
+    const iWon = w && isMe(w.id);
     $('overTxt').textContent = iWon ? 'You win! 🎉' : (w ? esc(w.name) + ' wins.' : 'Game over.');
     $('overSub').textContent = iWon ? 'All four home first. Champion of the table.' : 'All four home. Demand a rematch.';
     $('statusLn').textContent = '';
