@@ -588,6 +588,11 @@ function mount(app, io, opts) {
       lbroad(r);
     };
 
+    // The lobby asks for this every few seconds. The room already broadcasts on
+    // every join, but a slept phone or a dropped socket can miss that push, so
+    // this is the belt to the braces: whoever is sat down gets the truth back.
+    socket.on('sync', () => { if (room) socket.emit('state', ludoPublic(room)); });
+
     socket.on('create', async (data, ack) => {
       await socket.ready;
       if (room) return;
@@ -647,7 +652,7 @@ function mount(app, io, opts) {
 
     socket.on('start', () => {
       if (!room || room.state !== 'lobby' || room.hostId !== socket.id) return;
-      if (ludoLive(room) < 2) return fail('Ludo needs at least two players. Add a bot if you are on your own.');
+      if (ludoLive(room) < 2) return fail('Ludo needs at least two players — share the code and the seat will fill in here.');
       room.state = 'playing';
       room.turn = room.seatOrder.findIndex(Boolean);
       room.rolled = false; room.dice = 0; room.moves = []; room.sixes = 0;
