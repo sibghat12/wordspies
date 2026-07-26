@@ -25,6 +25,9 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg)
   -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
   padding:0 14px calc(28px + env(safe-area-inset-bottom))}
 .wrap{width:100%;max-width:640px;flex:1;display:flex;flex-direction:column}
+/* once you're actually at the table, the table is the page — let it have the
+   whole screen instead of squeezing it into the reading column */
+.wrap.wide{max-width:1080px}
 header{display:flex;align-items:center;gap:10px;padding:16px 0 14px}
 header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px}
 header .sp{flex:1}
@@ -59,8 +62,8 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
 .seat .nm{font-size:12.6px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .seat .grp{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--sub);white-space:nowrap}
 
-.tableBox{background:var(--rail);border-radius:16px;padding:10px;box-shadow:0 14px 34px rgba(40,25,8,.3);touch-action:none}
-canvas{display:block;width:100%;border-radius:8px}
+.tableBox{background:var(--rail);border-radius:16px;padding:10px;box-shadow:0 14px 34px rgba(40,25,8,.3);touch-action:none;display:flex;justify-content:center}
+canvas{display:block;width:100%;height:auto;border-radius:8px}
 .aimrow{display:flex;align-items:center;gap:12px;margin-top:14px}
 .aimrow .pw{flex:1;height:14px;-webkit-appearance:none;appearance:none;border-radius:999px;
   background:linear-gradient(90deg,#22c07a,#f5b52e,#e8506b);outline:none}
@@ -71,7 +74,7 @@ canvas{display:block;width:100%;border-radius:8px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="wrap">
   <header>
     <div class="logo">🎱 8-Ball Pool</div>
     <div class="sp"></div>
@@ -118,7 +121,7 @@ canvas{display:block;width:100%;border-radius:8px}
   <!-- the table -->
   <div id="play" class="hidden">
     <div class="seats" id="seats"></div>
-    <div class="tableBox"><canvas id="cv" width="1000" height="500"></canvas></div>
+    <div class="tableBox" id="tableBox"><canvas id="cv" width="1000" height="500"></canvas></div>
     <div class="aimrow" id="aimRow">
       <input type="range" class="pw" id="powerIn" min="4" max="26" value="16" aria-label="Power">
       <button class="btn btn-dark" id="shootBtn">Shoot</button>
@@ -137,7 +140,7 @@ canvas{display:block;width:100%;border-radius:8px}
 <script>
 const $ = id => document.getElementById(id);
 const show = (el, on) => el.classList.toggle('hidden', !on);
-const W = 1000, H = 500, R = 14, PR = 26;
+const W = 1000, H = 500, R = 16, PR = 30;
 const POCKETS = [[22,22],[W/2,14],[W-22,22],[22,H-22],[W/2,H-14],[W-22,H-22]];
 const COLORS = {1:'#f5b52e',2:'#3b6fe0',3:'#e8506b',4:'#7a4fd4',5:'#f07e26',6:'#22a06b',7:'#a33a3a',8:'#181a20',
                 9:'#f5b52e',10:'#3b6fe0',11:'#e8506b',12:'#7a4fd4',13:'#f07e26',14:'#22a06b',15:'#a33a3a'};
@@ -210,9 +213,42 @@ const cv = $('cv'), cx = cv.getContext('2d');
 const meIdx = () => S ? S.seats.findIndex(s => s.id === myId) : -1;
 const myTurn = () => S && meIdx() + 1 === S.turn;
 
+// ── sizing ───────────────────────────────────────────────────────────────
+// A pool table is twice as wide as it is long, which is the worst possible
+// shape for a phone held upright — it leaves the table a thin strip across
+// the middle with balls the size of peas. So on a portrait phone we stand the
+// table on its end: same physics, same coordinates, just drawn (and aimed)
+// through a quarter turn. Everything below works in table space; ROT only
+// changes how table space lands on the canvas.
+let ROT = false;
+function sizeCanvas() {
+  const portrait = innerWidth < 780 && innerHeight > innerWidth * 1.15;
+  ROT = portrait;
+  if (ROT) { cv.width = H; cv.height = W; } else { cv.width = W; cv.height = H; }
+  if (ROT) {
+    const boxW = Math.max(240, ($('tableBox').clientWidth || innerWidth - 28) - 20);
+    // leave room for the header, the two seats, the power row and the status line
+    const avail = Math.max(300, innerHeight - 250);
+    cv.style.width = 'auto';
+    cv.style.height = Math.min(avail, boxW * 2) + 'px';
+  } else {
+    cv.style.width = '100%';
+    cv.style.height = 'auto';
+  }
+}
+function layout() {
+  sizeCanvas();
+  if (S && !anim) drawTable(S.balls, myTurn() && S.state === 'playing');
+}
+addEventListener('resize', layout);
+addEventListener('orientationchange', () => setTimeout(layout, 120));
+
 // ── drawing ──────────────────────────────────────────────────────────────
 function drawTable(balls, withAim) {
-  cx.clearRect(0, 0, W, H);
+  cx.setTransform(1, 0, 0, 1, 0, 0);
+  cx.clearRect(0, 0, cv.width, cv.height);
+  // stand the table on its end: table (x,y) → canvas (y, W - x)
+  if (ROT) cx.setTransform(0, -1, 1, 0, 0, W);
   cx.fillStyle = '#2e8b57'; cx.fillRect(0, 0, W, H);
   // subtle center line + spot for placing
   cx.fillStyle = 'rgba(255,255,255,.06)'; cx.fillRect(W * 0.25 - 1, 0, 2, H);
@@ -234,9 +270,12 @@ function drawTable(balls, withAim) {
       cx.beginPath(); cx.arc(x, y, R, 0, 7); cx.strokeStyle = 'rgba(0,0,0,.25)'; cx.lineWidth = 1; cx.stroke();
     }
     if (n > 0) {
-      cx.beginPath(); cx.arc(x, y, R * 0.44, 0, 7); cx.fillStyle = '#fff'; cx.fill();
+      // the number rides with the table, so undo the quarter turn for it
+      cx.save(); cx.translate(x, y); if (ROT) cx.rotate(Math.PI / 2);
+      cx.beginPath(); cx.arc(0, 0, R * 0.44, 0, 7); cx.fillStyle = '#fff'; cx.fill();
       cx.fillStyle = '#16181f'; cx.font = '700 ' + (R * 0.62) + 'px Inter';
-      cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(n, x, y + 0.5);
+      cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(n, 0, 0.5);
+      cx.restore();
     }
     cx.beginPath(); cx.arc(x - R * 0.35, y - R * 0.35, R * 0.28, 0, 7); cx.fillStyle = 'rgba(255,255,255,.35)'; cx.fill();
   }
@@ -273,7 +312,9 @@ function playFrames(frames) {
 const evPos = e => {
   const r = cv.getBoundingClientRect();
   const t = e.touches ? e.touches[0] : e;
-  return { x: (t.clientX - r.left) / r.width * W, y: (t.clientY - r.top) / r.height * H };
+  const px = (t.clientX - r.left) / r.width, py = (t.clientY - r.top) / r.height;
+  // same quarter turn as the drawing, run backwards
+  return ROT ? { x: W - py * W, y: px * H } : { x: px * W, y: py * H };
 };
 function pointerMove(e) {
   if (!S || S.state !== 'playing' || !myTurn() || anim) return;
@@ -301,8 +342,10 @@ function render() {
   show($('home'), !seated);
   show($('lobby'), seated && S.state === 'lobby');
   show($('play'), seated && playing);
+  $('wrap').classList.toggle('wide', seated && playing);
   if (seated && S.state === 'lobby') $('lobbyCode').textContent = S.code;
   if (!playing) return;
+  sizeCanvas();
 
   $('seats').innerHTML = S.seats.map((s, i) => {
     const nm = s.name ? (s.id === myId ? s.name + ' (you)' : s.name) : '…';
