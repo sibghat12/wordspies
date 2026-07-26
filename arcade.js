@@ -484,6 +484,54 @@ function mount(app, io, opts) {
   app.get('/api/four/:code', peek(fourRooms));
   app.get('/api/pool/:code', peek(poolRooms));
 
+  // ── Watching ─────────────────────────────────────────────────────────────
+  // A spectator is a socket that joined the room's channel but never took a
+  // seat. That distinction is the entire security model: every action handler
+  // in this file opens with `if (!room) return`, and a watcher's `room` stays
+  // null forever, so there is no path from watching to acting even if the page
+  // is lying about what it is. The client-side lock is manners; this is the
+  // lock. `W` is a holder rather than a plain variable only so the shared
+  // helper can write into each connection's own closure.
+  const spectate = (socket, table, pub, broad, W, seated) => {
+    socket.on('watch', (data) => {
+      if (W.r || seated()) return;
+      const r = table.get(String((data && data.code) || '').trim().toUpperCase());
+      if (!r) { socket.emit('err', { msg: 'That game has already finished.' }); return; }
+      (r.watchers || (r.watchers = new Set())).add(socket.id);
+      W.r = r;
+      socket.join(r.code);
+      socket.emit('watching', { code: r.code });
+      socket.emit('state', pub(r));
+      broad(r);                       // the players watch the eye count go up
+    });
+    // Being watched should never be a secret, and asking for a seat should
+    // never be a shove: this just taps the players on the shoulder.
+    socket.on('knock', () => {
+      const r = W.r;
+      if (!r) return;
+      const now = Date.now();
+      if (now - (r.lastKnock || 0) < 8000) return;
+      r.lastKnock = now;
+      const prof = socket.profile;
+      socket.to(r.code).emit('knock', {
+        name: safeName((prof && prof.name) || 'Someone'),
+        photo: (prof && prof.photo) || null
+      });
+    });
+    socket.on('leaveWatch', () => {
+      const r = W.r; if (!r) return;
+      W.r = null;
+      socket.leave(r.code);
+      if (r.watchers) { r.watchers.delete(socket.id); broad(r); }
+    });
+    socket.on('disconnect', () => {
+      const r = W.r; if (!r) return;
+      W.r = null;
+      if (r.watchers) { r.watchers.delete(socket.id); broad(r); }
+    });
+  };
+  const eyes = (r) => (r.watchers ? r.watchers.size : 0);
+
   // Identity is borrowed, not reimplemented: signed-in players get seated
   // under their own name and photo, guests type a name and play anyway.
   const attach = (socket) => {
@@ -514,7 +562,7 @@ function mount(app, io, opts) {
       tokens: r.tokens,
       turn: r.turn, dice: r.dice, rolled: r.rolled,
       moves: r.moves, last: r.last, winner: r.winner,
-      order: r.order, hostId: r.hostId
+      order: r.order, hostId: r.hostId, watchers: eyes(r)
     };
   }
 
@@ -573,6 +621,8 @@ function mount(app, io, opts) {
     attach(socket);
     let room = null;
     const fail = m => socket.emit('err', { msg: m });
+    const W = { r: null };
+    spectate(socket, ludoRooms, ludoPublic, lbroad, W, () => room);
 
     const seat = (r, name, seatIdx) => {
       const prof = socket.profile;
@@ -593,7 +643,10 @@ function mount(app, io, opts) {
     // The lobby asks for this every few seconds. The room already broadcasts on
     // every join, but a slept phone or a dropped socket can miss that push, so
     // this is the belt to the braces: whoever is sat down gets the truth back.
-    socket.on('sync', () => { if (room) socket.emit('state', ludoPublic(room)); });
+    socket.on('sync', () => {
+      if (room) socket.emit('state', ludoPublic(room));
+      else if (W.r) socket.emit('state', ludoPublic(W.r));
+    });
 
     socket.on('create', async (data, ack) => {
       await socket.ready;
@@ -762,7 +815,7 @@ function mount(app, io, opts) {
         const p = id ? r.players.get(id) : null;
         return { seat: i, id: id || null, name: p ? p.name : null, photo: p ? (p.photo || null) : null, bot: p ? !!p.bot : false, connected: p ? !!p.connected : false };
       }),
-      hostId: r.hostId
+      hostId: r.hostId, watchers: eyes(r)
     };
   }
   const fbroad = (r) => { r.touched = Date.now(); fnsp.to(r.code).emit('state', fourPublic(r)); };
@@ -795,6 +848,12 @@ function mount(app, io, opts) {
     attach(socket);
     let room = null;
     const fail = m => socket.emit('err', { msg: m });
+    const W = { r: null };
+    spectate(socket, fourRooms, fourPublic, fbroad, W, () => room);
+    socket.on('sync', () => {
+      if (room) socket.emit('state', fourPublic(room));
+      else if (W.r) socket.emit('state', fourPublic(W.r));
+    });
 
     const seat = (r, name, idx) => {
       const prof = socket.profile;
@@ -917,7 +976,7 @@ function mount(app, io, opts) {
         const p = id ? r.players.get(id) : null;
         return { seat: i, id: id || null, name: p ? p.name : null, photo: p ? (p.photo || null) : null, bot: p ? !!p.bot : false, connected: p ? !!p.connected : false };
       }),
-      hostId: r.hostId
+      hostId: r.hostId, watchers: eyes(r)
     };
   }
   const pbroad = (r) => { r.touched = Date.now(); pnsp.to(r.code).emit('state', poolPublic(r)); };
@@ -988,6 +1047,12 @@ function mount(app, io, opts) {
     attach(socket);
     let room = null;
     const fail = m => socket.emit('err', { msg: m });
+    const W = { r: null };
+    spectate(socket, poolRooms, poolPublic, pbroad, W, () => room);
+    socket.on('sync', () => {
+      if (room) socket.emit('state', poolPublic(room));
+      else if (W.r) socket.emit('state', poolPublic(W.r));
+    });
 
     const seat = (r, name, idx) => {
       const prof = socket.profile;
@@ -1119,8 +1184,81 @@ function mount(app, io, opts) {
     }
   }, 1000 * 60 * 10).unref?.();
 
+  // ── Live listing ─────────────────────────────────────────────────────────
+  // What the Live tab reads. Rooms that are nothing but bots are left out —
+  // "12 games in progress" means nothing if eleven of them are a computer
+  // playing itself. Nothing here identifies anyone beyond the name and photo
+  // they are already showing at the table.
+  const sit = (seats) => seats.filter(s => s.name).map(s => ({
+    name: s.name, photo: s.photo || null, bot: !!s.bot, connected: !!s.connected
+  }));
+  const named = (seats, i) => (seats[i] && seats[i].name) || 'Someone';
+
+  function arcadeLive() {
+    const out = [];
+
+    for (const r of ludoRooms.values()) {
+      const seats = ludoPublic(r).seats;
+      if (!seats.some(s => s.name && !s.bot)) continue;
+      const front = seats.filter(s => s.name).slice().sort((a, b) => b.home - a.home)[0];
+      out.push({
+        game: 'ludo', icon: '🎲', title: 'Ludo', code: r.code, href: '/ludo?room=' + r.code, watchHref: '/ludo?watch=' + r.code,
+        state: r.state, cap: r.cap, players: sit(seats),
+        // seatOrder is always four long; a 2-player room only owns the first
+        // two of them, so counting the whole array would advertise chairs
+        // that don't exist.
+        seatsFree: r.seatOrder.slice(0, r.cap).filter(x => !x).length,
+        lead: r.winner != null && r.winner !== undefined && r.state === 'over'
+          ? named(seats, r.winner) + ' won it'
+          : (front && front.home ? front.name + ' leads — ' + front.home + '/4 home' : 'Nobody home yet'),
+        turnName: r.state === 'playing' ? named(seats, r.turn) : null,
+        watchers: eyes(r), since: r.touched || Date.now()
+      });
+    }
+
+    for (const r of fourRooms.values()) {
+      const seats = fourPublic(r).seats;
+      if (!seats.some(s => s.name && !s.bot)) continue;
+      let down = 0;
+      for (const row of r.board) for (const v of row) if (v) down++;
+      const series = r.scores[0] || r.scores[1] ? r.scores[0] + '–' + r.scores[1] + ' in the series' : null;
+      out.push({
+        game: 'four', icon: '🔴', title: 'Connect 4', code: r.code, href: '/four?room=' + r.code, watchHref: '/four?watch=' + r.code,
+        state: r.state, cap: 2, players: sit(seats),
+        seatsFree: r.seatOrder.filter(x => !x).length,
+        lead: r.state === 'over'
+          ? (r.winner ? named(seats, r.winner - 1) + ' won it' : 'Drawn — board full')
+          : (series || (down ? down + (down === 1 ? ' piece down' : ' pieces down') : 'Freshly racked')),
+        turnName: r.state === 'playing' ? named(seats, r.turn - 1) : null,
+        watchers: eyes(r), since: r.touched || Date.now()
+      });
+    }
+
+    for (const r of poolRooms.values()) {
+      const seats = poolPublic(r).seats;
+      if (!seats.some(s => s.name && !s.bot)) continue;
+      let lead = 'Table open — no groups called yet';
+      if (r.groups[0] && r.groups[1]) {
+        const a = poolRemaining(r.balls, r.groups[0]), b = poolRemaining(r.balls, r.groups[1]);
+        lead = a === b ? 'Level — ' + a + ' each'
+          : (a < b ? named(seats, 0) + ' ahead — ' + a + ' left' : named(seats, 1) + ' ahead — ' + b + ' left');
+      }
+      if (r.state === 'over' && r.winner) lead = named(seats, r.winner - 1) + ' ' + (r.why || 'won');
+      out.push({
+        game: 'pool', icon: '🎱', title: '8-Ball Pool', code: r.code, href: '/pool?room=' + r.code, watchHref: '/pool?watch=' + r.code,
+        state: r.state, cap: 2, players: sit(seats),
+        seatsFree: r.seatOrder.filter(x => !x).length,
+        lead,
+        turnName: r.state === 'playing' ? named(seats, r.turn - 1) : null,
+        watchers: eyes(r), since: r.touched || Date.now()
+      });
+    }
+
+    return out;
+  }
+
   console.log('arcade module: mounted (ludo, four, pool)');
-  return { ludoRooms, fourRooms, poolRooms };
+  return { ludoRooms, fourRooms, poolRooms, live: arcadeLive };
 }
 
 module.exports = {
