@@ -16,15 +16,16 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
+  --edge:#e6e6ef; --accent-d:#c33d55;
   --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
   --accent:#e8506b; --bg:#fafafa; --green:#22c07a;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
   -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
   padding:0 16px calc(30px + env(safe-area-inset-bottom));
 }
@@ -55,6 +56,56 @@ p.lede{font-size:13.8px;color:var(--sub);line-height:1.6;margin-bottom:18px}
 .sect{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin:22px 0 10px}
 .foot{margin-top:26px;text-align:center;font-size:12.3px;color:var(--faint);line-height:1.7}
 .foot a{color:var(--sub)}
+
+/* ── the block kit ────────────────────────────────────────────────────────
+   One toy-brick look across the whole arcade. Cards and buttons sit on a
+   solid edge rather than a soft shadow, so they read as objects you can
+   press down, and the type is one pair everywhere: Fredoka for anything you
+   take in at a glance, Nunito for everything you actually read. */
+h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:-.3px}
+h1{font-size:28px;line-height:1.13}
+header{gap:8px;flex-wrap:nowrap}
+header .logo{font-family:'Fredoka',system-ui,sans-serif;font-size:17px;font-weight:600;
+  letter-spacing:-.2px;white-space:nowrap;flex:none}
+/* two side-links plus a wordmark is a squeeze on a small phone — let the
+   links give up the width rather than the name of the game */
+@media (max-width:430px){
+  header .logo{font-size:15.5px}
+  .tinylink{font-size:11.8px;padding:7px 10px}
+}
+p.lede{font-size:14.5px;font-weight:500;line-height:1.6}
+
+.card{border:2px solid var(--edge);border-radius:24px;
+  box-shadow:0 5px 0 var(--edge),0 14px 28px rgba(22,24,31,.055)}
+
+.btn{border-radius:18px;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:16.5px;
+  letter-spacing:.1px;box-shadow:0 4px 0 rgba(9,10,16,.28);
+  transition:transform .09s ease,box-shadow .09s ease,filter .12s}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 rgba(9,10,16,.28)}
+.btn-dark{box-shadow:0 4px 0 #000}
+.btn-accent{box-shadow:0 4px 0 var(--accent-d)}
+.btn-line{border:2px solid var(--edge);box-shadow:0 4px 0 var(--edge)}
+.btn-line:active:not(:disabled){box-shadow:0 0 0 var(--edge)}
+.btn:disabled{box-shadow:0 4px 0 rgba(9,10,16,.12)}
+
+input[type=text]{border:2px solid var(--edge);border-radius:16px;font-size:16px;font-weight:600}
+input[type=text]::placeholder{font-weight:500}
+
+.tinylink{border:2px solid var(--edge);font-weight:700;box-shadow:0 3px 0 var(--edge);
+  transition:transform .09s ease,box-shadow .09s ease}
+.tinylink:active{transform:translateY(3px);box-shadow:0 0 0 var(--edge)}
+
+.seat,.lseat{border-width:2px;border-radius:16px}
+.codebox{border:2.5px dashed #dcdce8;border-radius:20px}
+.codebox .code{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:7px}
+label.fl{font-weight:800}
+
+.game{border:2px solid var(--edge);border-radius:24px;
+  box-shadow:0 5px 0 var(--edge),0 12px 26px rgba(22,24,31,.05)}
+.game:hover{transform:translateY(-3px);box-shadow:0 8px 0 var(--edge),0 18px 34px rgba(22,24,31,.08)}
+.game .gt b{font-family:'Fredoka',system-ui,sans-serif;font-size:16.5px;font-weight:600;letter-spacing:-.2px}
+.game .gi{border-radius:18px;box-shadow:0 3px 0 rgba(9,10,16,.09) inset}
+.chip{font-weight:700}
 </style>
 </head>
 <body>
