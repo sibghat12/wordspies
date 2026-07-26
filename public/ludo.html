@@ -177,24 +177,20 @@ header .logo{font-family:'Fredoka',system-ui,sans-serif;font-size:17px;font-weig
 p.lede{font-size:14.5px;font-weight:500;line-height:1.6}
 
 .card{border:2px solid var(--edge);border-radius:24px;
-  box-shadow:0 5px 0 var(--edge),0 14px 28px rgba(22,24,31,.055)}
+  box-shadow:0 14px 28px rgba(22,24,31,.055)}
 
 .btn{border-radius:18px;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:16.5px;
-  letter-spacing:.1px;box-shadow:0 4px 0 rgba(9,10,16,.28);
+  letter-spacing:.1px;
   transition:transform .09s ease,box-shadow .09s ease,filter .12s}
-.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 rgba(9,10,16,.28)}
-.btn-dark{box-shadow:0 4px 0 #000}
-.btn-accent{box-shadow:0 4px 0 var(--accent-d)}
-.btn-line{border:2px solid var(--edge);box-shadow:0 4px 0 var(--edge)}
-.btn-line:active:not(:disabled){box-shadow:0 0 0 var(--edge)}
-.btn:disabled{box-shadow:0 4px 0 rgba(9,10,16,.12)}
+.btn:active:not(:disabled){filter:brightness(.96)}
+.btn-line{border:2px solid var(--edge)}
 
 input[type=text]{border:2px solid var(--edge);border-radius:16px;font-size:16px;font-weight:600}
 input[type=text]::placeholder{font-weight:500}
 
-.tinylink{border:2px solid var(--edge);font-weight:700;box-shadow:0 3px 0 var(--edge);
+.tinylink{border:2px solid var(--edge);font-weight:700;
   transition:transform .09s ease,box-shadow .09s ease}
-.tinylink:active{transform:translateY(3px);box-shadow:0 0 0 var(--edge)}
+.tinylink:active{filter:brightness(.96)}
 
 .seat,.lseat{border-width:2px;border-radius:16px}
 .codebox{border:2.5px dashed #dcdce8;border-radius:20px}
@@ -465,7 +461,7 @@ function render() {
   if (!S) return;
   const seated = S.seats.some(x => isMe(x.id));
   const eyeing = isWatching();
-  watchEyes(S.watchers);
+  watchEyes(S.watchers, S.crowd);
   show($('home'), !seated && !eyeing);
   show($('lobby'), seated && S.state === 'lobby');
   show($('play'), eyeing || (seated && (S.state === 'playing' || S.state === 'over')));
