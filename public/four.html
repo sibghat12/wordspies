@@ -156,6 +156,7 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="/watch.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const show = (el, on) => el.classList.toggle('hidden', !on);
@@ -178,9 +179,13 @@ function conn() {
   socket = io('/four');
   socket.on('state', st => { S = st; render(); });
   socket.on('seated', d => { myId = d.you; history.replaceState(null, '', '/four?room=' + d.code); });
+  watchWire(socket, render);
   socket.on('err', d => flash(d.msg));
   return socket;
 }
+// Arriving on a ?watch= link: open the socket straight away, because there is
+// no button to press on the way in — looking in IS the whole visit.
+if (WATCH_CODE) conn();
 let flashT = null;
 function flash(msg) {
   const el = $('play').classList.contains('hidden') ? $('homeErr') : $('playErr');
@@ -263,9 +268,11 @@ function render() {
   if (!S) return;
   const seated = S.seats.some(s => s.id === myId);
   const playing = S.state === 'playing' || S.state === 'over';
-  show($('home'), !seated || S.state === 'gone');
+  const eyeing = isWatching();
+  watchEyes(S.watchers);
+  show($('home'), (!seated && !eyeing) || S.state === 'gone');
   show($('lobby'), seated && S.state === 'lobby');
-  show($('play'), seated && playing);
+  show($('play'), eyeing || (seated && playing));
   if (seated && S.state === 'lobby') $('lobbyCode').textContent = S.code;
   if (!playing) return;
 
