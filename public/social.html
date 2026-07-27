@@ -566,8 +566,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 .btn:active:not(:disabled){filter:brightness(.96)}
 .btn-line{border:2px solid var(--edge)}
 .pillbtn{font-family:'Fredoka',system-ui,sans-serif;font-weight:500}
-.gcard{border-radius:22px;box-shadow:0 12px 24px rgba(22,24,31,.10)}
-.gcard:hover{transform:translateY(-3px);box-shadow:0 18px 30px rgba(22,24,31,.13)}
+.gcard{border-radius:22px;box-shadow:none}
+.gcard:hover{transform:translateY(-3px)}
 .gcard .gn{font-family:'Fredoka',system-ui,sans-serif;font-size:15.5px;font-weight:600;letter-spacing:-.1px}
 .gcard .gbtns a,.gcard .gbtns button{border-radius:12px;font-weight:800}
 </style>
@@ -1568,6 +1568,7 @@ async function refreshChat(first){
       lastMsgCount = j.messages.length;
       lastTheirRead = j.theirRead;
     }
+    checkChallenges();   // flip any "waiting…" cards whose friend has sat down
   } catch(e){}
 }
 
@@ -1593,20 +1594,54 @@ const GAME_TAGS = {
   play: ['🕵️', 'WordSpies'], ludo: ['🎲', 'Ludo'], four: ['🔴', 'Connect 4'],
   pool: ['🎱', '8-Ball Pool'], meld: ['🧠', 'Mind Meld']
 };
+// Challenges you sent wait politely: the card sits in the chat saying
+// "waiting for them to accept", and only once your friend has actually taken
+// a seat does it flip into a Start button. You never leave the conversation.
+const ACCEPTED = {};   // room code → accepter's name (or true), learned by polling
+
 function msgBody(m){
   if (m.k === 'gif') return `<img src="${esc(m.x)}" loading="lazy">`;
   // Any game invite — WordSpies or the arcade — becomes a big tappable Join
   // card, and a message can hold several of them. The regex runs on the
   // escaped text, so & in the URL appears as &amp; here.
+  const mine = ME && m.f === ME.id;
   let found = false;
   let out = esc(m.x).replace(/(?:https?:\/\/[^\s<]+)?\/(play|ludo|four|pool|meld)\?room=([A-Za-z0-9]{4})(?:&amp;go=1)?/g, (all, g, code) => {
     found = true;
     const [ic, nm] = GAME_TAGS[g];
     const c = code.toUpperCase();
-    return `<a class="ginvite" href="/${g}?room=${c}${g === 'play' ? '' : '&go=1'}" target="_blank" rel="noopener">${ic} Join my ${nm} game · ${c}</a>`;
+    const href = `/${g}?room=${c}${g === 'play' ? '' : '&go=1'}`;
+    if (mine) {
+      const who = ACCEPTED[c];
+      if (who) return `<a class="ginvite" href="${href}" target="_blank" rel="noopener">▶ ${who === true ? 'They’re in' : esc(who) + ' is in'} — Start ${nm}!</a>`;
+      return `<span class="ginvite gwait" data-g="${g}" data-c="${c}" style="opacity:.75">⏳ ${ic} ${nm} · ${c} — waiting for them to accept…</span>`;
+    }
+    return `<a class="ginvite" href="${href}" target="_blank" rel="noopener">${ic} Join my ${nm} game · ${c}</a>`;
   });
   if (found) return out;
   return out.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
+}
+
+// The waiting half of the handshake: quietly ask the room who's sat down.
+// Only the last few pending challenges are checked, only while a chat is
+// open, and the moment somebody is seated the card flips to Start.
+async function checkChallenges(){
+  if (!curChat) return;
+  const els = [...document.querySelectorAll('#msgs .gwait')].slice(-3);
+  for (const el of els) {
+    const g = el.dataset.g, c = el.dataset.c;
+    try {
+      const j = await fetch((g === 'play' ? '/api/room/' : '/api/' + g + '/') + c).then(x => x.json());
+      if (!j || j.exists === false) continue;
+      const seated = (j.count || 0) >= 1 || (j.players || 0) >= 1 || (g === 'meld' && j.host);
+      if (!seated) continue;
+      ACCEPTED[c] = j.host || true;
+      const [ic, nm] = GAME_TAGS[g];
+      const href = `/${g}?room=${c}${g === 'play' ? '' : '&go=1'}`;
+      el.outerHTML = `<a class="ginvite" href="${href}" target="_blank" rel="noopener">▶ ${ACCEPTED[c] === true ? 'They’re in' : esc(ACCEPTED[c]) + ' is in'} — Start ${nm}!</a>`;
+      toast('✅ ' + (j.host ? j.host + ' ' : '') + 'accepted your challenge — hit Start!');
+    } catch(e){}
+  }
 }
 
 // An empty chat gets an ice-breaker instead of a blank stare: one tap sets a
@@ -1686,7 +1721,9 @@ async function gameInvite(game, label){
     lastMsgCount = -1;
     await refreshChat();
     toBottom($('msgs'));
-    location.href = url;               // and off to your seat
+    // Stay right here in the chat: the card shows "waiting…" and flips to a
+    // Start button the moment your friend takes a seat.
+    toast('⚔️ Challenge sent — you’ll get a Start button here when they accept');
   } catch(e){ toast(e.message || 'Could not set up the game.'); }
 }
 function hidePickers(){ $('emojiPick').classList.add('hidden'); $('gamePick').classList.add('hidden'); }
