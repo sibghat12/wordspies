@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Who is the Spy? — free party game for friends | WordSpies</title>
+<meta name="description" content="A free browser party game. Everyone gets a secret word except the spy — describe your word without saying it, then vote out the impostor. 4 to 10 players, plays in five minutes.">
+<meta name="theme-color" content="#fafafa">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wordspies.co.uk/spy">
+<link rel="icon" href="/favicon.ico">
+<meta property="og:site_name" content="WordSpies">
+<meta property="og:title" content="Who is the Spy? — free browser party game">
+<meta property="og:description" content="Everyone gets a word. One player gets a different word. Describe, discuss, vote out the spy. Free, no sign-up.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wordspies.co.uk/spy">
+<meta property="og:image" content="https://wordspies.co.uk/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --bg:#fafafa; --card:#ffffff;
+  --civ:#0fa3b1; --spy:#e8506b; --spy-d:#c33d55;
+  --gold:#ffb830; --green:#22c07a; --err:#d33;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:clip;max-width:100%}
+body{
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
+  padding:0 16px calc(28px + env(safe-area-inset-bottom));
+}
+.wrap{width:100%;max-width:540px;flex:1;display:flex;flex-direction:column}
+
+/* ── top bar ─── */
+header{display:flex;align-items:center;gap:10px;padding:16px 0 14px}
+header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:7px}
+header .logo span{font-size:17px}
+header .sp{flex:1}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap}
+.tinylink:active{background:#f3f3f5}
+
+/* ── shared bits ─── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+.card + .card{margin-top:14px}
+h1{font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1.15;font-family:'Fredoka',sans-serif}
+h2{font-size:16px;font-weight:600;letter-spacing:-.3px}
+p.lede{font-size:14px;color:var(--sub);line-height:1.62;margin-top:10px}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:52px;border:0;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;
+  cursor:pointer;letter-spacing:-.2px;transition:filter .12s;
+}
+.btn:disabled{opacity:.42;cursor:default}
+.btn:active:not(:disabled){filter:brightness(.94)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn-spy{background:linear-gradient(180deg,#f0596f,var(--spy-d));color:#fff}
+.btn-gold{background:linear-gradient(180deg,#ffcc4a,#f0a91e);color:#3a2a00}
+.row{display:flex;gap:10px}
+.row .btn{width:auto;flex:1}
+input[type=text]{
+  width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;
+  padding:0 15px;font-family:inherit;font-size:16px;font-weight:500;color:var(--ink);outline:0;
+}
+input[type=text]:focus{border-color:#c9cbd2}
+input[type=text]::placeholder{color:var(--faint);font-weight:400}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 0 7px 3px;letter-spacing:.1px}
+.hidden{display:none !important}
+.err{background:#fff1f1;border:1px solid #f3d2d2;color:#a02a2a;border-radius:12px;padding:11px 13px;font-size:13px;font-weight:500;margin-top:12px;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:13.5px;font-weight:600;z-index:60;opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+
+/* ── home ─── */
+.hero .kick{font-size:11.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--spy)}
+.hero h1{margin-top:6px}
+.stack{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.ordiv{display:flex;align-items:center;gap:10px;color:var(--faint);font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin:2px 0}
+.ordiv span{flex:1;height:1px;background:var(--line)}
+.rules{margin-top:16px;border-top:1px solid var(--line);padding-top:15px}
+.rules li{list-style:none;display:flex;gap:11px;font-size:13.2px;color:var(--sub);line-height:1.6;margin-bottom:9px}
+.rules li b{color:var(--ink);font-weight:600}
+.rules .n{
+  flex:none;width:20px;height:20px;border-radius:999px;background:var(--ink);color:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px
+}
+
+/* ── lobby ─── */
+.codebox{
+  text-align:center;padding:22px 16px;border:1px dashed #d8d9de;border-radius:16px;background:#fcfcfd;margin:2px 0 14px
+}
+.codebox .lbl{font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:1.2px;text-transform:uppercase}
+.codebox .code{font-family:'Fredoka',sans-serif;font-size:44px;font-weight:600;letter-spacing:8px;margin-top:4px;padding-left:8px}
+.codebox .share{display:flex;gap:8px;margin-top:12px;justify-content:center;flex-wrap:wrap}
+.codebox .share button{font-family:inherit;font-size:12.5px;font-weight:600;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:99px;padding:7px 13px;cursor:pointer}
+.codebox .share button:active{background:#f3f3f5}
+.peeps{display:flex;flex-wrap:wrap;gap:8px}
+.peep{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 5px;font-size:13px;font-weight:600;position:relative}
+.peep .av{width:26px;height:26px;border-radius:999px;background:#eceef3;flex:none;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--sub);overflow:hidden}
+.peep .av img{width:100%;height:100%;object-fit:cover}
+.peep.host::after{content:'HOST';position:absolute;top:-6px;right:-4px;background:var(--ink);color:#fff;font-size:8.5px;font-weight:800;letter-spacing:.5px;padding:2px 5px;border-radius:99px}
+.peep.gone{opacity:.5}
+.peep .kbtn{background:none;border:0;color:var(--faint);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}
+.hint{font-size:12.5px;color:var(--faint);text-align:center;margin-top:12px;font-weight:500}
+
+/* ── secret word reveal ─── */
+.secret{padding:34px 22px;text-align:center;background:#fff;border:1px solid var(--line);border-radius:22px}
+.secret .role{font-size:11.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase}
+.secret .role.civ{color:var(--civ)}
+.secret .role.spy{color:var(--spy)}
+.secret .wd{font-family:'Fredoka',sans-serif;font-size:56px;font-weight:600;letter-spacing:-2px;margin:12px 0 10px;line-height:1.05;word-break:break-word}
+.secret .sub{font-size:14px;color:var(--sub);line-height:1.55}
+.secret .peek{display:inline-block;margin-top:20px;background:var(--ink);color:#fff;padding:11px 22px;border-radius:99px;font-weight:700;font-size:14px;cursor:pointer;border:0;font-family:inherit}
+.secret .peek:active{filter:brightness(1.15)}
+.secret.hidden-word .wd,.secret.hidden-word .sub,.secret.hidden-word .role{filter:blur(20px)}
+.secret.hidden-word{cursor:pointer}
+.secret.hidden-word::before{content:'👁 Tap to peek at your word';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:15px;font-weight:700;color:var(--ink);z-index:2}
+.secret{position:relative}
+
+/* ── ring of players (round phase) ─── */
+.round{padding:18px 16px}
+.rlabel{text-align:center;font-size:11.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
+.turnup{text-align:center;margin-top:10px;font-size:16px;font-weight:700}
+.turnup b{color:var(--spy)}
+.ring{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:10px;margin-top:14px}
+.pl{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 8px 9px;text-align:center;position:relative;transition:transform .15s}
+.pl .av{width:38px;height:38px;border-radius:999px;background:#eceef3;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--sub);overflow:hidden}
+.pl .av img{width:100%;height:100%;object-fit:cover}
+.pl .nm{font-size:11.5px;font-weight:600;margin-top:6px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl.me{background:#f9f7ff;border-color:#d9d2ff}
+.pl.turn{border-color:var(--spy);box-shadow:0 0 0 2px rgba(232,80,107,.18);transform:translateY(-2px)}
+.pl.turn::after{content:'';position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:var(--spy);border-radius:999px;border:2px solid #fff}
+.pl.dead{opacity:.35}
+.pl.dead::before{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:var(--spy);z-index:1}
+.pl .voted{position:absolute;top:-6px;left:-4px;background:var(--green);color:#fff;font-size:9px;font-weight:800;padding:2px 5px;border-radius:99px;letter-spacing:.4px}
+
+/* clue input */
+.clueBox{margin-top:16px}
+.clueBox .row{gap:8px}
+.clueBox input{flex:1}
+.clueBox .btn{flex:none;width:auto;padding:0 20px;min-height:52px}
+.clueBox.disabled input{background:#f6f6f8;color:var(--faint)}
+.waitCap{font-size:12.5px;color:var(--faint);text-align:center;margin-top:10px;font-weight:500}
+
+/* clue log */
+.log{margin-top:18px}
+.log h3{font-size:11.5px;font-weight:700;color:var(--faint);letter-spacing:1.3px;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.log h3 .rn{background:#f3f3f6;color:var(--sub);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.6px}
+.crow{display:flex;align-items:center;gap:9px;padding:8px 2px;border-bottom:1px solid #f2f2f4;font-size:14px}
+.crow:last-child{border-bottom:0}
+.crow .who{font-weight:600;color:var(--sub);flex:none}
+.crow .arr{color:var(--faint);flex:none}
+.crow .w{font-weight:700;color:var(--ink);word-break:break-word}
+
+/* voting */
+.voteBox{margin-top:16px}
+.voteBox h2{text-align:center;margin-bottom:12px;color:var(--spy);font-family:'Fredoka',sans-serif;font-weight:600}
+.voteGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.vbtn{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 8px 10px;cursor:pointer;text-align:center;font-family:inherit;transition:all .15s}
+.vbtn:active{transform:scale(.97)}
+.vbtn:hover:not(:disabled){border-color:var(--spy);background:#fff5f6}
+.vbtn:disabled{opacity:.4;cursor:default}
+.vbtn.picked{border-color:var(--spy);background:#ffe8ec;box-shadow:0 0 0 2px rgba(232,80,107,.15)}
+.vbtn .av{width:36px;height:36px;border-radius:999px;background:#eceef3;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--sub);overflow:hidden}
+.vbtn .av img{width:100%;height:100%;object-fit:cover}
+.vbtn .nm{font-size:12.5px;font-weight:600;margin-top:6px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vbtn .cnt{display:inline-block;margin-top:4px;background:var(--spy);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:.5px;min-height:15px}
+.vbtn .cnt.zero{background:#f0f0f3;color:var(--faint)}
+
+/* reveal */
+.reveal{text-align:center;padding:24px 18px}
+.reveal .kick{font-size:11.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase}
+.reveal .kick.civ{color:var(--civ)}
+.reveal .kick.spy{color:var(--spy)}
+.reveal .kick.tie{color:var(--faint)}
+.reveal .who{font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:-1px;margin:10px 0 4px;line-height:1.1;word-break:break-word}
+.reveal .role{font-size:14.5px;color:var(--sub);line-height:1.5}
+.reveal .role b{color:var(--ink);font-weight:700}
+.reveal .pair{display:flex;gap:10px;margin-top:18px;text-align:center}
+.reveal .pw{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 8px}
+.reveal .pw .lb{font-size:10.5px;font-weight:700;color:var(--faint);letter-spacing:.9px;text-transform:uppercase}
+.reveal .pw .wd{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600;letter-spacing:-.4px;margin-top:6px;word-break:break-word}
+.reveal .pw.civ .wd{color:var(--civ)}
+.reveal .pw.spy .wd{color:var(--spy)}
+.reveal .cta{margin-top:20px}
+
+/* watchers pill */
+.watchers{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer}
+.watchers .dot{width:6px;height:6px;border-radius:999px;background:var(--spy);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.watch-panel{position:fixed;bottom:16px;left:16px;right:16px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.16);z-index:70;max-height:60vh;overflow:auto}
+.watch-panel h4{font-size:13px;font-weight:700;margin-bottom:10px}
+.watch-panel .wclose{position:absolute;top:8px;right:10px;background:none;border:0;font-size:16px;color:var(--faint);cursor:pointer}
+.wp-row{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:13px}
+.wp-row .av{width:28px;height:28px;border-radius:999px;background:#eceef3;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--sub);overflow:hidden}
+.wp-row .av img{width:100%;height:100%;object-fit:cover}
+.wp-row a{color:var(--ink);font-weight:600;text-decoration:none}
+
+/* confetti on civilians win */
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.confetti i{position:absolute;width:8px;height:13px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.15}}
+
+.foot{text-align:center;font-size:12px;color:var(--faint);line-height:1.6;padding:22px 8px 0}
+.foot a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">🕵️ <span>WordSpies</span></div>
+  <div class="sp"></div>
+  <a class="tinylink" href="/games">🎮 All games</a>
+</header>
+
+<!-- HOME -->
+<div id="viewHome" class="card hero">
+  <div class="kick">Party game · 4–10 friends</div>
+  <h1>Who is the Spy?</h1>
+  <p class="lede">Everyone gets a secret word. One player gets a <b>different</b> word — they're the spy. Take turns saying one word to describe yours without giving it away. Then vote out who you think is the impostor.</p>
+
+  <div class="stack">
+    <label class="fl" for="nameIn">Your name</label>
+    <input id="nameIn" type="text" placeholder="e.g. Sam" maxlength="18" autocomplete="off">
+    <button id="createBtn" class="btn btn-spy">Create a room</button>
+    <div class="ordiv"><span></span>or join<span></span></div>
+    <div class="row">
+      <input id="codeIn" type="text" placeholder="Room code" maxlength="4" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:4px;text-align:center;font-weight:700">
+      <button id="joinBtn" class="btn btn-dark" style="flex:0 0 108px">Join</button>
+    </div>
+    <div id="homeErr" class="err hidden"></div>
+  </div>
+
+  <ul class="rules">
+    <li><span class="n">1</span><span><b>Everyone gets a word.</b> Civilians share one word. The spy gets a related but different word — coffee vs tea.</span></li>
+    <li><span class="n">2</span><span><b>Say one word</b> that describes yours, without saying it. Take turns around the circle.</span></li>
+    <li><span class="n">3</span><span><b>Vote.</b> After every round, everyone points at who they think is the spy. Most votes gets eliminated.</span></li>
+    <li><span class="n">4</span><span><b>Civilians win</b> if the spy is voted out. <b>Spy wins</b> if only two players are left standing.</span></li>
+  </ul>
+</div>
+
+<!-- LOBBY -->
+<div id="viewLobby" class="card hidden">
+  <div class="codebox">
+    <div class="lbl">Share this code</div>
+    <div class="code" id="lobCode">····</div>
+    <div class="share">
+      <button id="copyLink">🔗 Copy invite link</button>
+      <button id="waShare">💬 WhatsApp</button>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0 10px">
+    <h2 id="lobCount">0 in the room</h2>
+    <span class="watchers hidden" id="watchPill"><span class="dot"></span><span id="watchN">0</span> watching</span>
+  </div>
+  <div id="peeps" class="peeps"></div>
+  <p id="lobHint" class="hint">Need at least 4 players to start.</p>
+  <button id="startBtn" class="btn btn-spy hidden" style="margin-top:14px">Start the game</button>
+  <button id="leaveBtn" class="btn btn-line" style="margin-top:10px">Leave</button>
+  <div id="lobErr" class="err hidden"></div>
+</div>
+
+<!-- SECRET WORD REVEAL -->
+<div id="viewSecret" class="card hidden secret hidden-word">
+  <div class="role" id="secRole">···</div>
+  <div class="wd" id="secWord">···</div>
+  <div class="sub" id="secSub">Describe this word without saying it.</div>
+</div>
+
+<!-- ROUND (clues + turn) -->
+<div id="viewRound" class="card round hidden">
+  <div class="rlabel" id="rLabel">Round 1</div>
+  <div class="turnup" id="turnUp"></div>
+  <div class="ring" id="ring"></div>
+  <div class="clueBox" id="clueBox">
+    <div class="row">
+      <input id="clueIn" type="text" placeholder="one word…" maxlength="24" autocomplete="off">
+      <button id="clueBtn" class="btn btn-dark">Say it</button>
+    </div>
+    <div class="waitCap hidden" id="waitCap"></div>
+  </div>
+  <div class="log">
+    <h3><span>Clues</span><span class="rn" id="cluesRn">Round 1</span></h3>
+    <div id="cluesList"></div>
+  </div>
+  <button id="leaveBtn2" class="btn btn-line" style="margin-top:14px">Leave the game</button>
+</div>
+
+<!-- VOTING -->
+<div id="viewVote" class="card voteBox hidden">
+  <h2>🗳️ Vote out the spy</h2>
+  <p class="lede" style="text-align:center;margin-bottom:14px">Pick who you think doesn't belong.</p>
+  <div class="voteGrid" id="voteGrid"></div>
+  <p class="waitCap" id="voteWait" style="margin-top:14px"></p>
+  <div class="log" style="margin-top:20px">
+    <h3><span>Clues so far</span></h3>
+    <div id="cluesListV"></div>
+  </div>
+</div>
+
+<!-- REVEAL (per-round) -->
+<div id="viewReveal" class="card reveal hidden">
+  <div class="kick" id="revKick">···</div>
+  <div class="who" id="revWho">···</div>
+  <div class="role" id="revRole">···</div>
+  <div class="cta">
+    <button id="nextRoundBtn" class="btn btn-dark hidden">Next round →</button>
+    <p id="waitHost" class="waitCap hidden">Waiting for the host to continue…</p>
+  </div>
+</div>
+
+<!-- ENDED (game over) -->
+<div id="viewEnded" class="card reveal hidden">
+  <div class="kick" id="endKick">···</div>
+  <div class="who" id="endWho">···</div>
+  <div class="role" id="endRole">···</div>
+  <div class="pair">
+    <div class="pw civ"><div class="lb">Civilians</div><div class="wd" id="endCiv">·</div></div>
+    <div class="pw spy"><div class="lb">Spy</div><div class="wd" id="endSpy">·</div></div>
+  </div>
+  <div class="cta">
+    <button id="rematchBtn" class="btn btn-spy">Play again</button>
+    <button id="homeBtn" class="btn btn-line" style="margin-top:10px">Back home</button>
+  </div>
+</div>
+
+<!-- WATCHING (spectator) -->
+<div id="viewWatch" class="card hidden">
+  <div class="kick" style="font-size:11.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--spy)">Watching · Room <span id="wCode"></span></div>
+  <h2 style="margin-top:6px">Spectator view</h2>
+  <p class="lede">You can see the clues and the vote — you can't see anyone's word.</p>
+  <div id="wBody" style="margin-top:14px"></div>
+  <div class="row" style="margin-top:14px">
+    <button id="wKnock" class="btn btn-line">👋 Knock</button>
+    <a href="/social" class="btn btn-dark" style="text-decoration:none">Back to community</a>
+  </div>
+</div>
+
+<div class="foot">
+  Free party game by <a href="/">WordSpies</a> — no sign-up, no download.
+</div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+const $  = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NAME_KEY = 'ws_name';
+const socket = io('/spy', { transports:['websocket','polling'] });
+let S = null;                 // current game state
+let MY_ID = null;             // socketId once seated
+let LAST_ROLE_SHOWN = null;   // remember what round we've already revealed for
+
+// remembered name — same key as the arcade so users don't retype it
+try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(e){}
+
+function view(id){
+  ['viewHome','viewLobby','viewSecret','viewRound','viewVote','viewReveal','viewEnded','viewWatch']
+    .forEach(v => $(v).classList.toggle('hidden', v !== id));
+}
+function toast(t){ const el = $('toastEl'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2200); }
+function showErr(id, msg){ const e = $(id); if (!msg) return e.classList.add('hidden'); e.textContent = msg; e.classList.remove('hidden'); }
+
+function avatarHtml(p, size){
+  const s = size || 26;
+  if (p && p.photo) return '<span class="av"><img src="' + esc(p.photo) + '" alt=""></span>';
+  const letter = p && p.name ? esc(p.name[0].toUpperCase()) : '?';
+  return '<span class="av">' + letter + '</span>';
+}
+
+function urlOf(code){ return location.origin + '/spy?room=' + code; }
+
+async function copyToClipboard(text){
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch(e){ try{ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); return true;}catch(_){return false;} }
+}
+
+// ── HOME → create / join ──────────────────────────────────────────────
+function saveName(){
+  const n = $('nameIn').value.trim().slice(0, 18);
+  if (n) try { localStorage.setItem(NAME_KEY, n); } catch(e){}
+  return n;
+}
+$('createBtn').onclick = () => {
+  const n = saveName();
+  if (!n) return showErr('homeErr', 'Type your name first.');
+  showErr('homeErr', '');
+  socket.emit('create', { name: n }, (r) => {
+    if (r && r.error) showErr('homeErr', r.error);
+  });
+};
+$('joinBtn').onclick = () => {
+  const n = saveName();
+  if (!n) return showErr('homeErr', 'Type your name first.');
+  const c = $('codeIn').value.trim().toUpperCase();
+  if (!c || c.length < 3) return showErr('homeErr', 'Enter the 4-letter room code.');
+  showErr('homeErr', '');
+  socket.emit('join', { name: n, code: c }, (r) => {
+    if (r && r.error === 'gone') showErr('homeErr', 'No game with that code — it may have finished.');
+    else if (r && r.error === 'full') showErr('homeErr', 'That room is full.');
+    else if (r && r.error === 'started') showErr('homeErr', 'That game has already started.');
+  });
+};
+$('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
+
+// ── LOBBY buttons ─────────────────────────────────────────────────────
+$('copyLink').onclick = async () => {
+  if (!S) return;
+  const ok = await copyToClipboard(urlOf(S.code));
+  toast(ok ? 'Invite link copied — paste it in your chat.' : 'Could not copy — long-press to copy the URL.');
+};
+$('waShare').onclick = () => {
+  if (!S) return;
+  const msg = '🕵️ Who is the Spy? Join my room: ' + urlOf(S.code);
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+};
+$('startBtn').onclick = () => socket.emit('start');
+$('leaveBtn').onclick = () => { if (confirm('Leave this game?')) location.reload(); };
+$('leaveBtn2').onclick = () => { if (confirm('Leave this game?')) location.reload(); };
+
+// ── ROUND actions ─────────────────────────────────────────────────────
+$('clueBtn').onclick = () => {
+  const w = $('clueIn').value.trim();
+  if (!w) return toast('Type your word first.');
+  socket.emit('clue', { word: w });
+  $('clueIn').value = '';
+};
+$('clueIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('clueBtn').click(); });
+
+$('nextRoundBtn').onclick = () => socket.emit('nextRound');
+$('rematchBtn').onclick = () => socket.emit('rematch');
+$('homeBtn').onclick = () => location.href = '/games';
+
+// ── secret-word tap-to-reveal (protects you if someone leans over) ────
+document.getElementById('viewSecret').addEventListener('click', () => {
+  document.getElementById('viewSecret').classList.remove('hidden-word');
+});
+
+// ── socket handlers ───────────────────────────────────────────────────
+socket.on('err', ({ msg }) => toast(msg || 'Something went wrong.'));
+socket.on('kicked', () => { toast('You were removed from the room.'); setTimeout(() => location.reload(), 900); });
+socket.on('seated', ({ code, you }) => {
+  MY_ID = you;
+  history.replaceState(null, '', '/spy?room=' + code);
+});
+socket.on('watching', ({ code }) => {
+  view('viewWatch');
+  $('wCode').textContent = code;
+});
+
+socket.on('state', (state) => {
+  S = state;
+  render();
+});
+
+// ── auto-join from URL ────────────────────────────────────────────────
+(function initFromUrl(){
+  const p = new URLSearchParams(location.search);
+  const wcode = p.get('watch');
+  const rcode = p.get('room');
+  if (wcode) {
+    socket.emit('watch', { code: wcode.toUpperCase() });
+    return;
+  }
+  if (rcode) {
+    // Pre-fill the code and focus the name field. Auto-join only if a name is remembered.
+    $('codeIn').value = rcode.toUpperCase();
+    const n = $('nameIn').value.trim();
+    if (n) {
+      setTimeout(() => $('joinBtn').click(), 40);
+    } else {
+      $('nameIn').focus();
+    }
+  }
+})();
+
+// ── render everything based on S ──────────────────────────────────────
+function render(){
+  if (!S) return;
+
+  // watchers pill
+  const wp = $('watchPill');
+  if (wp) {
+    const n = S.watchers || 0;
+    wp.classList.toggle('hidden', n === 0);
+    if (n) $('watchN').textContent = n;
+  }
+
+  if (S.state === 'lobby') return renderLobby();
+  if (S.state === 'clues') return renderRound();
+  if (S.state === 'voting') return renderVote();
+  if (S.state === 'reveal') return renderReveal();
+  if (S.state === 'ended') return renderEnded();
+}
+
+function renderLobby(){
+  view('viewLobby');
+  $('lobCode').textContent = S.code;
+  const n = S.players.length;
+  $('lobCount').textContent = n + (n === 1 ? ' spy in the room' : ' spies in the room');
+  const myId = MY_ID;
+  const iAmHost = S.hostId && S.hostId === myId;
+  $('peeps').innerHTML = S.players.map(p => {
+    const kick = (iAmHost && p.id !== myId) ? '<button class="kbtn" onclick="kickIt(\'' + p.id + '\')" title="Remove">✕</button>' : '';
+    return '<div class="peep ' + (p.id === S.hostId ? 'host' : '') + ' ' + (p.connected ? '' : 'gone') + '">'
+      + avatarHtml(p) + '<span>' + esc(p.name) + '</span>' + kick + '</div>';
+  }).join('');
+  const canStart = iAmHost && n >= S.minPlayers;
+  $('startBtn').classList.toggle('hidden', !iAmHost);
+  $('startBtn').disabled = !canStart;
+  $('startBtn').textContent = canStart ? 'Start the game' : ('Need ' + S.minPlayers + '+ players');
+  $('lobHint').textContent = iAmHost
+    ? (canStart ? 'You\'re the host — start when everyone is in.' : ('Need at least ' + S.minPlayers + ' players.'))
+    : ('Waiting for the host to start… (' + n + '/' + S.minPlayers + ')');
+}
+window.kickIt = (id) => socket.emit('kick', { id });
+
+// Show the secret word once per game (or when it changes across a rematch).
+function maybeShowSecret(){
+  if (!S.myWord) return false;
+  const stamp = S.code + '|' + S.myWord + '|' + (S.iAmSpy ? 'S' : 'C');
+  if (LAST_ROLE_SHOWN === stamp) return false;
+  LAST_ROLE_SHOWN = stamp;
+  view('viewSecret');
+  document.getElementById('viewSecret').classList.add('hidden-word');
+  $('secRole').textContent = S.iAmSpy ? 'You are the SPY 🕵️' : 'You are a CIVILIAN';
+  $('secRole').className = 'role ' + (S.iAmSpy ? 'spy' : 'civ');
+  $('secWord').textContent = S.myWord;
+  $('secSub').textContent = S.iAmSpy
+    ? 'Nobody else has this word. Blend in — describe it without giving it away.'
+    : 'Everyone else (except one) has the same word. Describe it — don\'t say it.';
+  // Auto-move to the round view after 6s if they haven't tapped
+  setTimeout(() => {
+    if ($('viewSecret').classList.contains('hidden')) return;
+    if (S && S.state === 'clues') render();
+  }, 6000);
+  return true;
+}
+
+function renderRound(){
+  if (maybeShowSecret()) return;
+  view('viewRound');
+  $('rLabel').textContent = 'Round ' + S.round;
+  $('cluesRn').textContent = 'Round ' + S.round;
+  const turnP = S.players.find(p => p.id === S.turnId);
+  const iAmTurn = S.turnId === MY_ID;
+  const meP = S.players.find(p => p.id === MY_ID);
+  $('turnUp').innerHTML = iAmTurn
+    ? '<b>Your turn</b> — say one word.'
+    : (turnP ? ('<b>' + esc(turnP.name) + '</b> is thinking…') : 'Waiting for the next player…');
+  $('ring').innerHTML = S.players.map(p => {
+    const cls = ['pl'];
+    if (p.id === MY_ID) cls.push('me');
+    if (!p.alive) cls.push('dead');
+    if (p.id === S.turnId) cls.push('turn');
+    return '<div class="' + cls.join(' ') + '">' + avatarHtml(p) + '<div class="nm">' + esc(p.name) + '</div></div>';
+  }).join('');
+  const canClue = iAmTurn && meP && meP.alive;
+  $('clueBox').classList.toggle('disabled', !canClue);
+  $('clueIn').disabled = !canClue;
+  $('clueBtn').disabled = !canClue;
+  $('clueIn').placeholder = canClue ? 'one word describing your word…' : (meP && !meP.alive ? 'you are out this game' : 'wait your turn');
+  const wcap = !canClue && meP && meP.alive
+    ? (turnP ? ('Waiting for ' + esc(turnP.name) + '…') : '')
+    : '';
+  $('waitCap').textContent = wcap;
+  $('waitCap').classList.toggle('hidden', !wcap);
+  renderClueList('cluesList');
+}
+
+function renderClueList(elId){
+  const el = $(elId);
+  if (!el) return;
+  const all = S.cluesRound || [];
+  if (!all.length) {
+    el.innerHTML = '<div class="crow" style="color:var(--faint);border:0"><span class="w">No clues yet — first player to go, break the ice.</span></div>';
+    return;
+  }
+  el.innerHTML = all.map(c => '<div class="crow"><span class="who">' + esc(c.name) + '</span><span class="arr">→</span><span class="w">' + esc(c.word) + '</span></div>').join('');
+}
+
+function renderVote(){
+  view('viewVote');
+  renderClueList('cluesListV');
+  const alive = S.players.filter(p => p.alive);
+  const meP = S.players.find(p => p.id === MY_ID);
+  const iAmAlive = meP && meP.alive;
+  const votedFor = S.iVoted || null;
+  $('voteGrid').innerHTML = alive.map(p => {
+    const disabled = !iAmAlive || p.id === MY_ID;
+    const picked = votedFor === p.id;
+    return '<button class="vbtn ' + (picked ? 'picked' : '') + '" onclick="castVote(\'' + p.id + '\')" ' + (disabled ? 'disabled' : '') + '>'
+      + avatarHtml(p) + '<div class="nm">' + esc(p.name) + (p.id === MY_ID ? ' (you)' : '') + '</div>'
+      + '</button>';
+  }).join('');
+  const total = alive.length;
+  const cast = alive.filter(p => S.votes && S.votes[p.id]).length + (votedFor ? (S.votes && S.votes[MY_ID] ? 0 : 1) : 0);
+  // simpler: count what we have
+  const done = Object.keys(S.votes || {}).length + (votedFor && !(S.votes && S.votes[MY_ID]) ? 1 : 0);
+  $('voteWait').textContent = iAmAlive
+    ? (votedFor ? 'Locked in. Waiting for others… (' + done + '/' + total + ')' : 'Tap the spy — everyone alive votes.')
+    : 'You\'re out this round — watching the vote.';
+}
+window.castVote = (id) => socket.emit('vote', { target: id });
+
+function renderReveal(){
+  view('viewReveal');
+  const rv = S.reveal || {};
+  if (rv.tied) {
+    $('revKick').textContent = 'Hung jury';
+    $('revKick').className = 'kick tie';
+    $('revWho').textContent = 'No one is out.';
+    $('revRole').innerHTML = 'The vote was tied. Another round starts next.';
+  } else {
+    $('revKick').textContent = rv.spyCaught ? 'Spy caught!' : 'Wrong guess';
+    $('revKick').className = 'kick ' + (rv.spyCaught ? 'civ' : 'spy');
+    $('revWho').textContent = rv.eliminatedName || '···';
+    $('revRole').innerHTML = 'was a <b>' + (rv.eliminatedRole === 'spy' ? 'SPY 🕵️' : 'CIVILIAN') + '</b>.';
+  }
+  const iAmHost = S.hostId && S.hostId === MY_ID;
+  $('nextRoundBtn').classList.toggle('hidden', !iAmHost);
+  $('waitHost').classList.toggle('hidden', iAmHost);
+}
+
+function renderEnded(){
+  view('viewEnded');
+  const rv = S.reveal || {};
+  const civWon = S.winner === 'civilians';
+  $('endKick').textContent = civWon ? '🎉 Civilians win' : '🕵️ Spy wins';
+  $('endKick').className = 'kick ' + (civWon ? 'civ' : 'spy');
+  $('endWho').textContent = rv.spyName || '';
+  $('endRole').innerHTML = 'was the spy.';
+  $('endCiv').textContent = rv.civWord || '·';
+  $('endSpy').textContent = rv.spyWord || '·';
+  if (civWon) confetti();
+}
+
+function confetti(){
+  const box = document.createElement('div');
+  box.className = 'confetti';
+  const cols = ['#ffb830','#0fa3b1','#e8506b','#6b5ce8','#22c07a'];
+  for (let i = 0; i < 60; i++){
+    const p = document.createElement('i');
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.top = (-10 - Math.random() * 40) + 'px';
+    p.style.background = cols[i % cols.length];
+    p.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    p.style.animationDelay = (Math.random() * .4) + 's';
+    box.appendChild(p);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 3500);
+}
+
+// spectator knock
+$('wKnock').onclick = () => { socket.emit('knock'); toast('👋 They\'ll see you knocked.'); };
+</script>
+
+</body>
+</html>

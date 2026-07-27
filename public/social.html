@@ -79,6 +79,14 @@ body.authmodal{overflow:hidden}
 @media(max-width:359px){ .tabbar button{padding:6px 5px;font-size:9.5px} }
 .tabbar button.on{color:var(--ink);font-weight:800}
 .tabbar .ico{font-size:20px;display:block;line-height:1}
+/* Red pulsing dot — replaces 📺 on the Live tab. Uses a solid red core with
+   an outward pulse ring so it reads instantly as "something's happening now". */
+.livedot{position:relative;display:inline-block;width:12px;height:12px;border-radius:50%;background:#ef0f35;box-shadow:0 0 0 0 rgba(239,15,53,.55);animation:livepulse 1.6s ease-out infinite}
+.livedot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgba(239,15,53,.35);animation:liveping 1.6s ease-out infinite}
+.livedot-lg{width:14px;height:14px;vertical-align:1px;margin-left:6px}
+@keyframes livepulse{0%{box-shadow:0 0 0 0 rgba(239,15,53,.55)}70%{box-shadow:0 0 0 8px rgba(239,15,53,0)}100%{box-shadow:0 0 0 0 rgba(239,15,53,0)}}
+@keyframes liveping{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.6);opacity:0}}
+@media (prefers-reduced-motion:reduce){.livedot,.livedot::after{animation:none}}
 /* Your own face is the quickest thing to spot in a row of icons, so the Profile
    tab wears your photo instead of a generic silhouette — ringed when you're on it. */
 .tabav{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;line-height:1;font-size:19px;transition:box-shadow .15s}
@@ -142,7 +150,7 @@ body.authmodal{overflow:hidden}
 .sect h3{font-size:13.5px;font-weight:800;letter-spacing:-.2px}
 .sect .cnt{font-size:11px;font-weight:700;color:var(--faint)}
 .sect .ln{flex:1;height:1px;background:var(--line)}
-.prate{position:absolute;top:10px;right:10px;background:#eef9f3;color:#12925c;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px}
+.prate{position:absolute;top:10px;right:10px;background:var(--ink);color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px}
 .pcirc.live{outline:2px solid var(--green);outline-offset:2px}
 /* Quiet buttons. Two solid slabs of pink and black on every single card made the
    wall shout; the faces are the content, so the actions sit back and wait. */
@@ -284,6 +292,10 @@ body.authmodal{overflow:hidden}
 .gcard.g-four{background:linear-gradient(150deg,#4c5ec7,#2c3a85)}
 .gcard.g-meld{background:linear-gradient(150deg,#6b5ce8,#4d3fc0)}
 .gcard.g-spy{background:linear-gradient(150deg,#e8506b,#c22e4d)}
+.gcard.g-imp{background:linear-gradient(150deg,#3a3f4f,#16181f)}
+.garcade .g-spy{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;text-decoration:none;min-height:110px}
+.garcade .g-spy .gi{font-size:30px}
+.garcade .g-spy .gn{font-size:15.5px}
 .gcard.g-all{background:#16181f;display:flex;flex-direction:column;align-items:center;justify-content:center;width:104px;text-align:center;text-decoration:none}
 .gcard.g-all .gi{font-size:23px}
 .gcard.g-all .gn{font-size:12.5px;margin-top:7px}
@@ -621,7 +633,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 <div id="vApp" class="wrap hidden">
 
   <!-- 🟢 you walked over here mid-game and the room is still sitting there -->
-  <a class="livebar hidden" id="liveBar" href="/play">
+  <a class="livebar hidden" id="liveBar" href="/codenames">
     <span class="lbd"></span>
     <span class="lbt"><b id="liveBarT">Your game is still running</b><span id="liveBarS"></span></span>
     <span class="lba" aria-hidden="true">→</span>
@@ -637,39 +649,34 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <span id="meAvSmall"></span>
       </div>
     </div>
-    <a class="playcta" href="/play?from=social">
-      <span class="pi">🎮</span>
-      <span class="pt">
-        <b>Start a game</b>
-        <span>Make a room and invite your spies</span>
-      </span>
-      <span class="pa" aria-hidden="true">→</span>
-    </a>
     <!-- A quiet nudge on the wall, only when there is genuinely something to
          look at. Nobody finds a tab they have no reason to press. -->
     <a class="lvnudge hidden" id="lvNudge" href="#live" onclick="showTab('live');return false">
       <span class="lvdot"></span><b id="lvNudgeT"></b><span class="lvna" aria-hidden="true">→</span>
     </a>
     <div class="garcade" aria-label="Games">
+      <a class="gcard g-spy" href="/codenames?from=social">
+        <div class="gi">🕵️</div><div class="gn">WordSpies</div>
+      </a>
       <div class="gcard g-ludo">
         <div class="gi">🎲</div><div class="gn">Ludo</div>
-        <div class="gd">2–4 players. Race home, send friends back.</div>
         <div class="gbtns"><a class="gplay" href="/ludo">Play</a><button class="gch" onclick="openChallenge('ludo','🎲 Ludo')">⚔️ Invite</button></div>
       </div>
       <div class="gcard g-pool">
         <div class="gi">🎱</div><div class="gn">8-Ball Pool</div>
-        <div class="gd">Aim, power, pot. You vs one friend or the bot.</div>
         <div class="gbtns"><a class="gplay" href="/pool">Play</a><button class="gch" onclick="openChallenge('pool','🎱 8-Ball Pool')">⚔️ Invite</button></div>
       </div>
       <div class="gcard g-four">
         <div class="gi">🔴</div><div class="gn">Connect 4</div>
-        <div class="gd">Drop pieces, line up four. Quick and vicious.</div>
         <div class="gbtns"><a class="gplay" href="/four">Play</a><button class="gch" onclick="openChallenge('four','🔴 Connect 4')">⚔️ Invite</button></div>
       </div>
       <div class="gcard g-meld">
         <div class="gi">🧠</div><div class="gn">Mind Meld</div>
-        <div class="gd">Both type a word. Try to say the same one.</div>
         <div class="gbtns"><a class="gplay" href="/meld">Play</a><button class="gch" onclick="openChallenge('meld','🧠 Mind Meld')">⚔️ Invite</button></div>
+      </div>
+      <div class="gcard g-imp">
+        <div class="gi">🕵️</div><div class="gn">Who is the Spy?</div>
+        <div class="gbtns"><a class="gplay" href="/spy">Play</a><button class="gch" onclick="openChallenge('spy','🕵️ Who is the Spy?')">⚔️ Invite</button></div>
       </div>
       <a class="gcard g-all" href="#games" onclick="showTab('games');return false"><div class="gi">🎮</div><div class="gn">All games</div></a>
     </div>
@@ -709,7 +716,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        the players are already showing each other at the table. -->
   <div id="tabLive" class="hidden">
     <div class="lv-head">
-      <h2>Live right now 📺</h2>
+      <h2>Live right now <span class="livedot livedot-lg" aria-hidden="true"></span></h2>
       <p>Every game being played this second. Look in on any of them — take a free seat, or just watch.</p>
     </div>
     <div class="lv-stats" id="lvStats"></div>
@@ -731,7 +738,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="gcard g-spy">
         <div class="gi">🕵️</div><div class="gn">WordSpies</div>
         <div class="gd">The main event — two teams, secret words, one-word clues. 4+ players.</div>
-        <div class="gbtns"><a class="gplay" href="/play?from=social">Play</a></div>
+        <div class="gbtns"><a class="gplay" href="/codenames?from=social">Play</a></div>
       </div>
       <div class="gcard g-ludo">
         <div class="gi">🎲</div><div class="gn">Ludo</div>
@@ -752,6 +759,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <div class="gi">🧠</div><div class="gn">Mind Meld</div>
         <div class="gd">Both type a word. Try to say the same one.</div>
         <div class="gbtns"><a class="gplay" href="/meld">Play</a><button class="gch" onclick="openChallenge('meld','🧠 Mind Meld')">⚔️ Invite</button></div>
+      </div>
+      <div class="gcard g-imp">
+        <div class="gi">🕵️</div><div class="gn">Who is the Spy?</div>
+        <div class="gd">4–10 players. Everyone gets a word — except one. Vote out the impostor.</div>
+        <div class="gbtns"><a class="gplay" href="/spy">Play</a><button class="gch" onclick="openChallenge('spy','🕵️ Who is the Spy?')">⚔️ Invite</button></div>
       </div>
     </div>
   </div>
@@ -868,11 +880,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="note">Your photo appears on the community wall.<br>Max 2 MB — JPG, PNG or WebP.</div>
   </div>
 
-  <a class="gamelink" href="/play?from=social">🎮 &nbsp;Jump into a game →</a>
-
   <div class="tabbar">
     <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge live hidden" id="wallBadge"></span></button>
-    <button id="tbLive" onclick="showTab('live')"><span class="ico">📺</span>Live<span class="badge live hidden" id="liveBadge"></span></button>
+    <button id="tbLive" onclick="showTab('live')"><span class="ico livedot"></span>Live<span class="badge live hidden" id="liveBadge"></span></button>
     <button id="tbGames" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
     <button id="tbChats" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
     <button id="tbMe" onclick="showTab('me')"><span class="ico tabav" id="tbMeAv">👤</span>Profile<span class="tdot hidden" id="meDot"></span></button>
@@ -1666,7 +1676,7 @@ function iceBreaker(u){
 function inviteToPlay(){
   if (!curChat) return;
   sessionStorage.setItem('inviteFlow', '1');
-  location.href = '/play?from=chat:' + curChat;
+  location.href = '/codenames?from=chat:' + curChat;
 }
 
 async function sendMsg(kind, gifUrl){
@@ -1889,7 +1899,6 @@ function renderSide(){
       <div class="sbstats">
         <div><b>${ME.games || 0}</b><span>Games</span></div>
         <div><b>${ME.wins || 0}</b><span>Wins</span></div>
-        <div><b>${winRate(ME)}</b><span>Win rate</span></div>
       </div>
     </div>` : `
     <div class="sbcard sbme">
@@ -1918,7 +1927,7 @@ function renderSide(){
           <span class="rv">${m.wins} ${m.wins === 1 ? 'win' : 'wins'}</span>
         </div>`).join('')}
     </div>` : ''}
-    <a class="sbcta" href="/play">Start a game →</a>
+    <a class="sbcta" href="/codenames">Start a game →</a>
     <div class="sbnote">Play a round, then come back and follow whoever made you laugh.</div>`;
 }
 

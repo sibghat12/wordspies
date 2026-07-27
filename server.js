@@ -146,6 +146,12 @@ let arcadeMod = null;
 try { arcadeMod = require('./arcade').mount(app, io, { identify: resolveSocialIdentity }) || null; }
 catch (e) { console.error('arcade module failed to load (game unaffected):', e.message); }
 
+// 🕵️ Who is the Spy? — the party word game at /spy. Own module, own namespace,
+// own rooms — a bug in here can't take anything else down.
+let spyMod = null;
+try { spyMod = require('./spy').mount(app, io, { identify: resolveSocialIdentity }) || null; }
+catch (e) { console.error('spy module failed to load (game unaffected):', e.message); }
+
 // ── Live ──────────────────────────────────────────────────────────────────
 // Every game actually being played right now, in one list. The point is that
 // an empty-looking site and a busy one should not look the same: if four
@@ -189,6 +195,7 @@ app.get('/api/live', (req, res) => {
   add(wordspiesLive);
   add(arcadeMod && arcadeMod.live);
   add(meldMod && meldMod.live);
+  add(spyMod && spyMod.live);
   // Games actually being played first, then the ones still filling up, and
   // within each the ones that moved most recently — a game someone touched a
   // minute ago is far more worth looking at than one idling since lunchtime.
