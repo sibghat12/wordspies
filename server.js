@@ -35,14 +35,22 @@ const landing = require('./landing');
 // landing still exists at /home for anyone who wants the tour. Old share
 // links (wordspies.co.uk/?room=XXXX) still land at their game table.
 app.get('/', (req, res) => {
-  if (req.query.room) return res.redirect('/play?room=' + encodeURIComponent(String(req.query.room).slice(0, 8)));
+  if (req.query.room) return res.redirect('/codenames?room=' + encodeURIComponent(String(req.query.room).slice(0, 8)));
   res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public', 'social.html'));
 });
 app.get('/home', (req, res) => {
   res.type('html').send(landing.page());
 });
+// The word game's canonical URL is /codenames — it's what people actually
+// search for. /play is kept forever as a 301 because it's baked into every
+// invite ever sent, the blog, and the sitemap. The whole query string rides
+// along, so ?room=, ?go=1 and ?from=chat: all survive the hop.
 app.get('/play', (req, res) => {
+  const q = req.url.indexOf('?');
+  res.redirect(301, '/codenames' + (q >= 0 ? req.url.slice(q) : ''));
+});
+app.get('/codenames', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
