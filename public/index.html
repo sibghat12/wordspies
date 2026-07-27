@@ -52,6 +52,12 @@ button{font-family:inherit;font-weight:400;cursor:pointer;border:none;color:inhe
 input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:none}
 .hidden{display:none !important}
 .wrap{max-width:1080px;margin:0 auto;padding:16px 12px 47px}
+/* Same header as every other game — logo left, "All games" right — so walking
+   between WordSpies and the arcade doesn't feel like changing websites. */
+header{display:flex;align-items:center;gap:10px;padding:2px 0 14px}
+header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px}
+header .sp{flex:1}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap}
 .card{background:var(--card);border-radius:22px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.04)}
 
 /* ---------- buttons ---------- */
@@ -111,18 +117,21 @@ input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:n
 .codefld{max-width:150px;text-align:center;letter-spacing:7px;font-weight:400;font-size:17.4px;text-transform:uppercase}
 
 /* ---------- top bar ---------- */
-.top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.top{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;margin-bottom:16px;overflow-x:auto;
+  scrollbar-width:none;-ms-overflow-style:none}
+.top::-webkit-scrollbar{display:none}
+.top > *{flex:none}
 .top .logo{font-size:20.9px}
 .codepill{
   display:flex;align-items:center;gap:8px;background:#fff;border-radius:99px;
-  padding:6px 6px 6px 14px;font-size:13.1px;font-weight:400;cursor:pointer;transition:.18s;
+  padding:5px 5px 5px 12px;font-size:12.6px;font-weight:400;cursor:pointer;transition:.18s;white-space:nowrap;
   box-shadow:var(--sh-sm);border:1px solid var(--line);
 }
 .codepill b{letter-spacing:4px;font-size:14.8px;font-family:'Fredoka'}
 .codepill .cp{background:#f1f3fa;border-radius:99px;padding:5px 11px;font-size:11.3px;color:var(--muted);transition:.18s}
 .codepill:hover{transform:translateY(-1px);box-shadow:var(--sh)}
 .codepill:hover .cp{background:var(--blue-soft);color:var(--blue)}
-.scorepill{background:#fff;border:1px solid var(--line);box-shadow:var(--sh-sm);border-radius:99px;padding:7px 14px;font-size:13.9px;font-weight:400;font-family:'Fredoka'}
+.scorepill{background:#fff;border:1px solid var(--line);box-shadow:var(--sh-sm);border-radius:99px;padding:6px 12px;font-size:13.2px;white-space:nowrap;font-weight:400;font-family:'Fredoka'}
 .scorepill .r{color:var(--red)} .scorepill .b{color:var(--blue)}
 
 /* ---------- lobby ---------- */
@@ -479,7 +488,7 @@ body.ingame #meCorner{display:none !important}
 /* help */
 .helpbtn{
   display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);
-  box-shadow:var(--sh-sm);border-radius:99px;padding:7px 12px;font-size:12.2px;font-weight:400;color:var(--muted);
+  box-shadow:var(--sh-sm);border-radius:99px;padding:6px 10px;font-size:12px;font-weight:400;color:var(--muted);white-space:nowrap;
   cursor:pointer;transition:.15s;
 }
 .helpbtn:hover{color:var(--ink);transform:translateY(-1px);box-shadow:var(--sh)}
@@ -612,8 +621,12 @@ b,strong{font-weight:600}
 <!-- ============ APP ============ -->
 <div id="app" class="hidden">
   <div class="wrap">
+    <header>
+      <div class="logo">🕵️ WordSpies</div>
+      <div class="sp"></div>
+      <a class="tinylink" href="/games">🎮 All games</a>
+    </header>
     <div class="top">
-      <div class="logo"><span class="r">Word</span><span class="b">Spies</span></div>
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp" id="codePillLab">Copy invite link</span></div>
       <div class="codepill hidden" id="invPill"><span class="cp" id="invPillLab">👥 Invite friends</span></div>
       <div class="codepill" id="watchPill" style="display:none"><span class="cp" id="watchPillLab">👁 Copy watch-only link</span></div>
