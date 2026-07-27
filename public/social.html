@@ -266,15 +266,8 @@ body.authmodal{overflow:hidden}
   .playcta:hover .pa{transform:translateX(3px)}
 }
 
-/* The games bar sits directly under the big pink one: every game on the site,
-   one tap away, in a row that scrolls sideways on a phone. Outlined pills
-   rather than filled cards so it never competes with "Start a game". */
-/* The arcade strip: one bright card per game, each with a straight way in and
-   a "challenge" that picks a friend, sets the table, and drops the invite in
-   your chat with them. This is the game night shelf, not a list of links. */
-.garcade{display:flex;gap:11px;margin:-6px 20px 18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
-  padding:2px 2px 6px;scroll-snap-type:x proximity}
-.garcade::-webkit-scrollbar{display:none}
+/* One bright card per game — used on the Games tab's grid (.ggrid). Community
+   tab no longer carries a games strip: games have their own tab. */
 .gcard{flex:none;width:150px;border-radius:18px;padding:14px 13px 12px;color:#fff;position:relative;overflow:hidden;
   scroll-snap-align:start;box-shadow:0 8px 20px rgba(20,23,42,.16);transition:transform .16s}
 .gcard:hover{transform:translateY(-2px)}
@@ -293,13 +286,10 @@ body.authmodal{overflow:hidden}
 .gcard.g-meld{background:linear-gradient(150deg,#6b5ce8,#4d3fc0)}
 .gcard.g-spy{background:linear-gradient(150deg,#e8506b,#c22e4d)}
 .gcard.g-imp{background:linear-gradient(150deg,#3a3f4f,#16181f)}
-.garcade .g-spy{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;text-decoration:none;min-height:110px}
-.garcade .g-spy .gi{font-size:30px}
-.garcade .g-spy .gn{font-size:15.5px}
 .gcard.g-all{background:#16181f;display:flex;flex-direction:column;align-items:center;justify-content:center;width:104px;text-align:center;text-decoration:none}
 .gcard.g-all .gi{font-size:23px}
 .gcard.g-all .gn{font-size:12.5px;margin-top:7px}
-@media(min-width:900px){ .garcade{margin:-8px 8px 22px} .gcard{width:164px} }
+@media(min-width:900px){ .gcard{width:164px} }
 
 /* the refresh button — only in the installed app, where there's no browser
    reload button. One tap: newest code, newest people, newest messages. */
@@ -654,31 +644,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <a class="lvnudge hidden" id="lvNudge" href="#live" onclick="showTab('live');return false">
       <span class="lvdot"></span><b id="lvNudgeT"></b><span class="lvna" aria-hidden="true">→</span>
     </a>
-    <div class="garcade" aria-label="Games">
-      <a class="gcard g-spy" href="/codenames?from=social">
-        <div class="gi">🕵️</div><div class="gn">WordSpies</div>
-      </a>
-      <div class="gcard g-ludo">
-        <div class="gi">🎲</div><div class="gn">Ludo</div>
-        <div class="gbtns"><a class="gplay" href="/ludo">Play</a><button class="gch" onclick="openChallenge('ludo','🎲 Ludo')">⚔️ Invite</button></div>
-      </div>
-      <div class="gcard g-pool">
-        <div class="gi">🎱</div><div class="gn">8-Ball Pool</div>
-        <div class="gbtns"><a class="gplay" href="/pool">Play</a><button class="gch" onclick="openChallenge('pool','🎱 8-Ball Pool')">⚔️ Invite</button></div>
-      </div>
-      <div class="gcard g-four">
-        <div class="gi">🔴</div><div class="gn">Connect 4</div>
-        <div class="gbtns"><a class="gplay" href="/four">Play</a><button class="gch" onclick="openChallenge('four','🔴 Connect 4')">⚔️ Invite</button></div>
-      </div>
-      <div class="gcard g-meld">
-        <div class="gi">🧠</div><div class="gn">Mind Meld</div>
-        <div class="gbtns"><a class="gplay" href="/meld">Play</a><button class="gch" onclick="openChallenge('meld','🧠 Mind Meld')">⚔️ Invite</button></div>
-      </div>
-      <div class="gcard g-imp">
-        <div class="gi">🕵️</div><div class="gn">Who is the Spy?</div>
-        <div class="gbtns"><a class="gplay" href="/spy">Play</a><button class="gch" onclick="openChallenge('spy','🕵️ Who is the Spy?')">⚔️ Invite</button></div>
-      </div>
-    </div>
     <div class="chwrap hidden" id="chWrap" onclick="if(event.target===this)closeChallenge()">
       <div class="chsheet" style="position:relative">
         <button class="chx" onclick="closeChallenge()">✕</button>
