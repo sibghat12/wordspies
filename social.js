@@ -845,21 +845,32 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const ids = [...new Set((Array.isArray(body.ids) ? body.ids : []).map(String))].slice(0, 20);
       if (!ids.length) return res.status(400).json({ error: 'Pick someone first.' });
 
+      // Which game is being invited to. Default stays WordSpies for old callers.
+      // Anything unknown falls back to WordSpies so a typo can't 500.
+      const GAMES = {
+        wordspies: { path: '/codenames', icon: '🎮', label: 'WordSpies' },
+        spy:       { path: '/spy',       icon: '🕵️', label: 'Who is the Spy?' },
+        ludo:      { path: '/ludo',      icon: '🎲', label: 'Ludo' },
+        four:      { path: '/four',      icon: '🔴', label: 'Connect 4' },
+        pool:      { path: '/pool',      icon: '🎱', label: '8-Ball Pool' },
+        meld:      { path: '/meld',      icon: '🧠', label: 'Mind Meld' }
+      };
+      const gKey = String(body.game || 'wordspies').toLowerCase();
+      const g = GAMES[gKey] || GAMES.wordspies;
+
       // You can only invite your own circle. Without this the endpoint would be
       // a way to message any member on the site, follow or no follow.
       const circle = await inviteCircle(me.id);
-      // Build the link from the request itself, so it's right behind the proxy
-      // in production and still works when running locally on another port.
       const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https').split(',')[0].trim();
       const host = String(req.headers['x-forwarded-host'] || req.headers.host || 'wordspies.co.uk').split(',')[0].trim();
-      const link = proto + '://' + host + '/play?room=' + code;
+      const link = proto + '://' + host + g.path + '?room=' + code;
       const sent = [];
 
       for (const to of ids) {
         if (!circle.has(to)) continue;
         const raw = await db.get('soc:user:' + to);
         if (!raw) continue;
-        const msg = { f: me.id, k: 'text', x: '🎮 Come play WordSpies with me! ' + link, t: Date.now() };
+        const msg = { f: me.id, k: 'text', x: g.icon + ' Come play ' + g.label + ' with me! ' + link, t: Date.now() };
         const key = 'soc:msgs:' + cid(me.id, to);
         await db.rpush(key, JSON.stringify(msg));
         await db.ltrim(key, -500, -1);
@@ -867,16 +878,16 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         await db.sadd('soc:convos:' + to, me.id);
         await db.incr('soc:unread:' + to + ':' + me.id);
         notifyUser(to, 'invite', me.name + ' invited you to a game',
-          `${me.name} invited you to a game of WordSpies.\n\nJoin them: ${link}\n\n— WordSpies`, true,
+          `${me.name} invited you to a game of ${g.label}.\n\nJoin them: ${link}\n\n— WordSpies`, true,
           mailHtml({
             peek: 'They\'re waiting for you — tap to join.',
             heading: 'Game invite',
-            line: '<b style="color:#16181f">' + esc(me.name) + '</b> invited you to a game of WordSpies.',
+            line: '<b style="color:#16181f">' + esc(me.name) + '</b> invited you to a game of <b>' + esc(g.label) + '</b>.',
             btn: 'Join the game', btnUrl: link,
             note: 'We only send these when you\'re not already in the app.'
           }));
-        sendPush(to, 'invite', '🎮 ' + me.name + ' invited you',
-          'Tap to join the game', '/play?room=' + code);
+        sendPush(to, 'invite', g.icon + ' ' + me.name + ' invited you',
+          'Tap to join ' + g.label, g.path + '?room=' + code);
         sent.push(to);
       }
       res.json({ ok: true, sent: sent.length, ids: sent });

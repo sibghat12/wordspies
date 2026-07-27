@@ -150,7 +150,7 @@ body.authmodal{overflow:hidden}
 .sect h3{font-size:13.5px;font-weight:800;letter-spacing:-.2px}
 .sect .cnt{font-size:11px;font-weight:700;color:var(--faint)}
 .sect .ln{flex:1;height:1px;background:var(--line)}
-.prate{position:absolute;top:10px;right:10px;background:var(--ink);color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px}
+.prate{position:absolute;top:10px;right:10px;background:transparent;color:var(--sub);font-size:10.5px;font-weight:700;padding:2px 0;letter-spacing:.2px}
 .pcirc.live{outline:2px solid var(--green);outline-offset:2px}
 /* Quiet buttons. Two solid slabs of pink and black on every single card made the
    wall shout; the faces are the content, so the actions sit back and wait. */
@@ -678,7 +678,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <div class="gi">🕵️</div><div class="gn">Who is the Spy?</div>
         <div class="gbtns"><a class="gplay" href="/spy">Play</a><button class="gch" onclick="openChallenge('spy','🕵️ Who is the Spy?')">⚔️ Invite</button></div>
       </div>
-      <a class="gcard g-all" href="#games" onclick="showTab('games');return false"><div class="gi">🎮</div><div class="gn">All games</div></a>
     </div>
     <div class="chwrap hidden" id="chWrap" onclick="if(event.target===this)closeChallenge()">
       <div class="chsheet" style="position:relative">
@@ -1848,7 +1847,7 @@ function renderWall(){
     return `
     <div class="pcard" onclick="openMember(${i})" data-i="${i}">
       ${mine ? '<span class="chip-you">YOU</span>'
-             : (rate !== null ? `<span class="prate">${m.wins} ${m.wins === 1 ? 'win' : 'wins'} (${rate}%)</span>` : '')}
+             : (rate !== null ? `<span class="prate">${rate}%</span>` : '')}
       <div class="pcirc ${m.online ? 'live ' : ''}${m.photo ? '' : 'g' + hue(m.name)}">
         ${m.photo ? `<img src="${esc(m.photo)}" loading="lazy">` : `<div class="pcircph">${esc(m.name[0].toUpperCase())}</div>`}
       </div>

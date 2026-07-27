@@ -412,12 +412,18 @@ function mount(app, io, opts) {
         if (typeof ack === 'function') ack({ error: 'gone' });
         return;
       }
-      // Reconnecting: if a player of the same account is already seated but
-      // disconnected, take that seat back rather than joining as a new person.
+      // Same account already seated (a second tab, a refresh, or a fresh
+      // page from the invite link): swap the seat onto this socket and
+      // disconnect the old one. Prevents the "I appear twice" bug and lets
+      // people rejoin from any device without losing their spot mid-game.
       const prof = socket.profile;
       if (prof && prof.uid) {
         for (const [oldId, p] of r.players) {
-          if (p._uid === prof.uid && !p.connected) {
+          if (p._uid === prof.uid) {
+            // If the previous socket is still connected, boot it — its owner
+            // is the same human, sitting in the new tab.
+            const oldSock = nsp.sockets.get(oldId);
+            if (oldSock) { oldSock.emit('replaced'); oldSock.leave(r.code); }
             r.players.delete(oldId);
             if (r.hostId === oldId) r.hostId = socket.id;
             if (r.order.length) r.order = r.order.map(x => x === oldId ? socket.id : x);
@@ -529,6 +535,48 @@ function mount(app, io, opts) {
       room.civWord = ''; room.spyWord = '';
       room.order = []; room.turnIdx = 0;
       broadcast(room);
+    });
+
+    // Any player can quit outright. In the lobby we just free the seat; mid-
+    // game we mark them dead and check if that ends the round.
+    socket.on('leave', () => {
+      if (!room || !me) return;
+      const r = room;
+      r.players.delete(socket.id);
+      if (r.hostId === socket.id) r.hostId = [...r.players.keys()][0] || null;
+      if (r.order.length) {
+        // If the leaver was mid-turn, advance.
+        if (r.state === 'clues' && r.order[r.turnIdx] === socket.id) {
+          r.order = r.order.filter(x => x !== socket.id);
+          if (r.turnIdx >= r.order.length) r.turnIdx = 0;
+        } else {
+          r.order = r.order.filter(x => x !== socket.id);
+        }
+      }
+      delete r.votes[socket.id];
+      socket.leave(r.code);
+      room = null; me = null;
+      if (!r.players.size) return dropRoom(r.code);
+      // If we lost a spy mid-game the civilians win by default; likewise if
+      // civilians drop below the spy count. checkEndConditions handles both.
+      if (r.state !== 'lobby') checkEndConditions(r);
+      broadcast(r);
+    });
+
+    // Host can shut the room down for everyone — a "close the party" button
+    // so a game that stalled doesn't sit half-alive forever.
+    socket.on('endRoom', () => {
+      if (!room || !me) return;
+      if (socket.id !== room.hostId) return fail('Only the host can end the game.');
+      const r = room;
+      nsp.to(r.code).emit('roomClosed', { by: me.name });
+      // Disconnect everyone from the socket room so nothing else lingers.
+      for (const [pid] of r.players) {
+        const s = nsp.sockets.get(pid);
+        if (s) s.leave(r.code);
+      }
+      dropRoom(r.code);
+      room = null; me = null;
     });
 
     socket.on('kick', (data) => {
