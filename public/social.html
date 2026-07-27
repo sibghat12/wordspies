@@ -1231,8 +1231,8 @@ function lvCard(g){
     <div class="lvwho">${chips || '<span class="lvp">Empty table</span>'}</div>
     <div class="lvlead">${esc(g.lead || '')}${g.turnName && g.state === 'playing' ? ` · <b>${esc(g.turnName)}</b> to play` : ''}${g.watchers ? ` · 👁 ${g.watchers} watching` : ''}</div>
     <div class="lvbtns">
-      <a class="lvwatch" href="${esc(g.watchHref)}" target="_blank" rel="noopener">👁 Watch</a>
-      ${open ? `<a class="lvjoin" href="${esc(g.href)}" target="_blank" rel="noopener">${seatLabel}</a>` : ''}
+      <a class="lvwatch" href="${esc(g.watchHref)}">👁 Watch</a>
+      ${open ? `<a class="lvjoin" href="${esc(g.href)}">${seatLabel}</a>` : ''}
     </div>
   </div>`;
 }
@@ -1613,10 +1613,10 @@ function msgBody(m){
     const href = `/${g}?room=${c}${g === 'play' ? '' : '&go=1'}`;
     if (mine) {
       const who = ACCEPTED[c];
-      if (who) return `<a class="ginvite" href="${href}" target="_blank" rel="noopener">▶ ${who === true ? 'They’re in' : esc(who) + ' is in'} — Start ${nm}!</a>`;
+      if (who) return `<a class="ginvite" href="${href}">▶ ${who === true ? 'They’re in' : esc(who) + ' is in'} — Start ${nm}!</a>`;
       return `<span class="ginvite gwait" data-g="${g}" data-c="${c}" style="opacity:.75">⏳ ${ic} ${nm} · ${c} — waiting for them to accept…</span>`;
     }
-    return `<a class="ginvite" href="${href}" target="_blank" rel="noopener">${ic} Join my ${nm} game · ${c}</a>`;
+    return `<a class="ginvite" href="${href}">${ic} Join my ${nm} game · ${c}</a>`;
   });
   if (found) return out;
   return out.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
@@ -1638,7 +1638,7 @@ async function checkChallenges(){
       ACCEPTED[c] = j.host || true;
       const [ic, nm] = GAME_TAGS[g];
       const href = `/${g}?room=${c}${g === 'play' ? '' : '&go=1'}`;
-      el.outerHTML = `<a class="ginvite" href="${href}" target="_blank" rel="noopener">▶ ${ACCEPTED[c] === true ? 'They’re in' : esc(ACCEPTED[c]) + ' is in'} — Start ${nm}!</a>`;
+      el.outerHTML = `<a class="ginvite" href="${href}">▶ ${ACCEPTED[c] === true ? 'They’re in' : esc(ACCEPTED[c]) + ' is in'} — Start ${nm}!</a>`;
       toast('✅ ' + (j.host ? j.host + ' ' : '') + 'accepted your challenge — hit Start!');
     } catch(e){}
   }
