@@ -195,7 +195,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   <nav class="nav">
     <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
     <div class="navlinks">
-      <a class="hideSm" href="/#how">How to play</a>
+      <a class="hideSm" href="/how-to-play">How to play</a>
       <a href="/games">Games</a>
       <a href="/social">Social</a>
       <a href="/blog">Blog</a>

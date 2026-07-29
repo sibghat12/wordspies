@@ -48,7 +48,7 @@ footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 </style></head>
 <body>
 <header class="sitehead"><div class="hwrap">
-<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a class="hideSm" href="/#how">How to play</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/play">&#9654; Play Codenames</a></div></div>
+<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a class="hideSm" href="/how-to-play">How to play</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/play">&#9654; Play Codenames</a></div></div>
 </div></header>
 <div class="wrap">
 ${body}
@@ -141,4 +141,52 @@ function termsPage() {
   return layout('Terms of Use — WordSpies', 'The terms for using WordSpies, the free online word game: acceptable use, content, intellectual property and disclaimers.', '/terms', body);
 }
 
-module.exports = { aboutPage, privacyPage, termsPage };
+// A canonical URL for "how to play". The old shared nav pointed at `/#how`,
+// but `/` now serves the community app which has no such anchor — so every
+// header link on the marketing / about / blog pages was dead-ending on a
+// scroll that never happened. A real page also earns its own SEO.
+function howToPlayPage() {
+  const body = `
+<h1>How to play WordSpies</h1>
+<div class="updated">The free online Codenames-style word game — for 4 to 10+ friends, in about ten minutes.</div>
+<p>WordSpies is a free online word game inspired by the party classic Codenames. Two teams — <b style="color:#ff4d6b">Red</b> and <b style="color:#3d7bff">Blue</b> — race to find their secret words on a five-by-five grid, using one-word clues from their spymasters, while carefully avoiding the assassin. Everyone plays from their own phone or laptop, so it works around a table or over a video call.</p>
+<h2>What you need</h2>
+<ul>
+  <li>At least 4 players (2 per team). The sweet spot is 6–10.</li>
+  <li>Each player on their own device — phone, tablet or laptop.</li>
+  <li>No accounts, no downloads. Open the site and share a 4-letter code.</li>
+</ul>
+<h2>The five-step round</h2>
+<ol>
+  <li><b>Create a room.</b> Tap <a href="/play">▶ Play Codenames</a>, enter your name, and you'll get a four-letter code and shareable link. Send it to your friends.</li>
+  <li><b>Split into teams.</b> Everyone joins Red or Blue. Each team picks one <b>Spymaster</b> — they see which words on the grid belong to which team. Everyone else is a <b>Guesser</b> and sees only the words.</li>
+  <li><b>Spymaster gives a clue.</b> One word plus a number, like <b>OCEAN · 2</b>, linking two of your team's words. Clues must be single words unrelated to any word on the board.</li>
+  <li><b>Guessers discuss and tap.</b> Guessers tap the words they think match the clue. Right answer? Keep going, up to the number given plus one. Wrong answer? Your turn ends — worse if you hit the other team's word, or a neutral one.</li>
+  <li><b>First team to find all their words wins.</b> But watch out for the <b>assassin</b> — tap it by accident and your team loses instantly.</li>
+</ol>
+<h2>Tips for great clues</h2>
+<ul>
+  <li>Numbers matter. "OCEAN · 3" is bold; "OCEAN · 1" is safe. Bigger risks turn tighter games.</li>
+  <li>Themes usually beat single connections. "SPORT · 2" for TENNIS and BASEBALL is stronger than a fragile pun.</li>
+  <li>Avoid words that touch the assassin — a great clue that lands on it costs you the game.</li>
+  <li>Guessers should think out loud. Half the fun is the arguments before the tap.</li>
+</ul>
+<h2>Playing remotely on a video call</h2>
+<p>Keep your Zoom, Meet or FaceTime call running. Everyone opens WordSpies on their phone. Debates happen live on the call; the tapping happens on the phones. It's the same game — just louder.</p>
+<h2>Frequently asked</h2>
+<p><b>Is WordSpies really free?</b> Yes. No sign-up, no download, no ads on the game screen.</p>
+<p><b>Can we play with 2 or 3?</b> Technically yes, but 4+ makes the game come alive. With just 2, our <a href="/meld">🧠 Mind Meld</a> or <a href="/four">🔴 Connect 4</a> are better fits.</p>
+<p><b>What happens if my phone drops the connection?</b> Rejoin from the same link — the game reseats you.</p>
+<p><b>Is this Codenames?</b> WordSpies is inspired by Codenames but is its own independent game, not affiliated with Codenames or Czech Games Edition.</p>
+<div style="margin-top:32px;text-align:center">
+  <a class="play" href="/play" style="display:inline-block">${'▶'} Start a game — takes ten seconds</a>
+</div>`;
+  return layout(
+    'How to play WordSpies — A quick guide to the free Codenames-style word game',
+    'A short, clear guide to playing WordSpies: teams, spymasters, clues, and how to win — plus tips for playing over video calls with friends.',
+    '/how-to-play',
+    body
+  );
+}
+
+module.exports = { aboutPage, privacyPage, termsPage, howToPlayPage };

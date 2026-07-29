@@ -365,7 +365,7 @@ footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 </style></head>
 <body>
 <header class="sitehead"><div class="hwrap">
-<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a class="hideSm" href="/#how">How to play</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/play">&#9654; Play Codenames</a></div></div>
+<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a class="hideSm" href="/how-to-play">How to play</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/play">&#9654; Play Codenames</a></div></div>
 </div></header>
 ${banner || ''}
 <div class="wrap">

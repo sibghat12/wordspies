@@ -72,9 +72,40 @@ body.authmodal{overflow:hidden}
 
 /* header + tabs */
 .head{display:flex;align-items:center;justify-content:space-between;padding:22px 20px 12px}
-.mechip{display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 6px 5px 14px}
+.mechip{position:relative;display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 6px 5px 14px}
 .mechip .mename{font-weight:700;font-size:13.5px;letter-spacing:-.1px}
-.tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:7px 8px calc(10px + env(safe-area-inset-bottom));z-index:10}
+/* Top navigation bar: logo + primary tabs on the left, secondary links +
+   your profile chip on the right. Persistent across every tab so the site
+   header stops being a per-tab afterthought. */
+.topnav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:20;display:flex;align-items:center;gap:14px;padding:9px 16px;min-height:56px}
+.topnav .tnlogo{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:20px;text-decoration:none;color:inherit;letter-spacing:-.3px;flex-shrink:0}
+.topnav .tnlogo em{font-style:normal;color:var(--accent)}
+.topnav .tntabs{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.topnav .tntabs::-webkit-scrollbar{display:none}
+.topnav .tntabs .tnt{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;border-radius:12px;padding:8px 12px;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--sub);cursor:pointer;position:relative;white-space:nowrap;transition:background .12s,color .12s}
+.topnav .tntabs .tnt:hover{color:var(--ink);background:#f4f5f7}
+.topnav .tntabs .tnt.on{color:var(--ink);background:#eef1ff}
+.topnav .tntabs .tnt .ico{font-size:15px;line-height:1}
+.topnav .tntabs .tnt .badge{position:static;transform:none;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:99px;min-width:16px;text-align:center;line-height:1.35}
+.topnav .tnright{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.topnav .tnlink{color:var(--sub);text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;transition:background .12s,color .12s}
+.topnav .tnlink:hover{background:#f4f5f7;color:var(--ink)}
+.topnav .mechip{border:1px solid var(--line)}
+/* Small screens: hide the logo text and secondary links so the tabs + chip
+   still fit; tabs get scrollable so all five stay reachable. */
+@media(max-width:640px){
+  .topnav{padding:7px 10px;gap:8px;min-height:52px}
+  .topnav .tnlogo{font-size:0}
+  .topnav .tnlogo::before{content:'WS';font-family:'Fredoka',system-ui,sans-serif;font-size:18px;font-weight:700;color:var(--accent);letter-spacing:-.5px}
+  .topnav .tnlink.hideSm{display:none}
+  .topnav .tntabs .tnt{padding:8px 10px;font-size:12.5px}
+  .topnav .mechip .mename{display:none}
+  .topnav .mechip{padding:4px}
+}
+/* Hidden by default now — the top nav owns navigation. If we ever want the
+   old bottom bar back on very small screens, flip this. */
+.tabbar{display:none}
+.tabbar-old{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:7px 8px calc(10px + env(safe-area-inset-bottom));z-index:10}
 /* Inactive tabs are grey and the active one is ink-dark: before this the only
    difference was font-weight, which is far too quiet to tell you where you are. */
 /* five tabs now, so the padding has to give a little or the labels collide on
@@ -97,16 +128,11 @@ body.authmodal{overflow:hidden}
 .tabav .av,.tabav .avph{width:24px !important;height:24px !important;font-size:11px !important}
 .tabbar button.on .tabav{box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--ink)}
 .tdot{position:absolute;top:3px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px #fff}
-/* desktop: navigation moves to the top like a website header */
+/* Legacy bottom/top .tabbar styling is unused now that .topnav owns nav.
+   Kept minimal to avoid ripples if some tests or old caches still reference
+   `.tabbar` — the whole element is display:none above. */
 @media(min-width:700px){
-  .tabbar{top:0;bottom:auto;border-top:none;border-bottom:1px solid var(--line);padding:8px;justify-content:center;gap:14px}
-  .tabbar button{flex-direction:row;gap:9px;font-size:13.5px;padding:9px 18px}
-  .tabbar button.on{background:#f3f4f7}
-  .tabbar .ico{font-size:18px}
-  .tabav{width:26px;height:26px}
-  .tabav .av,.tabav .avph{width:26px !important;height:26px !important;font-size:12px !important}
-  .tdot{top:5px;right:12px}
-  .wrap{padding-top:58px;padding-bottom:40px}
+  .wrap{padding-bottom:40px}
 }
 
 /* wall */
@@ -701,6 +727,29 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 <!-- ============ APP ============ -->
 <div id="vApp" class="wrap hidden">
 
+  <!-- Top navigation: logo + primary tabs (left), secondary links + your
+       profile chip (right). Persistent across every tab so the site header
+       is no longer a per-tab afterthought. -->
+  <nav class="topnav">
+    <a class="tnlogo" href="/" aria-label="WordSpies home">WordSpies <em>Social</em></a>
+    <div class="tntabs" role="tablist">
+      <button id="tbWall" class="tnt on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge hidden" id="wallBadge"></span></button>
+      <button id="tbLive" class="tnt" onclick="showTab('live')"><span class="ico livedot"></span>Live<span class="badge hidden" id="liveBadge"></span></button>
+      <button id="tbGames" class="tnt" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
+      <button id="tbChats" class="tnt" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
+    </div>
+    <div class="tnright">
+      <a class="tnlink hideSm" href="/blog">Blog</a>
+      <a class="tnlink hideSm" href="/how-to-play">How to play</a>
+      <button id="pwaRefresh" class="pwaref hidden" onclick="pwaRefresh()">↻ Refresh</button>
+      <div class="mechip" id="tbMe" onclick="showTab('me')">
+        <span class="mename" id="meName"></span>
+        <span id="meAvSmall"></span>
+        <span class="tdot hidden" id="meDot"></span>
+      </div>
+    </div>
+  </nav>
+
   <!-- 🟢 you walked over here mid-game and the room is still sitting there -->
   <a class="livebar hidden" id="liveBar" href="/codenames">
     <span class="lbd"></span>
@@ -710,14 +759,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
   <!-- wall -->
   <div id="tabWall">
-    <div class="head">
-      <div class="logo">WordSpies <em>Social</em></div>
-      <button id="pwaRefresh" class="pwaref hidden" onclick="pwaRefresh()">↻ Refresh</button>
-      <div class="mechip" onclick="showTab('me')">
-        <span class="mename" id="meName"></span>
-        <span id="meAvSmall"></span>
-      </div>
-    </div>
     <!-- A quiet nudge on the wall, only when there is genuinely something to
          look at. Nobody finds a tab they have no reason to press. -->
     <a class="lvnudge hidden" id="lvNudge" href="#live" onclick="showTab('live');return false">
@@ -939,13 +980,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="note">Your photo appears on the community wall.<br>Max 2 MB — JPG, PNG or WebP.</div>
   </div>
 
-  <div class="tabbar">
-    <button id="tbWall" class="on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge live hidden" id="wallBadge"></span></button>
-    <button id="tbLive" onclick="showTab('live')"><span class="ico livedot"></span>Live<span class="badge live hidden" id="liveBadge"></span></button>
-    <button id="tbGames" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
-    <button id="tbChats" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
-    <button id="tbMe" onclick="showTab('me')"><span class="ico tabav" id="tbMeAv">👤</span>Profile<span class="tdot hidden" id="meDot"></span></button>
-  </div>
 </div>
 
 <div class="toast" id="toastEl"></div>

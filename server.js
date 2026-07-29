@@ -101,6 +101,12 @@ const pages = require('./pages');
 app.get('/about', (req, res) => res.type('html').send(pages.aboutPage()));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage()));
 app.get('/terms', (req, res) => res.type('html').send(pages.termsPage()));
+app.get('/how-to-play', (req, res) => res.type('html').send(pages.howToPlayPage()));
+// The shared marketing nav used to link `/#how`, which stopped working when
+// `/` moved from the landing page to the community app. Anyone who lands on
+// the old anchor from a saved link or search result gets sent to the real
+// page instead of a silent no-op scroll.
+app.get('/how', (req, res) => res.redirect(301, '/how-to-play'));
 
 process.on('uncaughtException', err => console.error('uncaught:', err));
 process.on('unhandledRejection', err => console.error('unhandled:', err));
