@@ -978,11 +978,23 @@ function mount(app, io, opts) {
   const pnsp = io.of('/pool');
 
   function poolPublic(r) {
+    // Per-player ball-count so the client can render "3 solids left". Balls
+    // start at 7 apiece; ANY = balls still on the table for players whose
+    // group hasn't been claimed yet (they see the pot count via seven-minus).
+    const left = [
+      r.groups[0] ? poolRemaining(r.balls, r.groups[0]) : null,
+      r.groups[1] ? poolRemaining(r.balls, r.groups[1]) : null
+    ];
+    const potted = [
+      r.groups[0] ? 7 - left[0] : r.balls.filter(b => b.in && poolGroup(b.n) === 'solid').length,
+      r.groups[1] ? 7 - left[1] : r.balls.filter(b => b.in && poolGroup(b.n) === 'stripe').length
+    ];
     return {
       code: r.code, state: r.state,
       balls: r.balls.map(b => ({ n: b.n, x: Math.round(b.x * 10) / 10, y: Math.round(b.y * 10) / 10, in: b.in })),
       turn: r.turn, groups: r.groups, winner: r.winner, why: r.why,
       ballInHand: r.ballInHand, scores: r.scores,
+      left, potted,
       seats: r.seatOrder.map((id, i) => {
         const p = id ? r.players.get(id) : null;
         return { seat: i, id: id || null, name: p ? p.name : null, photo: p ? (p.photo || null) : null, bot: p ? !!p.bot : false, connected: p ? !!p.connected : false };
@@ -1046,12 +1058,42 @@ function mount(app, io, opts) {
       if (r.state !== 'playing' || r.seatOrder[r.turn - 1] !== id) return;
       const shot = poolBotShot(r);
       const res = poolSim(r.balls, shot.angle, shot.power);
-      if (!res) return;
+      if (!res) return poolRecoverAndHandOff(r, 'The cue got stuck — resetting.');
       poolResolve(r, res);
       pnsp.to(r.code).emit('shot', { frames: res.frames, by: id });
       pbroad(r);
       if (r.state === 'playing') poolBotGo(r);
     }, 1400);
+  }
+
+  // Belt-and-braces recovery for when a shot cannot be resolved (bad cue state,
+  // race with a disconnect, etc). Puts a fresh cue at the head spot, hands the
+  // other seat ball-in-hand, tells everyone why, and — if the other seat is a
+  // bot — kicks its next go so nothing sits idle.
+  function poolRecoverAndHandOff(r, msg) {
+    const cue = r.balls.find(b => b.n === 0);
+    if (cue) { cue.in = false; cue.vx = 0; cue.vy = 0; cue.x = POOL_W * 0.25; cue.y = POOL_H / 2; }
+    const other = r.turn === 1 ? 2 : 1;
+    r.turn = other;
+    r.ballInHand = other;
+    pnsp.to(r.code).emit('err', { msg: msg || 'Shot fizzled — your turn.' });
+    pbroad(r);
+    if (r.state === 'playing') poolBotGo(r);
+  }
+
+  // If the player whose turn it is disappears (disconnects or is booted), the
+  // game shouldn't just sit there. Move the turn to whoever else is at the
+  // table so play continues. Called after any seat change.
+  function poolTurnGuard(r) {
+    if (!r || r.state !== 'playing') return;
+    if (r.seatOrder[r.turn - 1]) return;
+    const other = r.turn === 1 ? 2 : 1;
+    if (r.seatOrder[other - 1]) {
+      r.turn = other;
+      r.ballInHand = other;                    // wronged player gets ball in hand
+      pbroad(r);
+      poolBotGo(r);
+    }
   }
 
   pnsp.on('connection', (socket) => {
@@ -1148,7 +1190,12 @@ function mount(app, io, opts) {
       const power = +((data && data.power));
       if (!isFinite(angle) || !isFinite(power)) return;
       const res = poolSim(room.balls, angle, power);
-      if (!res) return;
+      // Historic bug: if the sim couldn't run (e.g. the cue was somehow marked
+      // pocketed), we returned silently — the client never got a `shot` event,
+      // the turn never advanced, and the game sat there until someone quit. Now
+      // we recover: re-rack a fresh cue at the head spot, hand the other player
+      // ball-in-hand, tell everyone what happened, and keep the room alive.
+      if (!res) return poolRecoverAndHandOff(room, 'The cue got stuck — resetting.');
       poolResolve(room, res);
       pnsp.to(room.code).emit('shot', { frames: res.frames, by: socket.id });
       pbroad(room);
@@ -1179,7 +1226,13 @@ function mount(app, io, opts) {
         const humans = [...r.players.values()].filter(x => !x.bot).length;
         if (!humans) { clearTimeout(r.botT); poolRooms.delete(r.code); return; }
         if (r.hostId === socket.id) r.hostId = [...r.players.values()].filter(x => !x.bot)[0].id;
-        if (r.state === 'playing') r.state = 'lobby';
+        // If the leaver's turn was up when they went, hand it to whoever is
+        // still at the table so the remaining player isn't staring at a dead
+        // game. Only tip the room back to lobby if nobody's sat opposite.
+        if (r.state === 'playing') {
+          if (r.seatOrder[0] && r.seatOrder[1]) poolTurnGuard(r);
+          else r.state = 'lobby';
+        }
         pbroad(r);
       }, 45000);
     });

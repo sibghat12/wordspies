@@ -58,10 +58,32 @@ label.fl{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;tex
 .waitdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse 1.3s infinite}
 
 .seats{display:flex;gap:10px;margin-bottom:12px}
-.seat{flex:1;display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:9px 12px;transition:border-color .2s}
+.seat{flex:1;display:flex;flex-direction:column;gap:6px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;transition:border-color .2s,box-shadow .2s;min-width:0}
 .seat.turn{border-color:var(--ink);box-shadow:0 3px 12px rgba(20,23,42,.09)}
-.seat .nm{font-size:12.6px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.seat .grp{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--sub);white-space:nowrap}
+.seat .top{display:flex;align-items:center;gap:8px;min-width:0}
+.seat .nm{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.seat .sr{margin-left:auto;background:#f4f5f7;color:var(--sub);font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;letter-spacing:.2px;flex-shrink:0}
+.seat.turn .sr{background:var(--ink);color:#fff}
+/* Score row: which group they own + how many still on the table.
+   The tiny ball icon before "left" makes the number read at a glance. */
+.seat .bot{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--sub);font-weight:600}
+.seat .bot .gd{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.seat .bot .gd.solid{background:#e74c3c;border:1px solid rgba(0,0,0,.15)}
+.seat .bot .gd.stripe{background:linear-gradient(180deg,#fff 30%,#e74c3c 30% 70%,#fff 70%);border:1px solid rgba(0,0,0,.15)}
+.seat .bot .gd.none{background:#e3e4ea}
+.seat .bot .left{margin-left:auto;font-weight:800;color:var(--ink);font-size:12px}
+/* Tray of tiny balls showing what's left on the table for each side.
+   Sits under the seat row and gives a glance-price on who's ahead. */
+.tray{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.tray .side{display:flex;gap:3px;flex:1;min-width:0;flex-wrap:wrap}
+.tray .side.right{justify-content:flex-end}
+.tray .b{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,.2);box-shadow:inset -2px -2px 3px rgba(0,0,0,.2),inset 2px 2px 3px rgba(255,255,255,.35)}
+.tray .b.b1{background:#f2c927}.tray .b.b2{background:#2e63b6}.tray .b.b3{background:#d3324b}.tray .b.b4{background:#5b3f8a}.tray .b.b5{background:#e88325}.tray .b.b6{background:#1c7a4a}.tray .b.b7{background:#7b3624}
+.tray .b.st{position:relative;background:#fff}
+.tray .b.st::after{content:'';position:absolute;left:1px;right:1px;top:4px;height:4px}
+.tray .b.st.b9::after{background:#f2c927}.tray .b.st.b10::after{background:#2e63b6}.tray .b.st.b11::after{background:#d3324b}.tray .b.st.b12::after{background:#5b3f8a}.tray .b.st.b13::after{background:#e88325}.tray .b.st.b14::after{background:#1c7a4a}.tray .b.st.b15::after{background:#7b3624}
+.tray .b.b8{background:#141416}
+.tray .vs{font-size:10.5px;font-weight:800;color:var(--faint);letter-spacing:.15em;padding:0 4px}
 
 .tableBox{background:var(--rail);border-radius:16px;padding:10px;box-shadow:0 14px 34px rgba(40,25,8,.3);touch-action:none;display:flex;justify-content:center}
 canvas{display:block;width:100%;height:auto;border-radius:8px}
@@ -161,6 +183,7 @@ label.fl{font-weight:800}
   <!-- the table -->
   <div id="play" class="hidden">
     <div class="seats" id="seats"></div>
+    <div class="tray" id="tray"></div>
     <div class="tableBox" id="tableBox"><canvas id="cv" width="1000" height="500"></canvas></div>
     <div class="aimrow" id="aimRow">
       <input type="range" class="pw" id="powerIn" min="4" max="26" value="16" aria-label="Power">
@@ -291,6 +314,25 @@ function layout() {
 addEventListener('resize', layout);
 addEventListener('orientationchange', () => setTimeout(layout, 120));
 
+// Ball tray under the seats: for each side, the balls of their group still on
+// the table. If groups aren't claimed yet, show all solids left of the 8 and
+// all stripes right of it so the split reads as "here's what could go to who".
+function paintTray() {
+  const tray = $('tray');
+  if (!tray || !S) return;
+  const remain = new Set(S.balls.filter(b => !b.in).map(b => b.n));
+  const eightAlive = remain.has(8);
+  const solidsRow = [1,2,3,4,5,6,7].filter(n => remain.has(n)).map(n => `<span class="b b${n}" title="${n}"></span>`).join('');
+  const stripesRow = [9,10,11,12,13,14,15].filter(n => remain.has(n)).map(n => `<span class="b st b${n}" title="${n}"></span>`).join('');
+  const g1 = S.groups[0], g2 = S.groups[1];
+  const left = g1 === 'stripe' ? stripesRow : solidsRow;
+  const right = g2 === 'solid' ? solidsRow : stripesRow;
+  tray.innerHTML =
+    '<div class="side">' + left + '</div>' +
+    (eightAlive ? '<span class="b b8" title="8-ball"></span>' : '<span class="vs">8 potted</span>') +
+    '<div class="side right">' + right + '</div>';
+}
+
 // ── drawing ──────────────────────────────────────────────────────────────
 function drawTable(balls, withAim) {
   cx.setTransform(1, 0, 0, 1, 0, 0);
@@ -307,25 +349,59 @@ function drawTable(balls, withAim) {
   for (const b of balls) {
     const n = b.n != null ? b.n : b[0], x = b.x != null ? b.x : b[1], y = b.y != null ? b.y : b[2];
     if (b.in) continue;
-    cx.beginPath(); cx.arc(x, y, R, 0, 7);
-    cx.fillStyle = n === 0 ? '#f6f2e8' : COLORS[n]; cx.fill();
-    if (n >= 9) {  // stripes get a band, clipped to the ball
+    // soft contact shadow underneath — sells the "resting on cloth" look
+    cx.beginPath(); cx.arc(x + 0.8, y + 1.4, R * 0.98, 0, 7);
+    cx.fillStyle = 'rgba(0,0,0,.28)'; cx.fill();
+
+    // Stripes get their coloured band first, everything else gets a solid fill.
+    // The band is inset (not edge-to-edge) so the classic white cap-and-band
+    // pattern shows top and bottom.
+    if (n >= 9) {
       cx.save();
       cx.beginPath(); cx.arc(x, y, R, 0, 7); cx.clip();
-      cx.fillStyle = '#f6f2e8';
-      cx.fillRect(x - R, y - R * 0.45, R * 2, R * 0.9);
+      cx.fillStyle = '#faf3e0';
+      cx.fillRect(x - R, y - R, R * 2, R * 2);
+      cx.fillStyle = COLORS[n];
+      cx.fillRect(x - R, y - R * 0.5, R * 2, R * 1.0);
       cx.restore();
-      cx.beginPath(); cx.arc(x, y, R, 0, 7); cx.strokeStyle = 'rgba(0,0,0,.25)'; cx.lineWidth = 1; cx.stroke();
+    } else {
+      cx.beginPath(); cx.arc(x, y, R, 0, 7);
+      cx.fillStyle = n === 0 ? '#faf3e0' : (n === 8 ? '#141416' : COLORS[n]);
+      cx.fill();
     }
+
+    // Radial-gradient shading gives the ball 3D weight. Two passes: a broad
+    // highlight from the top-left, then a darker terminator on the far side.
+    const glowX = x - R * 0.45, glowY = y - R * 0.5;
+    const shine = cx.createRadialGradient(glowX, glowY, R * 0.05, glowX, glowY, R * 1.15);
+    shine.addColorStop(0, 'rgba(255,255,255,.85)');
+    shine.addColorStop(0.35, 'rgba(255,255,255,.18)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    cx.beginPath(); cx.arc(x, y, R, 0, 7); cx.fillStyle = shine; cx.fill();
+    const dark = cx.createRadialGradient(x + R * 0.4, y + R * 0.55, R * 0.1, x + R * 0.4, y + R * 0.55, R * 1.4);
+    dark.addColorStop(0, 'rgba(0,0,0,0)');
+    dark.addColorStop(0.55, 'rgba(0,0,0,0)');
+    dark.addColorStop(1, 'rgba(0,0,0,.35)');
+    cx.beginPath(); cx.arc(x, y, R, 0, 7); cx.fillStyle = dark; cx.fill();
+
+    // clean rim
+    cx.beginPath(); cx.arc(x, y, R, 0, 7);
+    cx.strokeStyle = 'rgba(0,0,0,.35)'; cx.lineWidth = 0.9; cx.stroke();
+
     if (n > 0) {
       // the number rides with the table, so undo the quarter turn for it
       cx.save(); cx.translate(x, y); if (ROT) cx.rotate(Math.PI / 2);
-      cx.beginPath(); cx.arc(0, 0, R * 0.44, 0, 7); cx.fillStyle = '#fff'; cx.fill();
-      cx.fillStyle = '#16181f'; cx.font = '700 ' + (R * 0.62) + 'px Inter';
-      cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(n, 0, 0.5);
+      cx.beginPath(); cx.arc(0, 0, R * 0.44, 0, 7); cx.fillStyle = '#faf3e0'; cx.fill();
+      cx.strokeStyle = 'rgba(0,0,0,.12)'; cx.lineWidth = 0.6; cx.stroke();
+      cx.fillStyle = '#16181f';
+      cx.font = '800 ' + (R * 0.6).toFixed(1) + 'px Nunito,system-ui,sans-serif';
+      cx.textAlign = 'center'; cx.textBaseline = 'middle';
+      cx.fillText(n, 0, 0.5);
       cx.restore();
     }
-    cx.beginPath(); cx.arc(x - R * 0.35, y - R * 0.35, R * 0.28, 0, 7); cx.fillStyle = 'rgba(255,255,255,.35)'; cx.fill();
+    // small specular pinpoint on top of everything else
+    cx.beginPath(); cx.arc(x - R * 0.4, y - R * 0.45, R * 0.14, 0, 7);
+    cx.fillStyle = 'rgba(255,255,255,.9)'; cx.fill();
   }
   // the aiming line — yours only, on your turn only
   if (withAim && cue && !cue.in) {
@@ -399,10 +475,23 @@ function render() {
 
   $('seats').innerHTML = S.seats.map((s, i) => {
     const nm = s.name ? (isMe(s.id) ? s.name + ' (you)' : s.name) : '…';
-    const g = S.groups[i] ? (S.groups[i] === 'solid' ? '● solids' : '◐ stripes') : '';
+    const g = S.groups[i];
+    const gLabel = g ? (g === 'solid' ? 'Solids' : 'Stripes') : 'No group yet';
+    const gClass = g || 'none';
+    const left = (S.left && S.left[i] != null) ? S.left[i] : (7 - (S.potted ? S.potted[i] : 0));
+    const potted = (S.potted && S.potted[i] != null) ? S.potted[i] : 0;
     const cls = S.state === 'playing' && S.turn === i + 1 ? 'seat turn' : 'seat';
-    return '<div class="' + cls + '"><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span><span class="grp">' + g + ' &nbsp;' + S.scores[i] + '</span></div>';
+    return '<div class="' + cls + '">' +
+      '<div class="top"><span class="nm">' + esc(nm) + (s.bot ? ' 🤖' : '') + '</span><span class="sr">' + (S.scores[i] || 0) + 'W</span></div>' +
+      '<div class="bot"><span class="gd ' + gClass + '"></span>' + gLabel +
+      '<span class="left">' + (g ? left + ' left · ' + potted + ' potted' : potted + ' potted') + '</span></div>' +
+      '</div>';
   }).join('');
+
+  // Ball tray: which balls of each group are still on the table, drawn as tiny
+  // circles. Reads at a glance who's closer to the 8-ball. Solids on the left
+  // for player 1, stripes on the right for player 2 (or ownership if claimed).
+  paintTray();
 
   const mine = myTurn() && S.state === 'playing';
   drawTable(S.balls, mine);
