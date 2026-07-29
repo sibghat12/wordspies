@@ -63,6 +63,10 @@ function mount(app, redis) {
       const to = b < 0 ? l.length + b : b;
       return l.slice(from, to + 1);
     },
+    async lset(k, i, v) {
+      if (redis) return redis.lset(k, i, v);
+      const l = mem.get(k); if (Array.isArray(l) && i >= 0 && i < l.length) l[i] = v;
+    },
     async ltrim(k, a, b) {
       if (redis) return redis.ltrim(k, a, b);
       const l = mem.get(k) || [];
@@ -904,10 +908,34 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const text = String((req.body || {}).text || '').trim().slice(0, kind === 'gif' ? 300 : 500);
       if (!text || to === me.id || !(await db.get('soc:user:' + to))) return res.status(400).json({ error: 'Nothing to send.' });
       if (kind === 'gif' && !/^https:\/\/(media[0-9]*\.giphy\.com|i\.giphy\.com)\//.test(text)) return res.status(400).json({ error: 'Bad GIF.' });
-      const msg = { f: me.id, k: kind, x: text, t: Date.now() };
+      // Short random id per message so edits / deletes / reactions have something
+      // stable to reference. Older messages that predate this field still work by
+      // falling back to their timestamp on the lookup side.
+      const id = crypto.randomBytes(6).toString('base64url');
+      const msg = { id, f: me.id, k: kind, x: text, t: Date.now() };
+      // Optional reply-to: only store the id if the message being quoted really
+      // exists in this conversation, otherwise silently drop it.
+      const replyTo = String((req.body || {}).reply || '').slice(0, 24);
       const key = 'soc:msgs:' + cid(me.id, to);
+      if (replyTo) {
+        const recent = await db.lrange(key, -80, -1);
+        for (const raw of recent) {
+          try {
+            const m = JSON.parse(raw);
+            if ((m.id && m.id === replyTo) || String(m.t) === replyTo) {
+              msg.q = m.id || String(m.t);
+              // stash a tiny preview so the client can render the reply strip
+              // without needing to walk the thread for every message
+              msg.qp = { f: m.f, k: m.k, x: (m.k === 'gif' ? '🖼 GIF' : String(m.x || '').slice(0, 80)) };
+              break;
+            }
+          } catch (e) {}
+        }
+      }
       await db.rpush(key, JSON.stringify(msg));
       await db.ltrim(key, -500, -1);
+      // typing indicator is only meaningful up to the moment you actually send
+      await db.del('soc:typing:' + me.id + ':' + to);
       await db.sadd('soc:convos:' + me.id, to);
       await db.sadd('soc:convos:' + to, me.id);
       await db.incr('soc:unread:' + to + ':' + me.id);
@@ -927,6 +955,113 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         '/social#chat=' + me.id);
       res.json({ ok: true, msg });
     } catch (e) { console.error('social message:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // Walk the tail of a chat's message list looking for one specific id.
+  // Returns { idx, msg } (idx is the absolute list index for LSET), or null.
+  async function findMsg(key, id) {
+    const all = await db.lrange(key, 0, -1);
+    for (let i = all.length - 1; i >= 0; i--) {
+      try {
+        const m = JSON.parse(all[i]);
+        if ((m.id && m.id === id) || String(m.t) === id) return { idx: i, msg: m };
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  // Edit your own text message. WhatsApp-style 15-minute window; the bubble
+  // gets an "edited" mark on the client via the `e` timestamp we set here.
+  api.post('/message/edit', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (limited(req, 'msgedit', 30)) return res.status(429).json({ error: 'Slow down a little ✋' });
+      const body = req.body || {};
+      const to = String(body.to || '');
+      const id = String(body.id || '').slice(0, 24);
+      const text = String(body.text || '').trim().slice(0, 500);
+      if (!to || !id || !text) return res.status(400).json({ error: 'Nothing to edit.' });
+      const key = 'soc:msgs:' + cid(me.id, to);
+      const hit = await findMsg(key, id);
+      if (!hit) return res.status(404).json({ error: 'Message is gone.' });
+      const m = hit.msg;
+      if (m.f !== me.id) return res.status(403).json({ error: 'Not your message.' });
+      if (m.d) return res.status(400).json({ error: 'That message was deleted.' });
+      if (m.k !== 'text') return res.status(400).json({ error: 'Only text can be edited.' });
+      if (Date.now() - (m.t || 0) > 15 * 60 * 1000) return res.status(400).json({ error: 'Too old to edit.' });
+      m.x = text; m.e = Date.now();
+      await db.lset(key, hit.idx, JSON.stringify(m));
+      res.json({ ok: true, msg: m });
+    } catch (e) { console.error('social edit:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // Delete for everyone — replaces the message content with a tombstone that
+  // both sides render as "message deleted", instead of physically removing the
+  // list entry (which would shift indices and break the id-based lookups).
+  api.post('/message/delete', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (limited(req, 'msgdel', 40)) return res.status(429).json({ error: 'Slow down a little ✋' });
+      const body = req.body || {};
+      const to = String(body.to || '');
+      const id = String(body.id || '').slice(0, 24);
+      if (!to || !id) return res.status(400).json({ error: 'Nothing to delete.' });
+      const key = 'soc:msgs:' + cid(me.id, to);
+      const hit = await findMsg(key, id);
+      if (!hit) return res.status(404).json({ error: 'Message is gone.' });
+      const m = hit.msg;
+      if (m.f !== me.id) return res.status(403).json({ error: 'Not your message.' });
+      m.d = 1; m.x = ''; m.r = null; m.qp = null; m.e = 0;
+      await db.lset(key, hit.idx, JSON.stringify(m));
+      res.json({ ok: true });
+    } catch (e) { console.error('social delete:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // Toggle an emoji reaction on any message in a chat you're a party to. The
+  // reaction store is { emoji: [userIds] } — small enough to render everywhere,
+  // capped so no one can turn a bubble into a wall of emoji.
+  api.post('/message/react', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (limited(req, 'msgreact', 60)) return res.status(429).json({ error: 'Slow down a little ✋' });
+      const body = req.body || {};
+      const to = String(body.to || '');
+      const id = String(body.id || '').slice(0, 24);
+      const emo = String(body.emoji || '').trim().slice(0, 8);
+      if (!to || !id || !emo) return res.status(400).json({ error: 'Nothing to react to.' });
+      const key = 'soc:msgs:' + cid(me.id, to);
+      const hit = await findMsg(key, id);
+      if (!hit) return res.status(404).json({ error: 'Message is gone.' });
+      const m = hit.msg;
+      if (m.d) return res.status(400).json({ error: 'That message was deleted.' });
+      const r = m.r && typeof m.r === 'object' ? m.r : {};
+      const list = Array.isArray(r[emo]) ? r[emo] : [];
+      const i = list.indexOf(me.id);
+      if (i >= 0) list.splice(i, 1); else list.push(me.id);
+      if (list.length) r[emo] = list; else delete r[emo];
+      // Keep reactions bounded so a message can never grow unreasonably large.
+      const keys = Object.keys(r);
+      if (keys.length > 6) delete r[keys[0]];
+      m.r = Object.keys(r).length ? r : null;
+      await db.lset(key, hit.idx, JSON.stringify(m));
+      res.json({ ok: true, r: m.r });
+    } catch (e) { console.error('social react:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // "I'm typing" — a 5-second TTL flag so the other end can render dots while
+  // your reply is still forming. Cheap and self-clearing; sendMessage clears it.
+  api.post('/typing', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const to = String((req.body || {}).to || '');
+      if (!to || to === me.id) return res.json({ ok: true });
+      await db.set('soc:typing:' + me.id + ':' + to, '1', 5);
+      res.json({ ok: true });
+    } catch (e) { res.json({ ok: true }); }
   });
 
   api.get('/chats', async (req, res) => {
@@ -966,10 +1101,12 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       // mark how far I have read; report how far THEY have read (for ✓✓ seen ticks)
       await db.set('soc:read:' + convo + ':' + me.id, String(Date.now()));
       const theirRead = parseInt(await db.get('soc:read:' + convo + ':' + o)) || 0;
+      const theirTyping = await db.exists('soc:typing:' + o + ':' + me.id);
       res.json({
         user: { id: u.id, name: u.name, photo: u.photo || null, ...marks(u), online: await db.exists('soc:online:' + o) },
         messages: msgs,
-        theirRead
+        theirRead,
+        theirTyping: !!theirTyping
       });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });

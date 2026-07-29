@@ -471,12 +471,87 @@ body.authmodal{overflow:hidden}
 .chatfull .msgs{flex:1;overflow-y:auto;min-height:0;padding-bottom:16px}
 .chatfull .composer{position:static;left:auto;transform:none;width:auto;max-width:none;margin:0;border-top:1px solid var(--line)}
 .chatfull .picker{position:absolute;bottom:72px;left:12px;right:12px;width:auto;max-width:none;transform:none}
-.mb.me{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:5px}
-.mb.them{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}
+/* Chat palette — cool blue-violet, iMessage-y. Kept scoped to chat components
+   so the rest of the app keeps its coral WordSpies accent. */
+:root{
+  --cme-1:#5a7bff; --cme-2:#7c5cff;         /* your bubble gradient */
+  --cme-shadow:0 6px 18px rgba(96,88,255,.22);
+  --cthem:#f2f4f8;                          /* their bubble background */
+  --cthem-ink:#1a1d24;                      /* their bubble text */
+  --caccent:#5a7bff;                        /* chat accents (send btn, links) */
+  --caccent-soft:#eef1ff;                   /* soft bg for reactions/actions */
+}
+.mb{position:relative}
+.mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:5px;box-shadow:var(--cme-shadow)}
+.mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:5px}
 .mb img{max-width:220px;border-radius:10px;display:block}
 .mb .mtime{font-size:9.5px;margin-top:4px;display:flex;align-items:center;justify-content:flex-end;gap:5px;line-height:1;font-weight:500}
-.mb.me .mtime{color:rgba(255,255,255,.74)}
+.mb.me .mtime{color:rgba(255,255,255,.82)}
 .mb.them .mtime{color:var(--faint)}
+.mb .mtime .edited{opacity:.75;font-style:italic}
+/* deleted message tombstone — same shape, ghosted content */
+.mb.gone{background:transparent !important;border:1px dashed var(--edge);color:var(--faint);font-style:italic;box-shadow:none}
+.mb.gone .mtime{color:var(--faint)}
+/* long-press hint / hover affordance */
+.mb{transition:transform .12s ease}
+.mb.pressing{transform:scale(.97)}
+/* reply-quote strip inside a bubble */
+.mb .qref{display:block;background:rgba(255,255,255,.18);border-left:3px solid rgba(255,255,255,.55);padding:5px 8px;border-radius:8px;margin-bottom:5px;font-size:12px;line-height:1.35;opacity:.95;cursor:pointer}
+.mb.them .qref{background:rgba(90,123,255,.10);border-left-color:var(--caccent);color:var(--sub)}
+.mb .qref .qwho{font-weight:800;font-size:10.5px;display:block;margin-bottom:1px;letter-spacing:.2px}
+/* reactions row (sits below the bubble) */
+.mrx{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;max-width:78%}
+.mrx.me{align-self:flex-end;justify-content:flex-end}
+.mrx.them{align-self:flex-start}
+.mrx .rx{background:#fff;border:1px solid var(--line);border-radius:99px;padding:2px 8px;font-size:12px;line-height:1.4;cursor:pointer;display:inline-flex;gap:4px;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.mrx .rx.mine{background:var(--caccent-soft);border-color:var(--caccent)}
+.mrx .rx .rxn{font-size:10.5px;font-weight:700;color:var(--sub)}
+.mrx .rx.mine .rxn{color:var(--caccent)}
+/* typing dots — its own bubble on the "them" side */
+.typing{align-self:flex-start;background:var(--cthem);padding:11px 15px;border-radius:16px;border-bottom-left-radius:5px;display:inline-flex;gap:4px;align-items:center}
+.typing span{width:6px;height:6px;background:#8992a6;border-radius:50%;display:inline-block;animation:tp 1.15s infinite ease-in-out}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
+/* message-actions sheet — appears on long-press or tap-more */
+.msact{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:20px;background:#fff;border-radius:22px;padding:8px;box-shadow:0 20px 60px rgba(0,0,0,.25);display:flex;gap:6px;z-index:60;opacity:0;pointer-events:none;transition:.18s;border:1px solid var(--line)}
+.msact.show{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+.msact .mact{background:transparent;border:0;padding:10px 12px;border-radius:14px;font-size:12.5px;font-weight:700;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-width:56px}
+.msact .mact:hover{background:var(--caccent-soft)}
+.msact .mact .mai{font-size:20px;line-height:1}
+.msact .mact .mal{font-size:10.5px;font-weight:600;color:var(--sub)}
+.msact .mact.danger .mal{color:var(--err)}
+.msact .macthr{width:1px;background:var(--line);margin:6px 2px}
+.msact .rxpick{display:flex;gap:2px;padding:4px 4px}
+.msact .rxpick .rxb{background:transparent;border:0;font-size:22px;padding:6px;border-radius:12px;cursor:pointer;line-height:1}
+.msact .rxpick .rxb:hover{background:var(--caccent-soft);transform:scale(1.1)}
+.msshade{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:59;opacity:0;pointer-events:none;transition:.18s;backdrop-filter:blur(2px)}
+.msshade.show{opacity:1;pointer-events:auto}
+/* highlight the bubble whose actions are open */
+.mb.selected{outline:2px solid var(--caccent);outline-offset:2px}
+/* reply-preview strip that pops up above the composer */
+.replybar{display:none;background:#fff;border-top:1px solid var(--line);padding:8px 14px;gap:10px;align-items:center;font-size:12.5px}
+.replybar.show{display:flex}
+.replybar .rbbar{width:3px;align-self:stretch;background:var(--caccent);border-radius:2px}
+.replybar .rbmid{flex:1;min-width:0}
+.replybar .rbwho{color:var(--caccent);font-weight:800;font-size:11px}
+.replybar .rbtxt{color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.replybar .rbx{background:transparent;border:0;color:var(--faint);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.replybar .rbx:hover{background:#f2f3f5;color:var(--ink)}
+/* edit-mode banner (yellow-ish, distinct from reply) */
+.editbar{display:none;background:#fff8e6;border-top:1px solid #f0d97a;padding:8px 14px;gap:10px;align-items:center;font-size:12.5px;color:#7a5b06}
+.editbar.show{display:flex}
+.editbar .rbx{color:#7a5b06}
+.editbar .rbx:hover{background:#f4e6a3}
+/* autocomplete chip row above the composer */
+.acrow{display:flex;gap:6px;padding:6px 12px 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.acrow::-webkit-scrollbar{display:none}
+.acrow .ac{flex-shrink:0;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:13px;color:var(--ink);cursor:pointer;font-weight:600;white-space:nowrap}
+.acrow .ac:hover{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
+.acrow .ac.smart{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
+/* keep the composer / picker / send button in the new palette */
+.composer .cbtn.send{background:linear-gradient(135deg,var(--cme-1),var(--cme-2));box-shadow:var(--cme-shadow)}
+.composer input:focus{outline:none;border-color:var(--caccent);box-shadow:0 0 0 3px rgba(90,123,255,.12)}
 /* read receipts: one white tick when sent, two dark ones once they've read it */
 .tick{width:17px;height:11px;display:block;flex:none}
 .tick path{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
@@ -774,6 +849,22 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <div class="msgs" id="msgs"></div>
     <button class="jumpnew" id="jumpNew" onclick="toBottom($('msgs'))">↓ New messages</button>
+    <div class="replybar" id="replyBar">
+      <div class="rbbar"></div>
+      <div class="rbmid">
+        <div class="rbwho" id="rbWho"></div>
+        <div class="rbtxt" id="rbTxt"></div>
+      </div>
+      <button class="rbx" onclick="cancelReply()" title="Cancel reply">✕</button>
+    </div>
+    <div class="editbar" id="editBar">
+      <div class="rbmid">
+        <div class="rbwho">✎ Editing</div>
+        <div class="rbtxt" id="edTxt"></div>
+      </div>
+      <button class="rbx" onclick="cancelEdit()" title="Cancel edit">✕</button>
+    </div>
+    <div class="acrow" id="acRow" style="display:none"></div>
     <div class="composer">
       <button class="cbtn" onclick="toggleGamePick()" title="Invite to a game">🎮</button>
       <button class="cbtn" onclick="togglePicker()">😊</button>
@@ -1132,7 +1223,7 @@ function paintTabs(){
     wb.classList.toggle('hidden', !n);
   }
 }
-let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0, lastTheirRead = 0;
+let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0, lastTheirRead = 0, replyingTo = null, editingMsg = null;
 let liveTimer = null;
 
 function showTab(t){
@@ -1480,7 +1571,8 @@ async function refreshChats(){
 function openChatWith(id){
   if (GUEST) { requireLogin('💬 Log in to send messages'); return; }
   if (!id) return;
-  curChat = id; lastMsgCount = -1;   // -1 forces the first paint, even for an empty chat (the ice-breaker)
+  curChat = id; lastMsgCount = -1; lastSig = ''; lastTheirTyping = false;
+  cancelReply(); cancelEdit(); hideAutocomplete();
   $('msgs').innerHTML = ''; $('chName').textContent = '…'; $('chState').textContent = ''; $('chAv').innerHTML = '';
   showTab('chat');
 }
@@ -1514,7 +1606,12 @@ async function refreshChat(first){
     $('chAv').innerHTML = avatarHtml(j.user, 38);
     $('chName').innerHTML = esc(j.user.name) + mark(j.user);
     $('chState').innerHTML = j.user.online ? '<span style="color:var(--green)">● online</span>' : 'offline';
-    if (j.messages.length !== lastMsgCount || j.theirRead !== lastTheirRead) {
+    // A fingerprint of what we last drew — includes reactions and edits so
+    // a purely metadata change (like someone hearting an old message) still
+    // triggers a redraw without waiting for a new message to arrive.
+    const sig = j.messages.map(m => (m.id || m.t) + ':' + (m.e || 0) + ':' + (m.d ? 'd' : '') + ':' + (m.r ? Object.entries(m.r).map(([e, l]) => e + l.length).join(',') : '')).join('|');
+    const typingChanged = !!j.theirTyping !== !!lastTheirTyping;
+    if (sig !== lastSig || j.theirRead !== lastTheirRead || typingChanged) {
       const box = $('msgs');
       // Remember exactly where they were reading before we redraw, so a
       // background refresh never yanks the thread out from under them.
@@ -1523,7 +1620,7 @@ async function refreshChat(first){
       const grew = j.messages.length > lastMsgCount && lastMsgCount > 0;
 
       let lastDay = '', prev = null;
-      box.innerHTML = !j.messages.length ? iceBreaker(j.user) : j.messages.map(m => {
+      const bubbles = j.messages.map(m => {
         const mine = m.f === ME.id;
         const tick = mine ? (m.t <= j.theirRead ? TICK_SEEN : TICK_SENT) : '';
         const day = dayLabel(m.t);
@@ -1531,12 +1628,21 @@ async function refreshChat(first){
         // same person, within four minutes, same day → tuck it under the one above
         const cont = !sep && prev && prev.f === m.f && (m.t - prev.t) < 240000 ? ' cont' : '';
         lastDay = day; prev = m;
+        const side = mine ? 'me' : 'them';
+        const gone = m.d ? ' gone' : '';
+        const idAttr = esc(m.id || String(m.t));
+        const edited = m.e ? '<span class="edited">edited</span>' : '';
         return sep + `
-        <div class="mb ${mine ? 'me' : 'them'}${cont}">
+        <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
+          ${replyBlock(m, j.user && j.user.name)}
           ${msgBody(m)}
-          <div class="mtime">${clockT(m.t)}${tick}</div>
-        </div>`;
+          <div class="mtime">${edited}${clockT(m.t)}${tick}</div>
+        </div>
+        ${reactionsRow(m, side)}`;
       }).join('');
+
+      const typingBubble = j.theirTyping ? `<div class="typing" aria-label="typing"><span></span><span></span><span></span></div>` : '';
+      box.innerHTML = !j.messages.length ? iceBreaker(j.user) : bubbles + typingBubble;
 
       if (wasBottom) toBottom(box);
       else {
@@ -1545,10 +1651,16 @@ async function refreshChat(first){
       }
       lastMsgCount = j.messages.length;
       lastTheirRead = j.theirRead;
+      lastTheirTyping = !!j.theirTyping;
+      lastSig = sig;
+      lastChatJ = j;
+      refreshAutocomplete(j);
+      wireBubbleGestures();
     }
     checkChallenges();   // flip any "waiting…" cards whose friend has sat down
   } catch(e){}
 }
+let lastSig = '', lastTheirTyping = false, lastChatJ = null;
 
 // The keyboard on a phone shrinks the visible window without telling the page.
 // Pin the chat to what's actually on screen so the composer stays put and the
@@ -1578,6 +1690,7 @@ const GAME_TAGS = {
 const ACCEPTED = {};   // room code → accepter's name (or true), learned by polling
 
 function msgBody(m){
+  if (m.d) return `<span class="gone-txt">🚫 This message was deleted</span>`;
   if (m.k === 'gif') return `<img src="${esc(m.x)}" loading="lazy">`;
   // Any game invite — WordSpies or the arcade — becomes a big tappable Join
   // card, and a message can hold several of them. The regex runs on the
@@ -1598,6 +1711,25 @@ function msgBody(m){
   });
   if (found) return out;
   return out.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
+}
+
+// Reply-quote strip inside a bubble. Keeps the click behaviour simple: tap the
+// strip to scroll to the message it quotes if it's still on screen.
+function replyBlock(m, chatUserName){
+  if (!m.qp) return '';
+  const who = m.qp.f === (ME && ME.id) ? 'You' : (chatUserName || 'Them');
+  const preview = m.qp.k === 'gif' ? '🖼 GIF' : esc(String(m.qp.x || '').slice(0, 80));
+  return `<span class="qref" data-scroll="${esc(m.q || '')}"><span class="qwho">${esc(who)}</span>${preview}</span>`;
+}
+
+// Reactions strip that sits under a bubble. { emoji: [uid, uid, …] }.
+function reactionsRow(m, side){
+  if (!m.r || m.d) return '';
+  const chips = Object.entries(m.r).filter(([, ids]) => ids && ids.length).map(([em, ids]) => {
+    const mine = ME && ids.indexOf(ME.id) >= 0 ? ' mine' : '';
+    return `<button class="rx${mine}" data-em="${esc(em)}" onclick="toggleReact(event, '${esc(m.id || String(m.t))}', '${esc(em)}')">${esc(em)}<span class="rxn">${ids.length}</span></button>`;
+  }).join('');
+  return chips ? `<div class="mrx ${side}">${chips}</div>` : '';
 }
 
 // The waiting half of the handshake: quietly ask the room who's sat down.
@@ -1652,15 +1784,39 @@ async function sendMsg(kind, gifUrl){
   if (!text || !curChat) return;
   if (kind !== 'gif') $('msgIn').value = '';
   hidePickers();
+  hideAutocomplete();
   try {
-    await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ to: curChat, kind: kind === 'gif' ? 'gif' : 'text', text }) });
-    lastMsgCount = -1;
+    if (editingMsg && kind !== 'gif') {
+      // Editing: swap the text on an existing message instead of sending a new one.
+      const id = editingMsg;
+      await api('/message/edit', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ to: curChat, id, text }) });
+      cancelEdit();
+    } else {
+      const body = { to: curChat, kind: kind === 'gif' ? 'gif' : 'text', text };
+      if (replyingTo && kind !== 'gif') body.reply = replyingTo;
+      await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body) });
+      if (replyingTo) cancelReply();
+    }
+    lastSig = ''; lastMsgCount = -1;
     await refreshChat();
     toBottom($('msgs'));                     // your own message always lands in view
   } catch(e){ toast(e.message); }
 }
 $('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+$('msgIn').addEventListener('input', () => { sendTypingSoon(); refreshAutocomplete(); });
+
+// Tell the server we're composing at most once every 3s. It expires in 5s,
+// so a brief silence gap doesn't flicker the dots off and back on.
+let lastTypingAt = 0;
+async function sendTypingSoon(){
+  if (!curChat) return;
+  const now = Date.now();
+  if (now - lastTypingAt < 3000) return;
+  lastTypingAt = now;
+  try { await api('/typing', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to: curChat }) }); } catch(e){}
+}
 // tapping the box opens the keyboard, which resizes the window — re-fit, then
 // drop back to the newest message rather than leaving them mid-thread
 $('msgIn').addEventListener('focus', () => setTimeout(() => { fitChat(); toBottom($('msgs')); }, 300));
@@ -1705,6 +1861,191 @@ async function gameInvite(game, label){
   } catch(e){ toast(e.message || 'Could not set up the game.'); }
 }
 function hidePickers(){ $('emojiPick').classList.add('hidden'); $('gamePick').classList.add('hidden'); }
+
+// ---------- message actions (reply, edit, delete, react) ----------
+// One shared action sheet at the bottom of the doc. `curActMsg` tracks which
+// bubble opened it so every button knows what to operate on.
+let curActMsg = null;
+
+function openMsAct(el){
+  const id = el.dataset.id;
+  const mine = el.dataset.mine === '1';
+  const kind = el.dataset.k || 'text';
+  const gone = el.classList.contains('gone');
+  if (gone) return;                                       // deleted bubbles are inert
+  curActMsg = { id, el, mine, kind };
+  // Only the sender can edit or delete. Non-text can't be edited.
+  $('msActEdit').style.display = (mine && kind === 'text') ? '' : 'none';
+  $('msActDel').style.display = mine ? '' : 'none';
+  document.querySelectorAll('.mb.selected').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  $('msShade').classList.add('show');
+  $('msAct').classList.add('show');
+  $('msAct').setAttribute('aria-hidden', 'false');
+}
+function closeMsAct(){
+  document.querySelectorAll('.mb.selected').forEach(x => x.classList.remove('selected'));
+  $('msShade').classList.remove('show');
+  $('msAct').classList.remove('show');
+  $('msAct').setAttribute('aria-hidden', 'true');
+  curActMsg = null;
+}
+async function msReact(emoji){
+  if (!curActMsg || !curChat) return;
+  const id = curActMsg.id;
+  closeMsAct();
+  try {
+    await api('/message/react', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to: curChat, id, emoji }) });
+    lastSig = ''; await refreshChat();
+  } catch(e){ toast(e.message); }
+}
+async function toggleReact(ev, id, emoji){
+  ev.stopPropagation();
+  if (!curChat) return;
+  try {
+    await api('/message/react', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to: curChat, id, emoji }) });
+    lastSig = ''; await refreshChat();
+  } catch(e){ toast(e.message); }
+}
+function msReply(){
+  if (!curActMsg) return;
+  const el = curActMsg.el;
+  const preview = el.querySelector('.gone-txt') ? '(deleted)'
+                : curActMsg.kind === 'gif' ? '🖼 GIF'
+                : (el.querySelector('.qref') ? el.childNodes[1] && el.childNodes[1].textContent : el.textContent).trim();
+  // Rip out the timestamp line and cap length
+  const clean = preview.replace(/\d{1,2}:\d{2}\s*(AM|PM)?\s*$/i, '').trim().slice(0, 100);
+  replyingTo = curActMsg.id;
+  cancelEdit();
+  $('rbWho').textContent = curActMsg.mine ? 'Replying to yourself' : 'Reply';
+  $('rbTxt').textContent = clean || '(message)';
+  $('replyBar').classList.add('show');
+  closeMsAct();
+  $('msgIn').focus();
+}
+function cancelReply(){ replyingTo = null; $('replyBar').classList.remove('show'); }
+function msEdit(){
+  if (!curActMsg) return;
+  const el = curActMsg.el;
+  // Original text = the bubble text minus its reply preview and time row
+  const clone = el.cloneNode(true);
+  clone.querySelectorAll('.qref, .mtime').forEach(x => x.remove());
+  const text = clone.textContent.trim();
+  editingMsg = curActMsg.id;
+  cancelReply();
+  $('msgIn').value = text;
+  $('edTxt').textContent = text.slice(0, 80);
+  $('editBar').classList.add('show');
+  closeMsAct();
+  $('msgIn').focus();
+}
+function cancelEdit(){ editingMsg = null; $('editBar').classList.remove('show'); $('msgIn').value = ''; }
+async function msDelete(){
+  if (!curActMsg || !curChat) return;
+  const id = curActMsg.id;
+  closeMsAct();
+  if (!confirm('Delete this message for everyone?')) return;
+  try {
+    await api('/message/delete', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to: curChat, id }) });
+    lastSig = ''; await refreshChat();
+  } catch(e){ toast(e.message); }
+}
+function msCopy(){
+  if (!curActMsg) return;
+  const clone = curActMsg.el.cloneNode(true);
+  clone.querySelectorAll('.qref, .mtime').forEach(x => x.remove());
+  const text = clone.textContent.trim();
+  try { navigator.clipboard.writeText(text); toast('Copied'); } catch(e){ toast('Copy failed'); }
+  closeMsAct();
+}
+
+// Long-press on mobile, right-click on desktop, both open the action sheet.
+// Live-wired every render because innerHTML replaces the whole thread.
+let pressTimer = null;
+function wireBubbleGestures(){
+  document.querySelectorAll('#msgs .mb').forEach(el => {
+    if (el._wired) return; el._wired = 1;
+    el.addEventListener('contextmenu', ev => { ev.preventDefault(); openMsAct(el); });
+    el.addEventListener('touchstart', () => {
+      clearTimeout(pressTimer); el.classList.add('pressing');
+      pressTimer = setTimeout(() => { el.classList.remove('pressing'); if (navigator.vibrate) navigator.vibrate(12); openMsAct(el); }, 380);
+    }, { passive: true });
+    ['touchend','touchmove','touchcancel'].forEach(t => el.addEventListener(t, () => { clearTimeout(pressTimer); el.classList.remove('pressing'); }, { passive: true }));
+    // click a quote strip to scroll to the source bubble if it's still on screen
+    el.querySelectorAll('.qref[data-scroll]').forEach(q => q.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const tgt = document.querySelector('#msgs .mb[data-id="' + CSS.escape(q.dataset.scroll) + '"]');
+      if (tgt) { tgt.scrollIntoView({ behavior:'smooth', block:'center' }); tgt.classList.add('selected'); setTimeout(() => tgt.classList.remove('selected'), 900); }
+    }));
+  });
+}
+
+// ---------- autocomplete / quick-reply chips ----------
+// Local suggestions only — no external LLM. Two modes:
+//  · empty composer → contextual quick-replies based on what they last sent
+//  · typing → completions matched by prefix
+const AC_GREETS = ['Hey! 👋', 'Hi there', 'What\'s up? 😄', 'Yo', 'Hello!'];
+const AC_QUICK  = ['Haha 😂', 'Nice one', 'Sure!', 'On my way', 'One sec', 'Sounds good', 'Rematch? 🎲', 'GG 🏆', 'Same 😂', '👍'];
+const AC_QUESTION = ['Yes!', 'Not sure 🤔', 'Maybe later', 'Definitely', 'Let me check', 'Ha, no way 😂'];
+const AC_GAME    = ['Let\'s play 🎮', 'You in? 🎱', 'One quick round?', 'GG 🏆', 'Rematch!'];
+const AC_COMPLETIONS = [
+  'I\'m on my way', 'On my way', 'One second', 'One minute', 'Sounds good',
+  'Sure thing', 'See you soon', 'What time?', 'Where are you?',
+  'Let\'s play a game', 'Do you want to play?', 'That was fun',
+  'Good game!', 'Good luck', 'Nice shot!', 'Rematch?',
+  'How are you?', 'What are you up to?', 'What have you been doing?',
+  'Ha, that\'s hilarious', 'I don\'t know 🤔', 'Same here'
+];
+
+function hideAutocomplete(){ $('acRow').style.display = 'none'; $('acRow').innerHTML = ''; }
+function refreshAutocomplete(j){
+  if (!curChat) return hideAutocomplete();
+  j = j || lastChatJ;
+  const val = $('msgIn').value;
+  const row = $('acRow');
+  let chips = [];
+  if (!val.trim()) {
+    // Empty composer: quick-reply chips based on the tail of the thread.
+    // Reach back through the last message we have via lastSig context if not supplied.
+    const msgs = (j && j.messages) || [];
+    const last = [...msgs].reverse().find(m => !m.d);
+    if (!last) chips = AC_GREETS.slice(0, 4);
+    else if (last.f === (ME && ME.id)) chips = ['👍', '😂', 'Hey?', ...AC_GAME.slice(0, 1)];
+    else {
+      const t = String(last.x || '').toLowerCase();
+      if (last.k === 'gif') chips = ['😂', '❤️', 'Nice!', 'LOL'];
+      else if (/\?$/.test(t)) chips = AC_QUESTION.slice(0, 5);
+      else if (/(play|game|match|rematch|round|challenge)/i.test(t)) chips = AC_GAME;
+      else if (/(hi|hey|hello|yo|sup)\b/.test(t)) chips = ['Hey! 👋', 'What\'s up?', 'Hi 😊', '👋'];
+      else if (/(bye|gtg|later|night)/.test(t)) chips = ['See ya! 👋', 'Later', 'Take care', 'Night! 🌙'];
+      else if (/(good game|gg|nice|well played)/.test(t)) chips = ['GG!', 'Good game 🏆', 'Rematch?', '🔥'];
+      else if (/(sorry|sry)/.test(t)) chips = ['No worries!', 'All good', 'It\'s fine 😄'];
+      else if (/(thanks|thx|ty)/.test(t)) chips = ['You\'re welcome!', 'Anytime 😊', 'np', '❤️'];
+      else chips = AC_QUICK.slice(0, 6);
+    }
+  } else {
+    // Typing: prefix-match against a small local phrase bank and take the top three.
+    const v = val.toLowerCase();
+    const matches = AC_COMPLETIONS.filter(s => s.toLowerCase().startsWith(v) && s.toLowerCase() !== v).slice(0, 3);
+    if (!matches.length) return hideAutocomplete();
+    chips = matches;
+  }
+  if (!chips.length) return hideAutocomplete();
+  row.innerHTML = chips.slice(0, 6).map(c => `<button class="ac" onclick="pickAutocomplete(this)">${esc(c)}</button>`).join('');
+  row.style.display = 'flex';
+}
+function pickAutocomplete(btn){
+  const v = btn.textContent;
+  const cur = $('msgIn').value.trim();
+  // If we're mid-word, treat it as a completion; if empty, treat as quick-send.
+  if (!cur) { $('msgIn').value = v; $('msgIn').focus(); }
+  else if (v.toLowerCase().startsWith(cur.toLowerCase())) { $('msgIn').value = v; $('msgIn').focus(); }
+  else { $('msgIn').value = cur + ' ' + v; $('msgIn').focus(); }
+  hideAutocomplete();
+}
 
 // ---------- the challenge sheet ----------
 // The arcade cards' ⚔️ Invite: pick a friend from the people you follow and
@@ -2186,5 +2527,23 @@ function maybeWelcome(){
   };
 })();
 </script>
+
+<!-- Message action sheet — one instance shared by every bubble -->
+<div class="msshade" id="msShade" onclick="closeMsAct()"></div>
+<div class="msact" id="msAct" role="menu" aria-hidden="true">
+  <div class="rxpick">
+    <button class="rxb" onclick="msReact('❤️')" title="Heart">❤️</button>
+    <button class="rxb" onclick="msReact('😂')" title="Laugh">😂</button>
+    <button class="rxb" onclick="msReact('😮')" title="Wow">😮</button>
+    <button class="rxb" onclick="msReact('😢')" title="Sad">😢</button>
+    <button class="rxb" onclick="msReact('👍')" title="Like">👍</button>
+    <button class="rxb" onclick="msReact('🔥')" title="Fire">🔥</button>
+  </div>
+  <div class="macthr"></div>
+  <button class="mact" onclick="msReply()"><span class="mai">↩︎</span><span class="mal">Reply</span></button>
+  <button class="mact" id="msActEdit" onclick="msEdit()"><span class="mai">✎</span><span class="mal">Edit</span></button>
+  <button class="mact" id="msActCopy" onclick="msCopy()"><span class="mai">⧉</span><span class="mal">Copy</span></button>
+  <button class="mact danger" id="msActDel" onclick="msDelete()"><span class="mai">🗑</span><span class="mal">Delete</span></button>
+</div>
 </body>
 </html>
