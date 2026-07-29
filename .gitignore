@@ -11,3 +11,8 @@ social-photos/
 # logs and OS noise
 *.log
 .DS_Store
+
+# Screenshots dragged into repo root
+Screenshot*.png
+Screenshot*.jpg
+*.webp.bak

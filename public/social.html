@@ -77,31 +77,45 @@ body.authmodal{overflow:hidden}
 /* Top navigation bar: logo + primary tabs on the left, secondary links +
    your profile chip on the right. Persistent across every tab so the site
    header stops being a per-tab afterthought. */
-.topnav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:20;display:flex;align-items:center;gap:14px;padding:9px 16px;min-height:56px}
-.topnav .tnlogo{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:20px;text-decoration:none;color:inherit;letter-spacing:-.3px;flex-shrink:0}
+.topnav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:20;display:flex;align-items:center;gap:14px;padding:9px 16px;min-height:56px;max-width:100%;box-sizing:border-box;overflow:hidden}
+.topnav > *{min-width:0}
+.topnav .tnlogo{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:20px;text-decoration:none;color:inherit;letter-spacing:-.3px;flex-shrink:0;min-width:0}
 .topnav .tnlogo em{font-style:normal;color:var(--accent)}
-.topnav .tntabs{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.topnav .tntabs{display:flex;gap:2px;flex:1 1 0;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .topnav .tntabs::-webkit-scrollbar{display:none}
-.topnav .tntabs .tnt{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;border-radius:12px;padding:8px 12px;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--sub);cursor:pointer;position:relative;white-space:nowrap;transition:background .12s,color .12s}
+.topnav .tntabs .tnt{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;border-radius:12px;padding:8px 12px;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--sub);cursor:pointer;position:relative;white-space:nowrap;transition:background .12s,color .12s;flex-shrink:0}
 .topnav .tntabs .tnt:hover{color:var(--ink);background:#f4f5f7}
 .topnav .tntabs .tnt.on{color:var(--ink);background:#eef1ff}
 .topnav .tntabs .tnt .ico{font-size:15px;line-height:1}
 .topnav .tntabs .tnt .badge{position:static;transform:none;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:99px;min-width:16px;text-align:center;line-height:1.35}
 .topnav .tnright{display:flex;gap:8px;align-items:center;flex-shrink:0}
-.topnav .tnlink{color:var(--sub);text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;transition:background .12s,color .12s}
+.topnav .tnlink{color:var(--sub);text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;transition:background .12s,color .12s;white-space:nowrap}
 .topnav .tnlink:hover{background:#f4f5f7;color:var(--ink)}
-.topnav .mechip{border:1px solid var(--line)}
-/* Small screens: hide the logo text and secondary links so the tabs + chip
-   still fit; tabs get scrollable so all five stay reachable. */
+.topnav .mechip{border:1px solid var(--line);flex-shrink:0}
+/* Tabs on mobile shrink to icon-only chips that don't wrap, and only the
+   ACTIVE tab shows its label — otherwise five buttons crowd the row and
+   push the profile chip off the screen. Nothing overflows the viewport. */
 @media(max-width:640px){
-  .topnav{padding:7px 10px;gap:8px;min-height:52px}
-  .topnav .tnlogo{font-size:0}
-  .topnav .tnlogo::before{content:'WS';font-family:'Fredoka',system-ui,sans-serif;font-size:18px;font-weight:700;color:var(--accent);letter-spacing:-.5px}
+  .topnav{padding:6px 8px;gap:6px;min-height:50px}
+  .topnav .tnlogo{display:none}
   .topnav .tnlink.hideSm{display:none}
-  .topnav .tntabs .tnt{padding:8px 10px;font-size:12.5px}
+  .topnav .tntabs{gap:1px}
+  .topnav .tntabs .tnt{padding:8px;font-size:0;min-width:38px;justify-content:center}
+  .topnav .tntabs .tnt .ico{font-size:18px}
+  .topnav .tntabs .tnt.on{font-size:12.5px;padding:8px 12px}
+  .topnav .tntabs .tnt.on .ico{font-size:15px}
+  .topnav .tntabs .tnt .badge{position:absolute;top:2px;right:2px;font-size:8.5px;padding:1px 4px;min-width:12px}
   .topnav .mechip .mename{display:none}
   .topnav .mechip{padding:4px}
 }
+/* Chat view: no site chrome, just the chat's own back button. The chatfull
+   class is on #vApp when you tap into a conversation; the chatlock class is
+   on <body>. Either one triggers the hide.
+   IMPORTANT: don't try to make .chathead sticky here — chatfull sets it to
+   position:static because #tabChat is a fixed-height flex column with the
+   chathead as its first row. Making it sticky again broke the layout and
+   the messages appeared to hide behind the header. */
+body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Hidden by default now — the top nav owns navigation. If we ever want the
    old bottom bar back on very small screens, flip this. */
 .tabbar{display:none}
@@ -218,8 +232,12 @@ body.authmodal{overflow:hidden}
 .sbnote{color:var(--faint);font-size:11px;font-weight:500;line-height:1.6;text-align:center;padding:0 6px}
 
 /* profile */
-.cover{height:130px;background:linear-gradient(160deg,#1d1f29,#3a3d4d);position:relative}
-.cover .back{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:10px;width:34px;height:34px;font-size:16px}
+/* Profile / member banner: the connecting-continents map hero. The overlay
+   keeps the back button and any overlaid text legible over the light image. */
+.cover{height:150px;background:#dff1f4 url('/profile-map-hero.webp') center/cover no-repeat;position:relative;overflow:hidden}
+.cover::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,20,32,.02) 0%,rgba(5,20,32,.18) 60%,rgba(5,20,32,.42) 100%);pointer-events:none}
+.cover .back{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.9);color:var(--ink);border:none;border-radius:10px;width:34px;height:34px;font-size:16px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.15);cursor:pointer;font-weight:800}
+.cover .back:hover{background:#fff}
 .prof{margin-top:-52px;text-align:center;padding:0 24px}
 .prof .pav{position:relative;display:inline-block}
 .prof .big{width:104px;height:104px;border:4px solid var(--bg);font-size:38px}
@@ -469,24 +487,28 @@ body.authmodal{overflow:hidden}
 .cright{text-align:right}
 .ctime{color:var(--faint);font-size:10.5px}
 .cunread{display:inline-flex;background:var(--accent);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:99px;align-items:center;justify-content:center;margin-top:4px;padding:0 5px}
-.chathead{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
-@media(min-width:700px){.chathead{top:49px}}
-.back2{background:var(--ink);color:#fff;border:none;font-size:17px;width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.chwho{min-width:0;overflow:hidden}
+.chathead{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;min-height:56px;box-sizing:border-box}
+@media(min-width:700px){.chathead{top:56px}}
+.back2{background:var(--ink);color:#fff;border:none;font-size:17px;width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.chwho{min-width:0;overflow:hidden;flex:1}
 /* On a phone the chat takes the whole screen and the tab bar goes away with
    it, which left no way out of a conversation except the ← that only goes as
    far as the chat list. This is the door back to the Community, sitting in the
    header where you're already looking. On a wide screen the tab bar is still
-   on show, so it stands down. */
+   on show, so it stands down. On tiny screens the label collapses to just
+   the icon so the friend's name always has room to breathe. */
 .chwall{margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;gap:5px;
   background:var(--ink);color:#fff;border:none;border-radius:99px;
-  font-size:12.4px;font-weight:700;padding:9px 15px;min-height:40px;cursor:pointer;white-space:nowrap;
+  font-size:12.4px;font-weight:700;padding:8px 14px;min-height:36px;cursor:pointer;white-space:nowrap;
   box-shadow:0 3px 10px rgba(0,0,0,.12)}
 .chwall:active{transform:translateY(1px)}
-@media(max-width:380px){.chwall{font-size:11.4px;padding:8px 12px;gap:4px}}
+@media(max-width:520px){
+  .chwall{padding:8px 10px;font-size:0;gap:0;min-width:36px;height:36px;justify-content:center}
+  .chwall::before{content:'👥';font-size:16px;line-height:1}
+}
 .splitview .chwall{display:none}
 .chname{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chstate{font-size:11px;color:var(--faint)}
+.chstate{font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .msgs{padding:14px 16px 150px;display:flex;flex-direction:column;gap:8px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .mb{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;min-width:0}
 .chatmode .gamelink{display:none}
@@ -2579,5 +2601,6 @@ function maybeWelcome(){
   <button class="mact" id="msActCopy" onclick="msCopy()"><span class="mai">⧉</span><span class="mal">Copy</span></button>
   <button class="mact danger" id="msActDel" onclick="msDelete()"><span class="mai">🗑</span><span class="mal">Delete</span></button>
 </div>
+<script src="/wsbrand.js" defer></script>
 </body>
 </html>
