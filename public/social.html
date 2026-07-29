@@ -2043,17 +2043,20 @@ function wireBubbleGestures(){
 // Local suggestions only — no external LLM. Two modes:
 //  · empty composer → contextual quick-replies based on what they last sent
 //  · typing → completions matched by prefix
-const AC_GREETS = ['Hey! 👋', 'Hi there', 'What\'s up? 😄', 'Yo', 'Hello!'];
-const AC_QUICK  = ['Haha 😂', 'Nice one', 'Sure!', 'On my way', 'One sec', 'Sounds good', 'Rematch? 🎲', 'GG 🏆', 'Same 😂', '👍'];
-const AC_QUESTION = ['Yes!', 'Not sure 🤔', 'Maybe later', 'Definitely', 'Let me check', 'Ha, no way 😂'];
-const AC_GAME    = ['Let\'s play 🎮', 'You in? 🎱', 'One quick round?', 'GG 🏆', 'Rematch!'];
+// Plain-text quick-reply banks — no emoji. The emoji picker button next
+// to the composer is where those live now; the autocomplete strip stays
+// text-only so it feels like a serious keyboard suggestion, not stickers.
+const AC_GREETS = ['Hey', 'Hi there', 'What\'s up', 'Yo', 'Hello'];
+const AC_QUICK  = ['Haha', 'Nice one', 'Sure', 'On my way', 'One sec', 'Sounds good', 'Rematch?', 'GG', 'Same', 'Ok'];
+const AC_QUESTION = ['Yes', 'Not sure', 'Maybe later', 'Definitely', 'Let me check', 'No way'];
+const AC_GAME    = ['Let\'s play', 'You in?', 'One quick round?', 'GG', 'Rematch'];
 const AC_COMPLETIONS = [
   'I\'m on my way', 'On my way', 'One second', 'One minute', 'Sounds good',
   'Sure thing', 'See you soon', 'What time?', 'Where are you?',
   'Let\'s play a game', 'Do you want to play?', 'That was fun',
-  'Good game!', 'Good luck', 'Nice shot!', 'Rematch?',
+  'Good game', 'Good luck', 'Nice shot', 'Rematch?',
   'How are you?', 'What are you up to?', 'What have you been doing?',
-  'Ha, that\'s hilarious', 'I don\'t know 🤔', 'Same here'
+  'That\'s hilarious', 'I don\'t know', 'Same here'
 ];
 
 function hideAutocomplete(){ $('acRow').style.display = 'none'; $('acRow').innerHTML = ''; }
@@ -2069,17 +2072,17 @@ function refreshAutocomplete(j){
     const msgs = (j && j.messages) || [];
     const last = [...msgs].reverse().find(m => !m.d);
     if (!last) chips = AC_GREETS.slice(0, 4);
-    else if (last.f === (ME && ME.id)) chips = ['👍', '😂', 'Hey?', ...AC_GAME.slice(0, 1)];
+    else if (last.f === (ME && ME.id)) chips = ['Ok', 'Sure', 'Hey?', ...AC_GAME.slice(0, 1)];
     else {
       const t = String(last.x || '').toLowerCase();
-      if (last.k === 'gif') chips = ['😂', '❤️', 'Nice!', 'LOL'];
+      if (last.k === 'gif') chips = ['Haha', 'Nice', 'LOL', 'Same'];
       else if (/\?$/.test(t)) chips = AC_QUESTION.slice(0, 5);
       else if (/(play|game|match|rematch|round|challenge)/i.test(t)) chips = AC_GAME;
-      else if (/(hi|hey|hello|yo|sup)\b/.test(t)) chips = ['Hey! 👋', 'What\'s up?', 'Hi 😊', '👋'];
-      else if (/(bye|gtg|later|night)/.test(t)) chips = ['See ya! 👋', 'Later', 'Take care', 'Night! 🌙'];
-      else if (/(good game|gg|nice|well played)/.test(t)) chips = ['GG!', 'Good game 🏆', 'Rematch?', '🔥'];
-      else if (/(sorry|sry)/.test(t)) chips = ['No worries!', 'All good', 'It\'s fine 😄'];
-      else if (/(thanks|thx|ty)/.test(t)) chips = ['You\'re welcome!', 'Anytime 😊', 'np', '❤️'];
+      else if (/(hi|hey|hello|yo|sup)\b/.test(t)) chips = ['Hey', 'What\'s up?', 'Hi', 'Hello'];
+      else if (/(bye|gtg|later|night)/.test(t)) chips = ['See ya', 'Later', 'Take care', 'Night'];
+      else if (/(good game|gg|nice|well played)/.test(t)) chips = ['GG', 'Good game', 'Rematch?', 'Nice'];
+      else if (/(sorry|sry)/.test(t)) chips = ['No worries', 'All good', 'It\'s fine'];
+      else if (/(thanks|thx|ty)/.test(t)) chips = ['You\'re welcome', 'Anytime', 'np', 'Cheers'];
       else chips = AC_QUICK.slice(0, 6);
     }
   } else {

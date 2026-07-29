@@ -58,7 +58,11 @@
     const s = document.createElement('style');
     s.id = 'wsbrand-css';
     s.textContent = `
-      .wsfoot{background:#1a1c22;color:#c9ccd4;font-family:'Nunito','Inter',system-ui,-apple-system,sans-serif;padding:44px 20px 0;margin-top:36px;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+      /* Break out of any parent padding / max-width so the footer always
+         reaches the viewport edges, regardless of the host page's layout
+         (game pages have body padding, marketing pages sit inside .wrap,
+         etc). Full-bleed via the negative-margin viewport trick. */
+      .wsfoot{background:#1a1c22;color:#c9ccd4;font-family:'Nunito','Inter',system-ui,-apple-system,sans-serif;padding:44px 20px 0;margin-top:36px;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;position:relative;left:50%;right:50%;width:100vw;margin-left:-50vw;margin-right:-50vw;box-sizing:border-box}
       .wsfoot a{color:#c9ccd4;text-decoration:none;transition:color .12s}
       .wsfoot a:hover{color:#fff}
       .wsfoot-inner{max-width:1180px;margin:0 auto}
@@ -88,8 +92,32 @@
         .wsfoot-note{max-width:none}
       }
       /* Pages that opt out of chrome — chat surfaces, some game shells. */
-      body.chatlock .wsfoot,body.chatfull .wsfoot{display:none !important}
-      html[data-nochrome] .wsfoot{display:none !important}
+      body.chatlock .wsfoot,body.chatfull .wsfoot,#vApp.chatfull ~ #wsFooterMount .wsfoot{display:none !important}
+      html[data-nochrome] .wsfoot,html[data-nochrome] .wshead{display:none !important}
+
+      /* Shared brand strip for pages that don't ship their own top nav.
+         position:fixed so it's always full-viewport-width regardless of any
+         parent padding, and body.wsheaded reserves the vertical space. */
+      .wshead{position:fixed;top:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #ececef;z-index:100;display:flex;align-items:center;gap:12px;padding:10px 16px;height:52px;font-family:'Nunito','Fredoka',system-ui,sans-serif;box-sizing:border-box}
+      body.wsheaded{padding-top:52px !important}
+      .wshead .wsh-logo{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;text-decoration:none;color:#16181f;letter-spacing:-.3px;flex-shrink:0}
+      .wshead .wsh-logo em{font-style:normal;color:#e8506b}
+      .wshead .wsh-page{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:15px;color:#5c6270;margin-left:4px;padding-left:12px;border-left:1px solid #ececef;letter-spacing:-.2px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .wshead .wsh-link{color:#5c6270;text-decoration:none;font-weight:700;font-size:13px;padding:8px 12px;border-radius:10px;transition:background .12s,color .12s;white-space:nowrap;flex-shrink:0}
+      .wshead .wsh-link:hover{background:#f4f5f7;color:#16181f}
+      .wshead .wsh-install{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;border:0;border-radius:10px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(96,88,255,.28);white-space:nowrap;flex-shrink:0}
+      .wshead .wsh-install:hover{transform:translateY(-1px)}
+      @media(max-width:520px){
+        .wshead{padding:8px 12px;gap:8px;height:48px}
+        body.wsheaded{padding-top:48px !important}
+        .wshead .wsh-logo{font-size:17px}
+        .wshead .wsh-page{display:none}
+        .wshead .wsh-link{padding:7px 10px;font-size:12.5px}
+        .wshead .wsh-install{padding:7px 10px;font-size:0}
+        .wshead .wsh-install::before{content:'📲 Install';font-size:12.5px}
+      }
+      body.chatlock .wshead,body.chatlock.wsheaded{padding-top:0 !important}
+      body.chatlock .wshead{display:none !important}
     `;
     (document.head || document.documentElement).appendChild(s);
   }
@@ -153,9 +181,57 @@
     </footer>`;
   }
 
+  // A short label for the current page — reads next to the WordSpies logo in
+  // the shared brand header so a visitor knows where they are without needing
+  // an extra ~30px of dedicated hero space.
+  function pageLabel() {
+    const map = {
+      '/pool':'8-Ball Pool', '/ludo':'Ludo', '/four':'Connect 4',
+      '/meld':'Mind Meld', '/spy':'Who is the Spy?',
+      '/codenames':'WordSpies · Codenames', '/play':'WordSpies',
+      '/games':'All games'
+    };
+    const p = location.pathname.replace(/\/$/, '') || '/';
+    return map[p] || (document.title || '').replace(/\s*[—|·].*$/, '').trim() || '';
+  }
+
+  function headerHTML() {
+    const label = pageLabel();
+    return `<header class="wshead" role="banner">
+      <a class="wsh-logo" href="/">Word<em>Spies</em></a>
+      ${label ? `<span class="wsh-page">${label.replace(/</g,'&lt;')}</span>` : '<span style="flex:1"></span>'}
+      <a class="wsh-link hideSm" href="/games">🎮 All games</a>
+      <a class="wsh-link hideSm" href="/social">👥 Community</a>
+      <button class="wsh-install" type="button" onclick="wsDoInstall()">📲 Install</button>
+    </header>`;
+  }
+
+  // Inject the shared brand strip UNLESS the page already ships its own top
+  // nav (community app: .topnav) or full marketing header (.sitehead) or has
+  // opted out via data-nochrome. Game pages keep their own game-specific
+  // <header> and get the WordSpies strip stacked ABOVE it, so the brand is
+  // consistent everywhere.
+  function needsHeader() {
+    if (document.documentElement.hasAttribute('data-nochrome')) return false;
+    if (document.querySelector('.topnav,.sitehead,.wshead')) return false;
+    if (document.getElementById('vApp')) return false;      // community app
+    return true;
+  }
+
   function mount() {
     injectStyles();
     if (chromeless()) return;
+    // Header (prepend, before any body content) — game pages that ship their
+    // own <header> keep theirs; the WordSpies brand strip sits above them so
+    // branding is consistent everywhere. `wsheaded` on body reserves the
+    // vertical space so nothing gets covered.
+    if (needsHeader() && !document.querySelector('.wshead')) {
+      const h = document.createElement('div');
+      h.innerHTML = headerHTML();
+      document.body.insertBefore(h.firstElementChild, document.body.firstChild);
+      document.body.classList.add('wsheaded');
+    }
+    // Footer at the very end.
     if (document.getElementById('wsFooterMount')) return;
     const w = document.createElement('div');
     w.id = 'wsFooterMount';
