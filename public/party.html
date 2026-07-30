@@ -189,10 +189,33 @@ a{color:inherit;text-decoration:none}
 .pemoji-pick button:hover{background:var(--hover)}
 
 /* Header action buttons */
+.pinvite{background:#eef1ff;color:#4358d1;border:1px solid #d0d7ff;border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:700;cursor:pointer;margin-left:8px;transition:background .12s}
+.pinvite:hover{background:#dee4ff}
+.pinvite.done{background:#e8f9ef;color:#159f5d;border-color:#c1e6d1}
 .pleave{background:#fff;color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:700;cursor:pointer;margin-left:8px;transition:background .12s}
 .pleave:hover{background:var(--hover);color:var(--ink)}
 .pend{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:700;cursor:pointer;margin-left:6px;transition:background .12s}
 .pend:hover{background:#ffe4e4}
+
+/* Speaking ring — pulses on the avatar of whoever is actively talking
+   right now. Sits on top of the existing gold/blue role rings. */
+.pav.speaking .circ{box-shadow:0 0 0 3px var(--green),0 0 0 8px rgba(34,192,122,.28);animation:speakpulse 1.1s ease-in-out infinite}
+@keyframes speakpulse{0%,100%{box-shadow:0 0 0 3px var(--green),0 0 0 8px rgba(34,192,122,.20)}50%{box-shadow:0 0 0 3px var(--green),0 0 0 14px rgba(34,192,122,.10)}}
+
+/* Compact mute + reactions pair, bottom-right of the viewport. Two
+   round icon buttons instead of the big pill for people who want
+   less UI. The reactions menu pops upward when tapped. */
+.quickact{position:fixed;right:16px;bottom:calc(150px + env(safe-area-inset-bottom));z-index:36;display:none;flex-direction:column;gap:8px;align-items:flex-end}
+.quickact.show{display:flex}
+.quickact .qmute,.quickact .qrx{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:17px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.10);transition:transform .12s,background .12s,color .12s}
+.quickact .qmute:hover,.quickact .qrx:hover{transform:translateY(-2px)}
+.quickact .qmute.on{background:linear-gradient(135deg,#22c07a,#159f5d);color:#fff;border-color:transparent;animation:speakpulse 1.4s ease-in-out infinite}
+.quickact .qrxmenu{display:none;position:absolute;bottom:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:0 12px 30px rgba(0,0,0,.15);width:230px}
+.quickact .qrxmenu.show{display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
+.quickact .qrxmenu button{background:transparent;border:0;font-size:22px;padding:6px 4px;border-radius:8px;cursor:pointer;line-height:1;transition:background .12s,transform .06s}
+.quickact .qrxmenu button:hover{background:var(--hover);transform:scale(1.15)}
+@media(max-width:640px){ .quickact{right:12px;bottom:calc(148px + env(safe-area-inset-bottom))} }
+@media(min-width:1000px){ .quickact{bottom:96px} }
 
 /* Toasts */
 .ptoast{position:fixed;left:50%;transform:translateX(-50%);top:14px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;pointer-events:none;opacity:0;transition:.2s}
@@ -213,6 +236,7 @@ a{color:inherit;text-decoration:none}
     </div>
     <!-- Two actions in the header: everyone gets Leave; only the host gets
          End party. Placed together so the flow is obvious. -->
+    <button class="pinvite" id="pInviteBtn" onclick="copyInvite()" title="Copy invite link">🔗 Invite</button>
     <button class="pleave" id="pLeaveBtn" onclick="leaveAndGo()">Leave</button>
     <button class="pend hidden" id="pEndBtn" onclick="endParty()">End party</button>
   </div>
@@ -227,6 +251,20 @@ a{color:inherit;text-decoration:none}
   <div class="psect">
     <div class="ph"><h3>👂 Listeners <b id="listenerCnt">0</b></h3></div>
     <div class="listeners" id="listeners"></div>
+  </div>
+</div>
+
+<!-- Compact quick actions: mute + reactions. Small round buttons for
+     users who don't want the big FAB in their face. Owner asked for
+     "two small icons mute and reaction button that opens many reactions". -->
+<div class="quickact" id="pQuickAct">
+  <button class="qmute" id="qMuteBtn" onclick="toggleMyMic()" title="Mute / unmute (Speakers only)">🎤</button>
+  <button class="qrx" id="qRxBtn" onclick="toggleReactionsMenu(event)" title="Send a reaction">🎉</button>
+  <div class="qrxmenu" id="qRxMenu">
+    <button data-e="❤️">❤️</button><button data-e="😂">😂</button><button data-e="🔥">🔥</button>
+    <button data-e="👏">👏</button><button data-e="😮">😮</button><button data-e="🎉">🎉</button>
+    <button data-e="💯">💯</button><button data-e="🙌">🙌</button><button data-e="👍">👍</button>
+    <button data-e="🤔">🤔</button><button data-e="😢">😢</button><button data-e="✨">✨</button>
   </div>
 </div>
 
@@ -276,6 +314,7 @@ let CODE = (params.get('room') || '').trim().toUpperCase();
 const EMBED = params.get('embed') === '1';   // true when hosted inside /social's iframe
 let socket = null, room = null, myId = null, myRole = 'listener', msgsLeft = 2, myHandUp = false, selectedMemberId = null;
 let ME_UID = null;   // set from the 'joined' event; used by the host-reclaim fallback
+let SPEAKING = new Set();   // socket ids currently detected as talking
 
 // Talk to the parent /social if we're embedded — used to close the host
 // iframe when the party ends, minimize on user gesture, etc.
@@ -330,6 +369,38 @@ function conn(){
       wsVoice.setCanPublish(myRole === 'host' || myRole === 'speaker');
       wsVoice.init({ socket, myId, canPublish: (myRole === 'host' || myRole === 'speaker') });
       wsVoice.on('mic', () => paint());       // avatar ring reflects mic state
+      // Remote-speaker detection — audioLevel per inbound track (0..1).
+      // Above 0.02 counts as "speaking"; a member gets the pulsing green
+      // ring for 1.5s after their last spike so mid-sentence gaps don't
+      // strobe it off.
+      let clearT = {};
+      wsVoice.on('levels', (levelsByTrack) => {
+        // trackIdentifier maps to member via room.members[].cfSession is
+        // the peer's SFU session and their tracks are stamped there; but
+        // the browser's own trackIdentifier for a remote track equals the
+        // CF trackName they published. Match either.
+        Object.entries(levelsByTrack || {}).forEach(([tid, lvl]) => {
+          if (lvl < 0.02) return;
+          const owner = (room && room.members || []).find(m => (m.tracks || []).includes(tid) || m.cfSession === tid);
+          const id = owner && owner.id; if (!id) return;
+          SPEAKING.add(id);
+          clearTimeout(clearT[id]);
+          clearT[id] = setTimeout(() => { SPEAKING.delete(id); paint(); }, 1500);
+        });
+        paint();
+      });
+      // Local mic — pulse OUR own avatar without waiting for the SFU
+      // round-trip. Uses an AudioContext analyser on the local stream.
+      let mineClearT = null;
+      wsVoice.on('local-level', (lvl) => {
+        if (!myId) return;
+        if (lvl > 0.06) {
+          SPEAKING.add(myId);
+          clearTimeout(mineClearT);
+          mineClearT = setTimeout(() => { SPEAKING.delete(myId); paint(); }, 900);
+          paint();
+        }
+      });
     }
     if (window.wsEmojiFly) wsEmojiFly.init({ socket });
     // Defensive: if the server seated me as a non-host but the room
@@ -427,6 +498,42 @@ document.addEventListener('keyup', (e) => {
   }
 });
 
+// Copy the party invite link to the clipboard. Same URL that opens the
+// party from anywhere — includes the room code, no auth token.
+async function copyInvite(){
+  const btn = $('pInviteBtn');
+  const link = location.origin + '/party?room=' + encodeURIComponent(CODE);
+  try {
+    await navigator.clipboard.writeText(link);
+    btn.classList.add('done'); btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.classList.remove('done'); btn.textContent = '🔗 Invite'; }, 1500);
+    toast('Invite link copied — share it anywhere.');
+  } catch(e){ toast(link); }
+}
+
+// Toggle the small reactions menu that sits above the quick-actions pair.
+function toggleReactionsMenu(ev){
+  ev.stopPropagation();
+  const menu = $('qRxMenu');
+  menu.classList.toggle('show');
+}
+document.addEventListener('click', (ev) => {
+  const menu = $('qRxMenu');
+  if (!menu || !menu.classList.contains('show')) return;
+  if (ev.target.closest('#qRxMenu') || ev.target.closest('#qRxBtn')) return;
+  menu.classList.remove('show');
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const menu = document.getElementById('qRxMenu');
+  if (!menu) return;
+  menu.querySelectorAll('button[data-e]').forEach(b => {
+    b.onclick = () => {
+      if (window.wsEmojiFly) wsEmojiFly.send(b.dataset.e);
+      menu.classList.remove('show');
+    };
+  });
+});
+
 async function toggleMyMic(){
   if (!window.wsVoice) return;
   if (!(myRole === 'host' || myRole === 'speaker')) {
@@ -458,6 +565,16 @@ function paint(){
     fab.classList.toggle('show', iAmSpeaker);
     fab.classList.toggle('on', !!micOn);
     fabLbl.textContent = micOn ? 'You\'re live — tap to mute' : 'Tap to talk';
+  }
+  // Compact quick actions: same visibility as the FAB (speakers only for
+  // mute), but everyone gets the reaction button.
+  const q = $('pQuickAct');
+  if (q) {
+    q.classList.add('show');
+    $('qMuteBtn').style.display = iAmSpeaker ? '' : 'none';
+    $('qMuteBtn').classList.toggle('on', !!micOn);
+    $('qMuteBtn').textContent = micOn ? '🎤' : '🔇';
+    $('qMuteBtn').title = micOn ? 'Mute' : 'Unmute (Speakers only)';
   }
 
   const speakers = room.members.filter(m => m.role === 'host' || m.role === 'speaker');
@@ -526,6 +643,7 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
   if (iAmHost && !isMe && !(isHost && m.uid === room.hostUid)) cls.push('canManage');
   if (selectedMemberId === m.id && iAmHost) cls.push('selected');
   if (m.handRaised && !isSpeakerPanel) cls.push('hand');
+  if (SPEAKING.has(m.id)) cls.push('speaking');
 
   const av = m.photo
     ? '<img src="' + esc(m.photo) + '" alt="">'

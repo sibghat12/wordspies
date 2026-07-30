@@ -78,6 +78,36 @@
     .catch(function () {});
 
   // ── microphone access (shared) ────────────────────────────────────────
+  // Analyser on the LOCAL mic — samples our own volume so the party UI can
+   // pulse OUR avatar the moment we start speaking, without waiting for a
+   // round-trip through the SFU.
+   var _localAnalyser = null;
+   function attachLocalAnalyser(stream) {
+     try {
+       var Ctx = window.AudioContext || window.webkitAudioContext;
+       if (!Ctx) return;
+       var ac = new Ctx();
+       var src = ac.createMediaStreamSource(stream);
+       var an = ac.createAnalyser(); an.fftSize = 512; an.smoothingTimeConstant = 0.4;
+       src.connect(an);
+       _localAnalyser = { ac: ac, an: an };
+       var buf = new Uint8Array(an.frequencyBinCount);
+       function tick() {
+         if (!_localAnalyser) return;
+         an.getByteTimeDomainData(buf);
+         var sum = 0;
+         for (var i = 0; i < buf.length; i++) { var v = (buf[i] - 128) / 128; sum += v * v; }
+         var rms = Math.sqrt(sum / buf.length);      // 0..~0.5 in practice
+         emit('local-level', Math.min(1, rms * 4));  // scale so a normal voice reads ~0.4
+         setTimeout(tick, 120);
+       }
+       tick();
+     } catch (e) {}
+   }
+   function detachLocalAnalyser() {
+     if (_localAnalyser) { try { _localAnalyser.ac.close(); } catch (e) {} _localAnalyser = null; }
+   }
+
   async function openMic() {
     if (localStream) return localStream;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -101,6 +131,7 @@
       },
       video: false
     });
+    attachLocalAnalyser(localStream);
     return localStream;
   }
   // Once we've published, coax the RTP sender into music-grade Opus.
@@ -167,6 +198,7 @@
     return lines.join('\r\n');
   }
   function closeMic() {
+    detachLocalAnalyser();
     if (!localStream) return;
     try { localStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
     localStream = null;
@@ -325,7 +357,9 @@
       this._lastBytesIn = 0;
       this._lastBytesAt = Date.now();
       clearInterval(this._statsT);
-      this._statsT = setInterval(function () { self.checkTraffic(); }, 5000);
+      // 500 ms so the "who's speaking" ring feels live. Silence check uses
+      // a running window so 15 s silence still triggers a heal.
+      this._statsT = setInterval(function () { self.checkTraffic(); }, 500);
     },
     // Nuke everything and re-activate. If we had a mic open, re-publish.
     async heal(reason) {
@@ -347,12 +381,21 @@
       try {
         var stats = await this.pc.getStats();
         var totalIn = 0, hasInbound = false;
+        var self = this;
+        // Sample per-track audio levels so callers can highlight who's
+        // actually speaking — level ~ 0 = silent, ~ 1 = loud. Emitted as
+        // a 'levels' event so the party UI can pulse the right avatar.
+        var levels = {};
         stats.forEach(function (r) {
           if (r.type === 'inbound-rtp' && r.kind === 'audio') {
             hasInbound = true;
             totalIn += r.bytesReceived || 0;
+            // audioLevel is 0..1 on standard browsers
+            if (typeof r.audioLevel === 'number' && r.trackIdentifier)
+              levels[r.trackIdentifier] = r.audioLevel;
           }
         });
+        if (Object.keys(levels).length) emit('levels', levels);
         if (!hasInbound) { this._lastBytesAt = Date.now(); return; }
         if (totalIn > this._lastBytesIn) {
           this._lastBytesIn = totalIn;
