@@ -356,6 +356,40 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ggrid .g-spy .gd{min-height:0}
 @media(min-width:900px){ .ggrid{grid-template-columns:repeat(3,1fr);padding:16px 8px 26px} }
 
+/* v2 game cards — bigger, friendlier, one-tap "Join the room". Full-card
+   click, so no fiddly tiny buttons; the ⚔️ Invite pill in the top corner
+   is the only exception (stops the click before nav). Live count reads
+   from /api/live and lights up a green pill on the right so the eye
+   catches "there's a room to join RIGHT NOW". */
+.ggrid-v2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:16px 20px 30px}
+@media(min-width:900px){ .ggrid-v2{grid-template-columns:repeat(3,1fr);padding:16px 8px 30px} }
+.ggrid-v2 .g-spy{grid-column:1/-1}
+.gcard2{position:relative;display:grid;grid-template-rows:auto auto auto 1fr auto;gap:6px;padding:22px 18px 18px;border-radius:22px;color:#fff;text-decoration:none;overflow:hidden;
+  min-height:180px;cursor:pointer;transition:transform .15s var(--spring,ease),box-shadow .15s;box-shadow:0 8px 22px rgba(20,23,42,.10)}
+.gcard2:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(20,23,42,.16)}
+.gcard2:active{transform:translateY(-1px)}
+.gcard2::before{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
+.gcard2::after{content:'';position:absolute;left:-40px;bottom:-40px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.gcard2 .gicon{font-size:36px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:18px;background:rgba(255,255,255,.20);backdrop-filter:blur(4px);position:relative;z-index:1}
+.gcard2 .gtitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;letter-spacing:-.3px;position:relative;z-index:1}
+.gcard2 .gtag{font-size:11.5px;font-weight:600;opacity:.85;position:relative;z-index:1;line-height:1.4}
+.gcard2 .gplayers{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.02em;background:rgba(255,255,255,.16);padding:4px 10px 4px 8px;border-radius:99px;align-self:start;position:relative;z-index:1}
+.gcard2 .gplayers .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5)}
+.gcard2 .gplayers.live{background:#22c07a;color:#fff}
+.gcard2 .gplayers.live .dot{background:#fff;animation:gcpulse 1.4s ease-in-out infinite}
+@keyframes gcpulse{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+.gcard2 .gcta{margin-top:10px;background:#fff;color:#16181f;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14.5px;letter-spacing:-.2px;padding:10px 14px;border-radius:12px;text-align:center;position:relative;z-index:1;transition:transform .12s}
+.gcard2:hover .gcta{transform:scale(1.02)}
+.gcard2 .ginvite{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.28);color:#fff;border-radius:12px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;z-index:2;transition:background .12s,transform .1s}
+.gcard2 .ginvite:hover{background:rgba(0,0,0,.42);transform:scale(1.08)}
+/* colour per game */
+.gcard2.g-spy{background:linear-gradient(140deg,#e8506b,#c22e4d)}
+.gcard2.g-ludo{background:linear-gradient(140deg,#3b6fe0,#2b4fb0)}
+.gcard2.g-pool{background:linear-gradient(140deg,#1d8f5f,#0e6b44)}
+.gcard2.g-four{background:linear-gradient(140deg,#4c5ec7,#2c3a85)}
+.gcard2.g-meld{background:linear-gradient(140deg,#6b5ce8,#4d3fc0)}
+.gcard2.g-imp{background:linear-gradient(140deg,#3a3f4f,#16181f)}
+
 /* live games — what is actually happening right now */
 .lv-head{padding:8px 22px 0}
 .lv-head h2{font-size:20px;font-weight:500;letter-spacing:-.3px;color:var(--ink)}
@@ -601,16 +635,23 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .composer .cbtn.send{background:linear-gradient(135deg,var(--cme-1),var(--cme-2));box-shadow:var(--cme-shadow)}
 .composer input:focus{outline:none;border-color:var(--caccent);box-shadow:0 0 0 3px rgba(90,123,255,.12)}
 
-/* Hold-to-record mic button + recording overlay. Mic is hidden until the
-   composer is empty (there's a small script that toggles a .hastext class
-   on the composer). While recording, the whole composer input is covered
-   by a red pill with elapsed time + slide hints. Big cancel + send targets
-   so the flow is unmistakable even on a phone. */
-.composer .micrec{background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;border:0;font-size:17px;box-shadow:var(--cme-shadow);position:relative;user-select:none;-webkit-user-select:none}
-.composer .micrec.recording{background:linear-gradient(135deg,#ff3d5b,#c8123b);animation:micrecpulse 1.2s ease-in-out infinite}
+/* Hold-to-record mic button. ALWAYS visible next to the send button —
+   hiding it on the empty state confused first-time mobile users who
+   never realised voice messages were an option. The mic is a bright
+   blue pill so the affordance is unmistakable, and it grows into a
+   pulsing red when actively recording. Send stays in its own slot;
+   whichever button you tap wins. */
+.composer .micrec{background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;border:0;font-size:18px;box-shadow:var(--cme-shadow);position:relative;user-select:none;-webkit-user-select:none;min-width:44px;width:44px;height:44px;flex-shrink:0}
+.composer .micrec.recording{background:linear-gradient(135deg,#ff3d5b,#c8123b);animation:micrecpulse 1.2s ease-in-out infinite;transform:scale(1.06)}
 @keyframes micrecpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,61,91,.55)}70%{box-shadow:0 0 0 10px rgba(255,61,91,0)}}
-.composer.hastext .micrec{display:none}
-.composer:not(.hastext) .cbtn.send{display:none}
+/* On very tight screens, tuck the game-invite (🎮) button behind the picker
+   button by narrowing everything a hair so the mic doesn't fall off. */
+@media(max-width:380px){
+  .composer{gap:5px;padding:8px 10px}
+  .composer .cbtn{min-width:38px;width:38px;height:38px;font-size:14px}
+  .composer .micrec{min-width:42px;width:42px;height:42px}
+  .composer input{padding:8px 12px;font-size:15px}
+}
 .recbar{display:none;background:#fff;border-top:1px solid var(--line);padding:9px 12px;align-items:center;gap:10px;position:relative}
 .recbar.show{display:flex}
 .recbar .rec-dot{width:11px;height:11px;border-radius:50%;background:#ff3d5b;animation:recpulse 1s ease-in-out infinite;flex-shrink:0}
@@ -873,39 +914,56 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   <div id="tabGames" class="hidden">
     <div class="gp-head">
       <h2>Game night 🎮</h2>
-      <p>Play right now, or hit ⚔️ Invite — we set the table and the challenge lands straight in your chat with them.</p>
+      <p>Tap a game to jump straight into a room. Hit ⚔️ Invite to challenge a friend — we set the table and drop the invite in your chat.</p>
     </div>
-    <div class="ggrid">
-      <div class="gcard g-spy">
-        <div class="gi">🕵️</div><div class="gn">WordSpies</div>
-        <div class="gd">The main event — two teams, secret words, one-word clues. 4+ players.</div>
-        <div class="gbtns"><a class="gplay" href="/codenames?from=social">Play</a></div>
-      </div>
-      <div class="gcard g-ludo">
-        <div class="gi">🎲</div><div class="gn">Ludo</div>
-        <div class="gd">2–4 players. Race home, send friends back.</div>
-        <div class="gbtns"><a class="gplay" href="/ludo">Play</a><button class="gch" onclick="openChallenge('ludo','🎲 Ludo')">⚔️ Invite</button></div>
-      </div>
-      <div class="gcard g-pool">
-        <div class="gi">🎱</div><div class="gn">8-Ball Pool</div>
-        <div class="gd">Aim, power, pot. You vs one friend or the bot.</div>
-        <div class="gbtns"><a class="gplay" href="/pool">Play</a><button class="gch" onclick="openChallenge('pool','🎱 8-Ball Pool')">⚔️ Invite</button></div>
-      </div>
-      <div class="gcard g-four">
-        <div class="gi">🔴</div><div class="gn">Connect 4</div>
-        <div class="gd">Drop pieces, line up four. Quick and vicious.</div>
-        <div class="gbtns"><a class="gplay" href="/four">Play</a><button class="gch" onclick="openChallenge('four','🔴 Connect 4')">⚔️ Invite</button></div>
-      </div>
-      <div class="gcard g-meld">
-        <div class="gi">🧠</div><div class="gn">Mind Meld</div>
-        <div class="gd">Both type a word. Try to say the same one.</div>
-        <div class="gbtns"><a class="gplay" href="/meld">Play</a><button class="gch" onclick="openChallenge('meld','🧠 Mind Meld')">⚔️ Invite</button></div>
-      </div>
-      <div class="gcard g-imp">
-        <div class="gi">🕵️</div><div class="gn">Who is the Spy?</div>
-        <div class="gd">4–10 players. Everyone gets a word — except one. Vote out the impostor.</div>
-        <div class="gbtns"><a class="gplay" href="/spy">Play</a><button class="gch" onclick="openChallenge('spy','🕵️ Who is the Spy?')">⚔️ Invite</button></div>
-      </div>
+    <div class="ggrid ggrid-v2">
+      <a class="gcard2 g-spy" href="/codenames?from=social">
+        <span class="gicon">🕵️</span>
+        <span class="gtitle">WordSpies</span>
+        <span class="gtag">The main event · 4+ players</span>
+        <span class="gplayers"><span class="dot"></span><span id="cntWordspies">Open a room</span></span>
+        <span class="gcta">Join the room →</span>
+      </a>
+      <a class="gcard2 g-ludo" href="/ludo">
+        <span class="gicon">🎲</span>
+        <span class="gtitle">Ludo</span>
+        <span class="gtag">Classic board · 2–4 players</span>
+        <span class="gplayers"><span class="dot"></span><span id="cntLudo">Open a room</span></span>
+        <span class="gcta">Join the room →</span>
+        <span class="ginvite" onclick="event.preventDefault();openChallenge('ludo','🎲 Ludo')" title="Challenge a friend">⚔️</span>
+      </a>
+      <a class="gcard2 g-pool" href="/pool">
+        <span class="gicon">🎱</span>
+        <span class="gtitle">8-Ball Pool</span>
+        <span class="gtag">Real physics · 1v1</span>
+        <span class="gplayers"><span class="dot"></span><span id="cntPool">Open a room</span></span>
+        <span class="gcta">Join the room →</span>
+        <span class="ginvite" onclick="event.preventDefault();openChallenge('pool','🎱 8-Ball Pool')" title="Challenge a friend">⚔️</span>
+      </a>
+      <a class="gcard2 g-four" href="/four">
+        <span class="gicon">🔴</span>
+        <span class="gtitle">Connect 4</span>
+        <span class="gtag">Line up four · 1v1</span>
+        <span class="gplayers"><span class="dot"></span><span id="cntFour">Open a room</span></span>
+        <span class="gcta">Join the room →</span>
+        <span class="ginvite" onclick="event.preventDefault();openChallenge('four','🔴 Connect 4')" title="Challenge a friend">⚔️</span>
+      </a>
+      <a class="gcard2 g-meld" href="/meld">
+        <span class="gicon">🧠</span>
+        <span class="gtitle">Mind Meld</span>
+        <span class="gtag">Same word, same time · 2 players</span>
+        <span class="gplayers"><span class="dot"></span><span id="cntMeld">Open a room</span></span>
+        <span class="gcta">Join the room →</span>
+        <span class="ginvite" onclick="event.preventDefault();openChallenge('meld','🧠 Mind Meld')" title="Challenge a friend">⚔️</span>
+      </a>
+      <a class="gcard2 g-imp" href="/spy">
+        <span class="gicon">🎭</span>
+        <span class="gtitle">Who is the Spy?</span>
+        <span class="gtag">Vote out the impostor · 4–10 players</span>
+        <span class="gplayers"><span class="dot"></span><span id="cntSpy">Open a room</span></span>
+        <span class="gcta">Join the room →</span>
+        <span class="ginvite" onclick="event.preventDefault();openChallenge('spy','🎭 Who is the Spy?')" title="Challenge a friend">⚔️</span>
+      </a>
     </div>
   </div>
 
@@ -1416,6 +1474,29 @@ function paintLiveGames(j){
   const b = $('liveBadge');
   if (b) { b.textContent = playing > 9 ? '9+' : playing; b.classList.toggle('hidden', !playing); }
 
+  // Live counts on the Games-tab cards — turn the "Open a room" pill into
+  // "🟢 2 rooms live" when there are rooms of that type actually happening
+  // right now. Reads /api/live's own data — no extra request needed.
+  const byGame = {};
+  for (const g of games) byGame[g.game] = (byGame[g.game] || 0) + 1;
+  const gameCardMap = {
+    wordspies: 'cntWordspies', ludo: 'cntLudo', pool: 'cntPool',
+    four: 'cntFour', meld: 'cntMeld', spy: 'cntSpy'
+  };
+  Object.entries(gameCardMap).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const n = byGame[key] || 0;
+    const pill = el.closest('.gplayers');
+    if (n > 0) {
+      el.textContent = n === 1 ? '1 room live' : n + ' rooms live';
+      if (pill) pill.classList.add('live');
+    } else {
+      el.textContent = 'Open a room';
+      if (pill) pill.classList.remove('live');
+    }
+  });
+
   const nudge = $('lvNudge');
   if (nudge) {
     nudge.classList.toggle('hidden', !playing);
@@ -1909,14 +1990,7 @@ async function sendMsg(kind, gifUrl){
   } catch(e){ toast(e.message); }
 }
 $('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
-$('msgIn').addEventListener('input', () => { sendTypingSoon(); refreshAutocomplete(); toggleComposerHasText(); });
-// Composer starts with mic visible (no text). Toggle .hastext on the wrapper
-// so CSS can swap between "🎤 record voice" and "➤ send text" in the same slot.
-function toggleComposerHasText(){
-  const c = document.querySelector('.composer'); if (!c) return;
-  c.classList.toggle('hastext', ($('msgIn').value || '').length > 0);
-}
-document.addEventListener('DOMContentLoaded', toggleComposerHasText);
+$('msgIn').addEventListener('input', () => { sendTypingSoon(); refreshAutocomplete(); });
 
 // ---------- voice messages ----------
 // Hold-to-record: press mic → open MediaRecorder → red overlay shows time →
