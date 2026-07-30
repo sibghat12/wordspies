@@ -15,6 +15,11 @@ const path = require('path');
 // ── shared odds and ends ──────────────────────────────────────────────────
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no I/O/0/1, they get misread aloud
 const ROOM_TTL = 1000 * 60 * 90;
+// Signed-in creators' rooms live much longer — 24 h idle. Owner explicitly
+// asked: "the room should be there until I close it" — so it stays through
+// disconnects, refreshes, sleep. Only cleaned up when the creator is idle
+// for a full day OR they explicitly close it.
+const OWNER_ROOM_TTL = 1000 * 60 * 60 * 24;
 
 const clean = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, 32);
 const safeName = s => clean(s).slice(0, 18) || 'Player';
@@ -664,12 +669,19 @@ function mount(app, io, opts) {
       if (room) return;
       const cap = Math.min(4, Math.max(2, parseInt((data && data.cap) || 4, 10) || 4));
       const code = makeCode(ludoRooms);
+      const prof = socket.profile;
       const r = {
         code, cap, state: 'lobby',
         players: new Map(), seatOrder: [null, null, null, null],
         tokens: [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]],
         turn: 0, dice: 0, rolled: false, moves: [], last: null,
-        sixes: 0, winner: null, order: [], hostId: null, touched: Date.now()
+        sixes: 0, winner: null, order: [], hostId: null, touched: Date.now(),
+        // Signed-in creator? Stamp their uid so the room survives all-sockets-
+        // disconnected and shows in their "My games" list. Guest = null,
+        // room still cleans up as before after everyone leaves.
+        creatorUid:  (prof && prof.uid)   || null,
+        creatorName: (prof && prof.name)  || (data && data.name) || null,
+        creatorPhoto:(prof && prof.photo) || null
       };
       ludoRooms.set(code, r);
       seat(r, data && data.name, 0);
@@ -886,11 +898,15 @@ function mount(app, io, opts) {
       await socket.ready;
       if (room) return;
       const code = makeCode(fourRooms);
+      const prof = socket.profile;
       const r = {
         code, cap: 2, state: 'lobby',
         players: new Map(), seatOrder: [null, null],
         board: c4Empty(), turn: 1, winner: null, line: null, lastCol: null,
-        scores: [0, 0], depth: 5, hostId: null, touched: Date.now()
+        scores: [0, 0], depth: 5, hostId: null, touched: Date.now(),
+        creatorUid:  (prof && prof.uid)   || null,
+        creatorName: (prof && prof.name)  || (data && data.name) || null,
+        creatorPhoto:(prof && prof.photo) || null
       };
       fourRooms.set(code, r);
       seat(r, data && data.name, 0);
@@ -1127,12 +1143,16 @@ function mount(app, io, opts) {
       await socket.ready;
       if (room) return;
       const code = makeCode(poolRooms);
+      const prof = socket.profile;
       const r = {
         code, cap: 2, state: 'lobby',
         players: new Map(), seatOrder: [null, null],
         balls: poolRack(), turn: 1, groups: [null, null],
         winner: null, why: null, ballInHand: 0, scores: [0, 0],
-        hostId: null, touched: Date.now()
+        hostId: null, touched: Date.now(),
+        creatorUid:  (prof && prof.uid)   || null,
+        creatorName: (prof && prof.name)  || (data && data.name) || null,
+        creatorPhoto:(prof && prof.photo) || null
       };
       poolRooms.set(code, r);
       seat(r, data && data.name, 0);
@@ -1308,15 +1328,38 @@ function mount(app, io, opts) {
     });
   });
 
-  // One sweeper for all three tables.
+  // One sweeper for all three tables. Owner-created rooms get a much longer
+  // TTL (see OWNER_ROOM_TTL) so a signed-in creator can navigate away and
+  // come back to the same room without losing it.
   setInterval(() => {
     const now = Date.now();
     for (const t of [ludoRooms, fourRooms, poolRooms]) {
       for (const [code, r] of t) {
-        if (now - (r.touched || 0) > ROOM_TTL) { clearTimeout(r.botT); t.delete(code); }
+        const ttl = r.creatorUid ? OWNER_ROOM_TTL : ROOM_TTL;
+        if (now - (r.touched || 0) > ttl) { clearTimeout(r.botT); t.delete(code); }
       }
     }
   }, 1000 * 60 * 10).unref?.();
+
+  // Explicit close by the creator (fired from the "My open games" strip on
+  // the community app). Verifies socket profile uid matches the room's
+  // creatorUid before doing anything.
+  function bindClose(nsp, table, broad) {
+    nsp.on('connection', socket => {
+      socket.on('closeMyRoom', (data) => {
+        const code = String((data && data.code) || '').trim().toUpperCase();
+        const r = table.get(code); if (!r) return;
+        const uid = socket.profile && socket.profile.uid;
+        if (!uid || uid !== r.creatorUid) return;
+        clearTimeout(r.botT);
+        table.delete(code);
+        try { nsp.to(code).emit('roomClosed', { code }); } catch (e) {}
+      });
+    });
+  }
+  bindClose(lnsp, ludoRooms, lbroad);
+  bindClose(fnsp, fourRooms, fbroad);
+  bindClose(pnsp, poolRooms, pbroad);
 
   // ── Live listing ─────────────────────────────────────────────────────────
   // What the Live tab reads. Rooms that are nothing but bots are left out —

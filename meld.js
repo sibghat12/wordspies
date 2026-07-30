@@ -27,6 +27,7 @@ const rooms = new Map();
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no I/O/0/1 — they get misread aloud
 const MAX_WORD = 32;
 const ROOM_TTL = 1000 * 60 * 90;        // an abandoned room evaporates after 90 min
+const OWNER_ROOM_TTL = 1000 * 60 * 60 * 24;  // signed-in creators keep their room for a day
 
 function newCode() {
   for (let tries = 0; tries < 200; tries++) {
@@ -242,15 +243,29 @@ function mount(app, io, opts) {
       await socket.ready;
       if (room) return;
       const code = newCode();
+      const prof = socket.profile;
       const r = {
         code, state: 'lobby', round: 1,
         players: new Map(), picks: {}, prompt: null,
         history: [], used: [], meld: null,
-        hostId: null, touched: Date.now()
+        hostId: null, touched: Date.now(),
+        creatorUid:  (prof && prof.uid)   || null,
+        creatorName: (prof && prof.name)  || (data && data.name) || null,
+        creatorPhoto:(prof && prof.photo) || null
       };
       rooms.set(code, r);
       seat(r, data && data.name);
       if (typeof ack === 'function') ack({ code });
+    });
+
+    // Explicit close by the creator — from the "My open games" strip.
+    socket.on('closeMyRoom', (data) => {
+      const code = String((data && data.code) || '').trim().toUpperCase();
+      const r = rooms.get(code); if (!r) return;
+      const uid = socket.profile && socket.profile.uid;
+      if (!uid || uid !== r.creatorUid) return;
+      rooms.delete(code);
+      try { nsp.to(code).emit('roomClosed', { code }); } catch (e) {}
     });
 
     socket.on('join', async (data, ack) => {
@@ -328,7 +343,8 @@ function mount(app, io, opts) {
   setInterval(() => {
     const now = Date.now();
     for (const [code, r] of rooms) {
-      if (now - (r.touched || 0) > ROOM_TTL) rooms.delete(code);
+      const ttl = r.creatorUid ? OWNER_ROOM_TTL : ROOM_TTL;
+      if (now - (r.touched || 0) > ttl) rooms.delete(code);
     }
   }, 1000 * 60 * 10).unref?.();
 

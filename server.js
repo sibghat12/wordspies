@@ -239,6 +239,139 @@ app.get('/api/voice/cf/session/:sessionId', async (req, res) => {
 
 console.log('voice: mode=' + (CF_ENABLED ? 'cloudflare (SFU)' : 'p2p (STUN only — fallback)'));
 
+// ── My open games ─────────────────────────────────────────────────────
+// Signed-in users get a persistent list of rooms they've created (across
+// every game module). Owner explicitly asked for this — "the game should
+// stay until I close it, and show as my games". These endpoints back the
+// "My open games" strip in the community app.
+//
+// Identity: we resolve the caller's soc_sess cookie into a uid via the
+// social module (same code path as the socket handshake). If they aren't
+// logged in, we return an empty list rather than 401 — the strip just
+// stays hidden.
+async function uidFromCookie(req) {
+  try {
+    const m = String(req.headers.cookie || '').match(/(?:^|;\s*)soc_sess=([a-f0-9]{48})/);
+    if (!m) return null;
+    if (social && social.uidBySession) return await social.uidBySession(m[1]);
+    return null;
+  } catch (e) { return null; }
+}
+
+// Enumerate every game module's rooms Map and pluck rooms whose creatorUid
+// matches. Kept as a small explicit list so a fresh game module can't
+// silently miss the roll-call.
+function scanMyRooms(uid) {
+  const out = [];
+  const push = (game, r, extra) => out.push(Object.assign({
+    game, code: r.code, state: r.state,
+    createdAt: r.creatorSince || r.createdAt || null,
+    lastActivity: r.lastActivity || r.touched || 0,
+    players: 0, cap: null, href: null, watchers: 0
+  }, extra));
+
+  // Main WordSpies (server.js's own `rooms` Map)
+  for (const r of rooms.values()) {
+    if (r.creatorUid !== uid) continue;
+    const seated = [...r.players.values()].filter(p => !p.watcher);
+    push('wordspies', r, {
+      icon: '🕵️', title: 'WordSpies',
+      players: seated.length,
+      href: '/codenames?room=' + r.code,
+      watchers: [...r.players.values()].filter(p => p.watcher && p.connected).length
+    });
+  }
+
+  // Arcade — ludo / four / pool
+  if (arcadeMod) {
+    const spec = [
+      ['ludo', '🎲', 'Ludo',        arcadeMod.ludoRooms],
+      ['four', '🔴', 'Connect 4',   arcadeMod.fourRooms],
+      ['pool', '🎱', '8-Ball Pool', arcadeMod.poolRooms]
+    ];
+    for (const [game, icon, title, table] of spec) {
+      if (!table) continue;
+      for (const r of table.values()) {
+        if (r.creatorUid !== uid) continue;
+        push(game, r, {
+          icon, title,
+          players: [...r.players.values()].filter(p => !p.bot).length,
+          cap: r.cap || null,
+          href: '/' + game + '?room=' + r.code,
+          watchers: r.watchers ? r.watchers.size : 0
+        });
+      }
+    }
+  }
+
+  // Mind Meld
+  if (meldMod && meldMod.rooms) {
+    for (const r of meldMod.rooms.values()) {
+      if (r.creatorUid !== uid) continue;
+      push('meld', r, {
+        icon: '🧠', title: 'Mind Meld',
+        players: r.players ? r.players.size : 0,
+        href: '/meld?room=' + r.code,
+        watchers: r.watchers ? r.watchers.size : 0
+      });
+    }
+  }
+
+  // Who is the Spy?
+  if (spyMod && spyMod.rooms) {
+    for (const r of spyMod.rooms.values()) {
+      if (r.creatorUid !== uid) continue;
+      push('spy', r, {
+        icon: '🎭', title: 'Who is the Spy?',
+        players: r.players ? r.players.size : 0,
+        href: '/spy?room=' + r.code,
+        watchers: r.watchers ? r.watchers.size : 0
+      });
+    }
+  }
+
+  // Most-recently-touched first — "my current game" always at the top.
+  out.sort((a, b) => (b.lastActivity || 0) - (a.lastActivity || 0));
+  return out;
+}
+
+app.get('/api/social/my-rooms', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const uid = await uidFromCookie(req);
+  if (!uid) return res.json({ rooms: [] });
+  res.json({ rooms: scanMyRooms(uid) });
+});
+
+// Close one of MY rooms. Verifies session uid matches creatorUid, then
+// deletes across whichever module owns the room.
+app.post('/api/social/my-rooms/close', express.json({ limit: '2kb' }), async (req, res) => {
+  const uid = await uidFromCookie(req);
+  if (!uid) return res.status(401).json({ error: 'Please log in.' });
+  const game = String((req.body || {}).game || '').toLowerCase();
+  const code = String((req.body || {}).code || '').trim().toUpperCase();
+  if (!game || !code) return res.status(400).json({ error: 'Nothing to close.' });
+
+  // Look up the room in the right module and verify ownership.
+  const closeIn = (table, hook) => {
+    const r = table && table.get(code); if (!r || r.creatorUid !== uid) return false;
+    if (hook) hook(r);
+    table.delete(code);
+    return true;
+  };
+  let ok = false;
+  if (game === 'wordspies') ok = closeIn(rooms, r => { try { io.to(r.code).emit('roomClosed', { code: r.code }); } catch (e) {} });
+  else if (arcadeMod) {
+    if (game === 'ludo') ok = closeIn(arcadeMod.ludoRooms, r => { clearTimeout(r.botT); try { io.of('/ludo').to(code).emit('roomClosed', { code }); } catch (e) {} });
+    if (game === 'four') ok = closeIn(arcadeMod.fourRooms, r => { clearTimeout(r.botT); try { io.of('/four').to(code).emit('roomClosed', { code }); } catch (e) {} });
+    if (game === 'pool') ok = closeIn(arcadeMod.poolRooms, r => { clearTimeout(r.botT); try { io.of('/pool').to(code).emit('roomClosed', { code }); } catch (e) {} });
+  }
+  if (!ok && meldMod && meldMod.rooms && game === 'meld') ok = closeIn(meldMod.rooms, () => { try { io.of('/meld').to(code).emit('roomClosed', { code }); } catch (e) {} });
+  if (!ok && spyMod  && spyMod.rooms  && game === 'spy')  ok = closeIn(spyMod.rooms,  () => { try { io.of('/spy' ).to(code).emit('roomClosed', { code }); } catch (e) {} });
+
+  if (!ok) return res.status(404).json({ error: 'Room not found or not yours.' });
+  res.json({ ok: true });
+});
+
 process.on('uncaughtException', err => console.error('uncaught:', err));
 process.on('unhandledRejection', err => console.error('unhandled:', err));
 
@@ -365,6 +498,7 @@ app.get('/api/live', (req, res) => {
 const TEST_KEY = process.env.TEST_KEY !== undefined ? process.env.TEST_KEY : 'sq7-bench';
 
 const ROOM_TTL_MS = 1000 * 60 * 60 * 6; // clean up rooms idle for 6 hours
+const OWNER_ROOM_TTL_MS = 1000 * 60 * 60 * 24; // signed-in creators keep for 24 h
 const saveTimers = new Map();
 function saveRoom(room) {
   if (!redis || saveTimers.has(room.code)) return;
@@ -417,7 +551,8 @@ restoreRooms();
 setInterval(() => {
   const now = Date.now();
   for (const [code, room] of rooms) {
-    if (now - room.lastActivity > ROOM_TTL_MS) dropRoom(code);
+    const ttl = room.creatorUid ? OWNER_ROOM_TTL_MS : ROOM_TTL_MS;
+    if (now - room.lastActivity > ttl) dropRoom(code);
   }
 }, 1000 * 60 * 10);
 
@@ -697,6 +832,13 @@ io.on('connection', (socket) => {
         socUid: idn ? idn.uid : null, photo: idn ? idn.photo : null
       };
       room.hostId = socket.id;
+      // Signed-in creator? Stamp their uid so the room survives all-sockets-
+      // disconnected and shows in their "My games" list.
+      if (idn && idn.uid) {
+        room.creatorUid = idn.uid;
+        room.creatorName = idn.name || name;
+        room.creatorPhoto = idn.photo || null;
+      }
       room.players.set(socket.id, player);
       socket.join(room.code);
       socket.emit('session', { code: room.code, token: player.token, name: player.name });

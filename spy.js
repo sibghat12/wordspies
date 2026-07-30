@@ -21,6 +21,7 @@ const MAX_PLAYERS = 10;
 const MAX_NAME = 18;
 const MAX_CLUE = 24;
 const ROOM_TTL = 1000 * 60 * 90;
+const OWNER_ROOM_TTL = 1000 * 60 * 60 * 24;   // signed-in creators keep their rooms for a day
 const DROP_GRACE = 120000;
 
 // Pairs of related-but-different words. The whole game turns on how close but
@@ -397,9 +398,23 @@ function mount(app, io, opts) {
       if (room) return;
       const code = newCode();
       const r = newRoom(); r.code = code;
+      const prof = socket.profile;
+      r.creatorUid  = (prof && prof.uid)   || null;
+      r.creatorName = (prof && prof.name)  || (data && data.name) || null;
+      r.creatorPhoto= (prof && prof.photo) || null;
       rooms.set(code, r);
       seat(r, data && data.name);
       if (typeof ack === 'function') ack({ code });
+    });
+
+    // Explicit close by the creator — from the "My open games" strip.
+    socket.on('closeMyRoom', (data) => {
+      const code = String((data && data.code) || '').trim().toUpperCase();
+      const r = rooms.get(code); if (!r) return;
+      const uid = socket.profile && socket.profile.uid;
+      if (!uid || uid !== r.creatorUid) return;
+      rooms.delete(code);
+      try { nsp.to(code).emit('roomClosed', { code }); } catch (e) {}
     });
 
     socket.on('join', async (data, ack) => {
@@ -634,7 +649,8 @@ function mount(app, io, opts) {
   setInterval(() => {
     const now = Date.now();
     for (const [code, r] of rooms) {
-      if (now - (r.touched || 0) > ROOM_TTL) rooms.delete(code);
+      const ttl = r.creatorUid ? OWNER_ROOM_TTL : ROOM_TTL;
+      if (now - (r.touched || 0) > ttl) rooms.delete(code);
     }
   }, 1000 * 60 * 10).unref?.();
 

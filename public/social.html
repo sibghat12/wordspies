@@ -361,6 +361,26 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    is the only exception (stops the click before nav). Live count reads
    from /api/live and lights up a green pill on the right so the eye
    catches "there's a room to join RIGHT NOW". */
+/* "My open games" strip — signed-in creator's currently-open rooms,
+   pinned above the game grid so the game they started earlier is still
+   one tap away hours later. Rendered by paintMyRooms() from
+   /api/social/my-rooms; stays hidden if you have none. */
+.myrooms{background:linear-gradient(135deg,#eef1ff,#f6f0ff);border:1px solid #d8ddff;border-radius:18px;margin:14px 20px 4px;padding:12px 14px}
+.myrooms-h{display:flex;align-items:center;justify-content:space-between;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);margin-bottom:8px}
+.myrooms-cnt{font-size:11.5px;font-weight:800;color:var(--caccent,#5a7bff);background:#fff;border-radius:99px;padding:2px 9px}
+.myrooms-list{display:flex;flex-direction:column;gap:8px}
+.myrooms-row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:9px 10px;border:1px solid #e6e6ef}
+.myrooms-row .mri{width:36px;height:36px;border-radius:11px;background:#f4f5f7;display:inline-flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.myrooms-row .mrmid{flex:1;min-width:0}
+.myrooms-row .mrt{font-weight:800;font-size:13.5px;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.myrooms-row .mrs{font-size:11.5px;color:var(--sub);font-weight:600;margin-top:1px}
+.myrooms-row .mrs .mrdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c07a;margin-right:5px;vertical-align:1px;animation:gcpulse 1.4s ease-in-out infinite}
+.myrooms-row .mrbtns{display:flex;gap:6px;flex-shrink:0}
+.myrooms-row .mrbtn{background:var(--ink);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:12.5px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.myrooms-row .mrbtn.close{background:#fff;color:#d33;border:1px solid #ecdcdc}
+.myrooms-row .mrbtn.close:hover{background:#fdf2f4}
+.myrooms-row .mrbtn:hover{filter:brightness(1.06)}
+
 .ggrid-v2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:16px 20px 30px}
 @media(min-width:900px){ .ggrid-v2{grid-template-columns:repeat(3,1fr);padding:16px 8px 30px} }
 .ggrid-v2 .g-spy{grid-column:1/-1}
@@ -394,11 +414,8 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .lv-head{padding:8px 22px 0}
 .lv-head h2{font-size:20px;font-weight:500;letter-spacing:-.3px;color:var(--ink)}
 .lv-head p{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.55}
-.lv-stats{display:flex;gap:8px;padding:14px 20px 4px;flex-wrap:wrap}
-.lv-stat{flex:1;min-width:78px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
-.lv-stat b{display:block;font-size:20px;font-weight:800;letter-spacing:-.6px;line-height:1.1}
-.lv-stat span{font-size:11px;font-weight:600;color:var(--faint)}
-.lv-stat.hot b{color:var(--green)}
+.lv-stats{padding:8px 20px 2px}
+.lv-summary{color:var(--sub);font-size:12.5px;font-weight:600;letter-spacing:-.05px}
 .lv-list{padding:12px 20px 26px;display:flex;flex-direction:column;gap:11px}
 @media(min-width:900px){ .lv-stats{padding:14px 8px 4px} .lv-list{padding:12px 8px 26px;display:grid;grid-template-columns:repeat(2,1fr)} }
 .lvc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px 14px 12px;position:relative}
@@ -677,9 +694,19 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mb.them .vbub .vprog::after{background:repeating-linear-gradient(90deg,rgba(90,123,255,.55) 0 2px,transparent 2px 5px)}
 .vbub .vdur{font-size:11.5px;font-weight:700;opacity:.85;flex-shrink:0;font-variant-numeric:tabular-nums}
 /* read receipts: one white tick when sent, two dark ones once they've read it */
+/* Read-receipt ticks live inside the bubble. One faint tick = sent, two
+   bright coloured ticks = read. Colour was ink-dark and looked heavy on
+   your own blue-violet bubbles — switched to a light cyan-blue that
+   plays with the bubble gradient and pops without being loud. */
 .tick{width:17px;height:11px;display:block;flex:none}
 .tick path{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
-.tick.seen path{stroke:var(--ink);opacity:1}
+.tick.seen path{stroke:#7dd3fc;opacity:1}
+.mb.them .tick path{stroke:#8b91a1}
+.mb.them .tick.seen path{stroke:#2563eb}
+/* Optional tiny "seen" label the client can render alongside the tick — a
+   little more explicit for people who don't parse ticks at all. */
+.tick-lbl{font-size:9.5px;font-weight:800;letter-spacing:.2px;color:#7dd3fc;text-transform:lowercase;margin-left:2px}
+.mb.them .tick-lbl{color:#2563eb}
 /* a quiet date pill between days, like every chat app you've used */
 .daysep{align-self:center;background:#e9ebf0;color:var(--sub);font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:5px 13px;border-radius:99px;margin:10px 0 2px}
 /* messages from the same person in a row hug each other */
@@ -912,6 +939,15 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
   <!-- ═══ GAMES — the whole shelf, one tap from anywhere ═══ -->
   <div id="tabGames" class="hidden">
+    <!-- "My open games" strip: the rooms YOU created that are still live.
+         Only appears when you're signed in and have at least one open. -->
+    <div class="myrooms hidden" id="myRooms">
+      <div class="myrooms-h">
+        <span>🎮 My open games</span>
+        <span class="myrooms-cnt" id="myRoomsCnt"></span>
+      </div>
+      <div class="myrooms-list" id="myRoomsList"></div>
+    </div>
     <div class="gp-head">
       <h2>Game night 🎮</h2>
       <p>Tap a game to jump straight into a room. Hit ⚔️ Invite to challenge a friend — we set the table and drop the invite in your chat.</p>
@@ -1426,8 +1462,57 @@ function showTab(t){
   // seconds while you're looking at it, and the slower background tick below
   // keeps the tab badge honest while you're somewhere else.
   if (t === 'live') { refreshLive(); liveTimer = setInterval(refreshLive, 5000); }
+  if (t === 'games' || t === 'wall') refreshMyRooms();
   window.scrollTo(0,0);
 }
+
+// ---------- 🎮 my open games ----------
+// Signed-in creator's currently-open rooms across every game module. Fed by
+// /api/social/my-rooms — hidden if you're a guest or you have none.
+async function refreshMyRooms(){
+  if (!ME || GUEST) { $('myRooms') && $('myRooms').classList.add('hidden'); return; }
+  try {
+    const r = await fetch('/api/social/my-rooms', { cache: 'no-store' });
+    const j = await r.json();
+    paintMyRooms((j && j.rooms) || []);
+  } catch(e){}
+}
+function paintMyRooms(list){
+  const wrap = $('myRooms'), body = $('myRoomsList'), cnt = $('myRoomsCnt');
+  if (!wrap || !body) return;
+  if (!list.length) { wrap.classList.add('hidden'); body.innerHTML = ''; return; }
+  wrap.classList.remove('hidden');
+  if (cnt) cnt.textContent = list.length + (list.length === 1 ? ' room' : ' rooms');
+  body.innerHTML = list.map(r => {
+    const state = r.state === 'lobby' ? 'Waiting in lobby' : r.state === 'playing' ? 'Game in progress' : r.state === 'over' || r.state === 'ended' ? 'Game over' : 'Open';
+    const dot = r.players ? '<span class="mrdot"></span>' : '';
+    const playersLine = (r.players || 0) + ' ' + (r.players === 1 ? 'player' : 'players') + (r.cap ? '/' + r.cap : '');
+    return `<div class="myrooms-row" data-code="${esc(r.code)}" data-game="${esc(r.game)}">
+      <span class="mri">${esc(r.icon || '🎮')}</span>
+      <div class="mrmid">
+        <div class="mrt">${esc(r.title || 'Game')} · ${esc(r.code)}</div>
+        <div class="mrs">${dot}${esc(state)} · ${esc(playersLine)}</div>
+      </div>
+      <div class="mrbtns">
+        <a class="mrbtn" href="${esc(r.href || '#')}">Rejoin</a>
+        <button class="mrbtn close" type="button" onclick="closeMyRoom('${esc(r.game)}','${esc(r.code)}',this)">End</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function closeMyRoom(game, code, btn){
+  if (!confirm('End this room for everyone? This can\'t be undone.')) return;
+  btn.disabled = true; btn.textContent = 'Ending…';
+  try {
+    const r = await fetch('/api/social/my-rooms/close', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ game, code }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Failed to close.');
+    await refreshMyRooms();
+  } catch(e){ toast(e.message); btn.disabled = false; btn.textContent = 'End'; }
+}
+// Background refresh so a room that expires shows up as closed.
+setInterval(() => { if (!document.hidden && ME && !GUEST) refreshMyRooms(); }, 30000);
 
 // ---------- 📺 live games ----------
 // One list of everything being played anywhere on the site. The server builds
@@ -1512,12 +1597,14 @@ function paintLiveGames(j){
     return;
   }
   empty.classList.add('hidden');
-  // "How many games are going on" — answered before you scroll anything.
-  stats.innerHTML =
-    `<div class="lv-stat hot"><b>${playing}</b><span>${playing === 1 ? 'game live' : 'games live'}</span></div>` +
-    `<div class="lv-stat"><b>${j.total}</b><span>rooms open</span></div>` +
-    `<div class="lv-stat"><b>${j.people}</b><span>${j.people === 1 ? 'player' : 'players'}</span></div>` +
-    (j.watching ? `<div class="lv-stat"><b>${j.watching}</b><span>watching</span></div>` : '');
+  // One-line summary rather than three tiles: "1 game live · 3 players
+   // · 2 watching" — same numbers, less visual noise, no big-b block.
+   const bits = [];
+   bits.push(playing === 1 ? '1 game live' : (playing + ' games live'));
+   if (j.total > playing) bits.push((j.total - playing) + ' waiting');
+   if (j.people)   bits.push(j.people === 1 ? '1 player' : (j.people + ' players'));
+   if (j.watching) bits.push(j.watching === 1 ? '1 watching' : (j.watching + ' watching'));
+   stats.innerHTML = `<div class="lv-summary">${bits.join(' · ')}</div>`;
   list.innerHTML = games.map(lvCard).join('');
 }
 
@@ -1763,7 +1850,7 @@ function openChatWith(id){
 
 // One white tick the moment it's sent, two dark ones once they've read it.
 const TICK_SENT = '<svg class="tick" viewBox="0 0 17 11" aria-label="Sent"><path d="M2 6.2 5.1 9.1 11 2.1"/></svg>';
-const TICK_SEEN = '<svg class="tick seen" viewBox="0 0 17 11" aria-label="Read"><path d="M1 6.2 4.1 9.1 10 2.1"/><path d="M6.6 6.2 9.7 9.1 15.6 2.1"/></svg>';
+const TICK_SEEN = '<svg class="tick seen" viewBox="0 0 17 11" aria-label="Read"><path d="M1 6.2 4.1 9.1 10 2.1"/><path d="M6.6 6.2 9.7 9.1 15.6 2.1"/></svg><span class="tick-lbl">seen</span>';
 
 // Bubbles carry the clock time only — the date lives in the pill above them.
 const clockT = t => new Date(t).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
