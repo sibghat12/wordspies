@@ -180,10 +180,16 @@ function mount(app, io, options = {}) {
 
       const prof = socket.profile;
       const uid = prof && prof.uid;
-      // Private-party gate: only host + their circle may join.
+      // Private-party gate: host + their circle. A call room (isCall=true)
+      // also has an explicit callWhitelist so the callee can join even
+      // when they're not in the caller's follow circle.
       if (r.visibility === 'private' && uid !== r.hostUid) {
-        const circle = await invitedCircle(r.hostUid);
-        if (!circle || !circle.has(uid)) return fail('This is a private party — you need an invite.');
+        if (r.callWhitelist && r.callWhitelist.has(uid)) {
+          // allowed
+        } else {
+          const circle = await invitedCircle(r.hostUid);
+          if (!circle || !circle.has(uid)) return fail('This is a private party — you need an invite.');
+        }
       }
 
       // Same account rejoining? Sweep EVERY member sharing this uid (there

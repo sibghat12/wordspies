@@ -1257,7 +1257,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     catch (e) { console.error('uidBySession:', e.message); return null; }
   }
 
-  return { recordResult, profileByUid, uidBySession, inviteCircle };
+  return { recordResult, profileByUid, uidBySession, inviteCircle, sendPush };
 }
 
 module.exports = { mount };

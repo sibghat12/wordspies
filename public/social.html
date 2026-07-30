@@ -483,6 +483,28 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pt-mgo:disabled{opacity:.5;cursor:default;transform:none}
 .pt-err{color:var(--err);font-size:12.5px;font-weight:600;margin-top:10px}
 
+/* Voice-call button in the chat header — small green pill next to the
+   Community button. Only shows when we have a real chat open. */
+.chcall{background:#22c07a;color:#fff;border:0;border-radius:99px;font-size:16px;font-weight:800;padding:8px 14px;min-height:36px;cursor:pointer;box-shadow:0 3px 10px rgba(34,192,122,.28);margin-left:6px;flex-shrink:0}
+.chcall:hover{filter:brightness(1.05)}
+@media(max-width:520px){ .chcall{padding:8px 10px;font-size:15px} }
+
+/* Full-screen ringing overlay — appears when someone is calling you.
+   Modal with big avatar, name, and Accept/Decline buttons. */
+.callring{position:fixed;inset:0;background:rgba(20,23,42,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:220;display:flex;align-items:center;justify-content:center;padding:20px;animation:crfade .18s}
+@keyframes crfade{from{opacity:0}to{opacity:1}}
+.callring .cr-inner{background:#fff;border-radius:24px;padding:36px 26px;text-align:center;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.callring .cr-av{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#22c07a,#159f5d);color:#fff;display:flex;align-items:center;justify-content:center;font-size:44px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;margin:0 auto 20px;overflow:hidden;animation:crpulse 1.4s ease-in-out infinite}
+@keyframes crpulse{0%,100%{box-shadow:0 0 0 0 rgba(34,192,122,.5)}70%{box-shadow:0 0 0 22px rgba(34,192,122,0)}}
+.callring .cr-av img{width:100%;height:100%;object-fit:cover}
+.callring .cr-nm{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.3px;color:var(--ink);line-height:1.2}
+.callring .cr-sub{color:var(--sub);font-size:14px;font-weight:500;margin-top:4px;margin-bottom:26px}
+.callring .cr-btns{display:flex;gap:12px;justify-content:center}
+.callring .cr-decline{background:#fff5f5;color:#d93025;border:2px solid #f8d3d3;border-radius:99px;padding:14px 24px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;flex:1}
+.callring .cr-decline:hover{background:#ffe4e4}
+.callring .cr-accept{background:linear-gradient(135deg,#22c07a,#159f5d);color:#fff;border:0;border-radius:99px;padding:14px 24px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;flex:1.2;box-shadow:0 6px 18px rgba(23,155,90,.36)}
+.callring .cr-accept:hover{transform:translateY(-1px)}
+
 /* Live parties strip on the Community wall — clean white cards that
    surface currently-live parties so a fresh visitor can see the action
    without hunting the Parties tab. */
@@ -1225,6 +1247,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="back2" onclick="showTab('chats')">←</button>
       <span id="chAv"></span>
       <div class="chwho"><div class="chname" id="chName"></div><div class="chstate" id="chState"></div></div>
+      <button class="chcall" id="chCall" onclick="ringCurrentChat()" title="Voice call">📞</button>
       <button class="chwall" id="chWall" onclick="showTab('wall')">👥 Community</button>
     </div>
     <div class="msgs" id="msgs"></div>
@@ -1334,6 +1357,20 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 </div>
 
 <div class="toast" id="toastEl"></div>
+
+<!-- Incoming-call overlay. Populated by pollIncomingCall(). Full-screen
+     ringing UI with caller info + Accept / Decline. -->
+<div class="callring hidden" id="callRing">
+  <div class="cr-inner">
+    <div class="cr-av" id="crAv">📞</div>
+    <div class="cr-nm" id="crNm">Someone</div>
+    <div class="cr-sub">is calling you…</div>
+    <div class="cr-btns">
+      <button class="cr-decline" onclick="declineCall()">✕ Decline</button>
+      <button class="cr-accept" onclick="acceptCall()">📞 Answer</button>
+    </div>
+  </div>
+</div>
 
 <!-- Persistent rejoin pill (fallback for cross-page navigation). -->
 <a class="partybar hidden" id="partyBar" href="#" onclick="rejoinParty(event)">
@@ -1818,6 +1855,66 @@ function paintCommunityPartyStrip(parties){
     </a>`;
   }).join('');
 }
+
+// ---------- 📞 Voice calls (1-on-1) ----------
+// Ringing / calling / active-call flow. A call is a 2-person private
+// party under the hood — this layer just handles the ringing UX.
+let INCOMING_CALL = null;   // { code, fromUid, fromName, fromPhoto, at }
+async function pollIncomingCall(){
+  if (!ME || GUEST) return;
+  try {
+    const r = await fetch('/api/social/call/incoming', { cache:'no-store' });
+    const j = await r.json();
+    const c = j && j.call;
+    if (!c) { if (INCOMING_CALL) { INCOMING_CALL = null; hideCallRing(); } return; }
+    // De-dupe: only paint if the code changed.
+    if (INCOMING_CALL && INCOMING_CALL.code === c.code) return;
+    INCOMING_CALL = c;
+    showCallRing(c);
+  } catch(e){}
+}
+function showCallRing(c){
+  const wrap = $('callRing'); if (!wrap) return;
+  $('crAv').innerHTML = c.fromPhoto ? `<img src="${esc(c.fromPhoto)}" alt="">` : esc((c.fromName || '?').charAt(0).toUpperCase());
+  $('crNm').textContent = c.fromName || 'Someone';
+  wrap.classList.remove('hidden');
+  // Play a ringtone if we have one (browsers may block first-play without gesture)
+  try { const a = new Audio('data:audio/wav;base64,'); a.play().catch(()=>{}); } catch(e){}
+}
+function hideCallRing(){ const w = $('callRing'); if (w) w.classList.add('hidden'); }
+async function acceptCall(){
+  const c = INCOMING_CALL; if (!c) return;
+  hideCallRing();
+  try { await fetch('/api/social/call/answer', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code: c.code }) }); } catch(e){}
+  INCOMING_CALL = null;
+  // Enter the call the same way we enter parties — via the in-app iframe host.
+  openPartyInApp(c.code, 'Call with ' + c.fromName);
+}
+async function declineCall(){
+  const c = INCOMING_CALL; if (!c) return;
+  hideCallRing();
+  try { await fetch('/api/social/call/decline', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code: c.code }) }); } catch(e){}
+  INCOMING_CALL = null;
+}
+// Caller side: tap the 📞 button in the chat header.
+async function ringCurrentChat(){
+  if (!curChat) return;
+  if (GUEST) { requireLogin('📞 Log in to make voice calls'); return; }
+  const btn = $('chCall'); const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳';
+  try {
+    const r = await fetch('/api/social/call/ring', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to: curChat }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Ring failed.');
+    toast('📞 Ringing — waiting for them to answer…');
+    // Auto-enter the call room ourselves so we're already on the line when they accept.
+    openPartyInApp(j.code, 'Calling…');
+  } catch(e){ toast(e.message); }
+  finally { btn.disabled = false; btn.textContent = orig; }
+}
+// Poll for incoming calls every 3s (or piggyback on pingLoop if present).
+setInterval(() => { if (!document.hidden) pollIncomingCall(); }, 3000);
+pollIncomingCall();
 
 // ---------- Party rejoin pill ----------
 // party.html writes { code, title, role, at } to localStorage.wsActiveParty

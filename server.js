@@ -403,6 +403,137 @@ app.post('/api/social/my-rooms/close', express.json({ limit: '2kb' }), async (re
   res.json({ ok: true });
 });
 
+// ── 1-on-1 voice calls ─────────────────────────────────────────────────
+// A "call" is a 2-person private party. The caller creates the party via
+// this endpoint; the callee is notified by polling /calls/incoming (the
+// community app already polls chat every 3 s, so we tack this in).
+//
+//   POST /api/social/call/ring     { to }        → { code }
+//   GET  /api/social/call/incoming                → { call: {...} | null }
+//   POST /api/social/call/decline  { code }      → { ok }
+//
+// A pending call auto-expires after 45 s if the callee doesn't answer.
+// pendingCalls stores at most one pending call per callee uid — a new
+// ring from a different caller replaces the old (so a busy signal isn't
+// needed for MVP; the newer caller wins).
+const pendingCalls = new Map();  // calleeUid → { code, fromUid, fromName, fromPhoto, at }
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [uid, c] of pendingCalls) {
+    if (now - (c.at || 0) > 45 * 1000) pendingCalls.delete(uid);
+  }
+}, 15 * 1000).unref?.();
+
+app.post('/api/social/call/ring', express.json({ limit: '2kb' }), async (req, res) => {
+  try {
+    const uid = await uidFromCookie(req);
+    if (!uid) return res.status(401).json({ error: 'Please log in.' });
+    const to = String((req.body || {}).to || '');
+    if (!to || to === uid) return res.status(400).json({ error: 'Bad callee.' });
+    if (!partyMod || !partyMod.rooms) return res.status(503).json({ error: 'Call service unavailable.' });
+
+    // Look up caller's own profile for the ring UI on the callee's side.
+    let me = null;
+    try { me = social && social.profileByUid ? await social.profileByUid(uid) : null; } catch (e) {}
+    // Check callee exists too.
+    let target = null;
+    try { target = social && social.profileByUid ? await social.profileByUid(to) : null; } catch (e) {}
+    if (!target) return res.status(404).json({ error: 'They\'re not on WordSpies yet.' });
+
+    // Create a 2-person private party for this call. Reuses the whole
+    // WebRTC + presence machinery we already tested.
+    const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = ''; do {
+      code = ''; for (let i = 0; i < 4; i++) code += A[Math.floor(Math.random() * A.length)];
+    } while (partyMod.rooms.has(code));
+    partyMod.rooms.set(code, {
+      code, title: 'Call with ' + ((me && me.name) || 'you'), subtitle: '',
+      visibility: 'private',
+      hostUid: uid, hostId: null,
+      cap: 2,
+      members: new Map(),
+      messages: [],
+      createdAt: Date.now(), touched: Date.now(),
+      // Mark this as a call — the party page can use this later to render
+      // a call-style UI instead of the full party layout.
+      isCall: true,
+      // Whitelist callee so the private-party gate lets them in even if
+      // they're not in the caller's circle.
+      callWhitelist: new Set([uid, to])
+    });
+
+    pendingCalls.set(to, {
+      code, fromUid: uid,
+      fromName: (me && me.name) || 'Someone',
+      fromPhoto: (me && me.photo) || null,
+      at: Date.now()
+    });
+
+    // Try a push notification too so the callee's phone lights up if the
+    // app isn't foreground. Best-effort — no error if push isn't set up.
+    try {
+      if (social && social.sendPush) {
+        social.sendPush(to, 'call', '📞 ' + ((me && me.name) || 'Someone') + ' is calling',
+          'Tap to answer', '/social#call=' + code);
+      }
+    } catch (e) {}
+
+    console.log('[call] ring', code, 'from=' + uid.slice(0, 8), 'to=' + to.slice(0, 8));
+    res.json({ code });
+  } catch (e) {
+    console.error('call ring:', e.message);
+    res.status(500).json({ error: 'Ring failed.' });
+  }
+});
+
+app.get('/api/social/call/incoming', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const uid = await uidFromCookie(req);
+  if (!uid) return res.json({ call: null });
+  const c = pendingCalls.get(uid);
+  if (!c) return res.json({ call: null });
+  // Verify the party room still exists — if the caller cancelled or the
+  // party auto-swept, the ring is stale.
+  if (!partyMod || !partyMod.rooms || !partyMod.rooms.get(c.code)) {
+    pendingCalls.delete(uid);
+    return res.json({ call: null });
+  }
+  res.json({ call: {
+    code: c.code, fromUid: c.fromUid, fromName: c.fromName, fromPhoto: c.fromPhoto, at: c.at
+  }});
+});
+
+app.post('/api/social/call/decline', express.json({ limit: '2kb' }), async (req, res) => {
+  const uid = await uidFromCookie(req);
+  if (!uid) return res.status(401).json({ error: 'Please log in.' });
+  const code = String((req.body || {}).code || '').trim().toUpperCase();
+  const c = pendingCalls.get(uid);
+  if (!c || c.code !== code) return res.json({ ok: true });   // idempotent
+  pendingCalls.delete(uid);
+  // Delete the call room so the caller sees "they declined" (party socket
+  // will emit 'closed' to whoever's in it).
+  if (partyMod && partyMod.rooms && partyMod.rooms.has(code)) {
+    try { io.of('/party').to(code).emit('closed'); } catch (e) {}
+    partyMod.rooms.delete(code);
+  }
+  console.log('[call] decline', code, 'by=' + uid.slice(0, 8));
+  res.json({ ok: true });
+});
+
+// Callee accepted — server just clears the pending slot; the client
+// navigates to the party room to actually join the audio.
+app.post('/api/social/call/answer', express.json({ limit: '2kb' }), async (req, res) => {
+  const uid = await uidFromCookie(req);
+  if (!uid) return res.status(401).json({ error: 'Please log in.' });
+  const code = String((req.body || {}).code || '').trim().toUpperCase();
+  const c = pendingCalls.get(uid);
+  if (!c || c.code !== code) return res.json({ ok: true });
+  pendingCalls.delete(uid);
+  console.log('[call] answer', code, 'by=' + uid.slice(0, 8));
+  res.json({ ok: true });
+});
+
 process.on('uncaughtException', err => console.error('uncaught:', err));
 process.on('unhandledRejection', err => console.error('unhandled:', err));
 
