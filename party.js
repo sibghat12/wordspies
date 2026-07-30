@@ -182,31 +182,38 @@ function mount(app, io, options = {}) {
       }
 
       // Same account rejoining? Swap the existing seat onto this socket
-      // so refreshes don't produce ghost members.
+      // so refreshes don't produce ghost members. Critically we PRESERVE
+      // their role, msgsUsed and handRaised — otherwise a host who
+      // refreshed came back as a listener (owner-reported bug).
+      let carryRole = null, carryMsgs = 0, carryHand = false;
       if (uid) for (const [oldId, m] of r.members) {
         if (m.uid === uid) {
+          carryRole = m.role;
+          carryMsgs = m.msgsUsed || 0;
+          carryHand = !!m.handRaised;
           const old = nsp.sockets.get(oldId);
           if (old) { old.emit('replaced'); old.leave(r.code); }
           r.members.delete(oldId);
-          if (r.hostId === oldId) r.hostId = socket.id;
+          if (r.hostId === oldId) r.hostId = null;   // will be re-assigned below
           break;
         }
       }
 
-      // First to walk in? Whoever it is becomes the host if the recorded
-      // hostUid matches — this handles the "creator joined after making
-      // the room via REST" flow.
-      const isHost = uid && uid === r.hostUid && !r.hostId;
+      // ORIGINAL creator always comes back as host — even if a co-host was
+      // stamped on r.hostId while they were offline. "The party is mine
+      // until I leave or end it" is the rule the owner asked for.
+      const isCreator = uid && uid === r.hostUid;
+      const role = isCreator ? 'host' : (carryRole || 'listener');
       const member = {
         id: socket.id, uid: uid || null,
         name: (prof && prof.name) || cleanText((data && data.name), 20) || 'Guest',
         photo: (prof && prof.photo) || null,
-        role: isHost ? 'host' : 'listener',
-        connected: true, msgsUsed: 0,
+        role,
+        connected: true, msgsUsed: carryMsgs, handRaised: carryHand,
         cfSession: (data && data.cfSession) || null
       };
       r.members.set(socket.id, member);
-      if (isHost) r.hostId = socket.id;
+      if (role === 'host' && (!r.hostId || isCreator)) r.hostId = socket.id;
       socket.join(r.code);
       room = r; me = member;
       socket.emit('joined', {
@@ -361,14 +368,42 @@ function mount(app, io, options = {}) {
     socket.on('disconnect', () => {
       if (!room) return;
       const r = room; room = null;
-      r.members.delete(socket.id);
-      // If the host disconnects, the party keeps running for a while but
-      // the host role sticks with them so a rejoin puts them straight
-      // back in charge. If nobody's left, the sweeper will collect it.
+      // Owner rule: I stay in the room even if my tab closes / I refresh.
+      // Keep the slot, flip the connected flag. A grace-window sweeper
+      // (below) actually removes the slot only after 5 minutes offline.
+      const m = r.members.get(socket.id);
+      if (m) { m.connected = false; m.discAt = Date.now(); }
       socket.to(r.code).emit('v-peer', { id: socket.id, on: false });
       broadcast(r);
     });
   });
+
+  // Grace-window collector: 5 min after disconnect, if the member hasn't
+  // reconnected, drop their slot. Also enforces the "party auto-ends when
+  // all hosts have gone" rule the owner asked for.
+  setInterval(() => {
+    const now = Date.now();
+    for (const [code, r] of rooms) {
+      const drop = [];
+      for (const [id, m] of r.members) {
+        if (!m.connected && (now - (m.discAt || now)) > 5 * 60 * 1000) drop.push(id);
+      }
+      for (const id of drop) { r.members.delete(id); if (r.hostId === id) r.hostId = null; }
+
+      // Any host still connected? If none for >2 min, the party ends.
+      // "You can't have a party without a host" (owner).
+      const hostsConnected = [...r.members.values()].filter(m => m.role === 'host' && m.connected);
+      if (!hostsConnected.length) {
+        r.noHostSince = r.noHostSince || now;
+        if (now - r.noHostSince > 2 * 60 * 1000) {
+          nsp.to(r.code).emit('closed');
+          rooms.delete(code);
+        }
+      } else {
+        r.noHostSince = 0;
+      }
+    }
+  }, 60 * 1000).unref?.();
 
   console.log('party module: mounted');
   return { rooms, live: () => {

@@ -107,16 +107,25 @@ a{color:inherit;text-decoration:none}
 .hostqueue .hqbtn{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:6px 12px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:12px;cursor:pointer}
 .hostqueue .hqbtn.deny{background:#fff;color:var(--sub);border:1px solid var(--line)}
 
-/* Floating mic pill for speakers — sits just above the chat panel so it's
-   always reachable and impossible to miss on a fresh join. */
-.micfab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom));z-index:35;display:none;align-items:center;gap:10px;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:12px 22px 12px 16px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:background .12s,transform .1s}
-.micfab.show{display:inline-flex}
+/* Floating action pills above the chat panel — always visible, impossible
+   to miss. Two variants: mic (speakers), raise-hand (listeners). Only
+   ONE ever shows at a time based on the user's role. */
+.micfab,.handfab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(148px + env(safe-area-inset-bottom));z-index:35;display:none;align-items:center;gap:10px;border:0;border-radius:99px;padding:12px 22px 12px 16px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:transform .1s,background .12s,box-shadow .12s;color:#fff}
+.micfab.show,.handfab.show{display:inline-flex}
+.micfab{background:var(--ink)}
 .micfab .mfico{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;font-size:16px}
 .micfab.on{background:var(--green);animation:plive 1.4s ease-in-out infinite}
 .micfab.on .mfico{background:rgba(255,255,255,.22)}
-.micfab:hover{transform:translateX(-50%) scale(1.03)}
-.micfab:active{transform:translateX(-50%) scale(.97)}
-@media(max-width:480px){ .micfab{bottom:calc(148px + env(safe-area-inset-bottom));padding:10px 18px 10px 14px;font-size:14px} }
+.micfab:hover,.handfab:hover{transform:translateX(-50%) translateY(-1px)}
+.micfab:active,.handfab:active{transform:translateX(-50%) scale(.97)}
+/* Raise-hand: red pill so it screams "ask to speak" — owner's ask. */
+.handfab{background:#d93025;box-shadow:0 6px 18px rgba(217,48,37,.32)}
+.handfab.up{background:#a52618;box-shadow:0 6px 18px rgba(165,38,24,.4)}
+.handfab .hfico{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+@media(max-width:480px){
+  .micfab,.handfab{bottom:calc(150px + env(safe-area-inset-bottom));padding:10px 18px 10px 12px;font-size:14px}
+  .micfab .mfico,.handfab .hfico{width:28px;height:28px;font-size:14px}
+}
 
 /* Bottom chat panel — flat, white, no drop-shadow. Border-top only. */
 .pchat{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:8px 12px calc(10px + env(safe-area-inset-bottom));z-index:30}
@@ -136,9 +145,7 @@ a{color:inherit;text-decoration:none}
 .pcompose .pemo{background:var(--panel);color:var(--ink);border:1px solid var(--line);width:40px;height:40px;border-radius:50%;font-size:17px;cursor:pointer;flex-shrink:0}
 .pcompose .pemo:hover{background:var(--hover)}
 /* raise-hand button that replaces the mic slot for listeners */
-.pcompose .praise{background:#fff8e6;color:var(--host-ink);border:1px solid #f0d97a;font-size:16px;font-weight:800;padding:0 14px;height:42px;border-radius:99px;cursor:pointer;flex-shrink:0}
-.pcompose .praise.up{background:#f5b52e;color:#fff;border-color:#f5b52e}
-.pcompose .praise:hover{filter:brightness(1.03)}
+.pcompose .praise{display:none}   /* replaced by the big FAB below */
 .pquota{max-width:640px;margin:0 auto 5px;text-align:center;font-size:11.5px;color:var(--sub);font-weight:600}
 .pquota .pq-strong{color:var(--ink)}
 .pquota .pq-none{color:var(--err)}
@@ -149,9 +156,11 @@ a{color:inherit;text-decoration:none}
 .pemoji-pick button{background:transparent;color:var(--ink);border:0;font-size:22px;padding:6px 10px;border-radius:8px;cursor:pointer}
 .pemoji-pick button:hover{background:var(--hover)}
 
-/* Host-only End-party button — sits by the header */
-.pend{background:transparent;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-left:auto}
-.pend:hover{background:#fff5f5}
+/* Header action buttons */
+.pleave{background:#fff;color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:700;cursor:pointer;margin-left:8px;transition:background .12s}
+.pleave:hover{background:var(--hover);color:var(--ink)}
+.pend{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:700;cursor:pointer;margin-left:6px;transition:background .12s}
+.pend:hover{background:#ffe4e4}
 
 /* Toasts */
 .ptoast{position:fixed;left:50%;transform:translateX(-50%);top:14px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;pointer-events:none;opacity:0;transition:.2s}
@@ -169,8 +178,10 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="pmeta">
       <span class="pchip live" id="pLive">LIVE</span>
-      <span class="pchip" id="pCount">0</span>
     </div>
+    <!-- Two actions in the header: everyone gets Leave; only the host gets
+         End party. Placed together so the flow is obvious. -->
+    <button class="pleave" id="pLeaveBtn" onclick="leaveAndGo()">Leave</button>
     <button class="pend hidden" id="pEndBtn" onclick="endParty()">End party</button>
   </div>
 
@@ -187,12 +198,15 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
-<!-- Big always-visible mic button for speakers. Sits above the chat bar so
-     nobody misses the "how do I talk?" moment. Also tapping your avatar
-     does the same thing — this is the discoverable version. -->
+<!-- Big always-visible action pills above the chat bar. Only one shows
+     at a time depending on my role. -->
 <button class="micfab" id="pMicFab" onclick="toggleMyMic()">
   <span class="mfico">🎤</span>
   <span id="pMicFabLbl">Tap to talk</span>
+</button>
+<button class="handfab" id="pHandFab" onclick="toggleHand()">
+  <span class="hfico">✋</span>
+  <span id="pHandFabLbl">Raise hand to speak</span>
 </button>
 
 <!-- Fixed chat panel at the bottom -->
@@ -299,13 +313,16 @@ function toggleHand(){
 }
 function paintRaiseBtn(){
   const btn = $('pRaiseBtn');
-  if (!btn) return;
+  if (btn) btn.classList.add('hidden');   // legacy composer pill retired
+  const fab = $('pHandFab');
+  const lbl = $('pHandFabLbl');
+  if (!fab || !lbl) return;
   if (myRole === 'listener') {
-    btn.classList.remove('hidden');
-    btn.classList.toggle('up', myHandUp);
-    btn.title = myHandUp ? 'Lower hand' : 'Ask to speak';
+    fab.classList.add('show');
+    fab.classList.toggle('up', myHandUp);
+    lbl.textContent = myHandUp ? 'Hand raised — waiting for host' : 'Raise hand to speak';
   } else {
-    btn.classList.add('hidden');
+    fab.classList.remove('show');
   }
 }
 
@@ -325,7 +342,6 @@ function paint(){
   if (!room) return;
   $('pTitle').textContent = room.title;
   $('pSub').textContent = room.subtitle || '';
-  $('pCount').textContent = room.count + ' in room';
   const iAmHost = myRole === 'host';
   const iAmSpeaker = iAmHost || myRole === 'speaker';
   const micOn = window.wsVoice && wsVoice.micOn;
