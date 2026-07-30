@@ -238,7 +238,26 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const params = new URLSearchParams(location.search);
 let CODE = (params.get('room') || '').trim().toUpperCase();
+const EMBED = params.get('embed') === '1';   // true when hosted inside /social's iframe
 let socket = null, room = null, myId = null, myRole = 'listener', msgsLeft = 2, myHandUp = false, selectedMemberId = null;
+
+// Talk to the parent /social if we're embedded — used to close the host
+// iframe when the party ends, minimize on user gesture, etc.
+function postToParent(msg){
+  if (!EMBED) return;
+  try { parent.postMessage(msg, location.origin); } catch(e){}
+}
+if (EMBED) {
+  // Hide the standalone back button — the parent owns navigation now.
+  document.addEventListener('DOMContentLoaded', () => {
+    const back = document.querySelector('.pback'); if (back) back.style.display = 'none';
+    // Parent listens for a leave request from inside.
+    window.addEventListener('message', (ev) => {
+      if (ev.origin !== location.origin) return;
+      if (ev.data && ev.data.type === 'party:leave') leaveAndGo();
+    });
+  });
+}
 
 // Boot: load room + open socket + auto-join. There's no separate "Join" tap
 // any more — the whole point of opening /party?room=... IS to join, so we
@@ -281,8 +300,16 @@ function conn(){
   socket.on('chatMeta', m => { msgsLeft = m.msgsLeft; paintQuota(); });
   socket.on('chatBlocked', d => toast(d.reason || 'Chat blocked'));
   socket.on('replaced', () => toast('You joined from another tab — this one\'s inactive.'));
-  socket.on('kicked', () => { clearPartySession(); toast('The host removed you from the party.'); setTimeout(() => location.href='/social', 1400); });
-  socket.on('closed', () => { clearPartySession(); toast('The host ended this party.'); setTimeout(() => location.href='/social', 1400); });
+  socket.on('kicked', () => {
+    clearPartySession(); toast('The host removed you from the party.');
+    postToParent({ type: 'party:kicked' });
+    if (!EMBED) setTimeout(() => location.href='/social', 1400);
+  });
+  socket.on('closed', () => {
+    clearPartySession(); toast('The host ended this party.');
+    postToParent({ type: 'party:closed' });
+    if (!EMBED) setTimeout(() => location.href='/social', 1400);
+  });
   socket.on('err', e => toast(e.msg || 'Something went wrong.'));
   return socket;
 }
@@ -344,6 +371,8 @@ function paint(){
   $('pSub').textContent = room.subtitle || '';
   // Refresh the community-app rejoin bridge each state tick.
   markPartySession();
+  // Keep the iframe host's title synced with the party's live title.
+  postToParent({ type: 'party:title', title: room.title });
   const iAmHost = myRole === 'host';
   const iAmSpeaker = iAmHost || myRole === 'speaker';
   const micOn = window.wsVoice && wsVoice.micOn;
@@ -502,6 +531,7 @@ function endParty(){ if (confirm('End the party for everyone?')) socket && socke
 function leaveAndGo(){
   try { socket && socket.emit('leave'); } catch(e){}
   clearPartySession();
+  if (EMBED) { postToParent({ type: 'party:left' }); return; }
   location.href = '/social';
 }
 
@@ -521,15 +551,12 @@ function markPartySession(){
 function clearPartySession(){ try { localStorage.removeItem('wsActiveParty'); } catch(e){} }
 
 // beforeunload: warn if the user tries to close the tab / navigate away
-// while in a party. The host gets a stronger warning because leaving
-// while they're the only host will auto-end the party in 2 minutes.
+// while in a party. Skipped when we're an embed — the parent /social
+// document owns the unload dialog and we don't want two prompts.
 window.addEventListener('beforeunload', (ev) => {
+  if (EMBED) return;
   if (!socket || !myId) return;
-  // Modern browsers ignore the custom string, but any assignment triggers
-  // the native "Leave site?" dialog. That's enough — the alert is the point.
-  ev.preventDefault();
-  ev.returnValue = '';
-  return '';
+  ev.preventDefault(); ev.returnValue = ''; return '';
 });
 
 let toastT = null;

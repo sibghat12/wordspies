@@ -500,6 +500,29 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .wpsrow .wpsmeta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--sub)}
 .wpsrow .wpslive{background:#fff5f5;color:#d93025;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.08em;border:1px solid #f8d3d3}
 
+/* In-app party host — iframe stays mounted so party audio + socket
+   live through tab switches inside /social. Two modes:
+   .phost.fs  → fullscreen overlay (in-party view)
+   .phost.mini → bar at bottom of screen (browsing other tabs)      */
+.phost{position:fixed;z-index:170;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.18);overflow:hidden;transition:all .22s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column}
+.phost.mini{bottom:calc(14px + env(safe-area-inset-bottom));left:14px;right:14px;height:64px;max-width:520px;margin:0 auto;border-radius:16px}
+.phost.mini .phost-frame{display:none}
+.phost.mini .phost-bar{padding:10px 14px;display:flex;align-items:center;gap:12px}
+.phost.fs{inset:8px;height:auto}
+@media(min-width:900px){ .phost.fs{inset:auto;top:8px;right:8px;width:min(520px,45vw);bottom:8px;left:auto} }
+.phost.fs .phost-bar{padding:10px 14px;border-bottom:1px solid var(--line);flex:0 0 auto;display:flex;align-items:center;gap:10px;background:#fff}
+.phost.fs .phost-frame{flex:1;min-height:0;display:block;background:#fff}
+.phost .phost-dot{width:9px;height:9px;border-radius:50%;background:#22c07a;animation:gcpulse 1.4s ease-in-out infinite;flex-shrink:0}
+.phost .phost-text{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.phost .phost-text b{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phost .phost-text small{font-size:11px;color:var(--faint);font-weight:600}
+.phost .phost-btn{background:transparent;color:var(--sub);border:1px solid var(--line);border-radius:10px;width:34px;height:34px;font-size:14px;cursor:pointer;flex-shrink:0;transition:background .12s}
+.phost .phost-btn:hover{background:var(--hover);color:var(--ink)}
+.phost .phost-btn.leave{color:#d93025;border-color:#f8d3d3}
+.phost .phost-btn.leave:hover{background:#fff5f5}
+.phost.fs .phost-btn.expand{transform:rotate(180deg)}
+.phost-frame iframe{width:100%;height:100%;border:0;display:block}
+
 /* Persistent rejoin pill — appears at the bottom of the community app
    whenever localStorage.wsActiveParty is set, i.e. the user opened a
    party in a sibling page. Tapping it takes them back into /party. */
@@ -1302,8 +1325,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
 <div class="toast" id="toastEl"></div>
 
-<!-- Persistent "you're in a party" pill. Populated from localStorage so
-     switching /social ↔ any other page still surfaces the rejoin path. -->
+<!-- Persistent rejoin pill (fallback for cross-page navigation). -->
 <a class="partybar hidden" id="partyBar" href="#" onclick="rejoinParty(event)">
   <span class="pbdot"></span>
   <span class="pbtxt">
@@ -1312,6 +1334,24 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   </span>
   <span class="pbgo">Open →</span>
 </a>
+
+<!-- In-app party overlay: an iframe of /party?room=X&embed=1 that lives
+     inside the community app document. As long as this div is in the DOM
+     the iframe keeps its socket + audio alive, even when the user switches
+     Community/Games/Chats tabs. Two states: fullscreen (in-party view)
+     and mini (bar at bottom of the screen). -->
+<div id="partyHost" class="phost hidden">
+  <div class="phost-bar" id="phostBar">
+    <span class="phost-dot"></span>
+    <div class="phost-text">
+      <b id="phostTitle">Party</b>
+      <small id="phostSub">Tap to expand</small>
+    </div>
+    <button class="phost-btn expand" id="phostExpand" title="Open party">▲</button>
+    <button class="phost-btn leave" id="phostLeave" title="Leave party">✕</button>
+  </div>
+  <div class="phost-frame" id="phostFrameWrap"><iframe id="phostFrame" allow="microphone; autoplay" title="Party"></iframe></div>
+</div>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -1800,6 +1840,110 @@ function rejoinParty(ev){
 refreshPartyBar();
 setInterval(refreshPartyBar, 15000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshPartyBar(); });
+
+// ---------- In-app party host (iframe mini-player) ----------
+// The party runs inside an iframe mounted in /social. Because the iframe
+// never unmounts while the user switches Community / Games / Chats tabs,
+// the party's socket, WebRTC PC and audio stay alive. Two visual states:
+// fullscreen (in-party) and mini (bar at bottom). localStorage still
+// tracks the active party so a reload restores this host.
+let PHOST_CODE = null;
+function openPartyInApp(code, title){
+  code = String(code || '').trim().toUpperCase();
+  if (!code) return;
+  const host = $('partyHost');
+  const frame = $('phostFrame');
+  if (!host || !frame) return;
+  // If a DIFFERENT party is already mounted, tear it down first.
+  if (PHOST_CODE && PHOST_CODE !== code) closePartyInApp(true);
+  PHOST_CODE = code;
+  if (title) $('phostTitle').textContent = title;
+  $('phostSub').textContent = 'Tap ▲ to expand';
+  host.classList.remove('hidden');
+  host.classList.add('fs');
+  host.classList.remove('mini');
+  // Only load the iframe once — reload only if the code changed.
+  const desired = '/party?room=' + encodeURIComponent(code) + '&embed=1';
+  if (!frame.src.endsWith(desired)) frame.src = desired;
+  // Kill the bottom "rejoin" pill since we're now showing the real thing.
+  $('partyBar') && $('partyBar').classList.add('hidden');
+}
+function closePartyInApp(silent){
+  const host = $('partyHost'); const frame = $('phostFrame');
+  if (!host) return;
+  host.classList.add('hidden');
+  host.classList.remove('fs', 'mini');
+  PHOST_CODE = null;
+  if (frame) { try { frame.src = 'about:blank'; } catch(e){} }
+  try { localStorage.removeItem('wsActiveParty'); } catch(e){}
+  refreshPartyBar();
+  if (!silent) toast('Left party');
+}
+function minimizePartyInApp(){
+  const host = $('partyHost'); if (!host || !PHOST_CODE) return;
+  host.classList.remove('fs');
+  host.classList.add('mini');
+  $('phostSub').textContent = 'Playing in background — tap ▲ to expand';
+}
+function togglePartyExpand(){
+  const host = $('partyHost'); if (!host || host.classList.contains('hidden')) return;
+  if (host.classList.contains('fs')) minimizePartyInApp();
+  else { host.classList.remove('mini'); host.classList.add('fs'); $('phostSub').textContent = 'Tap ▲ to minimise'; }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const ex = $('phostExpand'); if (ex) ex.onclick = togglePartyExpand;
+  const lv = $('phostLeave'); if (lv) lv.onclick = () => {
+    // Tell the iframe to leave cleanly, then close the host.
+    try { $('phostFrame').contentWindow.postMessage({ type: 'party:leave' }, location.origin); } catch(e){}
+    setTimeout(() => closePartyInApp(false), 200);
+  };
+  // Tap anywhere on the mini bar (not the buttons) to expand.
+  $('phostBar') && $('phostBar').addEventListener('click', (ev) => {
+    if (ev.target.closest('.phost-btn')) return;
+    if ($('partyHost').classList.contains('mini')) togglePartyExpand();
+  });
+});
+
+// Intercept every "join party" click on the community app and route to
+// the in-app iframe host instead of navigating away.
+document.addEventListener('click', (ev) => {
+  const a = ev.target.closest && ev.target.closest('a[href^="/party?"]');
+  if (!a) return;
+  const url = new URL(a.href);
+  const code = url.searchParams.get('room');
+  if (!code) return;
+  ev.preventDefault();
+  const title = a.querySelector('.pt-ct, .wpst') ? a.querySelector('.pt-ct, .wpst').textContent : '';
+  openPartyInApp(code, title);
+});
+
+// Iframe → parent messages (party.html posts them when the user leaves
+// or when the party is closed).
+window.addEventListener('message', (ev) => {
+  if (ev.origin !== location.origin) return;
+  const d = ev.data || {};
+  if (d.type === 'party:closed' || d.type === 'party:left' || d.type === 'party:kicked') {
+    closePartyInApp(true);
+  } else if (d.type === 'party:title' && PHOST_CODE) {
+    $('phostTitle').textContent = d.title || 'Party';
+  } else if (d.type === 'party:minimize') {
+    minimizePartyInApp();
+  }
+});
+
+// On load, if we already have an active party stored, restore the mini
+// host straight away so the user's audio stays uninterrupted through
+// full page reloads. It comes up minimised to avoid stealing the wall.
+(function restoreMountedParty(){
+  try {
+    const s = JSON.parse(localStorage.getItem('wsActiveParty') || 'null');
+    if (s && s.code) {
+      openPartyInApp(s.code, s.title);
+      // start minimised — you can tap the bar to expand.
+      setTimeout(minimizePartyInApp, 100);
+    }
+  } catch(e){}
+})();
 
 // ---------- 📺 live games ----------
 // One list of everything being played anywhere on the site. The server builds
