@@ -27,6 +27,38 @@ body{font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg
   -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:840px;margin:0 auto;padding:0 20px calc(200px + env(safe-area-inset-bottom));min-height:100vh}
+
+/* ══ Desktop pro layout (≥1000px) ══
+   Two columns: left = speakers/listeners; right = chat rail. Fixed
+   viewport height so the chat has its own scroll and the members panel
+   doesn't fight for space. Chat composer is anchored at the bottom of
+   its column instead of the whole viewport. */
+@media(min-width:1000px){
+  body{overflow:hidden;height:100vh}
+  .wrap{max-width:1200px;padding:0 20px 0;display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-rows:auto 1fr;grid-template-areas:'head head' 'main chat';gap:0 24px;height:100vh}
+  .phead{grid-area:head}
+  #pMain{grid-area:main;padding-bottom:0;overflow-y:auto;padding-right:6px}
+  .pchat{position:relative;grid-area:chat;bottom:auto;left:auto;right:auto;border:1px solid var(--line);border-radius:16px;padding:14px 14px 16px;margin-bottom:16px;display:flex;flex-direction:column;min-height:0}
+  .pchat .pmsgs{max-height:none;flex:1;margin:0 0 8px;padding:8px 4px}
+  .pchat .pcompose{padding-top:6px;border-top:1px solid var(--line);padding:12px 0 0}
+  .pchat.hidden{display:none}
+  /* Floating action pills stay pinned to the members column instead of
+     centre-of-screen so they don't overlap the chat rail. */
+  .micfab,.handfab{left:auto;right:calc(380px + 44px);transform:none;bottom:32px}
+  .micfab:hover,.handfab:hover{transform:translateY(-1px)}
+  .micfab:active,.handfab:active{transform:scale(.97)}
+  /* Speakers get bigger avatars on wide screens — the party FEELS like
+     a room instead of a mobile list. */
+  .speakers{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+  .speakers .pav .circ{width:72px;height:72px;font-size:28px}
+  .speakers .pav .nm{font-size:14px}
+  .listeners{grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}
+  .listeners .pav .circ{width:48px;height:48px;font-size:19px}
+  /* Keyboard-shortcut hint under the mic pill */
+  .kbdhint{grid-area:main;position:absolute;bottom:16px;left:26px;font-size:11px;font-weight:600;color:var(--faint);background:#fff;border:1px solid var(--line);padding:5px 10px;border-radius:99px;display:inline-flex;gap:6px;align-items:center;pointer-events:none}
+  .kbdhint kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;color:var(--ink)}
+}
+@media(max-width:999px){ .kbdhint{display:none} }
 .hidden{display:none !important}
 
 /* Header — party title + subtitle, exit. Flat, no shadows. */
@@ -209,6 +241,9 @@ a{color:inherit;text-decoration:none}
   <span id="pHandFabLbl">Raise hand to speak</span>
 </button>
 
+<!-- Keyboard shortcut hint (desktop only) -->
+<div class="kbdhint" id="kbdHint"><kbd>Space</kbd> hold to talk · <kbd>Esc</kbd> minimise</div>
+
 <!-- Fixed chat panel at the bottom -->
 <div class="pchat hidden" id="pChat">
   <div class="pquota" id="pQuota"></div>
@@ -352,6 +387,33 @@ function paintRaiseBtn(){
     fab.classList.remove('show');
   }
 }
+
+// Keyboard shortcuts (desktop pro): hold Space to talk (push-to-talk),
+// tap Esc to minimise back into the community app. Ignored while the
+// chat input has focus so typing "hello world" doesn't blast the mic.
+let pttHeld = false;
+document.addEventListener('keydown', (e) => {
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    postToParent({ type: 'party:minimize' });
+    return;
+  }
+  if (e.code === 'Space' && !e.repeat) {
+    if (!(myRole === 'host' || myRole === 'speaker')) return;
+    e.preventDefault();
+    // First press of a fresh chain — treat as PTT-on if mic was off.
+    if (!window.wsVoice) return;
+    if (!wsVoice.micOn) { pttHeld = true; toggleMyMic(); }
+    else { pttHeld = false; }   // if mic already on (toggle mode) leave it alone
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'Space' && pttHeld) {
+    pttHeld = false;
+    if (window.wsVoice && wsVoice.micOn) toggleMyMic();
+  }
+});
 
 async function toggleMyMic(){
   if (!window.wsVoice) return;

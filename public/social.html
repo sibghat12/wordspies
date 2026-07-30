@@ -508,8 +508,18 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .phost.mini{bottom:calc(14px + env(safe-area-inset-bottom));left:14px;right:14px;height:64px;max-width:520px;margin:0 auto;border-radius:16px}
 .phost.mini .phost-frame{display:none}
 .phost.mini .phost-bar{padding:10px 14px;display:flex;align-items:center;gap:12px}
-.phost.fs{inset:8px;height:auto}
-@media(min-width:900px){ .phost.fs{inset:auto;top:8px;right:8px;width:min(520px,45vw);bottom:8px;left:auto} }
+/* Fullscreen mode owns the whole viewport on mobile and a generous
+   panel on desktop — no borders/inset, no shadow, just the party. */
+.phost.fs{inset:0;border-radius:0;border:0;box-shadow:none}
+@media(min-width:900px){
+  .phost.fs{inset:0;border-radius:0;box-shadow:0 0 60px rgba(0,0,0,.15)}
+}
+/* When a party is up in fullscreen, hide the community app's chrome so
+   the party owns the whole screen. Owner ask: "remove the tab header
+   when we are in the party". */
+body.in-party .topnav{display:none !important}
+body.in-party .partybar{display:none !important}
+body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .phost.fs .phost-bar{padding:10px 14px;border-bottom:1px solid var(--line);flex:0 0 auto;display:flex;align-items:center;gap:10px;background:#fff}
 .phost.fs .phost-frame{flex:1;min-height:0;display:block;background:#fff}
 .phost .phost-dot{width:9px;height:9px;border-radius:50%;background:#22c07a;animation:gcpulse 1.4s ease-in-out infinite;flex-shrink:0}
@@ -1862,6 +1872,7 @@ function openPartyInApp(code, title){
   host.classList.remove('hidden');
   host.classList.add('fs');
   host.classList.remove('mini');
+  document.body.classList.add('in-party');       // hides community chrome
   // Only load the iframe once — reload only if the code changed.
   const desired = '/party?room=' + encodeURIComponent(code) + '&embed=1';
   if (!frame.src.endsWith(desired)) frame.src = desired;
@@ -1873,6 +1884,7 @@ function closePartyInApp(silent){
   if (!host) return;
   host.classList.add('hidden');
   host.classList.remove('fs', 'mini');
+  document.body.classList.remove('in-party');    // bring the chrome back
   PHOST_CODE = null;
   if (frame) { try { frame.src = 'about:blank'; } catch(e){} }
   try { localStorage.removeItem('wsActiveParty'); } catch(e){}
@@ -1883,12 +1895,18 @@ function minimizePartyInApp(){
   const host = $('partyHost'); if (!host || !PHOST_CODE) return;
   host.classList.remove('fs');
   host.classList.add('mini');
+  document.body.classList.remove('in-party');    // mini = community app owns the chrome again
   $('phostSub').textContent = 'Playing in background — tap ▲ to expand';
 }
 function togglePartyExpand(){
   const host = $('partyHost'); if (!host || host.classList.contains('hidden')) return;
   if (host.classList.contains('fs')) minimizePartyInApp();
-  else { host.classList.remove('mini'); host.classList.add('fs'); $('phostSub').textContent = 'Tap ▲ to minimise'; }
+  else {
+    host.classList.remove('mini');
+    host.classList.add('fs');
+    document.body.classList.add('in-party');
+    $('phostSub').textContent = 'Tap ▲ to minimise';
+  }
 }
 document.addEventListener('DOMContentLoaded', () => {
   const ex = $('phostExpand'); if (ex) ex.onclick = togglePartyExpand;
