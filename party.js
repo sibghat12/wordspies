@@ -186,21 +186,29 @@ function mount(app, io, options = {}) {
         if (!circle || !circle.has(uid)) return fail('This is a private party — you need an invite.');
       }
 
-      // Same account rejoining? Swap the existing seat onto this socket
-      // so refreshes don't produce ghost members. Critically we PRESERVE
-      // their role, msgsUsed and handRaised — otherwise a host who
-      // refreshed came back as a listener (owner-reported bug).
-      let carryRole = null, carryMsgs = 0, carryHand = false;
-      if (uid) for (const [oldId, m] of r.members) {
-        if (m.uid === uid) {
-          carryRole = m.role;
-          carryMsgs = m.msgsUsed || 0;
-          carryHand = !!m.handRaised;
+      // Same account rejoining? Sweep EVERY member sharing this uid (there
+      // shouldn't be more than one but if there is — dead sockets that
+      // never cleaned up — we don't want stale seats). Carry over the
+      // most-recent seat's role/msgs/hand so a refresh reseats correctly.
+      let carryRole = null, carryMsgs = 0, carryHand = false, carriedAt = 0;
+      if (uid) {
+        const toDelete = [];
+        for (const [oldId, m] of r.members) {
+          if (m.uid !== uid) continue;
+          const t = m.discAt || 0;
+          if (t >= carriedAt) {
+            carryRole = m.role;
+            carryMsgs = m.msgsUsed || 0;
+            carryHand = !!m.handRaised;
+            carriedAt = t;
+          }
+          toDelete.push(oldId);
+        }
+        for (const oldId of toDelete) {
           const old = nsp.sockets.get(oldId);
-          if (old) { old.emit('replaced'); old.leave(r.code); }
+          if (old) { try { old.emit('replaced'); old.leave(r.code); } catch (e) {} }
           r.members.delete(oldId);
-          if (r.hostId === oldId) r.hostId = null;   // will be re-assigned below
-          break;
+          if (r.hostId === oldId) r.hostId = null;
         }
       }
 
@@ -221,9 +229,10 @@ function mount(app, io, options = {}) {
       if (role === 'host' && (!r.hostId || isCreator)) r.hostId = socket.id;
       socket.join(r.code);
       room = r; me = member;
-      console.log('[party] join', r.code, 'uid=' + (uid || 'guest').slice(0, 8), 'role=' + member.role, 'members=' + r.members.size);
+      console.log('[party] join', r.code, 'uid=' + (uid || 'guest').slice(0, 8), 'role=' + member.role, 'members=' + r.members.size, 'isCreator=' + !!isCreator);
       socket.emit('joined', {
         code: r.code, you: socket.id, role: member.role,
+        uid: uid || null,          // client uses this to fire reclaimHost if the seat drifts
         msgsLeft: LISTENER_MSG_LIMIT - member.msgsUsed
       });
       broadcast(r);
@@ -275,6 +284,32 @@ function mount(app, io, options = {}) {
     socket.on('lowerHand', () => {
       if (!room || !me) return;
       me.handRaised = false;
+      broadcast(room);
+    });
+    // Reclaim host — a defensive fallback for the "I was host, refreshed,
+    // now I'm somehow a listener" bug. If the caller's socket profile
+    // matches the room's original creatorUid, force-promote them back.
+    // Idempotent — safe to call any time.
+    socket.on('reclaimHost', () => {
+      if (!room || !me) return;
+      const uid = socket.profile && socket.profile.uid;
+      if (!uid || uid !== room.hostUid) return;
+      if (me.role !== 'host') {
+        me.role = 'host';
+        room.hostId = socket.id;
+        console.log('[party] reclaimHost', room.code, 'uid=' + uid.slice(0, 8));
+        broadcast(room);
+      }
+    });
+
+    // Host declines a listener's raised hand (denyHand from the client).
+    // Any host may deny; the target listener stays a listener and their
+    // hand flag is cleared for everyone including themselves.
+    socket.on('denyHand', (data) => {
+      if (!room || !iAmHost()) return;
+      const target = room.members.get(String((data && data.id) || ''));
+      if (!target) return;
+      target.handRaised = false;
       broadcast(room);
     });
     socket.on('kick', (data) => {

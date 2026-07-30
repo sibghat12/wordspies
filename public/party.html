@@ -275,6 +275,7 @@ const params = new URLSearchParams(location.search);
 let CODE = (params.get('room') || '').trim().toUpperCase();
 const EMBED = params.get('embed') === '1';   // true when hosted inside /social's iframe
 let socket = null, room = null, myId = null, myRole = 'listener', msgsLeft = 2, myHandUp = false, selectedMemberId = null;
+let ME_UID = null;   // set from the 'joined' event; used by the host-reclaim fallback
 
 // Talk to the parent /social if we're embedded — used to close the host
 // iframe when the party ends, minimize on user gesture, etc.
@@ -317,6 +318,7 @@ function conn(){
   socket.on('state', st => { room = st; paint(); });
   socket.on('joined', d => {
     myId = d.you; myRole = d.role; msgsLeft = d.msgsLeft || 0;
+    ME_UID = d.uid || null;
     $('pChat').classList.remove('hidden');
     if (myRole === 'host') $('pEndBtn').classList.remove('hidden');
     paintQuota();
@@ -330,6 +332,16 @@ function conn(){
       wsVoice.on('mic', () => paint());       // avatar ring reflects mic state
     }
     if (window.wsEmojiFly) wsEmojiFly.init({ socket });
+    // Defensive: if the server seated me as a non-host but the room
+    // was actually created by me, ask it to reclaim host. Server verifies
+    // the uid so this can't be spoofed by anyone else. Slight delay so
+    // the first state broadcast has time to arrive with room.hostUid.
+    setTimeout(() => {
+      if (!room) return;
+      if (myRole !== 'host' && room.hostUid && ME_UID && room.hostUid === ME_UID) {
+        socket.emit('reclaimHost');
+      }
+    }, 800);
   });
   socket.on('chat', addMsg);
   socket.on('chatMeta', m => { msgsLeft = m.msgsLeft; paintQuota(); });
@@ -582,9 +594,11 @@ function addMsg(m){
 function promoteMember(id, role){ socket && socket.emit('promote', { id, role }); selectedMemberId = null; }
 function demoteMember(id){ socket && socket.emit('demote', { id }); selectedMemberId = null; }
 function kickMember(id){ if (confirm('Remove this person from the party?')) socket && socket.emit('kick', { id }); selectedMemberId = null; }
-function denyHand(id){ // Just lower the raised hand (server-side "lowerHand" would be self-only; do it via demote to same role).
-  // No-op on server; visually clear it by moving the flag off client-side.
-  // The listener will re-raise if they still want.
+function denyHand(id){
+  // Tell the server to clear their raised-hand flag; broadcast repaints
+  // everyone. Local flag-toggle here is optimistic so the queue clears
+  // instantly even before the state event round-trips.
+  if (socket) socket.emit('denyHand', { id });
   const m = room.members.find(x => x.id === id); if (m) m.handRaised = false;
   paint();
 }

@@ -499,23 +499,34 @@
     activePath = p2p;
   }
 
-  async function setMic(want) {
-    if (!canPublish) throw new Error('Watchers cannot speak — only players can open the microphone.');
-    if (!!want === !!micOn) return micOn;
-    await activate();
-    if (want) {
-      try { await openMic(); }
-      catch (e) { emit('mic', { on: false, err: e.message || 'Microphone permission denied.' }); throw e; }
-      micOn = true;
-      if (activePath.publishLocal) { try { await activePath.publishLocal(); } catch (e) { console.warn(e); } }
-    } else {
-      if (activePath && activePath.unpublishLocal) { try { await activePath.unpublishLocal(); } catch (e) {} }
-      closeMic();
-      micOn = false;
-    }
-    emit('mic', { on: micOn });
-    return micOn;
-  }
+  // Re-entrancy guard: double-taps on the mic button used to fire two
+   // setMic calls concurrently. The `micOn === want` check at the top
+   // returned early only if the first call had already updated the flag,
+   // which it hadn't yet (both were awaiting activate/openMic). Both
+   // proceeded, contending for the mic stream, leaving the UI stuck.
+   var _micBusy = null;
+   async function setMic(want) {
+     if (!canPublish) throw new Error('Watchers cannot speak — only players can open the microphone.');
+     if (_micBusy) { try { await _micBusy; } catch (e) {} }
+     if (!!want === !!micOn) return micOn;
+     _micBusy = (async () => {
+       await activate();
+       if (want) {
+         try { await openMic(); }
+         catch (e) { emit('mic', { on: false, err: e.message || 'Microphone permission denied.' }); throw e; }
+         micOn = true;
+         if (activePath.publishLocal) { try { await activePath.publishLocal(); } catch (e) { console.warn(e); } }
+       } else {
+         if (activePath && activePath.unpublishLocal) { try { await activePath.unpublishLocal(); } catch (e) {} }
+         closeMic();
+         micOn = false;
+       }
+       emit('mic', { on: micOn });
+       return micOn;
+     })();
+     try { return await _micBusy; }
+     finally { _micBusy = null; }
+   }
 
   async function init(opts) {
     if (joined) return;
