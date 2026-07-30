@@ -1212,22 +1212,53 @@ function mount(app, io, opts) {
     });
 
     // ── voice + emoji relays ────────────────────────────────────────────
-    // The server never sees the audio: it only shuffles WebRTC signalling
+    // The server never sees the audio: it only shuffles voice presence
     // between peers who are already in the same room. Emoji reactions are
     // broadcast the same way — thousands cheaper than any media pipeline.
     // Only seated players can publish (isPub true); watchers listen only.
+    // Presence carries the CF session id + track names when mode=cloudflare,
+    // and the socket id alone in the P2P fallback. Handles both.
     const inRoom = () => room || (W.r ? W.r : null);
-    socket.on('v-join', () => {
+    // The last presence each socket emitted, so we can replay it to
+    // newcomers in the same room (i.e. "here's who's already on voice").
+    const vPresence = pnsp._vPres || (pnsp._vPres = new Map());
+
+    socket.on('v-join', (data) => {
       const r = inRoom(); if (!r) return;
       const seated = room && r.seatOrder.indexOf(socket.id) >= 0;
-      socket.to(r.code).emit('v-peer', { id: socket.id, on: true, pub: !!seated });
+      const p = {
+        id: socket.id,
+        on: true,
+        pub: !!seated,
+        cfSession: (data && data.cfSession) || null,
+        tracks: Array.isArray(data && data.tracks) ? data.tracks.slice(0, 4) : []
+      };
+      vPresence.set(socket.id, p);
+      // Announce me to the room and reply to me with everyone else's presence.
+      socket.to(r.code).emit('v-peer', p);
+      const others = [];
+      for (const sid of r.watchers ? [...r.watchers.keys()] : []) if (vPresence.has(sid) && sid !== socket.id) others.push(vPresence.get(sid));
+      for (const sid of r.seatOrder) if (sid && vPresence.has(sid) && sid !== socket.id) others.push(vPresence.get(sid));
+      socket.emit('v-roster', { peers: others });
+    });
+    // A publisher's set of track names may change after v-join (e.g. mic
+    // toggled on after they joined voice). Broadcast the fresh list.
+    socket.on('v-tracks', (data) => {
+      const r = inRoom(); if (!r) return;
+      const cur = vPresence.get(socket.id);
+      if (!cur) return;
+      cur.tracks = Array.isArray(data && data.tracks) ? data.tracks.slice(0, 4) : [];
+      cur.cfSession = (data && data.cfSession) || cur.cfSession;
+      socket.to(r.code).emit('v-peer', cur);
     });
     socket.on('v-leave', () => {
       const r = inRoom(); if (!r) return;
+      vPresence.delete(socket.id);
       socket.to(r.code).emit('v-peer', { id: socket.id, on: false });
     });
     // Forward SDP / ICE to a specific peer in the same room. Verifies both
     // sockets share the room so a socket can't relay to arbitrary others.
+    // Only used by the P2P fallback path — CF SFU sessions never need this.
     socket.on('v-signal', (data) => {
       const r = inRoom(); if (!r || !data || !data.to) return;
       const dst = pnsp.sockets.get(data.to);
@@ -1247,6 +1278,8 @@ function mount(app, io, opts) {
     });
 
     socket.on('disconnect', () => {
+      // Tear down our voice presence unconditionally — even watchers.
+      vPresence.delete(socket.id);
       if (!room) return;
       const r = room;
       const p = r.players.get(socket.id);
