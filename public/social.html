@@ -483,6 +483,18 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pt-mgo:disabled{opacity:.5;cursor:default;transform:none}
 .pt-err{color:var(--err);font-size:12.5px;font-weight:600;margin-top:10px}
 
+/* Persistent rejoin pill — appears at the bottom of the community app
+   whenever localStorage.wsActiveParty is set, i.e. the user opened a
+   party in a sibling page. Tapping it takes them back into /party. */
+.partybar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111318;color:#fff;border-radius:99px;padding:10px 16px;display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Nunito',system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,23,42,.28);z-index:150;transition:transform .12s}
+.partybar:hover{transform:translateX(-50%) translateY(-2px)}
+.partybar .pbdot{width:9px;height:9px;border-radius:50%;background:#22c07a;animation:gcpulse 1.4s ease-in-out infinite;flex-shrink:0}
+.partybar .pbtxt{display:flex;flex-direction:column;line-height:1.2;font-size:12.5px}
+.partybar .pbtxt b{font-weight:800;font-size:13px}
+.partybar .pbtxt small{font-size:10.5px;opacity:.72;font-weight:600}
+.partybar .pbgo{background:linear-gradient(135deg,#7c5cff,#5a7bff);color:#fff;font-weight:700;font-size:12px;padding:5px 12px;border-radius:99px}
+@media(max-width:480px){ .partybar{padding:8px 14px} .partybar .pbtxt small{display:none} }
+
 /* live games — what is actually happening right now */
 .lv-head{padding:8px 22px 0}
 .lv-head h2{font-size:20px;font-weight:500;letter-spacing:-.3px;color:var(--ink)}
@@ -1263,6 +1275,17 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
 <div class="toast" id="toastEl"></div>
 
+<!-- Persistent "you're in a party" pill. Populated from localStorage so
+     switching /social ↔ any other page still surfaces the rejoin path. -->
+<a class="partybar hidden" id="partyBar" href="#" onclick="rejoinParty(event)">
+  <span class="pbdot"></span>
+  <span class="pbtxt">
+    <b>🎤 In a party</b>
+    <small id="pbTitle">Tap to rejoin</small>
+  </span>
+  <span class="pbgo">Open →</span>
+</a>
+
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1695,6 +1718,38 @@ async function closeMyRoom(game, code, btn){
 }
 // Background refresh so a room that expires shows up as closed.
 setInterval(() => { if (!document.hidden && ME && !GUEST) refreshMyRooms(); }, 30000);
+
+// ---------- Party rejoin pill ----------
+// party.html writes { code, title, role, at } to localStorage.wsActiveParty
+// whenever we're in one. This bar surfaces it EVERYWHERE in /social so the
+// user can jump back with one tap. We poll /api/parties/:code to confirm
+// the party still exists before showing — a stale localStorage entry from
+// an ended room shouldn't nag them forever.
+async function refreshPartyBar(){
+  const bar = document.getElementById('partyBar');
+  if (!bar) return;
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem('wsActiveParty') || 'null'); } catch(e){}
+  if (!s || !s.code) return bar.classList.add('hidden');
+  // Stale-guard: entries older than 6 hours are ignored (party server has
+  // a 7-day empty-room TTL so 6h is very safe).
+  if (Date.now() - (s.at || 0) > 6 * 60 * 60 * 1000) { localStorage.removeItem('wsActiveParty'); return bar.classList.add('hidden'); }
+  try {
+    const r = await fetch('/api/parties/' + encodeURIComponent(s.code));
+    if (!r.ok) { localStorage.removeItem('wsActiveParty'); return bar.classList.add('hidden'); }
+  } catch(e){ return; }
+  document.getElementById('pbTitle').textContent = s.title + (s.role === 'host' ? ' · you host' : s.role === 'speaker' ? ' · you speak' : ' · listener');
+  bar.href = '/party?room=' + encodeURIComponent(s.code);
+  bar.classList.remove('hidden');
+}
+function rejoinParty(ev){
+  const s = (() => { try { return JSON.parse(localStorage.getItem('wsActiveParty') || 'null'); } catch(e){ return null; }})();
+  if (!s || !s.code) { if (ev) ev.preventDefault(); return; }
+  // Let the anchor navigate naturally; nothing else needed.
+}
+refreshPartyBar();
+setInterval(refreshPartyBar, 15000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshPartyBar(); });
 
 // ---------- 📺 live games ----------
 // One list of everything being played anywhere on the site. The server builds

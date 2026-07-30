@@ -281,8 +281,8 @@ function conn(){
   socket.on('chatMeta', m => { msgsLeft = m.msgsLeft; paintQuota(); });
   socket.on('chatBlocked', d => toast(d.reason || 'Chat blocked'));
   socket.on('replaced', () => toast('You joined from another tab — this one\'s inactive.'));
-  socket.on('kicked', () => { toast('The host removed you from the party.'); setTimeout(() => location.href='/social', 1400); });
-  socket.on('closed', () => { toast('The host ended this party.'); setTimeout(() => location.href='/social', 1400); });
+  socket.on('kicked', () => { clearPartySession(); toast('The host removed you from the party.'); setTimeout(() => location.href='/social', 1400); });
+  socket.on('closed', () => { clearPartySession(); toast('The host ended this party.'); setTimeout(() => location.href='/social', 1400); });
   socket.on('err', e => toast(e.msg || 'Something went wrong.'));
   return socket;
 }
@@ -342,6 +342,8 @@ function paint(){
   if (!room) return;
   $('pTitle').textContent = room.title;
   $('pSub').textContent = room.subtitle || '';
+  // Refresh the community-app rejoin bridge each state tick.
+  markPartySession();
   const iAmHost = myRole === 'host';
   const iAmSpeaker = iAmHost || myRole === 'speaker';
   const micOn = window.wsVoice && wsVoice.micOn;
@@ -499,8 +501,36 @@ function endParty(){ if (confirm('End the party for everyone?')) socket && socke
 
 function leaveAndGo(){
   try { socket && socket.emit('leave'); } catch(e){}
+  clearPartySession();
   location.href = '/social';
 }
+
+// Session bridge for the community app's mini-bar. Whenever we're in a
+// party we write to localStorage; when the user opens /social they see
+// a persistent "🎤 In party — tap to rejoin" bar. Cleared on leave/close.
+function markPartySession(){
+  try {
+    localStorage.setItem('wsActiveParty', JSON.stringify({
+      code: CODE,
+      title: (room && room.title) || 'Party',
+      role: myRole,
+      at: Date.now()
+    }));
+  } catch(e){}
+}
+function clearPartySession(){ try { localStorage.removeItem('wsActiveParty'); } catch(e){} }
+
+// beforeunload: warn if the user tries to close the tab / navigate away
+// while in a party. The host gets a stronger warning because leaving
+// while they're the only host will auto-end the party in 2 minutes.
+window.addEventListener('beforeunload', (ev) => {
+  if (!socket || !myId) return;
+  // Modern browsers ignore the custom string, but any assignment triggers
+  // the native "Leave site?" dialog. That's enough — the alert is the point.
+  ev.preventDefault();
+  ev.returnValue = '';
+  return '';
+});
 
 let toastT = null;
 function toast(msg){
