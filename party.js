@@ -49,6 +49,7 @@ function mount(app, io, options = {}) {
     const members = [...r.members.values()].map(m => ({
       id: m.id, uid: m.uid || null, name: m.name, photo: m.photo || null,
       role: m.role, connected: !!m.connected, cfSession: m.cfSession || null,
+      handRaised: !!m.handRaised, handAt: m.handAt || 0,
       // How many of your 2 messages you've used (only sent back to yourself
       // via the personal `you` field below).
       msgsUsed: m.msgsUsed || 0
@@ -210,21 +211,44 @@ function mount(app, io, options = {}) {
       broadcast(r);
     });
 
-    // Host-only: raise a listener to speaker, or drop a speaker back.
+    // Any host can promote/demote (co-hosts are also hosts for this purpose).
+    // A promote lifts a listener to speaker (or all the way to co-host if
+    // data.role === 'host'). A demote drops back to listener.
+    const iAmHost = () => me && me.role === 'host';
     socket.on('promote', (data) => {
-      if (!room || socket.id !== room.hostId) return;
+      if (!room || !iAmHost()) return;
       const target = room.members.get(String((data && data.id) || ''));
-      if (!target || target.role === 'host') return;
-      target.role = 'speaker';
+      if (!target) return;
+      const to = (data && data.role === 'host') ? 'host' : 'speaker';
+      target.role = to;
+      target.handRaised = false;               // whichever way, drop their hand
       // On promotion, listener chat cap converts to unlimited (server also
       // stops rejecting their messages when role !== 'listener').
       broadcast(room);
     });
     socket.on('demote', (data) => {
-      if (!room || socket.id !== room.hostId) return;
+      if (!room || !iAmHost()) return;
       const target = room.members.get(String((data && data.id) || ''));
-      if (!target || target.role === 'host') return;
+      if (!target) return;
+      // The ORIGINAL host (creatorUid) can't be demoted — otherwise a fresh
+      // co-host could stage a coup and boot them.
+      if (target.uid && target.uid === room.hostUid) return;
       target.role = 'listener';
+      target.handRaised = false;
+      broadcast(room);
+    });
+
+    // Listener raises hand — flag flips, host sees a queue.
+    socket.on('raiseHand', () => {
+      if (!room || !me) return;
+      if (me.role !== 'listener') return;
+      me.handRaised = true;
+      me.handAt = Date.now();
+      broadcast(room);
+    });
+    socket.on('lowerHand', () => {
+      if (!room || !me) return;
+      me.handRaised = false;
       broadcast(room);
     });
     socket.on('kick', (data) => {
