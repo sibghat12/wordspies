@@ -338,20 +338,44 @@ function mount(app, io, options = {}) {
     });
 
     // Voice presence relay (matches the game modules — voice.js emits these).
+    //
+    // BUG FIX: the client also needs a v-roster back on v-join so it knows
+    // who's already publishing and can subscribe to their tracks. Without
+    // this, a fresh joiner sees no existing peers → subscribes to nothing
+    // → hears silence. Owner reported "my voice not getting broadcast" —
+    // symmetric: my socket announced itself but the roster reply was
+    // missing so others didn't subscribe to me either.
     socket.on('v-join', (data) => {
       if (!room || !me) return;
       me.cfSession = (data && data.cfSession) || null;
+      me.vTracks = [];
+      // Tell the rest of the room I'm on voice.
       socket.to(room.code).emit('v-peer', {
         id: socket.id, on: true, pub: me.role === 'host' || me.role === 'speaker',
         cfSession: me.cfSession, tracks: []
       });
+      // Reply to me with everyone else's current voice presence so I can
+      // subscribe to any speaker who's already broadcasting.
+      const peers = [];
+      for (const [sid, other] of room.members) {
+        if (sid === socket.id) continue;
+        if (!other.cfSession) continue;             // they're not on voice yet
+        peers.push({
+          id: sid, on: true,
+          pub: other.role === 'host' || other.role === 'speaker',
+          cfSession: other.cfSession,
+          tracks: other.vTracks || []
+        });
+      }
+      socket.emit('v-roster', { peers });
     });
     socket.on('v-tracks', (data) => {
       if (!room || !me) return;
       me.cfSession = (data && data.cfSession) || me.cfSession;
+      me.vTracks = (data && data.tracks) || [];
       socket.to(room.code).emit('v-peer', {
         id: socket.id, on: true, pub: me.role === 'host' || me.role === 'speaker',
-        cfSession: me.cfSession, tracks: (data && data.tracks) || []
+        cfSession: me.cfSession, tracks: me.vTracks
       });
     });
     socket.on('v-leave', () => {
