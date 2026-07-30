@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Party · WordSpies</title>
+<meta name="description" content="Drop into a WordSpies party — live audio with speakers, listeners, reactions and rationed chat.">
+<meta name="theme-color" content="#111318">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d1017; --sub:#a3adc2; --faint:#6b7386; --line:#252a35;
+  --accent:#7c5cff; --accent2:#5a7bff; --host:#f5b52e;
+  --green:#22c07a; --err:#ff6b8a;
+  --bg:#0b0d13; --card:#151a25; --card2:#1c2231;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Nunito',system-ui,-apple-system,sans-serif;background:radial-gradient(1000px 600px at 80% -10%,#241b45,transparent),radial-gradient(800px 500px at -10% 90%,#0f2f2b,transparent),var(--bg);color:#fff;
+  -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:960px;margin:0 auto;padding:14px 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;min-height:100vh}
+.hidden{display:none !important}
+
+/* Top bar — party title + subtitle, exit door. */
+.phead{display:flex;align-items:center;gap:12px;padding:8px 4px 16px}
+.pback{background:rgba(255,255,255,.08);color:#fff;border:0;border-radius:14px;width:40px;height:40px;font-size:18px;cursor:pointer;flex-shrink:0}
+.pback:hover{background:rgba(255,255,255,.14)}
+.pinfo{flex:1;min-width:0}
+.ptitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.psub{color:var(--sub);font-size:12.5px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pmeta{display:flex;gap:6px;flex-shrink:0}
+.pchip{background:rgba(255,255,255,.09);border-radius:99px;padding:6px 12px;font-size:11.5px;font-weight:700;color:#fff;letter-spacing:.02em;display:inline-flex;align-items:center;gap:5px}
+.pchip.live{background:#ff2f4c;animation:plpulse 1.4s ease-in-out infinite}
+@keyframes plpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,47,76,.6)}70%{box-shadow:0 0 0 10px rgba(255,47,76,0)}}
+
+/* Speaker + listener panels. Speakers get big cards up top (up to 6 across
+   on desktop), listeners a denser grid below. Each avatar is a soft blob
+   with the person's initial or photo — the row hums when they're active. */
+.psect{margin-bottom:14px}
+.psect h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin:0 4px 10px;display:flex;align-items:center;gap:6px}
+.psect h3 b{background:rgba(255,255,255,.08);color:#fff;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:800}
+.speakers{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.listeners{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
+.pav{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 8px 10px;text-align:center;transition:border-color .15s,transform .1s;overflow:hidden}
+.pav.live{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,192,122,.16)}
+.pav.host::after{content:'HOST';position:absolute;top:6px;right:6px;background:var(--host);color:#111;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 5px;border-radius:6px}
+.pav.me::before{content:'YOU';position:absolute;top:6px;left:6px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 5px;border-radius:6px}
+.pav .circ{width:56px;height:56px;border-radius:50%;margin:0 auto 8px;background:linear-gradient(140deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:22px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.4);position:relative}
+.pav.host .circ{background:linear-gradient(140deg,#f5b52e,#e07200)}
+.pav .circ img{width:100%;height:100%;object-fit:cover;display:block}
+.pav.live .circ::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--green);animation:plive 1.4s ease-out infinite}
+@keyframes plive{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.28);opacity:0}}
+.pav .nm{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pav .rl{font-size:10px;color:var(--faint);font-weight:600;margin-top:1px}
+.listeners .pav{padding:10px 4px 8px}
+.listeners .pav .circ{width:40px;height:40px;font-size:15px;margin-bottom:4px}
+.listeners .pav .nm{font-size:11px}
+.listeners .pav .rl{display:none}
+.pav.muted{opacity:.55}
+/* Host actions on speaker/listener cards (little kebab-menu buttons at the
+   bottom of the card that appear on hover / long-press). */
+.pav .pact{position:absolute;bottom:6px;left:6px;right:6px;display:none;gap:4px;justify-content:center}
+.pav.hostable .pact{display:flex}
+.pav .pact button{background:rgba(255,255,255,.08);color:#fff;border:0;border-radius:8px;padding:3px 6px;font-size:9.5px;font-weight:700;cursor:pointer}
+.pav .pact button:hover{background:rgba(255,255,255,.16)}
+.pav .pact button.danger{color:var(--err)}
+
+/* Chat panel — fixed to bottom, always in view. Message rail scrolls; the
+   composer sits below with the mic + emoji + 2-msg counter. */
+.pmain{flex:1;display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding-bottom:120px}
+.pchat{position:fixed;bottom:0;left:0;right:0;background:rgba(9,11,17,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 12px calc(10px + env(safe-area-inset-bottom));z-index:30}
+.pmsgs{max-width:640px;margin:0 auto 8px;max-height:180px;overflow-y:auto;padding:4px 6px;display:flex;flex-direction:column;gap:6px}
+.pmsg{background:rgba(255,255,255,.06);border-radius:12px;padding:6px 10px;font-size:13px;line-height:1.4;word-break:break-word}
+.pmsg .pmwho{font-weight:800;font-size:11px;color:var(--accent);margin-right:6px}
+.pmsg .pmwho.host{color:var(--host)}
+.pmsg.mine{background:linear-gradient(135deg,rgba(90,123,255,.28),rgba(124,92,255,.28));align-self:flex-end;max-width:80%}
+.pcompose{max-width:640px;margin:0 auto;display:flex;gap:6px;align-items:center}
+.pcompose .pinput{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#fff;font-family:inherit;font-size:14.5px;padding:10px 14px;border-radius:99px;outline:none;min-width:0}
+.pcompose .pinput:focus{border-color:var(--accent);background:rgba(255,255,255,.09)}
+.pcompose .pinput:disabled{opacity:.5}
+.pcompose .pbtn{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:0;width:44px;height:44px;border-radius:50%;font-size:19px;cursor:pointer;box-shadow:0 4px 14px rgba(124,92,255,.35);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pcompose .pbtn:hover{transform:translateY(-1px)}
+.pcompose .pbtn:disabled{opacity:.4;cursor:default}
+.pcompose .pbtn.mic{background:linear-gradient(135deg,#3a3f52,#252a35)}
+.pcompose .pbtn.mic.on{background:linear-gradient(135deg,#22c07a,#159f5d);animation:plpulse 1.2s infinite}
+.pcompose .pemo{background:rgba(255,255,255,.06);color:#fff;border:0;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;flex-shrink:0}
+.pcompose .pemo:hover{background:rgba(255,255,255,.1)}
+.pquota{max-width:640px;margin:0 auto 4px;text-align:center;font-size:11.5px;color:var(--sub);font-weight:600}
+.pquota .pq-strong{color:#fff}
+.pquota .pq-none{color:var(--err)}
+
+/* Emoji burst dock — appears above the composer when tapped. */
+.pemoji-pick{max-width:640px;margin:0 auto 6px;display:none;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:6px;gap:2px}
+.pemoji-pick.show{display:flex;flex-wrap:wrap;justify-content:center}
+.pemoji-pick button{background:transparent;color:#fff;border:0;font-size:22px;padding:6px 10px;border-radius:10px;cursor:pointer}
+.pemoji-pick button:hover{background:rgba(255,255,255,.09)}
+
+/* Empty state / not-yet-joined welcome card. */
+.pwelcome{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px 22px;margin:20px auto;max-width:420px;text-align:center}
+.pwelcome h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.4px;margin-bottom:6px}
+.pwelcome p{color:var(--sub);font-size:13.5px;line-height:1.55;margin-bottom:20px}
+.pwelcome .pbig{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:0;border-radius:14px;padding:14px 20px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 8px 22px rgba(124,92,255,.4);width:100%}
+.pwelcome .pbig:hover{transform:translateY(-1px)}
+
+/* Toast for host feedback (promoted, kicked, chat blocked). */
+.ptoast{position:fixed;left:50%;transform:translateX(-50%);top:14px;background:rgba(20,22,28,.96);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:200;pointer-events:none;opacity:0;transition:.2s;border:1px solid rgba(255,255,255,.06)}
+.ptoast.show{opacity:1;top:24px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="phead">
+    <button class="pback" onclick="leaveAndGo()" title="Leave the party">←</button>
+    <div class="pinfo">
+      <div class="ptitle" id="pTitle">Loading…</div>
+      <div class="psub" id="pSub"></div>
+    </div>
+    <div class="pmeta">
+      <span class="pchip live"><span style="width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block"></span>LIVE</span>
+      <span class="pchip" id="pCount">0 in room</span>
+    </div>
+  </div>
+
+  <div class="pmain" id="pMain">
+    <!-- welcome / rejoin panel until they hit "Join" -->
+    <div class="pwelcome" id="pWelcome">
+      <h2 id="pWTitle">Join this party</h2>
+      <p id="pWSub">Tap Join to enter as a listener. The host can promote you to a speaker.</p>
+      <button class="pbig" id="pJoinBtn">🎉 Join party</button>
+      <div style="margin-top:14px;font-size:12px;color:var(--sub)">
+        Need an account? <a href="/social" style="color:#fff;font-weight:700;text-decoration:underline">Sign in →</a>
+      </div>
+    </div>
+
+    <div class="proom hidden" id="pRoom">
+      <div class="psect">
+        <h3>🎙 Speakers <b id="speakerCnt">0</b></h3>
+        <div class="speakers" id="speakers"></div>
+      </div>
+      <div class="psect">
+        <h3>👂 Listeners <b id="listenerCnt">0</b></h3>
+        <div class="listeners" id="listeners"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fixed chat + composer at the bottom -->
+<div class="pchat hidden" id="pChat">
+  <div class="pquota" id="pQuota"></div>
+  <div class="pmsgs" id="pMsgs"></div>
+  <div class="pemoji-pick" id="pEmojiPick">
+    <button data-e="❤️">❤️</button><button data-e="😂">😂</button><button data-e="🔥">🔥</button>
+    <button data-e="👏">👏</button><button data-e="😮">😮</button><button data-e="🎉">🎉</button>
+    <button data-e="💯">💯</button><button data-e="🙌">🙌</button>
+  </div>
+  <div class="pcompose">
+    <button class="pbtn mic" id="pMicBtn" title="Talk (speakers only)">🎤</button>
+    <input class="pinput" id="pInput" placeholder="Say something…" maxlength="500" autocomplete="off">
+    <button class="pemo" onclick="document.getElementById('pEmojiPick').classList.toggle('show')" title="React">🎉</button>
+    <button class="pbtn" id="pSendBtn" title="Send">➤</button>
+  </div>
+</div>
+
+<div class="ptoast" id="pToast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/voice.js"></script>
+<script src="/emoji-fly.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const params = new URLSearchParams(location.search);
+let CODE = (params.get('room') || '').trim().toUpperCase();
+let socket = null, room = null, myId = null, myRole = 'listener', msgsLeft = 2;
+
+// ── boot: load room info, then wait for the user to tap Join ─────────
+async function loadRoom(){
+  if (!CODE) { alert('No party code in the URL.'); location.href = '/social'; return; }
+  try {
+    const r = await fetch('/api/parties/' + encodeURIComponent(CODE));
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Party not found.');
+    room = j.room;
+    $('pTitle').textContent = room.title;
+    $('pSub').textContent = room.subtitle || (room.count + ' in room');
+    $('pWTitle').textContent = 'Join "' + room.title + '"';
+    if (room.visibility === 'private') $('pWSub').textContent = 'Private party — you\'ll need to be in the host\'s circle to join.';
+  } catch(e){ alert(e.message); location.href = '/social'; }
+}
+loadRoom();
+
+function conn(){
+  if (socket) return socket;
+  socket = io('/party');
+  socket.on('state', st => { room = st; paint(); });
+  socket.on('joined', d => {
+    myId = d.you; myRole = d.role; msgsLeft = d.msgsLeft || 0;
+    $('pWelcome').classList.add('hidden');
+    $('pRoom').classList.remove('hidden');
+    $('pChat').classList.remove('hidden');
+    paintQuota();
+    // Wire voice — publisher if host/speaker, listener otherwise.
+    if (window.wsVoice) {
+      wsVoice.setMyId(myId);
+      wsVoice.setCanPublish(myRole === 'host' || myRole === 'speaker');
+      wsVoice.init({ socket, myId, canPublish: (myRole === 'host' || myRole === 'speaker') });
+    }
+    if (window.wsEmojiFly) wsEmojiFly.init({ socket });
+  });
+  socket.on('chat', m => { addMsg(m); });
+  socket.on('chatMeta', m => { msgsLeft = m.msgsLeft; paintQuota(); });
+  socket.on('chatBlocked', d => toast(d.reason || 'Chat blocked'));
+  socket.on('replaced', () => toast('You joined from another tab — this one\'s inactive.'));
+  socket.on('kicked', () => { toast('The host removed you from the party.'); setTimeout(() => location.href='/social', 1400); });
+  socket.on('closed', () => { toast('The host ended this party.'); setTimeout(() => location.href='/social', 1400); });
+  socket.on('err', e => toast(e.msg || 'Something went wrong.'));
+  return socket;
+}
+
+// Join button
+$('pJoinBtn').onclick = () => {
+  conn().emit('join', { code: CODE });
+};
+
+// Chat send — respects the 2-message listener limit
+function send(){
+  const v = $('pInput').value.trim();
+  if (!v || !socket) return;
+  if (myRole === 'listener' && msgsLeft <= 0) { toast('Only 2 messages for listeners — wait for the host to promote you.'); return; }
+  socket.emit('chat', { text: v });
+  $('pInput').value = '';
+}
+$('pSendBtn').onclick = send;
+$('pInput').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+
+// Emoji picker → floating burst
+document.getElementById('pEmojiPick').querySelectorAll('button[data-e]').forEach(b => {
+  b.onclick = () => { if (window.wsEmojiFly) wsEmojiFly.send(b.dataset.e); document.getElementById('pEmojiPick').classList.remove('show'); };
+});
+
+// Mic: only publisher roles get to open it
+$('pMicBtn').onclick = async () => {
+  if (!window.wsVoice) return;
+  if (!(myRole === 'host' || myRole === 'speaker')) { toast('Only speakers can talk. Ask the host to promote you.'); return; }
+  try {
+    const want = !wsVoice.micOn;
+    await wsVoice.setMic(want);
+    $('pMicBtn').classList.toggle('on', wsVoice.micOn);
+    $('pMicBtn').textContent = wsVoice.micOn ? '🔴' : '🎤';
+  } catch(e){ toast(e.message || 'Mic failed'); }
+};
+
+function paint(){
+  if (!room) return;
+  $('pTitle').textContent = room.title;
+  $('pSub').textContent = room.subtitle || (room.count + ' in room');
+  $('pCount').textContent = room.count + ' in room';
+  const isHost = myId && room.hostId === myId;
+  const speakers = room.members.filter(m => m.role === 'host' || m.role === 'speaker');
+  const listeners = room.members.filter(m => m.role === 'listener');
+  $('speakerCnt').textContent = speakers.length;
+  $('listenerCnt').textContent = listeners.length;
+  $('speakers').innerHTML = speakers.map(m => memberCard(m, true, isHost)).join('');
+  $('listeners').innerHTML = listeners.map(m => memberCard(m, false, isHost)).join('');
+  // Repaint messages if the host cleared the state — cheap enough.
+  if (room.messages && $('pMsgs').childElementCount !== room.messages.length) {
+    $('pMsgs').innerHTML = '';
+    room.messages.forEach(addMsg);
+  }
+  // Update my own role if it changed (promoted/demoted)
+  const me = room.members.find(m => m.id === myId);
+  if (me && me.role !== myRole) {
+    myRole = me.role;
+    if (window.wsVoice) wsVoice.setCanPublish(myRole === 'host' || myRole === 'speaker');
+    if (myRole === 'host' || myRole === 'speaker') { msgsLeft = 999; toast('You\'re a speaker now! Tap 🎤 to talk.'); }
+    else if (myRole === 'listener') { toast('You\'re a listener now.'); }
+    paintQuota();
+  }
+}
+function memberCard(m, big, iAmHost){
+  const isMe = m.id === myId;
+  const isHost = m.role === 'host';
+  const canManage = iAmHost && !isMe && m.role !== 'host';
+  const av = m.photo
+    ? '<img src="' + esc(m.photo) + '" alt="">'
+    : esc((m.name || '?').charAt(0).toUpperCase());
+  const roleLbl = isHost ? 'Host' : m.role === 'speaker' ? 'Speaker' : 'Listener';
+  const cls = ['pav', isHost ? 'host' : '', isMe ? 'me' : '', canManage ? 'hostable' : ''].filter(Boolean).join(' ');
+  const actions = canManage ? (
+    '<div class="pact">' +
+    (m.role === 'listener'
+      ? '<button onclick="promote(\'' + esc(m.id) + '\')">Promote 🎙</button>'
+      : '<button onclick="demote(\'' + esc(m.id) + '\')">Demote</button>') +
+    '<button class="danger" onclick="kick(\'' + esc(m.id) + '\')">Kick</button></div>'
+  ) : '';
+  return '<div class="' + cls + '">' +
+    '<div class="circ">' + av + '</div>' +
+    '<div class="nm">' + esc(m.name) + '</div>' +
+    (big ? '<div class="rl">' + roleLbl + '</div>' : '') +
+    actions + '</div>';
+}
+function paintQuota(){
+  const q = $('pQuota');
+  const inp = $('pInput');
+  if (myRole === 'host' || myRole === 'speaker') {
+    q.innerHTML = '<span class="pq-strong">Unlimited chat</span> · you\'re a speaker';
+    inp.disabled = false;
+  } else if (msgsLeft > 0) {
+    q.innerHTML = 'Listener chat · <span class="pq-strong">' + msgsLeft + ' message' + (msgsLeft === 1 ? '' : 's') + ' left</span>';
+    inp.disabled = false;
+  } else {
+    q.innerHTML = '<span class="pq-none">You\'ve used both your messages.</span> Wait for a promotion — reactions still work.';
+    inp.disabled = true;
+  }
+}
+function addMsg(m){
+  const el = document.createElement('div');
+  el.className = 'pmsg' + (m.f === myId ? ' mine' : '');
+  const roleCls = m.r === 'host' ? ' host' : '';
+  el.innerHTML = '<span class="pmwho' + roleCls + '">' + esc(m.n) + '</span>' + esc(m.x);
+  $('pMsgs').appendChild(el);
+  $('pMsgs').scrollTop = $('pMsgs').scrollHeight;
+}
+
+// Host actions
+function promote(id){ socket && socket.emit('promote', { id }); }
+function demote(id){ socket && socket.emit('demote', { id }); }
+function kick(id){ if (confirm('Remove this person from the party?')) socket && socket.emit('kick', { id }); }
+function endParty(){ if (confirm('End the party for everyone?')) socket && socket.emit('closeParty'); }
+
+function leaveAndGo(){
+  try { socket && socket.emit('leave'); } catch(e){}
+  location.href = '/social';
+}
+
+let toastT = null;
+function toast(msg){
+  const el = $('pToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+<script src="/wsbrand.js" defer></script>
+</body>
+</html>

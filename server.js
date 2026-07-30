@@ -108,6 +108,12 @@ app.get('/how-to-play', (req, res) => res.type('html').send(pages.howToPlayPage(
 // page instead of a silent no-op scroll.
 app.get('/how', (req, res) => res.redirect(301, '/how-to-play'));
 
+// Standalone party room page (own URL so links share cleanly).
+app.get('/party', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'party.html'));
+});
+
 // ── Cloudflare Realtime broker ─────────────────────────────────────────
 // Voice runs on Cloudflare's SFU when the two env vars are set; otherwise
 // clients fall back to the peer-to-peer STUN path baked into /voice.js.
@@ -421,6 +427,20 @@ catch (e) { console.error('arcade module failed to load (game unaffected):', e.m
 let spyMod = null;
 try { spyMod = require('./spy').mount(app, io, { identify: resolveSocialIdentity }) || null; }
 catch (e) { console.error('spy module failed to load (game unaffected):', e.message); }
+
+// 🎉 Parties — audio rooms with speakers + listeners + rationed listener chat.
+// Uses the same Cloudflare Realtime pipeline the games do. Own namespace at
+// /party, own rooms map, own REST endpoints under /api/parties.
+let partyMod = null;
+try {
+  partyMod = require('./party').mount(app, io, {
+    identify: resolveSocialIdentity,
+    uidFromReq: uidFromCookie,
+    // For private-party gating: social module tells us who's in the host's
+    // circle (follows / followers / recent chats).
+    socialCircle: social && social.inviteCircle ? social.inviteCircle : null
+  }) || null;
+} catch (e) { console.error('party module failed to load (rest of site unaffected):', e.message); }
 
 // ── Live ──────────────────────────────────────────────────────────────────
 // Every game actually being played right now, in one list. The point is that
