@@ -483,6 +483,23 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pt-mgo:disabled{opacity:.5;cursor:default;transform:none}
 .pt-err{color:var(--err);font-size:12.5px;font-weight:600;margin-top:10px}
 
+/* Live parties strip on the Community wall — clean white cards that
+   surface currently-live parties so a fresh visitor can see the action
+   without hunting the Parties tab. */
+.wpstrip{margin:12px 20px 6px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px}
+.wpshdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wpshdr>span{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-.1px}
+.wpshdr .wpsall{font-size:12px;font-weight:700;color:var(--caccent,#5a7bff);text-decoration:none}
+.wpshdr .wpsall:hover{text-decoration:underline}
+.wpsrows{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.wpsrows::-webkit-scrollbar{display:none}
+.wpsrow{flex:0 0 240px;background:linear-gradient(135deg,#eef1ff,#f6efff);border:1px solid #d8ddff;border-radius:14px;padding:12px;text-decoration:none;color:var(--ink);transition:transform .12s,border-color .12s}
+.wpsrow:hover{transform:translateY(-2px);border-color:#5a7bff}
+.wpsrow .wpst{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:14px;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.wpsrow .wpss{color:var(--sub);font-size:11.5px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wpsrow .wpsmeta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--sub)}
+.wpsrow .wpslive{background:#fff5f5;color:#d93025;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.08em;border:1px solid #f8d3d3}
+
 /* Persistent rejoin pill — appears at the bottom of the community app
    whenever localStorage.wsActiveParty is set, i.e. the user opened a
    party in a sibling page. Tapping it takes them back into /party. */
@@ -979,6 +996,16 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <a class="lvnudge hidden" id="lvNudge" href="#live" onclick="showTab('live');return false">
       <span class="lvdot"></span><b id="lvNudgeT"></b><span class="lvna" aria-hidden="true">→</span>
     </a>
+    <!-- Live parties strip — surfaces any active party directly on the
+         community wall. Owner asked: parties should appear across the site,
+         not just on the Parties tab. Populated by paintCommunityPartyStrip. -->
+    <div class="wpstrip hidden" id="wpStrip">
+      <div class="wpshdr">
+        <span>🎉 Parties happening right now</span>
+        <a href="#parties" onclick="showTab('parties');return false" class="wpsall">See all →</a>
+      </div>
+      <div class="wpsrows" id="wpStripRows"></div>
+    </div>
     <div class="chwrap hidden" id="chWrap" onclick="if(event.target===this)closeChallenge()">
       <div class="chsheet" style="position:relative">
         <button class="chx" onclick="closeChallenge()">✕</button>
@@ -1603,6 +1630,9 @@ function showTab(t){
   // keeps the tab badge honest while you're somewhere else.
   if (t === 'live') { refreshLive(); liveTimer = setInterval(refreshLive, 5000); }
   if (t === 'games' || t === 'wall') refreshMyRooms();
+  // Community + Games benefit from an immediate /api/live so the parties
+  // strip / live pill light up on landing, not 20s later.
+  if (t === 'wall' || t === 'games' || t === 'live') refreshLive();
   if (t === 'parties') { refreshParties(); if (!window.__ptTimer) window.__ptTimer = setInterval(() => { if (!document.hidden && !$('tabParties').classList.contains('hidden')) refreshParties(); }, 8000); }
   window.scrollTo(0,0);
 }
@@ -1719,6 +1749,26 @@ async function closeMyRoom(game, code, btn){
 // Background refresh so a room that expires shows up as closed.
 setInterval(() => { if (!document.hidden && ME && !GUEST) refreshMyRooms(); }, 30000);
 
+// Community-wall Live-parties strip. Called from paintLiveGames (which
+// already runs whenever /api/live refreshes — every 5s inside Live tab,
+// every 20s elsewhere). Anywhere in /social gets the visual cue.
+function paintCommunityPartyStrip(parties){
+  const strip = $('wpStrip'), rows = $('wpStripRows');
+  if (!strip || !rows) return;
+  if (!parties || !parties.length) { strip.classList.add('hidden'); return; }
+  strip.classList.remove('hidden');
+  rows.innerHTML = parties.slice(0, 8).map(p => {
+    // p.game is 'party'; live() sends {title, code, players, lead}
+    const speakers = (p.players || []).filter(x => x.team === 'host' || x.team === 'speaker').length;
+    const listeners = Math.max(0, (p.players || []).length - speakers);
+    return `<a class="wpsrow" href="/party?room=${esc(p.code)}">
+      <div class="wpst">${esc(p.title || 'Party')}</div>
+      <div class="wpss">${speakers} 🎙 · ${listeners} 👂</div>
+      <div class="wpsmeta"><span>Tap to join</span><span class="wpslive">LIVE</span></div>
+    </a>`;
+  }).join('');
+}
+
 // ---------- Party rejoin pill ----------
 // party.html writes { code, title, role, at } to localStorage.wsActiveParty
 // whenever we're in one. This bar surfaces it EVERYWHERE in /social so the
@@ -1809,6 +1859,16 @@ function paintLiveGames(j){
   // right now. Reads /api/live's own data — no extra request needed.
   const byGame = {};
   for (const g of games) byGame[g.game] = (byGame[g.game] || 0) + 1;
+
+  // Party badge on the top nav's Parties tab: number of live parties
+  // across the site. So a user on any tab immediately sees "🎉 3" and
+  // knows there's something happening.
+  const pcnt = byGame.party || 0;
+  const pb = $('partyBadge');
+  if (pb) { pb.textContent = pcnt > 9 ? '9+' : pcnt; pb.classList.toggle('hidden', !pcnt); }
+
+  // Live parties strip on the Community wall.
+  paintCommunityPartyStrip(games.filter(g => g.game === 'party'));
   const gameCardMap = {
     wordspies: 'cntWordspies', ludo: 'cntLudo', pool: 'cntPool',
     four: 'cntFour', meld: 'cntMeld', spy: 'cntSpy'
