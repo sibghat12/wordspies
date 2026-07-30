@@ -246,6 +246,18 @@
       // Answer any offer Cloudflare sends us out-of-band (their SFU pushes
       // an offer whenever it has fresh remote tracks to deliver).
       this.pc.onnegotiationneeded = function () { /* renegotiate lazily below */ };
+      // ── Self-healing ──────────────────────────────────────────────
+      // WebRTC connections drift silently: ICE fails, tab throttles,
+      // CF closes the session after long idle. React by tearing down and
+      // rebuilding — cheaper than trying to patch a half-dead PC.
+      this.pc.onconnectionstatechange = function () {
+        var s = self.pc && self.pc.connectionState;
+        if (s === 'failed' || s === 'disconnected' || s === 'closed') {
+          // Small debounce so a brief flicker doesn't cause churn.
+          clearTimeout(self._healT);
+          self._healT = setTimeout(function () { self.heal('pc-' + s); }, s === 'disconnected' ? 4000 : 800);
+        }
+      };
 
       // Room-scoped presence over socket.io. `v-peer` events now include
       // cfSession + tracks so we know exactly which SFU tracks to subscribe to.
@@ -254,13 +266,62 @@
 
       // Tell the room we're on voice; server replies with the roster.
       socket.emit('v-join', { cfSession: this.sessionId, tracks: [] });
+
+      // Periodic silence check: if we're supposed to hear someone but no
+      // audio has arrived for 15 s, force a rebuild. Uses getStats to see
+      // whether any inbound track is still ticking bytesReceived.
+      this._lastBytesIn = 0;
+      this._lastBytesAt = Date.now();
+      clearInterval(this._statsT);
+      this._statsT = setInterval(function () { self.checkTraffic(); }, 5000);
+    },
+    // Nuke everything and re-activate. If we had a mic open, re-publish.
+    async heal(reason) {
+      if (this._healing) return;
+      this._healing = true;
+      var wasPublishing = !!(localStream && this.localTrackNames.length);
+      try {
+        try { console && console.warn && console.warn('[voice] healing:', reason); } catch (e) {}
+        emit('healing', { reason: reason });
+        await this.deactivate();
+        await this.activate();
+        if (wasPublishing) await this.publishLocal();
+      } catch (e) {
+        try { console && console.warn && console.warn('[voice] heal failed:', e); } catch (e2) {}
+      } finally { this._healing = false; }
+    },
+    async checkTraffic() {
+      if (!this.pc || this._healing) return;
+      try {
+        var stats = await this.pc.getStats();
+        var totalIn = 0, hasInbound = false;
+        stats.forEach(function (r) {
+          if (r.type === 'inbound-rtp' && r.kind === 'audio') {
+            hasInbound = true;
+            totalIn += r.bytesReceived || 0;
+          }
+        });
+        if (!hasInbound) { this._lastBytesAt = Date.now(); return; }
+        if (totalIn > this._lastBytesIn) {
+          this._lastBytesIn = totalIn;
+          this._lastBytesAt = Date.now();
+        } else if (Date.now() - this._lastBytesAt > 15000) {
+          // 15 s of no bytes despite an active inbound stream — rebuild.
+          this._lastBytesAt = Date.now();
+          this.heal('silent-15s');
+        }
+      } catch (e) {}
     },
 
     async deactivate() {
+      clearInterval(this._statsT); this._statsT = null;
+      clearTimeout(this._healT); this._healT = null;
       try { socket.off('v-peer'); } catch (e) {}
       try { socket.off('v-roster'); } catch (e) {}
       try { socket.emit('v-leave'); } catch (e) {}
       if (this.pc) { try { this.pc.close(); } catch (e) {} this.pc = null; }
+      // Detach any incoming <audio> tags — new session will attach fresh ones.
+      try { document.querySelectorAll('audio[data-peer^="sfu:"]').forEach(function (a) { a.remove(); }); } catch (e) {}
       this.sessionId = null;
       this.localTrackNames = [];
       this.subscribed = {};
@@ -416,6 +477,20 @@
     joined = false; micOn = false;
     emit('mic', { on: false });
   }
+
+  // When the tab wakes back up from being hidden (screen unlocked, tab
+   // refocused, app foregrounded), give any active SFU session a health
+   // check. Browsers throttle background tabs aggressively and can silently
+   // let the peer connection wither; a quick rebuild is nearly instant and
+   // saves a "voice suddenly stopped working" call.
+   document.addEventListener('visibilitychange', function () {
+     if (document.hidden) return;
+     if (!joined || VOICE_MODE !== 'cloudflare' || !activePath || activePath !== sfu) return;
+     var pc = sfu.pc;
+     if (!pc || pc.connectionState === 'failed' || pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
+       sfu.heal('visibility');
+     }
+   });
 
   window.wsVoice = {
     init: init, destroy: destroy, setMic: setMic, on: on,
