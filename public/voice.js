@@ -83,10 +83,13 @@
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       throw new Error('This browser has no microphone support.');
     }
-    // Ask for HD audio: 48 kHz sample rate, stereo, and the browser's best
-    // echo-cancel/noise-suppress. Combined with Cloudflare's Opus @ ~64 kbps
-    // this is essentially the highest quality WebRTC allows. The browser
-    // silently downgrades if the mic can't do stereo — we don't care.
+    // HD audio ask. Push everything to the ceiling browsers actually
+    // allow so live party voice reads as clearly as the DM voice notes:
+    //  · 48 kHz sample rate
+    //  · Stereo (ideal:2; browser drops to mono if the mic can't)
+    //  · Echo-cancel + noise-suppress + AGC — the standard defensive
+    //    trio, but see stereo/latency caveat below.
+    //  · latency:0.02 = 20 ms target — matches Opus ptime=20.
     localStream = await navigator.mediaDevices.getUserMedia({
       audio: {
         echoCancellation: true,
@@ -100,19 +103,68 @@
     });
     return localStream;
   }
-  // Once we've published, coax the RTP sender into high-quality Opus.
-  // Bumps target bitrate + turns on DTX for silence savings. Safe to call
-  // on any sender — falls back quietly if setParameters isn't supported.
+  // Once we've published, coax the RTP sender into music-grade Opus.
+  //  · maxBitrate 128 kbps → matches the recorded voice-note pipeline.
+  //  · high network priority so browsers don't down-shift under load.
   async function boostSender(sender) {
     if (!sender || !sender.getParameters) return;
     try {
       var params = sender.getParameters();
       params.encodings = params.encodings || [{}];
-      params.encodings[0].maxBitrate = 96000;   // 96 kbps — top of Opus voice range
+      params.encodings[0].maxBitrate = 128000;
       params.encodings[0].priority = 'high';
       params.encodings[0].networkPriority = 'high';
       await sender.setParameters(params);
     } catch (e) { /* not supported on this browser — no harm */ }
+  }
+
+  // Rewrite an SDP offer/answer so Opus runs at maximum fidelity:
+  //  · stereo=1 + sprop-stereo=1  — two channels end-to-end
+  //  · maxaveragebitrate=128000   — 128 kbps target
+  //  · useinbandfec=1              — Forward Error Correction, hides
+  //                                    the odd dropped packet without a
+  //                                    retransmit round-trip.
+  //  · usedtx=0                    — no silence suppression. DTX cuts
+  //                                    off soft speech attacks and gives
+  //                                    voice notes a "cleaner" edge — but
+  //                                    live music/laughter/whispers
+  //                                    suffer. Off keeps everything.
+  //  · cbr=0                       — variable bitrate stays fluid.
+  // Applied on both sides of every offer/answer so both peers agree.
+  function tuneOpus(sdp) {
+    if (!sdp || typeof sdp !== 'string') return sdp;
+    var lines = sdp.split(/\r?\n/);
+    var opusPt = null;
+    for (var i = 0; i < lines.length; i++) {
+      var m = /^a=rtpmap:(\d+)\s+opus\/48000/i.exec(lines[i]);
+      if (m) { opusPt = m[1]; break; }
+    }
+    if (!opusPt) return sdp;
+    var fmtpPattern = new RegExp('^a=fmtp:' + opusPt + '\\s+(.*)$');
+    var wanted = 'stereo=1;sprop-stereo=1;maxaveragebitrate=128000;maxplaybackrate=48000;useinbandfec=1;usedtx=0;cbr=0';
+    var fmtpFound = false;
+    for (var j = 0; j < lines.length; j++) {
+      var fm = fmtpPattern.exec(lines[j]);
+      if (fm) {
+        // Merge with any existing params, our values override.
+        var existing = {};
+        fm[1].split(';').forEach(function (kv) { var p = kv.split('='); if (p[0]) existing[p[0].trim()] = (p[1] || '').trim(); });
+        wanted.split(';').forEach(function (kv) { var p = kv.split('='); if (p[0]) existing[p[0].trim()] = (p[1] || '').trim(); });
+        var merged = Object.keys(existing).map(function (k) { return existing[k] ? k + '=' + existing[k] : k; }).join(';');
+        lines[j] = 'a=fmtp:' + opusPt + ' ' + merged;
+        fmtpFound = true;
+      }
+    }
+    if (!fmtpFound) {
+      // Insert an fmtp line right after the rtpmap line.
+      for (var k = 0; k < lines.length; k++) {
+        if (new RegExp('^a=rtpmap:' + opusPt + '\\s').test(lines[k])) {
+          lines.splice(k + 1, 0, 'a=fmtp:' + opusPt + ' ' + wanted);
+          break;
+        }
+      }
+    }
+    return lines.join('\r\n');
   }
   function closeMic() {
     if (!localStream) return;
@@ -332,6 +384,10 @@
       if (!this.pc || !this.sessionId) return;
       var transceiver = this.pc.addTransceiver(track, { direction: 'sendonly' });
       var offer = await this.pc.createOffer();
+      // Rewrite our offer's Opus fmtp for stereo + FEC + 128 kbps + no DTX
+      // BEFORE handing it to the PC, so the local view already reflects
+      // the maxed-out params. CF echoes them back in its answer.
+      offer = new RTCSessionDescription({ type: offer.type, sdp: tuneOpus(offer.sdp) });
       await this.pc.setLocalDescription(offer);
       var body = {
         sdp: { type: 'offer', sdp: offer.sdp },
@@ -376,6 +432,8 @@
       if (r.requiresImmediateRenegotiation && r.sessionDescription) {
         await this.pc.setRemoteDescription(r.sessionDescription);
         var ans = await this.pc.createAnswer();
+        // Tune Opus in our answer too so both directions run at 128 kbps.
+        ans = new RTCSessionDescription({ type: ans.type, sdp: tuneOpus(ans.sdp) });
         await this.pc.setLocalDescription(ans);
         await fetch('/api/voice/cf/renegotiate/' + this.sessionId, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },

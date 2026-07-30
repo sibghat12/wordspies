@@ -105,7 +105,11 @@ function mount(app, io, options = {}) {
       // Only surface PUBLIC parties in the list — private ones require a
       // direct link or invite from a member of the host's circle.
       if (r.visibility !== 'public') continue;
-      if (!r.members.size) continue;
+      // Show even empty rooms for the first 10 minutes after creation, so
+      // a host who made the room via REST but hasn't opened it in a socket
+      // yet still appears in the list for friends who spotted the link.
+      const isFresh = (Date.now() - (r.createdAt || r.touched || 0)) < 10 * 60 * 1000;
+      if (!r.members.size && !isFresh) continue;
       const all = [...r.members.values()];
       const speakers = all.filter(m => m.role === 'speaker' || m.role === 'host');
       const listeners = all.filter(m => m.role === 'listener');
@@ -131,6 +135,7 @@ function mount(app, io, options = {}) {
     const subtitle = cleanText((req.body || {}).subtitle, 120);
     const vis = ((req.body || {}).visibility === 'private') ? 'private' : 'public';
     const code = makeUniqueCode(rooms);
+    console.log('[party] create', code, 'vis=' + vis, 'host=' + uid.slice(0, 8), 'title=' + title.slice(0, 40));
     const room = {
       code, title, subtitle, visibility: vis,
       hostUid: uid, hostId: null,
@@ -216,6 +221,7 @@ function mount(app, io, options = {}) {
       if (role === 'host' && (!r.hostId || isCreator)) r.hostId = socket.id;
       socket.join(r.code);
       room = r; me = member;
+      console.log('[party] join', r.code, 'uid=' + (uid || 'guest').slice(0, 8), 'role=' + member.role, 'members=' + r.members.size);
       socket.emit('joined', {
         code: r.code, you: socket.id, role: member.role,
         msgsLeft: LISTENER_MSG_LIMIT - member.msgsUsed
@@ -414,12 +420,15 @@ function mount(app, io, options = {}) {
       }
       for (const id of drop) { r.members.delete(id); if (r.hostId === id) r.hostId = null; }
 
-      // Any host still connected? If none for >2 min, the party ends.
-      // "You can't have a party without a host" (owner).
+      // Any host still connected? If none for >10 min, the party ends.
+      // "You can't have a party without a host" (owner) — but 2 min was
+      // too aggressive: a phone locking, an app-switch, a network blip
+      // all knocked the party out before the host could come back.
       const hostsConnected = [...r.members.values()].filter(m => m.role === 'host' && m.connected);
       if (!hostsConnected.length) {
         r.noHostSince = r.noHostSince || now;
-        if (now - r.noHostSince > 2 * 60 * 1000) {
+        if (now - r.noHostSince > 10 * 60 * 1000) {
+          console.log('[party] auto-end', code, 'no host for 10min');
           nsp.to(r.code).emit('closed');
           rooms.delete(code);
         }
