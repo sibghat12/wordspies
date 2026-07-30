@@ -433,19 +433,30 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pt-create-btn span{font-size:19px;line-height:1}
 .pt-list{display:grid;grid-template-columns:1fr;gap:10px;padding:14px 20px 30px}
 @media(min-width:700px){ .pt-list{grid-template-columns:repeat(2,1fr)} }
-.pt-card{background:linear-gradient(140deg,#1c2231,#0f1420);color:#fff;border-radius:20px;padding:18px;text-decoration:none;position:relative;overflow:hidden;transition:transform .12s;border:1px solid rgba(255,255,255,.06)}
-.pt-card:hover{transform:translateY(-3px)}
-.pt-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(124,92,255,.35),transparent);pointer-events:none}
-.pt-card .pt-live{position:absolute;top:14px;right:14px;background:#ff2f4c;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:3px 8px;border-radius:99px;animation:plpulse 1.4s ease-in-out infinite}
-.pt-card .pt-ct{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:18px;letter-spacing:-.3px;line-height:1.2;padding-right:60px}
-.pt-card .pt-cs{color:rgba(255,255,255,.62);font-size:12.5px;font-weight:600;margin-top:4px;padding-right:60px;line-height:1.4}
-.pt-card .pt-cstack{display:flex;gap:-8px;margin-top:12px}
-.pt-card .pt-cavatar{width:30px;height:30px;border-radius:50%;background:#3a3f52;color:#fff;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;border:2px solid #1c2231;margin-left:-8px;overflow:hidden}
+/* Clean white party card — flat, no shadow, matches the Google-clean
+   party page. Title reads first, speaker/listener counts read next,
+   avatars for social proof, one clear Join button. */
+.pt-card{background:#fff;color:var(--ink);border-radius:18px;padding:16px;text-decoration:none;position:relative;overflow:hidden;transition:border-color .12s,transform .1s;border:1px solid var(--line);display:block}
+.pt-card:hover{border-color:#d0d7ff;transform:translateY(-2px)}
+.pt-card .pt-live{position:absolute;top:14px;right:14px;background:#fff5f5;color:#d93025;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:3px 9px 3px 6px;border:1px solid #f8d3d3;border-radius:99px;display:inline-flex;align-items:center;gap:5px}
+.pt-card .pt-live::before{content:'';width:5px;height:5px;border-radius:50%;background:#d93025;display:inline-block;animation:plpulse 1.4s ease-in-out infinite}
+.pt-card .pt-ct{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:18px;letter-spacing:-.3px;line-height:1.25;padding-right:64px;color:var(--ink)}
+.pt-card .pt-cs{color:var(--sub);font-size:13px;font-weight:500;margin-top:3px;padding-right:64px;line-height:1.45}
+/* Two badges: speakers on the left (blue), listeners on the right (grey) */
+.pt-cstats{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.pt-cbadge{display:inline-flex;align-items:center;gap:5px;background:#f4f5f7;color:var(--sub);border-radius:99px;padding:5px 10px;font-size:11.5px;font-weight:700;letter-spacing:-.1px}
+.pt-cbadge b{color:var(--ink);font-weight:800}
+.pt-cbadge.spk{background:#eef1ff;color:#4358d1}
+.pt-cbadge.spk b{color:#3040b5}
+.pt-cbadge.lst{background:#f4f5f7;color:var(--sub)}
+.pt-cbadge.lst b{color:var(--ink)}
+.pt-card .pt-cstack{display:flex;margin-top:12px}
+.pt-card .pt-cavatar{width:28px;height:28px;border-radius:50%;background:#e8eaed;color:var(--sub);font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-8px;overflow:hidden}
 .pt-card .pt-cavatar:first-child{margin-left:0}
 .pt-card .pt-cavatar img{width:100%;height:100%;object-fit:cover}
-.pt-card .pt-cmeta{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
-.pt-card .pt-ccnt{color:rgba(255,255,255,.75);font-size:12px;font-weight:700}
-.pt-card .pt-join{background:#fff;color:#111;border-radius:10px;padding:7px 14px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:12.5px}
+.pt-card .pt-cmeta{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.pt-card .pt-ccnt{color:var(--faint);font-size:12px;font-weight:700}
+.pt-card .pt-join{background:var(--ink);color:#fff;border-radius:10px;padding:8px 16px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:13px}
 .pt-empty{text-align:center;color:var(--faint);padding:60px 20px;font-size:14px;font-weight:500;line-height:1.7}
 .pt-empty .big{font-size:44px;display:block;margin-bottom:12px}
 
@@ -1591,13 +1602,21 @@ function paintParties(list){
       const img = s.photo ? `<img src="${esc(s.photo)}" alt="">` : esc((s.name || '?').charAt(0).toUpperCase());
       return `<span class="pt-cavatar">${img}</span>`;
     }).join('');
+    // Server sends explicit speakerCount/listenerCount; fall back for older
+    // deploys that only sent `speakers` + `count`.
+    const spk = (p.speakerCount != null) ? p.speakerCount : (p.speakers || []).length;
+    const lst = (p.listenerCount != null) ? p.listenerCount : Math.max(0, (p.count || 0) - spk);
     return `<a class="pt-card" href="/party?room=${esc(p.code)}">
       <span class="pt-live">LIVE</span>
       <div class="pt-ct">${esc(p.title)}</div>
       ${p.subtitle ? `<div class="pt-cs">${esc(p.subtitle)}</div>` : ''}
+      <div class="pt-cstats">
+        <span class="pt-cbadge spk">🎙 <b>${spk}</b> speaker${spk === 1 ? '' : 's'}</span>
+        <span class="pt-cbadge lst">👂 <b>${lst}</b> listener${lst === 1 ? '' : 's'}</span>
+      </div>
       <div class="pt-cstack">${avs}</div>
       <div class="pt-cmeta">
-        <span class="pt-ccnt">${p.count} in room · ${(p.speakers || []).length} speaker${p.speakers.length === 1 ? '' : 's'}</span>
+        <span class="pt-ccnt">${esc(p.hostName || 'Someone')} is hosting</span>
         <span class="pt-join">Join →</span>
       </div>
     </a>`;

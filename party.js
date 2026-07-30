@@ -106,10 +106,14 @@ function mount(app, io, options = {}) {
       // direct link or invite from a member of the host's circle.
       if (r.visibility !== 'public') continue;
       if (!r.members.size) continue;
-      const speakers = [...r.members.values()].filter(m => m.role === 'speaker' || m.role === 'host');
+      const all = [...r.members.values()];
+      const speakers = all.filter(m => m.role === 'speaker' || m.role === 'host');
+      const listeners = all.filter(m => m.role === 'listener');
       out.push({
         code: r.code, title: r.title, subtitle: r.subtitle || '',
         count: r.members.size, cap: r.cap,
+        speakerCount: speakers.length,
+        listenerCount: listeners.length,
         hostName: (r.members.get(r.hostId) || {}).name || null,
         hostPhoto: (r.members.get(r.hostId) || {}).photo || null,
         speakers: speakers.slice(0, 5).map(s => ({ name: s.name, photo: s.photo || null })),
