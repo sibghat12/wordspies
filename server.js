@@ -113,6 +113,12 @@ app.get('/party', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public', 'party.html'));
 });
+// 1-on-1 voice call — WhatsApp-style minimal UI. Same socket + SFU as
+// party, different chrome.
+app.get('/call', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'call.html'));
+});
 
 // ── Cloudflare Realtime broker ─────────────────────────────────────────
 // Voice runs on Cloudflare's SFU when the two env vars are set; otherwise

@@ -1887,8 +1887,10 @@ async function acceptCall(){
   hideCallRing();
   try { await fetch('/api/social/call/answer', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code: c.code }) }); } catch(e){}
   INCOMING_CALL = null;
-  // Enter the call the same way we enter parties — via the in-app iframe host.
-  openPartyInApp(c.code, 'Call with ' + c.fromName);
+  // Enter via the dedicated /call page — WhatsApp-style minimal UI,
+  // NOT the party page. Same iframe host so the community app keeps
+  // its runtime alive underneath.
+  openCallInApp(c.code, c.fromName);
 }
 async function declineCall(){
   const c = INCOMING_CALL; if (!c) return;
@@ -1906,11 +1908,30 @@ async function ringCurrentChat(){
     const r = await fetch('/api/social/call/ring', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to: curChat }) });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'Ring failed.');
-    toast('📞 Ringing — waiting for them to answer…');
-    // Auto-enter the call room ourselves so we're already on the line when they accept.
-    openPartyInApp(j.code, 'Calling…');
+    // Enter via the dedicated /call page so the caller sees the same
+    // clean WhatsApp-style screen from the moment they dial.
+    openCallInApp(j.code, 'Calling…');
   } catch(e){ toast(e.message); }
   finally { btn.disabled = false; btn.textContent = orig; }
+}
+
+// Route through the same iframe-host as parties, but load /call.html
+// instead of /party.html. Closer to a WhatsApp screen, no party UI.
+function openCallInApp(code, name){
+  const host = $('partyHost');
+  const frame = $('phostFrame');
+  if (!host || !frame) return;
+  if (PHOST_CODE && PHOST_CODE !== code) closePartyInApp(true);
+  PHOST_CODE = code;
+  $('phostTitle').textContent = name || 'Call';
+  $('phostSub').textContent = 'On a call';
+  host.classList.remove('hidden');
+  host.classList.add('fs');
+  host.classList.remove('mini');
+  document.body.classList.add('in-party');
+  const desired = '/call?room=' + encodeURIComponent(code) + '&embed=1';
+  if (!frame.src.endsWith(desired)) frame.src = desired;
+  $('partyBar') && $('partyBar').classList.add('hidden');
 }
 // Poll for incoming calls every 3s (or piggyback on pingLoop if present).
 setInterval(() => { if (!document.hidden) pollIncomingCall(); }, 3000);

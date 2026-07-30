@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Voice call · WordSpies</title>
+<meta name="theme-color" content="#0a0d13">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d1017; --bg:#0a0d13;
+  --sub:#a3adc2; --faint:#6b7386;
+  --green:#22c07a; --red:#d93025;
+  --accent:#5a7bff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;
+  background:radial-gradient(1200px 800px at 50% 20%,#1a2440,#0a0d13 70%);
+  color:#fff;-webkit-font-smoothing:antialiased;
+  min-height:100vh;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:calc(48px + env(safe-area-inset-top)) 20px calc(48px + env(safe-area-inset-bottom));
+}
+.top{width:100%;text-align:center}
+.top .brand{font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+
+/* Middle: avatar + name + state. Vertically centered. */
+.core{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;width:100%}
+.avring{position:relative;width:160px;height:160px}
+.avring::before,.avring::after{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid rgba(90,123,255,.35);animation:callpulse 2.4s ease-out infinite;
+}
+.avring::after{animation-delay:1.2s}
+@keyframes callpulse{
+  0%{transform:scale(1);opacity:.9}
+  100%{transform:scale(1.6);opacity:0}
+}
+/* Suppress the pulse once we're connected — different vibe wanted */
+body.connected .avring::before,body.connected .avring::after{animation:none;opacity:0}
+.av{
+  width:100%;height:100%;border-radius:50%;overflow:hidden;position:relative;
+  background:linear-gradient(140deg,#5a7bff,#7c5cff);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:64px;color:#fff;
+  box-shadow:0 20px 60px rgba(0,0,0,.55),inset 0 -20px 40px rgba(0,0,0,.2);
+}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+/* Speaking pulse — green ring when their voice is coming through */
+.av.speaking{box-shadow:0 20px 60px rgba(0,0,0,.55),inset 0 -20px 40px rgba(0,0,0,.2),0 0 0 4px var(--green),0 0 0 14px rgba(34,192,122,.24)}
+
+.name{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:34px;letter-spacing:-.6px;text-align:center;line-height:1.1}
+.state{color:var(--sub);font-size:15px;font-weight:600;letter-spacing:.02em;min-height:22px;text-align:center}
+.state.timer{color:var(--green);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:17px;font-weight:700}
+.state .dots::after{content:'…';animation:blink 1.4s infinite steps(4,end);letter-spacing:.05em}
+@keyframes blink{0%{content:''}25%{content:'.'}50%{content:'..'}75%,100%{content:'…'}}
+
+/* Bottom controls */
+.controls{display:flex;gap:22px;align-items:center;justify-content:center;width:100%}
+.cbtn{
+  width:64px;height:64px;border-radius:50%;border:0;cursor:pointer;
+  font-size:24px;line-height:1;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .12s,background .12s,box-shadow .12s;
+}
+.cbtn:active{transform:scale(.94)}
+.cbtn.mute{background:rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.cbtn.mute:hover{background:rgba(255,255,255,.22)}
+.cbtn.mute.on{background:#fff;color:#0a0d13}
+.cbtn.speaker{background:rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.cbtn.speaker:hover{background:rgba(255,255,255,.22)}
+.cbtn.end{background:var(--red);width:76px;height:76px;font-size:30px;box-shadow:0 12px 30px rgba(217,48,37,.5)}
+.cbtn.end:hover{background:#b3241b}
+
+/* Small header at very top — brand + minimize */
+.hdr{position:absolute;top:calc(14px + env(safe-area-inset-top));left:0;right:0;padding:0 18px;display:flex;justify-content:space-between;align-items:center}
+.hmin{background:rgba(255,255,255,.10);color:#fff;border:0;width:36px;height:36px;border-radius:50%;font-size:14px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.hmin:hover{background:rgba(255,255,255,.18)}
+
+/* Toast on top of everything */
+.ct{position:absolute;top:calc(70px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:99px;opacity:0;transition:.2s;pointer-events:none;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.ct.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="brand" style="color:rgba(255,255,255,.55);font-size:12px;font-weight:700;letter-spacing:.14em">WORDSPIES · CALL</div>
+  <button class="hmin" onclick="minimizeToApp()" title="Minimise">▼</button>
+</div>
+
+<div class="top"></div>
+
+<div class="core">
+  <div class="avring">
+    <div class="av" id="callAv" data-side="them">?</div>
+  </div>
+  <div class="name" id="callName">Loading…</div>
+  <div class="state" id="callState"><span class="dots">Calling</span></div>
+</div>
+
+<div class="controls">
+  <button class="cbtn mute" id="btnMute" onclick="toggleMic()" title="Mute / unmute">🎤</button>
+  <button class="cbtn end" onclick="endCall()" title="End call">📞</button>
+  <button class="cbtn speaker" onclick="toggleSpeaker()" title="Speaker">🔊</button>
+</div>
+
+<div class="ct" id="callToast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/voice.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const params = new URLSearchParams(location.search);
+const CODE = (params.get('room') || '').trim().toUpperCase();
+const EMBED = params.get('embed') === '1';   // hosted inside /social iframe
+
+let socket = null, myId = null, myUid = null, hostUid = null;
+let connected = false;                   // has the OTHER side arrived yet?
+let callStartAt = 0, timerT = null;
+let SPEAKING = false;                    // is the OTHER person speaking right now?
+
+// ── boot ───────────────────────────────────────────────────────────
+if (!CODE) { alert('No call code.'); goHome(); }
+
+async function boot(){
+  // Fetch room info first so we can show a proper name in the ringing state.
+  try {
+    const r = await fetch('/api/parties/' + encodeURIComponent(CODE));
+    if (r.ok) {
+      const j = await r.json();
+      const room = j && j.room;
+      if (room) {
+        hostUid = room.hostUid || null;
+        // "Call with X" title comes from the ring endpoint. Strip prefix.
+        const title = (room.title || 'Call').replace(/^Call with /i, '').trim();
+        $('callName').textContent = title || 'Voice call';
+      }
+    }
+  } catch(e){}
+  conn();
+}
+function conn(){
+  if (socket) return socket;
+  socket = io('/party');
+  socket.on('state', st => paintRoom(st));
+  socket.on('joined', d => {
+    myId = d.you; myUid = d.uid || null;
+    // Wire voice — always a publisher on a call. Both parties speak.
+    if (window.wsVoice) {
+      wsVoice.setMyId(myId);
+      wsVoice.setCanPublish(true);
+      wsVoice.init({ socket, myId, canPublish: true });
+      wsVoice.on('mic', () => paintMic());
+      wsVoice.on('local-level', (lvl) => {
+        // Pulse my own avatar? Nah — WhatsApp shows the OTHER person's
+        // pulse. Keep our own indicator subtle via the mic button colour.
+      });
+      wsVoice.on('levels', (levelsByTrack) => {
+        // Any inbound audio → the other side is speaking.
+        const active = Object.values(levelsByTrack || {}).some(v => v > 0.02);
+        if (active !== SPEAKING) { SPEAKING = active; paintAv(); }
+      });
+      // Auto-open mic so they can talk the instant the callee accepts.
+      wsVoice.setMic(true).catch(e => toast(e.message || 'Mic denied'));
+    }
+  });
+  socket.on('replaced', () => toast('Joined from another tab — this window inactive.'));
+  socket.on('closed', () => { toast('Call ended.'); goHome(1400); });
+  socket.on('err', e => toast(e.msg || 'Something went wrong.'));
+
+  socket.emit('join', { code: CODE });
+  return socket;
+}
+boot();
+
+function paintRoom(st){
+  if (!st) return;
+  // Update caller/callee name if the party title carries it.
+  if (st.title) {
+    const nm = (st.title || '').replace(/^Call with /i, '').trim() || 'Voice call';
+    $('callName').textContent = nm;
+  }
+  // Show the OTHER person's photo if we can find it.
+  const other = (st.members || []).find(m => m.id !== myId);
+  if (other) {
+    const av = other.photo ? '<img src="' + esc(other.photo) + '" alt="">' : esc((other.name || '?').charAt(0).toUpperCase());
+    $('callAv').innerHTML = av;
+    if (other.name) $('callName').textContent = other.name;
+  }
+  // Connected when both parties are in the room.
+  const nowConnected = (st.members || []).filter(m => m.connected).length >= 2;
+  if (nowConnected && !connected) {
+    connected = true;
+    document.body.classList.add('connected');
+    startTimer();
+  } else if (!nowConnected && connected) {
+    // The other person dropped — we go back to "connecting" until they return.
+    connected = false;
+    document.body.classList.remove('connected');
+    stopTimer();
+    $('callState').innerHTML = '<span class="dots">Reconnecting</span>';
+  }
+}
+
+function paintAv(){
+  const av = $('callAv');
+  av.classList.toggle('speaking', SPEAKING && connected);
+}
+function paintMic(){
+  const on = window.wsVoice && wsVoice.micOn;
+  const btn = $('btnMute');
+  btn.classList.toggle('on', !on);
+  btn.textContent = on ? '🎤' : '🔇';
+  btn.title = on ? 'Mute' : 'Unmute';
+}
+
+function startTimer(){
+  callStartAt = Date.now();
+  const st = $('callState');
+  st.classList.add('timer');
+  const tick = () => {
+    const s = Math.max(0, Math.floor((Date.now() - callStartAt) / 1000));
+    const mm = Math.floor(s / 60), ss = s % 60;
+    st.textContent = mm + ':' + String(ss).padStart(2, '0');
+  };
+  tick();
+  clearInterval(timerT);
+  timerT = setInterval(tick, 500);
+}
+function stopTimer(){ clearInterval(timerT); timerT = null; }
+
+async function toggleMic(){
+  if (!window.wsVoice) return;
+  try { await wsVoice.setMic(!wsVoice.micOn); paintMic(); }
+  catch(e){ toast(e.message || 'Mic failed'); }
+}
+// Speaker toggle is a mobile-only concept for browsers that expose
+// setSinkId. Best-effort — no-op on iOS Safari (which forces phone-ear
+// output on calls in most cases anyway).
+function toggleSpeaker(){
+  // Hidden until we can actually control routing — swap this in later.
+  toast('Speaker toggle coming soon.');
+}
+
+async function endCall(){
+  try { socket && socket.emit('leave'); } catch(e){}
+  try {
+    // Also proactively close the call room so the OTHER side sees "call
+    // ended" instead of a lingering party. Best-effort.
+    if (myUid && hostUid && myUid === hostUid) {
+      await fetch('/api/social/my-rooms/close', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ game:'party', code: CODE }) });
+    }
+  } catch(e){}
+  goHome();
+}
+
+function minimizeToApp(){
+  if (EMBED) {
+    try { parent.postMessage({ type: 'party:minimize' }, location.origin); } catch(e){}
+  } else {
+    // Standalone: navigate to /social; the rejoin pill lets them jump back.
+    location.href = '/social';
+  }
+}
+function goHome(delay){
+  if (EMBED) { try { parent.postMessage({ type: 'party:left' }, location.origin); } catch(e){} return; }
+  setTimeout(() => { location.href = '/social'; }, delay || 0);
+}
+
+let toastT = null;
+function toast(msg){
+  const el = $('callToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// beforeunload only when NOT embedded (parent owns dialogs)
+window.addEventListener('beforeunload', (ev) => {
+  if (EMBED) return;
+  if (!socket) return;
+  ev.preventDefault(); ev.returnValue = ''; return '';
+});
+
+// Kick off the mic-permission prompt on any first interaction so mobile
+// browsers that block getUserMedia without a user gesture still work.
+document.addEventListener('click', function unlock(){
+  document.removeEventListener('click', unlock);
+  if (window.wsVoice && !wsVoice.micOn) wsVoice.setMic(true).catch(()=>{});
+}, { once: true });
+</script>
+</body>
+</html>
