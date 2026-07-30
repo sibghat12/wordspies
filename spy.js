@@ -642,7 +642,12 @@ function mount(app, io, opts) {
     const out = [];
     for (const r of rooms.values()) {
       const ps = [...r.players.values()];
-      if (!ps.some(p => p.connected)) continue;
+      // Grace: a room stays visible on the Live tab for two minutes after
+      // its last touch even with nobody currently connected — so a lobby
+      // waiting-for-friends room or a page-refresh doesn't blink out.
+      if (!ps.length) continue;
+      const alive = ps.some(p => p.connected) || ((r.touched || 0) > Date.now() - 120000);
+      if (!alive) continue;
       out.push({
         game: 'spy', icon: '🕵️', title: 'Who is the Spy?',
         code: r.code,

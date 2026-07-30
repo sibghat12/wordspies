@@ -358,7 +358,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 
 /* live games — what is actually happening right now */
 .lv-head{padding:8px 22px 0}
-.lv-head h2{font-size:22px;font-weight:800;letter-spacing:-.6px}
+.lv-head h2{font-size:20px;font-weight:500;letter-spacing:-.3px;color:var(--ink)}
 .lv-head p{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.55}
 .lv-stats{display:flex;gap:8px;padding:14px 20px 4px;flex-wrap:wrap}
 .lv-stat{flex:1;min-width:78px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
@@ -600,6 +600,41 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* keep the composer / picker / send button in the new palette */
 .composer .cbtn.send{background:linear-gradient(135deg,var(--cme-1),var(--cme-2));box-shadow:var(--cme-shadow)}
 .composer input:focus{outline:none;border-color:var(--caccent);box-shadow:0 0 0 3px rgba(90,123,255,.12)}
+
+/* Hold-to-record mic button + recording overlay. Mic is hidden until the
+   composer is empty (there's a small script that toggles a .hastext class
+   on the composer). While recording, the whole composer input is covered
+   by a red pill with elapsed time + slide hints. Big cancel + send targets
+   so the flow is unmistakable even on a phone. */
+.composer .micrec{background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;border:0;font-size:17px;box-shadow:var(--cme-shadow);position:relative;user-select:none;-webkit-user-select:none}
+.composer .micrec.recording{background:linear-gradient(135deg,#ff3d5b,#c8123b);animation:micrecpulse 1.2s ease-in-out infinite}
+@keyframes micrecpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,61,91,.55)}70%{box-shadow:0 0 0 10px rgba(255,61,91,0)}}
+.composer.hastext .micrec{display:none}
+.composer:not(.hastext) .cbtn.send{display:none}
+.recbar{display:none;background:#fff;border-top:1px solid var(--line);padding:9px 12px;align-items:center;gap:10px;position:relative}
+.recbar.show{display:flex}
+.recbar .rec-dot{width:11px;height:11px;border-radius:50%;background:#ff3d5b;animation:recpulse 1s ease-in-out infinite;flex-shrink:0}
+@keyframes recpulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.05)}}
+.recbar .rec-time{font-family:'Nunito',system-ui,sans-serif;font-weight:800;font-size:15px;color:#c8123b;font-variant-numeric:tabular-nums;min-width:44px}
+.recbar .rec-hint{font-size:12px;color:var(--sub);font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recbar .rec-cancel{background:transparent;border:0;color:var(--sub);font-size:18px;width:34px;height:34px;border-radius:50%;cursor:pointer}
+.recbar .rec-cancel:hover{background:#f2f3f5;color:var(--err)}
+.recbar .rec-send{background:linear-gradient(135deg,#22c07a,#159f5d);color:#fff;border:0;border-radius:99px;padding:0 16px;height:36px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 4px 12px rgba(23,155,90,.28)}
+
+/* Voice message bubble: play button + waveform stub + duration. Auto-scales
+   the play button colour to the bubble side (mine = white on gradient,
+   theirs = accent on grey). */
+.vbub{display:flex;align-items:center;gap:10px;min-width:180px;max-width:260px}
+.vbub .vplay{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.24);color:#fff;border:0;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;padding:0}
+.mb.them .vbub .vplay{background:var(--caccent);color:#fff}
+.vbub .vplay:hover{transform:scale(1.05)}
+.vbub .vprog{flex:1;height:22px;position:relative;background:rgba(255,255,255,.14);border-radius:99px;overflow:hidden;cursor:pointer;min-width:0}
+.mb.them .vbub .vprog{background:rgba(90,123,255,.15)}
+.vbub .vprog::before{content:'';position:absolute;left:0;top:0;bottom:0;width:var(--vp,0%);background:rgba(255,255,255,.34);border-radius:99px;transition:width .18s linear}
+.mb.them .vbub .vprog::before{background:rgba(90,123,255,.32)}
+.vbub .vprog::after{content:'';position:absolute;left:50%;top:50%;width:70%;height:8px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.6) 0 2px,transparent 2px 5px);transform:translate(-50%,-50%);border-radius:2px;pointer-events:none}
+.mb.them .vbub .vprog::after{background:repeating-linear-gradient(90deg,rgba(90,123,255,.55) 0 2px,transparent 2px 5px)}
+.vbub .vdur{font-size:11.5px;font-weight:700;opacity:.85;flex-shrink:0;font-variant-numeric:tabular-nums}
 /* read receipts: one white tick when sent, two dark ones once they've read it */
 .tick{width:17px;height:11px;display:block;flex:none}
 .tick path{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
@@ -928,10 +963,22 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="rbx" onclick="cancelEdit()" title="Cancel edit">✕</button>
     </div>
     <div class="acrow" id="acRow" style="display:none"></div>
+    <!-- Big pill that fills the composer while you're holding the mic.
+         Shows a pulsing red dot, elapsed time, and slide-hints. -->
+    <div class="recbar" id="recBar">
+      <button type="button" class="rec-cancel" onclick="cancelVoice()" title="Cancel">✕</button>
+      <span class="rec-dot"></span>
+      <span class="rec-time" id="recTime">0:00</span>
+      <span class="rec-hint">Release to send · tap ✕ to cancel</span>
+      <button type="button" class="rec-send" onclick="stopAndSendVoice()" title="Send">➤</button>
+    </div>
     <div class="composer">
       <button class="cbtn" onclick="toggleGamePick()" title="Invite to a game">🎮</button>
       <button class="cbtn" onclick="togglePicker()">😊</button>
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
+      <!-- Hold-to-record mic button. When empty composer, tap sends voice.
+           When there's text, the same slot becomes the send button. -->
+      <button class="cbtn micrec" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">🎤</button>
       <button class="cbtn send" onclick="sendMsg()">➤</button>
     </div>
     <div class="picker hidden" id="emojiPick"></div>
@@ -1614,7 +1661,7 @@ async function refreshChats(){
         <span class="cav">${avatarHtml(c, 46)}${c.online ? '<span class="dot cdot"></span>' : ''}</span>
         <div class="cmid">
           <div class="cname">${esc(c.name)}${mark(c)}</div>
-          <div class="cprev">${c.last ? (c.last.f === ME.id ? 'You: ' : '') + (c.last.k === 'gif' ? '🖼 GIF' : esc(c.last.x.slice(0, 46))) : 'Say hello 👋'}</div>
+          <div class="cprev">${c.last ? (c.last.f === ME.id ? 'You: ' : '') + (c.last.k === 'gif' ? '🖼 GIF' : c.last.k === 'voice' ? '🎤 Voice message' : esc(c.last.x.slice(0, 46))) : 'Say hello 👋'}</div>
         </div>
         <div class="cright">
           <div class="ctime">${c.last ? fmtT(c.last.t) : ''}</div>
@@ -1747,6 +1794,7 @@ const ACCEPTED = {};   // room code → accepter's name (or true), learned by po
 
 function msgBody(m){
   if (m.d) return `<span class="gone-txt">🚫 This message was deleted</span>`;
+  if (m.k === 'voice') return voiceBubble(m);
   if (m.k === 'gif') return `<img src="${esc(m.x)}" loading="lazy">`;
   // Any game invite — WordSpies or the arcade — becomes a big tappable Join
   // card, and a message can hold several of them. The regex runs on the
@@ -1861,7 +1909,154 @@ async function sendMsg(kind, gifUrl){
   } catch(e){ toast(e.message); }
 }
 $('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
-$('msgIn').addEventListener('input', () => { sendTypingSoon(); refreshAutocomplete(); });
+$('msgIn').addEventListener('input', () => { sendTypingSoon(); refreshAutocomplete(); toggleComposerHasText(); });
+// Composer starts with mic visible (no text). Toggle .hastext on the wrapper
+// so CSS can swap between "🎤 record voice" and "➤ send text" in the same slot.
+function toggleComposerHasText(){
+  const c = document.querySelector('.composer'); if (!c) return;
+  c.classList.toggle('hastext', ($('msgIn').value || '').length > 0);
+}
+document.addEventListener('DOMContentLoaded', toggleComposerHasText);
+
+// ---------- voice messages ----------
+// Hold-to-record: press mic → open MediaRecorder → red overlay shows time →
+// release to send, or tap ✕ to bin. Also supports desktop click-then-click.
+// The clip is uploaded to /message/voice, then a normal /message with
+// kind:'voice' + the returned URL. Nothing on the server had to change for
+// legacy /message clients — just handled the new kind explicitly.
+let recStream = null, recRec = null, recStart = 0, recChunks = [], recTimer = null, recCancelled = false;
+function fmtRecT(ms){ const s = Math.floor(ms/1000); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+
+async function startVoice(){
+  if (!curChat) return;
+  if (GUEST) { requireLogin('🎤 Log in to send voice messages'); return; }
+  if (recRec) return;                                    // already recording
+  if (!navigator.mediaDevices || !window.MediaRecorder) { toast('Voice messages not supported in this browser.'); return; }
+  try {
+    recStream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation:true, noiseSuppression:true, autoGainControl:true, sampleRate:48000 }, video:false
+    });
+  } catch(e){ toast('🎤 Microphone access denied. Enable it in your browser settings.'); return; }
+  // Prefer opus/webm; fall back to whatever the browser will hand us.
+  let mime = '';
+  ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].some(t => (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) ? (mime=t) : false);
+  try { recRec = mime ? new MediaRecorder(recStream, { mimeType: mime, audioBitsPerSecond: 96000 }) : new MediaRecorder(recStream); }
+  catch(e){ recRec = new MediaRecorder(recStream); }
+  recChunks = []; recCancelled = false; recStart = Date.now();
+  recRec.ondataavailable = ev => { if (ev.data && ev.data.size) recChunks.push(ev.data); };
+  recRec.onstop = onVoiceStop;
+  recRec.start();
+  $('recBar').classList.add('show');
+  $('micRecBtn').classList.add('recording');
+  $('recTime').textContent = '0:00';
+  clearInterval(recTimer);
+  recTimer = setInterval(() => {
+    const ms = Date.now() - recStart;
+    $('recTime').textContent = fmtRecT(ms);
+    if (ms >= 60000) stopAndSendVoice();                 // hard cap 60s
+  }, 200);
+}
+function stopAndSendVoice(){
+  if (!recRec || recRec.state === 'inactive') return;
+  recCancelled = false;
+  try { recRec.stop(); } catch(e){}
+}
+function cancelVoice(){
+  recCancelled = true;
+  if (recRec && recRec.state !== 'inactive') { try { recRec.stop(); } catch(e){} }
+  else cleanupVoice();
+}
+function cleanupVoice(){
+  clearInterval(recTimer); recTimer = null;
+  if (recStream) { try { recStream.getTracks().forEach(t => t.stop()); } catch(e){} recStream = null; }
+  recRec = null; recChunks = [];
+  $('recBar').classList.remove('show');
+  $('micRecBtn').classList.remove('recording');
+}
+async function onVoiceStop(){
+  const chunks = recChunks;
+  const durMs = Date.now() - recStart;
+  const cancel = recCancelled;
+  cleanupVoice();
+  if (cancel || !chunks.length) return;
+  if (durMs < 400) { toast('Hold the mic a bit longer to record.'); return; }
+  // Upload
+  const blob = new Blob(chunks, { type: (chunks[0] && chunks[0].type) || 'audio/webm' });
+  const fd = new FormData();
+  fd.append('clip', blob, 'voice.' + (blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'));
+  let up;
+  try {
+    const r = await fetch('/api/social/message/voice', { method:'POST', body: fd });
+    up = await r.json();
+    if (!r.ok || !up.url) throw new Error(up.error || 'Upload failed.');
+  } catch(e){ toast(e.message); return; }
+  // Send as a normal message with kind:'voice'
+  try {
+    await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to: curChat, kind:'voice', text: up.url, d: Math.round(durMs/1000) }) });
+    lastSig = ''; lastMsgCount = -1;
+    await refreshChat();
+    toBottom($('msgs'));
+  } catch(e){ toast(e.message); }
+}
+
+// Wire hold-to-record events. Mouse + touch, with a safety net so a mouse
+// released outside the button still ends the recording.
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('micRecBtn');
+  if (!btn) return;
+  let holding = false;
+  const press = (ev) => { if ((ev.button|0) !== 0 && ev.type === 'mousedown') return; ev.preventDefault(); holding = true; startVoice(); };
+  const release = () => { if (!holding) return; holding = false; stopAndSendVoice(); };
+  btn.addEventListener('mousedown', press);
+  btn.addEventListener('touchstart', press, { passive:false });
+  addEventListener('mouseup', release);
+  addEventListener('touchend', release);
+  addEventListener('touchcancel', () => { if (holding) { holding=false; cancelVoice(); } });
+  // Tap without hold on desktop: treat as click-to-toggle.
+  btn.addEventListener('click', (ev) => { ev.preventDefault(); });
+});
+
+// Voice bubble renderer + tiny audio player. Progress bar is a plain
+// <div>; audio events update its width. One <audio> is created per bubble
+// so playing bubble A doesn't stop bubble B.
+function voiceBubble(m){
+  const url = String(m.x || '');
+  const dur = m.vd ? fmtRecT(m.vd * 1000) : '0:00';
+  const id = 'v' + (m.id || m.t);
+  return `<div class="vbub" data-vid="${esc(id)}">
+    <button class="vplay" onclick="toggleVoicePlay(this, '${esc(url)}')" title="Play voice message" aria-label="Play">▶</button>
+    <div class="vprog" onclick="scrubVoice(event, this)"></div>
+    <span class="vdur">${esc(dur)}</span>
+  </div>`;
+}
+function toggleVoicePlay(btn, url){
+  const wrap = btn.closest('.vbub');
+  let au = wrap._au;
+  if (!au) {
+    au = new Audio(url); au.preload = 'metadata'; wrap._au = au;
+    au.addEventListener('ended', () => { btn.textContent = '▶'; wrap.querySelector('.vprog').style.setProperty('--vp','0%'); });
+    au.addEventListener('timeupdate', () => {
+      if (!au.duration || !isFinite(au.duration)) return;
+      const pct = Math.max(0, Math.min(100, (au.currentTime / au.duration) * 100));
+      wrap.querySelector('.vprog').style.setProperty('--vp', pct + '%');
+      wrap.querySelector('.vdur').textContent = fmtRecT(Math.max(0, (au.duration - au.currentTime) * 1000));
+    });
+    au.addEventListener('loadedmetadata', () => {
+      wrap.querySelector('.vdur').textContent = fmtRecT(au.duration * 1000);
+    });
+  }
+  // Stop any other bubble playing at the same time — like every real chat app.
+  document.querySelectorAll('.vbub').forEach(w => { if (w !== wrap && w._au) { try { w._au.pause(); w._au.currentTime = 0; } catch(e){}; const b = w.querySelector('.vplay'); if (b) b.textContent = '▶'; }});
+  if (au.paused) { au.play().catch(()=>{}); btn.textContent = '⏸'; }
+  else { au.pause(); btn.textContent = '▶'; }
+}
+function scrubVoice(ev, prog){
+  const wrap = prog.closest('.vbub'); if (!wrap || !wrap._au) return;
+  const r = prog.getBoundingClientRect();
+  const p = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
+  if (wrap._au.duration) wrap._au.currentTime = p * wrap._au.duration;
+}
 
 // Tell the server we're composing at most once every 3s. It expires in 5s,
 // so a brief silence gap doesn't flicker the dots off and back on.

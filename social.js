@@ -12,12 +12,14 @@ const multer = require('multer');
 
 const SESS_TTL = 60 * 60 * 24 * 90; // 90 days
 const PHOTO_DIR = process.env.SOC_PHOTOS || path.join(__dirname, 'social-photos');
+const VOICE_DIR = process.env.SOC_VOICE   || path.join(__dirname, 'social-voice');
 // "Continue with Google": set SOC_GOOGLE_CLIENT_ID in the service environment
 // to switch the button on. Without it, email sign-up still works fine.
 const GOOGLE_CLIENT_ID = process.env.SOC_GOOGLE_CLIENT_ID || null;
 
 function mount(app, redis) {
   fs.mkdirSync(PHOTO_DIR, { recursive: true });
+  fs.mkdirSync(VOICE_DIR, { recursive: true });
 
   // ---- tiny store: redis when available, in-memory otherwise (local dev) ----
   const mem = new Map();
@@ -654,6 +656,38 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     storage: multer.memoryStorage(),
     limits: { fileSize: 2 * 1024 * 1024, files: 1 }
   });
+  // Voice messages in DMs. Client records a short opus/webm blob (60 s max),
+  // POSTs it here as multipart form-data, we save under /social-voice with a
+  // random name, return the URL. Client then sends /message with kind:'voice'
+  // and text set to that URL.
+  const voiceUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 3 * 1024 * 1024, files: 1 }
+  });
+  api.post('/message/voice', (req, res) => {
+    voiceUpload.single('clip')(req, res, async err => {
+      try {
+        if (err) return res.status(400).json({ error: 'Voice clip too large (max 3 MB).' });
+        const u = await userFromReq(req);
+        if (!u) return res.status(401).json({ error: 'Please log in.' });
+        if (limited(req, 'vmsg', 30)) return res.status(429).json({ error: 'Slow down a little ✋' });
+        const f = req.file;
+        if (!f || !f.buffer || !f.buffer.length) return res.status(400).json({ error: 'No audio received.' });
+        // Sniff the container so we don't happily accept an executable renamed
+        // "clip.webm". Only webm (EBML), ogg, mp4, m4a survive.
+        const b = f.buffer;
+        const isWebm  = b[0] === 0x1A && b[1] === 0x45 && b[2] === 0xDF && b[3] === 0xA3;
+        const isOgg   = b[0] === 0x4F && b[1] === 0x67 && b[2] === 0x67 && b[3] === 0x53;
+        const isMp4   = b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70; // 'ftyp' at offset 4
+        if (!isWebm && !isOgg && !isMp4) return res.status(400).json({ error: 'Unsupported audio format.' });
+        const ext = isWebm ? 'webm' : isOgg ? 'ogg' : 'm4a';
+        const fname = u.id + '.' + Date.now().toString(36) + '.' + crypto.randomBytes(3).toString('hex') + '.' + ext;
+        fs.writeFileSync(path.join(VOICE_DIR, fname), b);
+        res.json({ url: '/social-voice/' + fname });
+      } catch (e) { console.error('social voice:', e.message); res.status(500).json({ error: 'Upload failed.' }); }
+    });
+  });
+
   api.post('/photo', (req, res) => {
     upload.single('photo')(req, res, async err => {
       try {
@@ -904,15 +938,27 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (!me) return res.status(401).json({ error: 'Please log in.' });
       if (limited(req, 'msg', 40)) return res.status(429).json({ error: 'Slow down a little ✋' });
       const to = String((req.body || {}).to || '');
-      const kind = (req.body || {}).kind === 'gif' ? 'gif' : 'text';
-      const text = String((req.body || {}).text || '').trim().slice(0, kind === 'gif' ? 300 : 500);
+      // Text, GIF, and now voice — voice payloads carry the /social-voice URL
+      // returned by /message/voice below, plus an optional duration hint.
+      const kRaw = (req.body || {}).kind;
+      const kind = kRaw === 'gif' ? 'gif' : kRaw === 'voice' ? 'voice' : 'text';
+      const text = String((req.body || {}).text || '').trim().slice(0, kind === 'gif' ? 300 : kind === 'voice' ? 200 : 500);
       if (!text || to === me.id || !(await db.get('soc:user:' + to))) return res.status(400).json({ error: 'Nothing to send.' });
       if (kind === 'gif' && !/^https:\/\/(media[0-9]*\.giphy\.com|i\.giphy\.com)\//.test(text)) return res.status(400).json({ error: 'Bad GIF.' });
+      if (kind === 'voice' && !/^\/social-voice\/[a-zA-Z0-9._-]+\.(webm|ogg|mp4|m4a)$/.test(text)) return res.status(400).json({ error: 'Bad voice message.' });
       // Short random id per message so edits / deletes / reactions have something
       // stable to reference. Older messages that predate this field still work by
       // falling back to their timestamp on the lookup side.
       const id = crypto.randomBytes(6).toString('base64url');
       const msg = { id, f: me.id, k: kind, x: text, t: Date.now() };
+      // voice messages carry a duration hint so the bubble can render "0:14"
+      // next to the play button without the client fetching the audio to
+      // measure it. Stored as `vd` because `d` is already used as the
+      // tombstone flag for deleted messages — two very different meanings.
+      if (kind === 'voice') {
+        const d = Math.max(0, Math.min(60, Math.round(+(req.body || {}).d || 0)));
+        if (d) msg.vd = d;
+      }
       // Optional reply-to: only store the id if the message being quoted really
       // exists in this conversation, otherwise silently drop it.
       const replyTo = String((req.body || {}).reply || '').slice(0, 24);
@@ -951,7 +997,10 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       // sendPush decides per device: whichever screen they're actually looking
       // at stays quiet, every other one buzzes
       sendPush(to, 'msg', '💬 ' + me.name,
-        kind === 'text' ? text.slice(0, 120) : (kind === 'gif' ? 'Sent a GIF' : 'Sent you something'),
+        kind === 'text' ? text.slice(0, 120)
+          : kind === 'gif' ? 'Sent a GIF'
+          : kind === 'voice' ? '🎤 Sent a voice message'
+          : 'Sent you something',
         '/social#chat=' + me.id);
       res.json({ ok: true, msg });
     } catch (e) { console.error('social message:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
@@ -1159,6 +1208,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
 
   app.use('/api/social', api);
   app.use('/social-photos', express.static(PHOTO_DIR, { maxAge: '30d', immutable: true }));
+  app.use('/social-voice',  express.static(VOICE_DIR, { maxAge: '30d', immutable: true }));
   app.get('/social', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(__dirname, 'public', 'social.html'));

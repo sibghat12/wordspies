@@ -300,16 +300,28 @@ catch (e) { console.error('spy module failed to load (game unaffected):', e.mess
 const teamName = t => t === 'red' ? 'Red' : t === 'blue' ? 'Blue' : null;
 function wordspiesLive() {
   const out = [];
+  // Grace window: a room stays visible on the Live tab for two minutes after
+  // its last activity even if every socket has disconnected. Before this, a
+  // simple page refresh made the room vanish from Live for a few seconds,
+  // and closing the tab made a lobby (waiting-for-friend) room vanish
+  // forever with no way for the friend to join.
+  const now = Date.now();
+  const GRACE_MS = 120 * 1000;
   for (const r of rooms.values()) {
-    const seated = [...r.players.values()].filter(p => !p.watcher && p.connected);
-    if (!seated.length) continue;
+    const players = [...r.players.values()].filter(p => !p.watcher);
+    if (!players.length) continue;
+    // "Seated recently" — anyone connected right now, OR seen in the last
+    // GRACE_MS window (so a rejoinable seat still shows).
+    const activeIsh = (r.lastActivity || 0) > now - GRACE_MS;
+    const anyConnected = players.some(p => p.connected);
+    if (!anyConnected && !activeIsh) continue;
     const rem = r.board ? { red: remaining(r, 'red'), blue: remaining(r, 'blue') } : null;
     out.push({
       game: 'wordspies', icon: '🕵️', title: 'WordSpies',
       code: r.code, href: '/play?room=' + r.code, watchHref: '/play?watch=' + r.code,
       state: r.state, cap: null,
-      players: seated.map(p => ({
-        name: p.name, photo: p.photo || null, bot: false, connected: true, team: p.team || null
+      players: players.map(p => ({
+        name: p.name, photo: p.photo || null, bot: false, connected: !!p.connected, team: p.team || null
       })),
       seatsFree: null,
       lead: r.state === 'over'
