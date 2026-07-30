@@ -336,6 +336,21 @@ function scanMyRooms(uid) {
     }
   }
 
+  // Parties I host — includes myself when I'm in them, so the strip is
+  // effectively "rooms where I own the keys" whether or not I'm sat inside
+  // right now.
+  if (partyMod && partyMod.rooms) {
+    for (const r of partyMod.rooms.values()) {
+      if (r.hostUid !== uid) continue;
+      push('party', r, {
+        icon: '🎉', title: r.title || 'Party',
+        players: r.members ? r.members.size : 0,
+        href: '/party?room=' + r.code,
+        watchers: 0
+      });
+    }
+  }
+
   // Most-recently-touched first — "my current game" always at the top.
   out.sort((a, b) => (b.lastActivity || 0) - (a.lastActivity || 0));
   return out;
@@ -373,6 +388,16 @@ app.post('/api/social/my-rooms/close', express.json({ limit: '2kb' }), async (re
   }
   if (!ok && meldMod && meldMod.rooms && game === 'meld') ok = closeIn(meldMod.rooms, () => { try { io.of('/meld').to(code).emit('roomClosed', { code }); } catch (e) {} });
   if (!ok && spyMod  && spyMod.rooms  && game === 'spy')  ok = closeIn(spyMod.rooms,  () => { try { io.of('/spy' ).to(code).emit('roomClosed', { code }); } catch (e) {} });
+  // Parties are keyed by hostUid instead of creatorUid, so closeIn's default
+  // check doesn't apply — do the ownership test explicitly here.
+  if (!ok && partyMod && partyMod.rooms && game === 'party') {
+    const r = partyMod.rooms.get(code);
+    if (r && r.hostUid === uid) {
+      try { io.of('/party').to(code).emit('closed'); } catch (e) {}
+      partyMod.rooms.delete(code);
+      ok = true;
+    }
+  }
 
   if (!ok) return res.status(404).json({ error: 'Room not found or not yours.' });
   res.json({ ok: true });
@@ -498,6 +523,7 @@ app.get('/api/live', (req, res) => {
   add(arcadeMod && arcadeMod.live);
   add(meldMod && meldMod.live);
   add(spyMod && spyMod.live);
+  add(partyMod && partyMod.live);
   // Games actually being played first, then the ones still filling up, and
   // within each the ones that moved most recently — a game someone touched a
   // minute ago is far more worth looking at than one idling since lunchtime.

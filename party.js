@@ -24,7 +24,11 @@ const crypto = require('crypto');
 const CAP = 20;                          // max people per party
 const MSG_MAX = 500;                     // text length cap
 const LISTENER_MSG_LIMIT = 2;            // rationed chat for listeners
-const IDLE_TTL_MS = 24 * 60 * 60 * 1000; // owner-owned rooms live 24 h idle
+// A party only ever ends when the host explicitly closes it. But if a room
+// sits COMPLETELY EMPTY (nobody connected, nobody has been in for 7 days)
+// we still clean it up — otherwise abandoned rooms leak forever. The 7-day
+// window is generous enough that "host went on holiday" doesn't kill it.
+const EMPTY_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const RECENT_MSGS = 40;                  // history sent to newcomers
 
 function makeCode() {
@@ -69,12 +73,17 @@ function mount(app, io, options = {}) {
     nsp.to(r.code).emit('state', publicView(r));
   }
 
+  // A party lives forever unless the host clicks End. The one exception
+  // is a room that's been genuinely empty for a week — those get swept
+  // so the room-code namespace doesn't fill up with abandoned parties.
+  // Rooms with anyone still in them (even connection-idle) are protected.
   const cleanup = setInterval(() => {
     const now = Date.now();
     for (const [code, r] of rooms) {
-      if (now - r.touched > IDLE_TTL_MS) rooms.delete(code);
+      if (r.members.size > 0) continue;                    // never touch active rooms
+      if (now - (r.touched || 0) > EMPTY_TTL_MS) rooms.delete(code);
     }
-  }, 10 * 60 * 1000).unref?.();
+  }, 60 * 60 * 1000).unref?.();
 
   // Reachable circle for private-party invites — anyone in follow / followers
   // / recent DM contacts. Delegated to the social module when present so we
