@@ -108,6 +108,106 @@ app.get('/how-to-play', (req, res) => res.type('html').send(pages.howToPlayPage(
 // page instead of a silent no-op scroll.
 app.get('/how', (req, res) => res.redirect(301, '/how-to-play'));
 
+// ── Cloudflare Realtime broker ─────────────────────────────────────────
+// Voice runs on Cloudflare's SFU when the two env vars are set; otherwise
+// clients fall back to the peer-to-peer STUN path baked into /voice.js.
+// Nothing here breaks if the vars are missing — /api/voice/config just
+// reports mode:'p2p' and the client stays on the legacy path.
+//
+// SETUP (owner does this once):
+//   1. dash.cloudflare.com → Realtime → SFU → Create App "wordspies-voice"
+//   2. Copy the App ID + App Token.
+//   3. On the droplet, add to the WordSpies env file:
+//        CF_REALTIME_APP_ID=...
+//        CF_REALTIME_APP_TOKEN=...
+//      Then: sudo systemctl restart wordspies
+//   4. This endpoint will start reporting mode:'cloudflare' automatically.
+const CF_APP_ID = process.env.CF_REALTIME_APP_ID || '';
+const CF_APP_TOKEN = process.env.CF_REALTIME_APP_TOKEN || '';
+const CF_ENABLED = !!(CF_APP_ID && CF_APP_TOKEN);
+const CF_BASE = 'https://rtc.live.cloudflare.com/v1/apps';
+
+async function cfFetch(path, opts = {}) {
+  if (!CF_ENABLED) throw new Error('Cloudflare Realtime not configured.');
+  const url = CF_BASE + '/' + CF_APP_ID + path;
+  const r = await fetch(url, {
+    ...opts,
+    headers: {
+      ...(opts.headers || {}),
+      'Authorization': 'Bearer ' + CF_APP_TOKEN,
+      'Content-Type': 'application/json'
+    }
+  });
+  const text = await r.text();
+  if (!r.ok) throw new Error('CF ' + r.status + ': ' + text.slice(0, 200));
+  return text ? JSON.parse(text) : {};
+}
+
+// Public voice config — tells the client which mode to use. Called once
+// per page load so an env-var flip on the droplet is picked up on refresh
+// without any client update.
+app.get('/api/voice/config', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({
+    mode: CF_ENABLED ? 'cloudflare' : 'p2p',
+    // ICE hints for the peer-to-peer fallback path
+    iceServers: [
+      { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
+    ]
+  });
+});
+
+// Create a new participant session on Cloudflare Realtime. Each browser
+// tab gets its own session; the game room's socket-io code decides which
+// sessions belong to the same conversation.
+app.post('/api/voice/cf/session', express.json({ limit: '4kb' }), async (req, res) => {
+  if (!CF_ENABLED) return res.status(503).json({ error: 'Voice service not configured.' });
+  try {
+    const j = await cfFetch('/sessions/new', { method: 'POST' });
+    res.json({ sessionId: j.sessionId });
+  } catch (e) {
+    console.error('cf session:', e.message);
+    res.status(502).json({ error: 'Voice service is temporarily unavailable.' });
+  }
+});
+
+// Proxy an SDP publish or subscribe request through to Cloudflare. The
+// client always talks to us, never to Cloudflare directly, so the App
+// Token never leaves the server. Body: { sdp, tracks } as documented at
+// https://developers.cloudflare.com/realtime/https-api/
+app.post('/api/voice/cf/tracks/:sessionId', express.json({ limit: '256kb' }), async (req, res) => {
+  if (!CF_ENABLED) return res.status(503).json({ error: 'Voice service not configured.' });
+  try {
+    const j = await cfFetch('/sessions/' + encodeURIComponent(req.params.sessionId) + '/tracks/new', {
+      method: 'POST',
+      body: JSON.stringify({
+        sessionDescription: req.body.sdp,
+        tracks: Array.isArray(req.body.tracks) ? req.body.tracks.slice(0, 8) : []
+      })
+    });
+    res.json(j);
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
+// Renegotiate an existing session — used when the client answers an SFU
+// offer that arrived out of band (e.g. a new remote track becomes available).
+app.post('/api/voice/cf/renegotiate/:sessionId', express.json({ limit: '256kb' }), async (req, res) => {
+  if (!CF_ENABLED) return res.status(503).json({ error: 'Voice service not configured.' });
+  try {
+    const j = await cfFetch('/sessions/' + encodeURIComponent(req.params.sessionId) + '/renegotiate', {
+      method: 'PUT',
+      body: JSON.stringify({ sessionDescription: req.body.sdp })
+    });
+    res.json(j);
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
+console.log('voice: mode=' + (CF_ENABLED ? 'cloudflare (SFU)' : 'p2p (STUN only — fallback)'));
+
 process.on('uncaughtException', err => console.error('uncaught:', err));
 process.on('unhandledRejection', err => console.error('unhandled:', err));
 

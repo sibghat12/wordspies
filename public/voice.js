@@ -20,11 +20,29 @@
 (function () {
   'use strict';
 
+  // Default ICE servers — used until /api/voice/config responds with the
+  // production list (which lets us swap STUN endpoints without a client push).
   var RTC_CFG = {
     iceServers: [
       { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
     ]
   };
+  var VOICE_MODE = 'p2p';                 // 'p2p' | 'cloudflare' — set from /api/voice/config
+
+  // Fire-and-forget config fetch. On first page load we learn which mode
+  // is active — this makes the CF SFU upgrade a pure env-var flip on the
+  // server, with no client-side rebuild needed.
+  try {
+    fetch('/api/voice/config', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j) return;
+        if (Array.isArray(j.iceServers) && j.iceServers.length) RTC_CFG.iceServers = j.iceServers;
+        VOICE_MODE = j.mode || 'p2p';
+        if (window.console) console.log('[voice] mode:', VOICE_MODE);
+      })
+      .catch(function () {});
+  } catch (e) {}
 
   var socket = null;
   var myId = null;
@@ -224,6 +242,7 @@
     get micOn() { return micOn; },
     get peerCount() { return Object.keys(peers).length; },
     get canPublish() { return canPublish; },
+    get mode() { return VOICE_MODE; },
     setCanPublish: function (v) { canPublish = !!v; },
     setMyId: function (id) { myId = String(id || ''); }
   };
