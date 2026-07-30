@@ -206,6 +206,37 @@ app.post('/api/voice/cf/renegotiate/:sessionId', express.json({ limit: '256kb' }
   }
 });
 
+// Close a track that the local participant published. Called when the mic
+// is turned off. The tracks array holds the CF-assigned trackName + mid.
+app.post('/api/voice/cf/close/:sessionId', express.json({ limit: '4kb' }), async (req, res) => {
+  if (!CF_ENABLED) return res.status(503).json({ error: 'Voice service not configured.' });
+  try {
+    const j = await cfFetch('/sessions/' + encodeURIComponent(req.params.sessionId) + '/tracks/close', {
+      method: 'PUT',
+      body: JSON.stringify({
+        tracks: Array.isArray(req.body.tracks) ? req.body.tracks.slice(0, 8) : [],
+        force: !!req.body.force,
+        sessionDescription: req.body.sdp || undefined
+      })
+    });
+    res.json(j);
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
+// Peek at a session — mostly for debugging when a peer reports "I can't
+// hear them". Read-only, harmless to leave on.
+app.get('/api/voice/cf/session/:sessionId', async (req, res) => {
+  if (!CF_ENABLED) return res.status(503).json({ error: 'Voice service not configured.' });
+  try {
+    const j = await cfFetch('/sessions/' + encodeURIComponent(req.params.sessionId));
+    res.json(j);
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
 console.log('voice: mode=' + (CF_ENABLED ? 'cloudflare (SFU)' : 'p2p (STUN only — fallback)'));
 
 process.on('uncaughtException', err => console.error('uncaught:', err));
