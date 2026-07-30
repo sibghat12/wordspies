@@ -1211,11 +1211,48 @@ function mount(app, io, opts) {
       poolBotGo(room);
     });
 
+    // ── voice + emoji relays ────────────────────────────────────────────
+    // The server never sees the audio: it only shuffles WebRTC signalling
+    // between peers who are already in the same room. Emoji reactions are
+    // broadcast the same way — thousands cheaper than any media pipeline.
+    // Only seated players can publish (isPub true); watchers listen only.
+    const inRoom = () => room || (W.r ? W.r : null);
+    socket.on('v-join', () => {
+      const r = inRoom(); if (!r) return;
+      const seated = room && r.seatOrder.indexOf(socket.id) >= 0;
+      socket.to(r.code).emit('v-peer', { id: socket.id, on: true, pub: !!seated });
+    });
+    socket.on('v-leave', () => {
+      const r = inRoom(); if (!r) return;
+      socket.to(r.code).emit('v-peer', { id: socket.id, on: false });
+    });
+    // Forward SDP / ICE to a specific peer in the same room. Verifies both
+    // sockets share the room so a socket can't relay to arbitrary others.
+    socket.on('v-signal', (data) => {
+      const r = inRoom(); if (!r || !data || !data.to) return;
+      const dst = pnsp.sockets.get(data.to);
+      if (!dst || !dst.rooms.has(r.code)) return;
+      dst.emit('v-signal', { from: socket.id, sdp: data.sdp || null, ice: data.ice || null });
+    });
+    socket.on('emoji', (data) => {
+      const r = inRoom(); if (!r || !data || !data.e) return;
+      // rate-limit: at most 6 emojis per socket per 3 seconds
+      const now = Date.now();
+      const bucket = (socket.emoBucket = socket.emoBucket || []);
+      while (bucket.length && bucket[0] < now - 3000) bucket.shift();
+      if (bucket.length >= 6) return;
+      bucket.push(now);
+      const e = String(data.e).slice(0, 8);
+      pnsp.to(r.code).emit('emoji', { e, from: socket.id });
+    });
+
     socket.on('disconnect', () => {
       if (!room) return;
       const r = room;
       const p = r.players.get(socket.id);
       if (p) p.connected = false;
+      // Tell the rest of the room to tear down any peer connection to us.
+      socket.to(r.code).emit('v-peer', { id: socket.id, on: false });
       pbroad(r);
       setTimeout(() => {
         const cur = r.players.get(socket.id);
