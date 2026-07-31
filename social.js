@@ -1396,7 +1396,40 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // they haven't been set yet, so the wall doesn't look empty during
   // the Speaky-style redesign. Idempotent — only fills empty fields.
   // Safe: never overwrites anything the user actually typed.
-  const DEFAULT_TALK = "Hey! I'm really into languages, culture, and good conversations.";
+  // Old default kept as a "known seed" so we can replace it with the new
+  // varied pool on next backfill without stomping on real user text.
+  const DEFAULT_TALK_LEGACY = "Hey! I'm really into languages, culture, and good conversations.";
+  // Short "Let's talk about" phrases — 3–5 words each. Assigned
+  // deterministically per user (hash of id) so the same user always
+  // gets the same phrase across restarts. Feels varied without being
+  // random-different-every-refresh.
+  const TALK_POOL = [
+    'Travel, food, and books',
+    'Culture and everyday life',
+    'New places, new stories',
+    'Films, music, coffee',
+    'Simple, honest conversations',
+    'Cities, stories, questions',
+    'Local food and habits',
+    'Music, series, weekends',
+    'Weekend plans and dreams',
+    'Books and street food',
+    'Culture swap over tea',
+    'Trips, hobbies, laughs',
+    'Coffee-length conversations',
+    'Small everyday things',
+    'Learning by chatting',
+    'Slow chats, real talk',
+    'Anything with a good story',
+    'Movies, memes, and life',
+    'Curious about your world',
+    'Just here to practise'
+  ];
+  const pickTalk = uid => TALK_POOL[
+    // Simple deterministic hash — sum of char codes mod pool length.
+    // Stable across restarts, no dependency.
+    [...(uid || '')].reduce((n, c) => n + c.charCodeAt(0), 0) % TALK_POOL.length
+  ];
   const CC_TO_LANG = {
     GB:'en', UK:'en', US:'en', CA:'en', AU:'en', NZ:'en', IE:'en',
     PK:'ur', IN:'hi', BD:'bn', LK:'si',
@@ -1421,7 +1454,12 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         if (!raw) continue;
         const u = JSON.parse(raw);
         let dirty = false;
-        if (!u.talkAbout) { u.talkAbout = DEFAULT_TALK; dirty = true; }
+        // Fill empty AND also replace the old legacy seed text — but
+        // never touch anything else the user actually typed.
+        if (!u.talkAbout || u.talkAbout === DEFAULT_TALK_LEGACY) {
+          u.talkAbout = pickTalk(u.id);
+          dirty = true;
+        }
         if (!Array.isArray(u.speaks) || !u.speaks.length) {
           const native = CC_TO_LANG[(u.cc || '').toUpperCase()] || 'en';
           u.speaks = [native]; dirty = true;
