@@ -78,9 +78,10 @@ body.authmodal{overflow:hidden}
    your profile chip on the right. Persistent across every tab so the site
    header stops being a per-tab afterthought. */
 /* Full-width three-column top nav: logo LEFT, tabs CENTER, profile chip RIGHT.
-   Transparent background but keeps a subtle bottom-line so the nav
-   still reads as its own strip. Sticky again so it follows the scroll. */
-.topnav{position:sticky;top:0;background:transparent;z-index:20;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:10px 20px;min-height:60px;max-width:100%;box-sizing:border-box;border:0;border-bottom:1px solid var(--line)}
+   Solid body-coloured background (owner ask: was transparent, showed
+   the content scrolling behind it and looked "like a mirror"). Still
+   sticky, still has the 1px bottom line so it reads as its own strip. */
+.topnav{position:sticky;top:0;background:var(--bg);z-index:20;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:10px 20px;min-height:60px;max-width:100%;box-sizing:border-box;border:0;border-bottom:1px solid var(--line)}
 @media(min-width:769px){
   /* Desktop: tight 6px left padding on the nav per owner ask — logo
      hugs the left edge. Right side keeps the wrap's 36px inset so
@@ -247,9 +248,15 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .wcard-langs .wf-col:last-child{align-items:flex-end;text-align:right}
 .wcard-langs .wf-lbl{font-size:13.5px;color:var(--ink);font-weight:800;letter-spacing:.1px}
 .wcard-langs .wf-row{display:inline-flex;align-items:center;gap:6px}
-/* Flag rendered inside a soft grey circle — Speaky-style badge look
-   instead of a bare emoji. Emoji flags stay their natural colour. */
-.wcard-langs .wf-flag{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--panel);border:1px solid var(--line);font-size:18px;line-height:1;overflow:hidden;flex-shrink:0}
+/* Circular country flag on wall cards — real SVG flags (via
+   circle-flags CDN) with no border/background, so they read as clean
+   round country badges. */
+.wcard-langs .wf-flag{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;overflow:hidden;flex-shrink:0}
+.wcard-langs .wf-flag .cflag,.wcard-langs .wf-flag img{width:100%;height:100%;display:block;border-radius:50%}
+/* Shared circle-flag class used in profile / picker / etc. */
+.cflag{width:22px;height:22px;border-radius:50%;display:inline-block;object-fit:cover;vertical-align:middle}
+.mp-lang .cflag{width:26px;height:26px}
+.chip .cflag,.chiprow .cflag{width:16px;height:16px}
 .wcard-langs .wf-more{font-size:13.5px;color:var(--sub);font-weight:800}
 
 /* ═══ AI persona badge (Speaky-style) ═══ */
@@ -2133,7 +2140,13 @@ function showTab(t){
   // wall scroll happened to be. Chat and split-view manage their own
   // scroll internally and shouldn't be jumped.
   if (t !== 'chat' && t !== 'chats') {
+    // Belt AND braces: scroll now (before layout settles) and again on
+    // the next frame after the tab's content has painted. Fixes the
+    // "profile lands mid-page" case where the hero + sidebar transform
+    // made the initial scroll happen before real layout was ready.
     try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch(e) { window.scrollTo(0, 0); }
+    requestAnimationFrame(() => { try { window.scrollTo(0, 0); } catch(e){} });
+    setTimeout(() => { try { window.scrollTo(0, 0); } catch(e){} }, 50);
   }
   fitChat();
   if (split) {
@@ -4174,7 +4187,18 @@ const LANGS = [
   {c:'bn', f:'🇧🇩', n:'Bengali'},  {c:'fa', f:'🇮🇷', n:'Persian'},   {c:'sw', f:'🇰🇪', n:'Swahili'}
 ];
 const langByCode = c => LANGS.find(l => l.c === c);
-const langFlag = c => (langByCode(c) || {}).f || '🌐';
+// Real circular country flags via hatscripts/circle-flags CDN (MIT-licensed,
+// SVG, free). Maps our language codes to the appropriate country code.
+const LANG_TO_CC = {
+  en:'gb', es:'es', fr:'fr', de:'de', it:'it', pt:'pt', ru:'ru', zh:'cn',
+  ja:'jp', ko:'kr', ar:'sa', hi:'in', ur:'pk', id:'id', tr:'tr', nl:'nl',
+  sv:'se', pl:'pl', no:'no', da:'dk', fi:'fi', el:'gr', he:'il', th:'th',
+  vi:'vn', uk:'ua', ro:'ro', bn:'bd', fa:'ir', sw:'ke'
+};
+const langFlag = c => {
+  const cc = LANG_TO_CC[c] || 'un'; // 'un' = United Nations placeholder for unknown
+  return `<img class="cflag" src="https://hatscripts.github.io/circle-flags/flags/${cc}.svg" alt="${esc(c)}" loading="lazy">`;
+};
 const langName = c => (langByCode(c) || {}).n || c;
 
 // Suggested interests + goals. Full Speaky-style set — user picks any.
