@@ -290,16 +290,17 @@ a{color:inherit;text-decoration:none}
     </div>
     <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
   </header>
-  <span id="speakerCnt" class="hidden">0</span><span id="listenerCnt" class="hidden">0</span>
 
   <main id="pMain">
     <!-- Raise-hand queue — only rendered for hosts. -->
     <div class="hostqueue hidden" id="pQueue"></div>
 
     <div class="psect">
+      <div class="ph"><h3>Speakers <b id="speakerCnt">0</b></h3><span class="phelp">Tap your avatar to talk</span></div>
       <div class="speakers" id="speakers"></div>
     </div>
     <div class="psect">
+      <div class="ph"><h3>Listeners <b id="listenerCnt">0</b></h3></div>
       <div class="listeners" id="listeners"></div>
     </div>
   </main>
