@@ -267,6 +267,9 @@ label.fl{font-weight:800}
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/watch.js"></script>
+<script src="/voice.js"></script>
+<script src="/emoji-fly.js"></script>
+<script src="/game-voice-widget.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const show = (el, on) => el.classList.toggle('hidden', !on);
@@ -317,7 +320,16 @@ fetch('/api/social/me').then(r => r.json()).then(d => {
 function conn() {
   if (socket) return socket;
   socket = io('/ludo');
-  socket.on('state', st => { S = st; render(); });
+  socket.on('state', st => {
+    S = st; render();
+    // Attach the voice + emoji widget — canPublish is true when we're
+    // actually seated at the table. Widget is idempotent.
+    if (window.wsGameVoice && myId) {
+      const seated = (S.seats || []).some(s => s.id === myId);
+      wsGameVoice.attach({ socket, myId, canPublish: seated });
+      wsGameVoice.setCanPublish(seated);
+    }
+  });
   socket.on('seated', d => { myId = d.you; mySeat = d.seat; history.replaceState(null, '', '/ludo?room=' + d.code); });
   watchWire(socket, render);
   socket.on('err', d => flash(d.msg));
