@@ -2793,12 +2793,24 @@ async function refreshChats(){
   try {
     const L = (await api('/chats')).chats;
     $('chatsEmpty').classList.toggle('hidden', L.length > 0);
+    // Chat-list preview line: strip the mic emoji, and turn game/party
+    // invite URLs into friendly labels instead of raw links.
+    const previewLast = (m) => {
+      if (!m) return '';
+      if (m.k === 'gif') return '🖼 GIF';
+      if (m.k === 'voice') return 'Voice message';
+      if (m.k === 'call') return m.cans ? '📞 Voice call' : '📞 Missed call';
+      const t = String(m.x || '');
+      if (/\/party\?room=[A-Za-z0-9]{4}/.test(t))                       return '🎉 Party invitation';
+      if (/\/(play|ludo|four|pool|meld|spy)\?room=[A-Za-z0-9]{4}/.test(t)) return '🎮 Game invitation';
+      return esc(t.slice(0, 46));
+    };
     $('chatList').innerHTML = L.map(c => `
       <div class="citem${c.id === curChat ? ' sel' : ''}" onclick="openChatWith('${c.id}')">
         <span class="cav">${avatarHtml(c, 46)}${c.online ? '<span class="dot cdot"></span>' : ''}</span>
         <div class="cmid">
           <div class="cname">${esc(c.name)}${mark(c)}</div>
-          <div class="cprev">${c.last ? (c.last.f === ME.id ? 'You: ' : '') + (c.last.k === 'gif' ? '🖼 GIF' : c.last.k === 'voice' ? '🎤 Voice message' : c.last.k === 'call' ? (c.last.cans ? '📞 Voice call' : '📞 Missed call') : esc(c.last.x.slice(0, 46))) : 'Say hello 👋'}</div>
+          <div class="cprev">${c.last ? (c.last.f === ME.id ? 'You: ' : '') + previewLast(c.last) : 'Say hello 👋'}</div>
         </div>
         <div class="cright">
           <div class="ctime">${c.last ? fmtT(c.last.t) : ''}</div>
