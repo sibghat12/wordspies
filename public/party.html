@@ -62,12 +62,15 @@ a{color:inherit;text-decoration:none}
 .hidden{display:none !important}
 
 /* Compact floating actions in the top-right (replaces the old header). */
-.ptop{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:40;display:flex;gap:6px}
-.ptopbtn{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 12px;min-width:38px;height:38px;font-size:14px;font-weight:700;cursor:pointer;transition:background .12s,color .12s,transform .1s;display:inline-flex;align-items:center;justify-content:center}
+.ptop{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:40;display:flex;gap:6px;align-items:center}
+.ptopbtn{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 12px;min-width:38px;height:38px;font-size:14px;font-weight:700;cursor:pointer;transition:background .12s,color .12s,transform .1s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .ptopbtn:hover{background:var(--hover)}
 .ptopbtn:active{transform:scale(.94)}
+/* Tiny icon-only variant for the Invite button. */
+.ptopbtn.small{padding:0;width:32px;height:32px;min-width:32px;font-size:13px}
 .ptopbtn.danger{background:#fff5f5;color:var(--err);border-color:#f8d3d3;padding:8px 14px}
 .ptopbtn.danger:hover{background:#ffe4e4}
+.ptopbtn .pei{font-size:14px;line-height:1}
 /* On mobile the wrap has no top padding — first section sits at 8px.
    Nudge it down so the section header clears the floating actions. */
 .psect:first-of-type{margin-top:14px}
@@ -234,9 +237,8 @@ a{color:inherit;text-decoration:none}
        floating top-right stack so the room still has Leave / Invite /
        End without stealing a full row. -->
   <div class="ptop">
-    <button class="ptopbtn" onclick="copyInvite()" id="pInviteBtn" title="Copy invite link">🔗</button>
-    <button class="ptopbtn" onclick="leaveAndGo()" title="Leave">✕</button>
-    <button class="ptopbtn danger hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End</button>
+    <button class="ptopbtn small" onclick="copyInvite()" id="pInviteBtn" title="Copy invite link">🔗</button>
+    <button class="ptopbtn danger hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End <span class="pei">🎉</span></button>
   </div>
   <!-- Title still lives in JS variables for logs and iframe messaging;
        hidden shells keep the paint() references safe. -->
@@ -246,11 +248,11 @@ a{color:inherit;text-decoration:none}
   <div class="hostqueue hidden" id="pQueue"></div>
 
   <div class="psect">
-    <div class="ph"><h3>🎙 Speakers <b id="speakerCnt">0</b></h3><span class="phelp">Tap your avatar to talk</span></div>
+    <div class="ph"><h3>Speakers <b id="speakerCnt">0</b></h3><span class="phelp">Tap your avatar to talk</span></div>
     <div class="speakers" id="speakers"></div>
   </div>
   <div class="psect">
-    <div class="ph"><h3>👂 Listeners <b id="listenerCnt">0</b></h3></div>
+    <div class="ph"><h3>Listeners <b id="listenerCnt">0</b></h3></div>
     <div class="listeners" id="listeners"></div>
   </div>
 </div>
@@ -803,6 +805,8 @@ function toast(msg){
   toastT = setTimeout(() => el.classList.remove('show'), 2800);
 }
 </script>
-<script src="/wsbrand.js" defer></script>
+<!-- No shared brand strip on the party page — owner: "remove the tab
+     header". Audio rooms are their own immersive surface. -->
+<script>document.documentElement.setAttribute('data-nochrome','1');</script>
 </body>
 </html>
