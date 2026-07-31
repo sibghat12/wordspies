@@ -549,7 +549,10 @@
    // proceeded, contending for the mic stream, leaving the UI stuck.
    var _micBusy = null;
    async function setMic(want) {
-     if (!canPublish) throw new Error('Watchers cannot speak — only players can open the microphone.');
+     // Only guard turning the mic ON. A demoted speaker must be able to
+     // tear down their mic even after canPublish has been flipped to false
+     // — otherwise the stream stays open and they keep broadcasting.
+     if (want && !canPublish) throw new Error('Watchers cannot speak — only players can open the microphone.');
      if (_micBusy) { try { await _micBusy; } catch (e) {} }
      if (!!want === !!micOn) return micOn;
      _micBusy = (async () => {

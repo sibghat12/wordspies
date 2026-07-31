@@ -24,9 +24,12 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%}
 body{font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
-  -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+  -webkit-font-smoothing:antialiased;height:100dvh;overflow:hidden}
 a{color:inherit;text-decoration:none}
-.wrap{max-width:840px;margin:0 auto;padding:0 20px calc(200px + env(safe-area-inset-bottom));min-height:100vh}
+.wrap{max-width:840px;margin:0 auto;padding:0 20px 0;height:100dvh;display:flex;flex-direction:column}
+/* Mobile: the members area scrolls INTERNALLY. Page itself never
+   scrolls — the chat panel + FABs stay pinned. */
+#pMain{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 0 calc(200px + env(safe-area-inset-bottom))}
 
 /* ══ Desktop pro layout (≥1000px) ══
    Two columns: left = speakers/listeners; right = chat rail. Fixed
@@ -167,22 +170,26 @@ a{color:inherit;text-decoration:none}
   .micfab .mfico,.handfab .hfico{width:28px;height:28px;font-size:14px}
 }
 
-/* Bottom chat panel — flat, white, no drop-shadow. Border-top only. */
-.pchat{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:8px 12px calc(10px + env(safe-area-inset-bottom));z-index:30}
-.pmsgs{max-width:640px;margin:0 auto 6px;max-height:180px;overflow-y:auto;padding:4px 6px;display:flex;flex-direction:column;gap:5px}
-.pmsg{background:var(--panel);border-radius:12px;padding:6px 10px;font-size:13px;line-height:1.4;word-break:break-word;color:var(--ink)}
+/* Bottom chat panel — soft top-fade + generous padding. */
+.pchat{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(12px + env(safe-area-inset-bottom));z-index:30}
+.pchat::before{content:'';position:absolute;left:0;right:0;top:-24px;height:24px;background:linear-gradient(to top,rgba(255,255,255,.95),rgba(255,255,255,0));pointer-events:none}
+.pmsgs{max-width:640px;margin:0 auto 8px;max-height:200px;overflow-y:auto;padding:4px 6px;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin}
+.pmsg{background:var(--panel);border-radius:16px;padding:8px 12px;font-size:13.5px;line-height:1.45;word-break:break-word;color:var(--ink);max-width:82%;align-self:flex-start}
 .pmsg .pmwho{font-weight:800;font-size:11px;color:var(--accent);margin-right:6px}
 .pmsg .pmwho.host{color:var(--host-ink)}
-.pmsg.mine{background:#e8f0fe;color:#1a3a8a;align-self:flex-end;max-width:80%}
+.pmsg.mine{background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;align-self:flex-end;border-bottom-right-radius:6px}
+.pmsg.mine .pmwho{color:rgba(255,255,255,.85)}
+.pmsg:not(.mine){border-bottom-left-radius:6px}
 
-.pcompose{max-width:640px;margin:0 auto;display:flex;gap:6px;align-items:center}
-.pcompose .pinput{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:14.5px;padding:10px 14px;border-radius:99px;outline:none;min-width:0;transition:border-color .12s,background .12s}
-.pcompose .pinput:focus{border-color:var(--accent);background:#fff}
+.pcompose{max-width:640px;margin:0 auto;display:flex;gap:8px;align-items:center}
+.pcompose .pinput{flex:1;background:var(--panel);border:1px solid transparent;color:var(--ink);font-family:inherit;font-size:14.5px;padding:11px 16px;border-radius:99px;outline:none;min-width:0;transition:border-color .12s,background .12s,box-shadow .12s}
+.pcompose .pinput:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(90,123,255,.12)}
 .pcompose .pinput:disabled{opacity:.55}
-.pcompose .pbtn{background:var(--accent);color:#fff;border:0;width:42px;height:42px;border-radius:50%;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.pcompose .pbtn{background:var(--accent);color:#fff;border:0;width:42px;height:42px;border-radius:50%;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .12s,transform .1s}
 .pcompose .pbtn:hover{background:#4a68e0}
+.pcompose .pbtn:active{transform:scale(.94)}
 .pcompose .pbtn:disabled{opacity:.45;cursor:default}
-.pcompose .pemo{background:var(--panel);color:var(--ink);border:1px solid var(--line);width:40px;height:40px;border-radius:50%;font-size:17px;cursor:pointer;flex-shrink:0}
+.pcompose .pemo{background:var(--panel);color:var(--ink);border:0;width:40px;height:40px;border-radius:50%;font-size:17px;cursor:pointer;flex-shrink:0;transition:background .12s}
 .pcompose .pemo:hover{background:var(--hover)}
 /* raise-hand button that replaces the mic slot for listeners */
 .pcompose .praise{display:none}   /* replaced by the big FAB below */
@@ -215,9 +222,11 @@ a{color:inherit;text-decoration:none}
    less UI. The reactions menu pops upward when tapped. */
 .quickact{position:fixed;right:16px;bottom:calc(150px + env(safe-area-inset-bottom));z-index:36;display:none;flex-direction:column;gap:8px;align-items:flex-end}
 .quickact.show{display:flex}
-.quickact .qmute,.quickact .qrx{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:17px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.10);transition:transform .12s,background .12s,color .12s}
-.quickact .qmute:hover,.quickact .qrx:hover{transform:translateY(-2px)}
+.quickact .qmute,.quickact .qrx,.quickact .qinv,.quickact .qend{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:17px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.10);transition:transform .12s,background .12s,color .12s;display:flex;align-items:center;justify-content:center}
+.quickact .qmute:hover,.quickact .qrx:hover,.quickact .qinv:hover,.quickact .qend:hover{transform:translateY(-2px)}
 .quickact .qmute.on{background:linear-gradient(135deg,#22c07a,#159f5d);color:#fff;border-color:transparent;animation:speakpulse 1.4s ease-in-out infinite}
+.quickact .qend{background:#fff5f5;color:var(--err);border-color:#f8d3d3}
+.quickact .qinv.done{background:#e8f9ef;color:#159f5d;border-color:#c1e6d1}
 .quickact .qrxmenu{display:none;position:absolute;bottom:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:0 12px 30px rgba(0,0,0,.15);width:230px}
 .quickact .qrxmenu.show{display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
 .quickact .qrxmenu button{background:transparent;border:0;font-size:22px;padding:6px 4px;border-radius:8px;cursor:pointer;line-height:1;transition:background .12s,transform .06s}
@@ -233,28 +242,27 @@ a{color:inherit;text-decoration:none}
 <body>
 
 <div class="wrap">
-  <!-- Header removed per owner ask. Actions relocated to a compact
-       floating top-right stack so the room still has Leave / Invite /
-       End without stealing a full row. -->
-  <div class="ptop">
-    <button class="ptopbtn small" onclick="copyInvite()" id="pInviteBtn" title="Copy invite link">🔗</button>
-    <button class="ptopbtn danger hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End <span class="pei">🎉</span></button>
-  </div>
-  <!-- Title still lives in JS variables for logs and iframe messaging;
-       hidden shells keep the paint() references safe. -->
+  <!-- Header fully removed per owner ask. Invite + End were pulled out
+       of the top-right and folded into the bottom-right quickact stack
+       so the entire top of the page is clean. Section labels + counts
+       are also stripped — the avatar grids speak for themselves. -->
+
+  <!-- Title + counts stay in the DOM as hidden shells so paint() and
+       iframe-title messaging can still write into them. -->
   <span id="pTitle" class="hidden"></span><span id="pSub" class="hidden"></span>
+  <span id="speakerCnt" class="hidden">0</span><span id="listenerCnt" class="hidden">0</span>
 
-  <!-- Raise-hand queue — only rendered for hosts. -->
-  <div class="hostqueue hidden" id="pQueue"></div>
+  <main id="pMain">
+    <!-- Raise-hand queue — only rendered for hosts. -->
+    <div class="hostqueue hidden" id="pQueue"></div>
 
-  <div class="psect">
-    <div class="ph"><h3>Speakers <b id="speakerCnt">0</b></h3><span class="phelp">Tap your avatar to talk</span></div>
-    <div class="speakers" id="speakers"></div>
-  </div>
-  <div class="psect">
-    <div class="ph"><h3>Listeners <b id="listenerCnt">0</b></h3></div>
-    <div class="listeners" id="listeners"></div>
-  </div>
+    <div class="psect">
+      <div class="speakers" id="speakers"></div>
+    </div>
+    <div class="psect">
+      <div class="listeners" id="listeners"></div>
+    </div>
+  </main>
 </div>
 
 <!-- Compact quick actions: mute + reactions. Small round buttons for
@@ -263,6 +271,8 @@ a{color:inherit;text-decoration:none}
 <div class="quickact" id="pQuickAct">
   <button class="qmute" id="qMuteBtn" onclick="toggleMyMic()" title="Mute / unmute (Speakers only)">🎤</button>
   <button class="qrx" id="qRxBtn" onclick="toggleReactionsMenu(event)" title="Send a reaction">🎉</button>
+  <button class="qinv" id="pInviteBtn" onclick="copyInvite()" title="Copy invite link">🔗</button>
+  <button class="qend hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">🏁</button>
   <div class="qrxmenu" id="qRxMenu">
     <button data-e="❤️">❤️</button><button data-e="😂">😂</button><button data-e="🔥">🔥</button>
     <button data-e="👏">👏</button><button data-e="😮">😮</button><button data-e="🎉">🎉</button>
@@ -357,7 +367,34 @@ async function boot(){
 function conn(){
   if (socket) return socket;
   socket = io('/party');
-  socket.on('state', st => { room = st; paint(); });
+  socket.on('state', st => {
+    room = st;
+    // Sync myRole from server truth. Without this the client stays in its
+    // 'joined' role forever, so a demoted speaker keeps canPublish=true and
+    // can just re-open the mic. Owner-reported: "speaker who goes to
+    // listener is still able to speak." Fix both the role, the voice
+    // module's canPublish flag, and hard-stop the mic on the transition.
+    if (myId && room && room.members) {
+      const meRow = room.members.find(m => m.id === myId);
+      if (meRow && meRow.role && meRow.role !== myRole) {
+        const wasSpeaker = (myRole === 'host' || myRole === 'speaker');
+        myRole = meRow.role;
+        const nowSpeaker = (myRole === 'host' || myRole === 'speaker');
+        if (window.wsVoice) {
+          // Tear the mic down BEFORE flipping canPublish — setMic still
+          // has to complete the unpublish path, and we don't want the
+          // guard to bounce it.
+          if (wasSpeaker && !nowSpeaker) {
+            try { wsVoice.setMic(false); } catch(e){}
+          }
+          try { wsVoice.setCanPublish(nowSpeaker); } catch(e){}
+        }
+        paintQuota();
+        paintRaiseBtn();
+      }
+    }
+    paint();
+  });
   socket.on('joined', d => {
     myId = d.you; myRole = d.role; msgsLeft = d.msgsLeft || 0;
     ME_UID = d.uid || null;
@@ -514,8 +551,8 @@ async function copyInvite(){
   const link = location.origin + '/party?room=' + encodeURIComponent(CODE);
   try {
     await navigator.clipboard.writeText(link);
-    btn.classList.add('done'); btn.textContent = '✓ Copied';
-    setTimeout(() => { btn.classList.remove('done'); btn.textContent = '🔗 Invite'; }, 1500);
+    btn.classList.add('done'); btn.textContent = '✓';
+    setTimeout(() => { btn.classList.remove('done'); btn.textContent = '🔗'; }, 1500);
     toast('Invite link copied — share it anywhere.');
   } catch(e){ toast(link); }
 }
