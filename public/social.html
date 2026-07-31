@@ -1192,6 +1192,15 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
      tab (Community / Chats / Parties / Games / Me / Member profile)
      hugs the same 6px edge as the topnav logo. */
   .wrap{max-width:1400px;padding-left:6px;padding-right:6px}
+  /* Every tab body gets 30px breathing room under the sticky topnav
+     per owner ask — cleaner separation between the nav strip and
+     the page content on desktop. */
+  #tabWall,#tabLive,#tabGames,#tabParties,#tabChats,#tabChat,#tabMember,#tabMe{margin-top:30px}
+  /* Profile pages (Me + Member) — the hero band sits AT the top of
+     the tab, no gap between nav and hero. Content margin applies
+     via mp-grid padding instead. */
+  #tabMember,#tabMe{margin-top:0}
+  #tabMember .mp-hero,#tabMe .mp-hero{margin-top:30px}
   .head{padding:28px 8px 16px}
   /* Wall used to be a two-column page (sticky sidebar + grid). Sidebar
      is retired, so the layout is now a single full-width column with
