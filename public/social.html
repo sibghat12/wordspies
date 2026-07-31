@@ -2868,6 +2868,8 @@ async function refreshChats(){
 function openChatWith(id){
   if (GUEST) { requireLogin('💬 Log in to send messages'); return; }
   if (!id) return;
+  // Silence any in-flight AI voice from the previous chat.
+  if (typeof stopAIVoice === 'function') stopAIVoice();
   curChat = id; lastMsgCount = -1; lastSig = ''; lastTheirTyping = false;
   cancelReply(); cancelEdit(); hideAutocomplete();
   $('msgs').innerHTML = ''; $('chName').textContent = '…'; $('chState').textContent = ''; $('chAv').innerHTML = '';
@@ -3168,9 +3170,59 @@ function showAITyping(on){
   if (on) { const msgs = document.getElementById('msgs'); if (msgs) msgs.scrollTop = msgs.scrollHeight; }
 }
 
+// ═══ AI voice (browser SpeechSynthesis) ═══
+// Each persona has its own accent + preferred voice names. We try to
+// match voices by name first (best fidelity), then fall back to the
+// language code, then whatever the browser gave us. No API key, no
+// cost, works offline on any modern browser. On by default per owner
+// ask — user can silence via the mute toggle in the chat header.
+const AI_VOICE = {
+  ai_amy:     { lang: 'en-GB', names: ['Kate', 'Serena', 'Google UK English Female', 'Google UK English', 'Karen', 'Fiona'] },
+  ai_matthew: { lang: 'en-US', names: ['Alex', 'Fred', 'Aaron', 'Google US English', 'Samantha'] },
+  ai_ashley:  { lang: 'en-AU', names: ['Karen', 'Google English (Australia)', 'Google en-AU', 'Rishi', 'Tessa'] }
+};
+let AI_VOICE_ON = true;
+// Voices load asynchronously in Chrome — call this once to warm them.
+function warmVoices(){ if (window.speechSynthesis) window.speechSynthesis.getVoices(); }
+if (window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined) {
+  window.speechSynthesis.onvoiceschanged = warmVoices;
+}
+warmVoices();
+function pickVoice(personaId){
+  const pref = AI_VOICE[personaId];
+  const voices = (window.speechSynthesis && window.speechSynthesis.getVoices()) || [];
+  if (!pref || !voices.length) return null;
+  // Match by preferred name first (best fidelity).
+  for (const n of pref.names) {
+    const v = voices.find(x => x.name === n) || voices.find(x => x.name.toLowerCase().includes(n.toLowerCase()));
+    if (v) return v;
+  }
+  // Then by exact lang, then by primary lang (e.g. en-*).
+  return voices.find(x => x.lang === pref.lang)
+    || voices.find(x => x.lang.split('-')[0] === pref.lang.split('-')[0])
+    || null;
+}
+function speakAIReply(text, personaId){
+  if (!AI_VOICE_ON) return;
+  if (!window.speechSynthesis) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text || '').slice(0, 500));
+    const v = pickVoice(personaId);
+    if (v) { u.voice = v; u.lang = v.lang; }
+    u.rate = 1.02;      // very slightly faster than default — feels alive without being rushed
+    u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  } catch(e){}
+}
+function stopAIVoice(){ if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch(e){} } }
+// Stop speech if the user leaves the chat / navigates away.
+window.addEventListener('beforeunload', stopAIVoice);
+
 // Typewriter reveal for AI replies — Claude's answer arrives all at
 // once but we display it character by character so it feels natural
 // instead of the whole paragraph slamming in. Owner ask: "bit slow".
+// Voice starts at the same moment so the two land together.
 async function typewriteAIReply(msg){
   if (!msg || !msg.x) return;
   const msgs = document.getElementById('msgs');
@@ -3180,6 +3232,8 @@ async function typewriteAIReply(msg){
   bubble.dataset.aiTypewriter = '1';
   msgs.appendChild(bubble);
   const text = String(msg.x);
+  // Kick off the voice at the start so audio + text roughly align.
+  speakAIReply(text, curChat);
   // ~28ms per character = ~35 chars/sec — matches a natural typing
   // pace. Long messages get slightly faster so they don't drag.
   const perChar = text.length > 240 ? 15 : 28;
