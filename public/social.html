@@ -185,6 +185,9 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* "7 games · 5 wins" line retired per owner ask. Same reason as the
    stats bar — social profiles aren't leaderboards. */
 .psub2{display:none}
+/* "Let's talk about" snippet on the wall card — Speaky-style italic
+   teaser under the name/location. Trimmed to ~90 chars in JS. */
+.ptalk{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-style:italic;font-size:12.5px;color:var(--sub);margin-top:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pw{position:relative;height:216px;overflow:hidden;background:#eceef2}
 .pw .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px) brightness(.9);transform:scale(1.2)}
 .pw .photo{position:relative;width:100%;height:100%;object-fit:contain;display:block}
@@ -1359,6 +1362,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <h2 id="myName"></h2>
       <div class="loc" id="myEmail"></div>
     </div>
+    <!-- Your own "Let's talk about" quote, shown as it appears on your
+         public profile. Edit it below. Self-hides when empty. -->
+    <div class="pquote hidden" id="myQuote"></div>
     <!-- capture="user" opens the FRONT camera directly on mobile so people
          default to taking a live selfie instead of picking a stock photo
          from the gallery. Desktop browsers ignore the attribute and show
@@ -1798,6 +1804,13 @@ function paintMe(){
   $('fMyName').value = ME.name || '';
   $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
   $('myEmail').textContent = ME.location || 'Add your city below';
+  // Show your own "Let's talk about" quote at the top of your profile
+  // so you can see what other people see.
+  const mq = document.getElementById('myQuote');
+  if (mq) {
+    if (ME.talkAbout) { mq.innerHTML = esc(ME.talkAbout).replace(/\n/g,'<br>'); mq.classList.remove('hidden'); }
+    else mq.classList.add('hidden');
+  }
   // Sync the Speaky-style chip editors + textareas from ME each paint.
   try { syncProfileEditor(); } catch(e){}
   paintTabs();
@@ -3442,6 +3455,8 @@ function renderWall(){
                        m.wins ? m.wins + ' win' + (m.wins === 1 ? '' : 's') : null].filter(Boolean).join(' · ');
     const rate = m.games >= 3 ? Math.round((m.wins / m.games) * 100) : null;
     const fol = FOLLOWING.has(m.id);
+    // Short "Let's talk about" snippet — Speaky-style card teaser.
+    const talkSnip = m.talkAbout ? esc(String(m.talkAbout).slice(0, 90)) + (m.talkAbout.length > 90 ? '…' : '') : '';
     return `
     <div class="pcard" onclick="openMember(${i})" data-i="${i}">
       ${mine ? '<span class="chip-you">YOU</span>'
@@ -3452,6 +3467,7 @@ function renderWall(){
       <div class="pnm">${esc(m.name)}${mark(m)}${m.online ? '<span class="dot"></span>' : ''}</div>
       <div class="psub">${countryPart}${agePart}</div>
       <div class="psub2">${statsLine || 'No games yet'}</div>
+      ${talkSnip ? `<div class="ptalk">${talkSnip}</div>` : ''}
       <div class="pacts">${mine
         ? `<button onclick="event.stopPropagation();showTab('me')">Edit your profile</button>`
         : `<button class="msg" onclick="wallMsg(event,'${m.id}')">Message</button>
