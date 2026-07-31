@@ -131,10 +131,6 @@ a{color:inherit;text-decoration:none}
    below, but the ring is one colour everyone recognises as "speaker".*/
 .pav.host .circ,.pav.speaker .circ{outline:3px solid var(--green);outline-offset:2px;background:linear-gradient(135deg,#5a7bff,#7c5cff)}
 .pav.host .circ{background:linear-gradient(135deg,#22c07a,#159f5d)}
-/* Host circle is always the green gradient — hide any auto-generated
-   avatar photo so the ring + fill both read as HOST regardless of what
-   the account image happens to be. Owner ask: host should be green. */
-.pav.host .circ img{display:none}
 /* Live-mic pulse: still green, just a brighter outer glow */
 .pav.live .circ::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--green);animation:plive 1.2s ease-out infinite}
 /* Mic mute/unmute badge — a cute circular chip sitting bottom-right of
