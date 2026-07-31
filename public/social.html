@@ -3178,12 +3178,12 @@ async function sendMsg(kind, gifUrl){
       // instead of the full-paragraph pop that was jarring.
       showAITyping(false);
       await typewriteAIReply(j.reply);
-      // Real message is already in the server store; refresh so it
-      // shows up as a proper bubble (with tap-to-react etc.) and the
-      // typewriter placeholder is replaced.
-      lastSig = ''; lastMsgCount = -1;
-      await refreshChat();
-      toBottom($('msgs'));
+      // NO refreshChat here — the earlier refresh was wiping the
+      // typewriter bubble and re-rendering, causing the user-visible
+      // "types → disappears → retypes" flash. The typewriter bubble
+      // IS the final visible message; the real one is already saved
+      // in Redis and will sync on the next natural refresh (opening
+      // the chat again, or the split-view poll).
     } catch(e) {
       toast(e.message || 'AI could not reply.');
     } finally {
