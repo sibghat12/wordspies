@@ -182,7 +182,9 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pcircph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:rgba(255,255,255,.92)}
 .pnm{font-weight:500;font-size:15px;color:var(--ink);letter-spacing:-.2px}
 .psub{color:var(--sub);font-size:12.5px;font-weight:600;margin-top:3px}
-.psub2{color:var(--faint);font-size:11.5px;font-weight:500;margin-top:2px}
+/* "7 games · 5 wins" line retired per owner ask. Same reason as the
+   stats bar — social profiles aren't leaderboards. */
+.psub2{display:none}
 .pw{position:relative;height:216px;overflow:hidden;background:#eceef2}
 .pw .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px) brightness(.9);transform:scale(1.2)}
 .pw .photo{position:relative;width:100%;height:100%;object-fit:contain;display:block}
@@ -204,11 +206,13 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 
 /* ---------- wall: sidebar, sections, card actions ---------- */
 .wallside{display:none}
-.sect{display:flex;align-items:baseline;gap:9px;padding:18px 20px 2px}
-.sect h3{font-size:13.5px;font-weight:800;letter-spacing:-.2px}
-.sect .cnt{font-size:11px;font-weight:700;color:var(--faint)}
+/* Section headers ("Online now" / "New this week" / "Every spy") also
+   retired per owner ask — the wall is now one uninterrupted grid. */
+.sect{display:none}
 .sect .ln{flex:1;height:1px;background:var(--line)}
-.prate{position:absolute;top:10px;right:10px;background:transparent;color:var(--sub);font-size:10.5px;font-weight:700;padding:2px 0;letter-spacing:.2px}
+/* Win-rate badge on wall cards retired per owner ask — same reason the
+   stats bar went: social profiles aren't leaderboards. */
+.prate{display:none}
 .pcirc.live{outline:2px solid var(--green);outline-offset:2px}
 /* Quiet buttons. Two solid slabs of pink and black on every single card made the
    wall shout; the faces are the content, so the actions sit back and wait. */
@@ -916,7 +920,10 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .head{padding:28px 8px 16px}
   /* the wall becomes a two-column page: a sticky rail, then the grid */
   .walllay{display:grid;grid-template-columns:262px minmax(0,1fr);gap:28px;align-items:start;padding:0 8px}
-  .wallside{display:block;position:sticky;top:78px}
+  /* Wall sidebar retired per owner ask — the games/wins/top-spies rail
+     was noisy and off-brand for a community-first surface. Node kept in
+     the DOM so the JS that populates it doesn't need to be touched. */
+  .wallside{display:none}
   .filterrow{margin:0 0 4px}
   .wall{grid-template-columns:1fr 1fr;gap:18px;padding:8px 0 30px}
   .sect{padding:22px 2px 0}
@@ -1034,12 +1041,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   <nav class="topnav">
     <a class="tnlogo" href="/" aria-label="WordSpies home">WordSpies <em>Social</em></a>
     <div class="tntabs" role="tablist">
+      <button id="tbChats" class="tnt" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
       <button id="tbWall" class="tnt on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge hidden" id="wallBadge"></span></button>
       <button id="tbParties" class="tnt" onclick="showTab('parties')"><span class="ico">🎉</span>Parties<span class="badge hidden" id="partyBadge"></span></button>
-      <button id="tbChats" class="tnt" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
-      <!-- Games kept as a hidden route target so /?tab=games and internal
-           calls still work; label removed from the nav per owner ask. -->
-      <button id="tbGames" class="tnt hidden" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
+      <button id="tbGames" class="tnt" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
     </div>
     <div class="tnright">
       <!-- LIVE chip: pulsing red pill in the corner, only when there's a
@@ -3315,8 +3320,12 @@ let wallFilter = 'all';
 function renderWall(){
   const q = ($('q').value || '').toLowerCase();
   const WEEK7 = 7 * 24 * 3600 * 1000;
-  // only members with a photo appear on the wall
-  let list = MEMBERS.filter(m => m.photo).filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q) || (m.country||'').toLowerCase().includes(q));
+  // only members with a photo appear on the wall — and my own card is
+  // hidden from every filter (owner ask: never show me on the wall).
+  let list = MEMBERS
+    .filter(m => m.photo)
+    .filter(m => !ME || m.id !== ME.id)
+    .filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q) || (m.country||'').toLowerCase().includes(q));
   // "Online now" is about who else is around — your own card there is just
   // noise, and it made the count read "1 here" when nobody else was on.
   if (wallFilter === 'online') list = list.filter(m => m.online && !(ME && m.id === ME.id));
