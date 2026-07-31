@@ -391,13 +391,16 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-more button{display:block;width:100%;text-align:left;background:transparent;border:0;padding:10px 14px;font-family:inherit;font-size:13.5px;color:var(--ink);font-weight:600;border-radius:8px;cursor:pointer}
 .mp-more button:hover{background:var(--hover)}
 /* Right column cards */
-.mp-main{display:flex;flex-direction:column;gap:20px;padding-top:24px;margin-top:20px}
+/* Consistent card-to-card spacing: main column stacks with 16px gaps,
+   the 2-col grids inside get the SAME 16px so vertical rhythm reads
+   uniform whether you're between a card and a row of cards. */
+.mp-main{display:flex;flex-direction:column;gap:16px;padding-top:24px;margin-top:20px}
 @media(min-width:769px){ .mp-main{padding-top:0} }
 .mp-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 18px}
 .mp-card h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:16px;color:var(--ink);margin-bottom:8px}
 .mp-card p{font-size:14.5px;color:var(--sub);line-height:1.6;word-break:break-word}
 .mp-card p.mp-empty{color:var(--faint);font-style:italic;font-size:13.5px}
-.mp-2col{display:grid;gap:20px}
+.mp-2col{display:grid;gap:16px}
 @media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
 .mp-chips{display:flex;flex-wrap:wrap;gap:8px}
 /* Interest + goal pills. Gradient border via double-background trick
@@ -1421,17 +1424,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </section>
 
         <div class="mp-2col">
-          <section class="mp-card hidden" id="mInterestsBox">
-            <h3>My Interests</h3>
-            <div class="mp-chips" id="mInterests"></div>
-          </section>
-          <section class="mp-card hidden" id="mGoalsBox">
-            <h3>My Goals</h3>
-            <div class="mp-chips" id="mGoals"></div>
-          </section>
-        </div>
-
-        <div class="mp-2col">
           <section class="mp-card hidden" id="mSpeaksBox">
             <h3>Speaks</h3>
             <div class="mp-langs" id="mSpeaks"></div>
@@ -1439,6 +1431,20 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <section class="mp-card hidden" id="mLearnsBox">
             <h3>Learns</h3>
             <div class="mp-langs" id="mLearns"></div>
+          </section>
+        </div>
+
+        <!-- Interests + Goals now sit right above Recommendations per
+             owner ask — the visual grouping (person's tastes + what
+             others say about them) feels more natural stacked here. -->
+        <div class="mp-2col">
+          <section class="mp-card hidden" id="mInterestsBox">
+            <h3>My Interests</h3>
+            <div class="mp-chips" id="mInterests"></div>
+          </section>
+          <section class="mp-card hidden" id="mGoalsBox">
+            <h3>My Goals</h3>
+            <div class="mp-chips" id="mGoals"></div>
           </section>
         </div>
 
