@@ -2024,6 +2024,13 @@ function showTab(t){
   // to the window that's actually visible (the keyboard eats part of it)
   document.body.classList.toggle('chatlock', t === 'chat' && !split);
   $('jumpNew').classList.remove('show');
+  // Scroll to top on tab change so a card tap that opens the profile
+  // (or Me / Parties / etc.) lands you at the header, not wherever the
+  // wall scroll happened to be. Chat and split-view manage their own
+  // scroll internally and shouldn't be jumped.
+  if (t !== 'chat' && t !== 'chats') {
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch(e) { window.scrollTo(0, 0); }
+  }
   fitChat();
   if (split) {
     refreshChats(); refreshChat(true); askNotify();
