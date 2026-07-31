@@ -398,31 +398,28 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ggrid-v2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:16px 20px 30px}
 @media(min-width:900px){ .ggrid-v2{grid-template-columns:repeat(3,1fr);padding:16px 8px 30px} }
 .ggrid-v2 .g-spy{grid-column:1/-1}
-.gcard2{position:relative;display:grid;grid-template-rows:auto auto auto 1fr auto;gap:6px;padding:22px 18px 18px;border-radius:22px;color:#fff;text-decoration:none;overflow:hidden;
-  min-height:180px;cursor:pointer;transition:transform .15s var(--spring,ease),box-shadow .15s;box-shadow:0 8px 22px rgba(20,23,42,.10)}
-.gcard2:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(20,23,42,.16)}
-.gcard2:active{transform:translateY(-1px)}
-.gcard2::before{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
-.gcard2::after{content:'';position:absolute;left:-40px;bottom:-40px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
-.gcard2 .gicon{font-size:36px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:18px;background:rgba(255,255,255,.20);backdrop-filter:blur(4px);position:relative;z-index:1}
-.gcard2 .gtitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;letter-spacing:-.3px;position:relative;z-index:1}
-.gcard2 .gtag{font-size:11.5px;font-weight:600;opacity:.85;position:relative;z-index:1;line-height:1.4}
-.gcard2 .gplayers{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.02em;background:rgba(255,255,255,.16);padding:4px 10px 4px 8px;border-radius:99px;align-self:start;position:relative;z-index:1}
-.gcard2 .gplayers .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5)}
-.gcard2 .gplayers.live{background:#22c07a;color:#fff}
-.gcard2 .gplayers.live .dot{background:#fff;animation:gcpulse 1.4s ease-in-out infinite}
+/* Duolingo-clean game cards — flat white, single soft accent tint per
+   card via the icon chip. Owner: "make the apps ui simple not so
+   colorful". Kept the same class names so no HTML change needed. */
+.gcard2{position:relative;display:grid;grid-template-rows:auto auto auto 1fr auto;gap:6px;padding:20px 16px 16px;border-radius:16px;color:var(--ink);text-decoration:none;overflow:hidden;
+  min-height:170px;cursor:pointer;background:#fff;border:1px solid var(--line);transition:border-color .12s,transform .1s}
+.gcard2:hover{border-color:#c9cfe3;transform:translateY(-2px)}
+.gcard2:active{transform:translateY(0)}
+.gcard2 .gicon{font-size:26px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;background:#f4f5f7;color:var(--ink);position:relative;z-index:1}
+.gcard2 .gtitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:17px;letter-spacing:-.2px;color:var(--ink);position:relative;z-index:1}
+.gcard2 .gtag{font-size:12px;font-weight:500;color:var(--sub);position:relative;z-index:1;line-height:1.45}
+.gcard2 .gplayers{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.01em;background:#f4f5f7;color:var(--sub);padding:4px 10px 4px 8px;border-radius:99px;align-self:start;position:relative;z-index:1}
+.gcard2 .gplayers .dot{width:6px;height:6px;border-radius:50%;background:#c9cdda}
+.gcard2 .gplayers.live{background:#e8f9ef;color:#159f5d}
+.gcard2 .gplayers.live .dot{background:#22c07a;animation:gcpulse 1.4s ease-in-out infinite}
 @keyframes gcpulse{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
-.gcard2 .gcta{margin-top:10px;background:#fff;color:#16181f;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14.5px;letter-spacing:-.2px;padding:10px 14px;border-radius:12px;text-align:center;position:relative;z-index:1;transition:transform .12s}
-.gcard2:hover .gcta{transform:scale(1.02)}
-.gcard2 .ginvite{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.28);color:#fff;border-radius:12px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;z-index:2;transition:background .12s,transform .1s}
-.gcard2 .ginvite:hover{background:rgba(0,0,0,.42);transform:scale(1.08)}
-/* colour per game */
-.gcard2.g-spy{background:linear-gradient(140deg,#e8506b,#c22e4d)}
-.gcard2.g-ludo{background:linear-gradient(140deg,#3b6fe0,#2b4fb0)}
-.gcard2.g-pool{background:linear-gradient(140deg,#1d8f5f,#0e6b44)}
-.gcard2.g-four{background:linear-gradient(140deg,#4c5ec7,#2c3a85)}
-.gcard2.g-meld{background:linear-gradient(140deg,#6b5ce8,#4d3fc0)}
-.gcard2.g-imp{background:linear-gradient(140deg,#3a3f4f,#16181f)}
+.gcard2 .gcta{margin-top:10px;background:transparent;color:var(--caccent,#5a7bff);font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14px;padding:8px 0;text-align:left;position:relative;z-index:1}
+.gcard2 .ginvite{position:absolute;top:14px;right:14px;background:transparent;color:var(--faint);border-radius:10px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;z-index:2;transition:background .12s,color .12s}
+.gcard2 .ginvite:hover{background:var(--hover);color:var(--ink)}
+/* Very subtle per-card tint on the icon chip only — hint of theme
+   without shouting. Owner: "not so colourful". */
+.gcard2.g-spy .gicon,.gcard2.g-imp .gicon{background:#eef1ff;color:#4358d1}
+.gcard2.g-pool .gicon{background:#e8f9ef;color:#159f5d}
 
 /* ══ Parties tab ══ */
 .pt-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;padding:14px 20px 6px;flex-wrap:wrap}
@@ -1128,8 +1125,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="myrooms-list" id="myRoomsList"></div>
     </div>
     <div class="gp-head">
-      <h2>Game night 🎮</h2>
-      <p>Tap a game to jump straight into a room. Hit ⚔️ Invite to challenge a friend — we set the table and drop the invite in your chat.</p>
+      <h2>Practice</h2>
+      <p>Play together, talk together — these games are the fun way to practise vocabulary and conversation. Live parties are on the Parties tab.</p>
     </div>
     <div class="ggrid ggrid-v2">
       <a class="gcard2 g-spy" href="/codenames?from=social">
@@ -1139,38 +1136,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <span class="gplayers"><span class="dot"></span><span id="cntWordspies">Open a room</span></span>
         <span class="gcta">Join the room →</span>
       </a>
-      <a class="gcard2 g-ludo" href="/ludo">
-        <span class="gicon">🎲</span>
-        <span class="gtitle">Ludo</span>
-        <span class="gtag">Classic board · 2–4 players</span>
-        <span class="gplayers"><span class="dot"></span><span id="cntLudo">Open a room</span></span>
-        <span class="gcta">Join the room →</span>
-        <span class="ginvite" onclick="event.preventDefault();openChallenge('ludo','🎲 Ludo')" title="Challenge a friend">⚔️</span>
-      </a>
-      <a class="gcard2 g-pool" href="/pool">
-        <span class="gicon">🎱</span>
-        <span class="gtitle">8-Ball Pool</span>
-        <span class="gtag">Real physics · 1v1</span>
-        <span class="gplayers"><span class="dot"></span><span id="cntPool">Open a room</span></span>
-        <span class="gcta">Join the room →</span>
-        <span class="ginvite" onclick="event.preventDefault();openChallenge('pool','🎱 8-Ball Pool')" title="Challenge a friend">⚔️</span>
-      </a>
-      <a class="gcard2 g-four" href="/four">
-        <span class="gicon">🔴</span>
-        <span class="gtitle">Connect 4</span>
-        <span class="gtag">Line up four · 1v1</span>
-        <span class="gplayers"><span class="dot"></span><span id="cntFour">Open a room</span></span>
-        <span class="gcta">Join the room →</span>
-        <span class="ginvite" onclick="event.preventDefault();openChallenge('four','🔴 Connect 4')" title="Challenge a friend">⚔️</span>
-      </a>
-      <a class="gcard2 g-meld" href="/meld">
-        <span class="gicon">🧠</span>
-        <span class="gtitle">Mind Meld</span>
-        <span class="gtag">Same word, same time · 2 players</span>
-        <span class="gplayers"><span class="dot"></span><span id="cntMeld">Open a room</span></span>
-        <span class="gcta">Join the room →</span>
-        <span class="ginvite" onclick="event.preventDefault();openChallenge('meld','🧠 Mind Meld')" title="Challenge a friend">⚔️</span>
-      </a>
+      <!-- Ludo / Connect 4 / Mind Meld hidden while the site pivots to
+           a language-learning focus. Code + server routes kept intact so
+           we can easily bring them back. Any old direct link still opens
+           the game — we just don't advertise them here. -->
       <a class="gcard2 g-imp" href="/spy">
         <span class="gicon">🎭</span>
         <span class="gtitle">Who is the Spy?</span>
@@ -1295,12 +1264,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <div class="picker hidden" id="emojiPick"></div>
     <div class="picker hidden" id="gamePick">
-      <div style="font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);padding:2px 4px 10px">Challenge them to…</div>
-      <div class="gpick" onclick="gameInvite('ludo','🎲 Ludo')"><span class="gi">🎲</span><span><b>Ludo</b><i>the classic board race — bots can fill seats</i></span></div>
-      <div class="gpick" onclick="gameInvite('pool','🎱 8-Ball Pool')"><span class="gi">🎱</span><span><b>8-Ball Pool</b><i>real physics, first to the 8-ball</i></span></div>
-      <div class="gpick" onclick="gameInvite('four','🔴 Connect 4')"><span class="gi">🔴</span><span><b>Connect 4</b><i>four in a row, thirty-second rounds</i></span></div>
-      <div class="gpick" onclick="gameInvite('meld','🧠 Mind Meld')"><span class="gi">🧠</span><span><b>Mind Meld</b><i>type the same word at the same time</i></span></div>
-      <div class="gpick" onclick="inviteToPlay()"><span class="gi">🕵️</span><span><b>WordSpies</b><i>the full party game — bring more friends</i></span></div>
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);padding:2px 4px 10px">Practice together…</div>
+      <div class="gpick" onclick="inviteToPlay()"><span class="gi">🕵️</span><span><b>WordSpies</b><i>word game — great for vocabulary</i></span></div>
+      <div class="gpick" onclick="gameInvite('spy','🎭 Who is the Spy?')"><span class="gi">🎭</span><span><b>Who is the Spy?</b><i>conversation practice, 4+ players</i></span></div>
+      <div class="gpick" onclick="gameInvite('pool','🎱 8-Ball Pool')"><span class="gi">🎱</span><span><b>8-Ball Pool</b><i>hang out, talk, play — casual</i></span></div>
     </div>
   </div>
 
@@ -2669,10 +2636,8 @@ function iceBreaker(u){
     <div class="ib-t">Break the ice</div>
     <div class="ib-s">Say hi to ${nm} — or better, challenge them.<br>One tap sets up the game and drops the invite in this chat. You both just tap it to play.</div>
     <div class="ib-row">
-      <button class="ib-g g-ludo" onclick="gameInvite('ludo','🎲 Ludo')">🎲 Ludo</button>
+      <button class="ib-g g-spy"  onclick="gameInvite('spy','🎭 Who is the Spy?')">🎭 Spy</button>
       <button class="ib-g g-pool" onclick="gameInvite('pool','🎱 8-Ball Pool')">🎱 Pool</button>
-      <button class="ib-g g-four" onclick="gameInvite('four','🔴 Connect 4')">🔴 Connect 4</button>
-      <button class="ib-g g-meld" onclick="gameInvite('meld','🧠 Mind Meld')">🧠 Mind Meld</button>
     </div>
   </div>`;
 }
