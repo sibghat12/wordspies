@@ -391,7 +391,12 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Ensure the sidebar sits above the hero so the photo can overlap it
    properly. Without this the hero paints on top of the photo. */
 .mp-side{position:relative;z-index:2}
-.mp-photo img{width:100%;height:100%;object-fit:cover}
+/* The photo <img> often carries an inline width/height from
+   avatarHtml() (e.g. style="width:104px;height:104px") which was
+   winning over the class-based sizing and leaving the photo tiny in
+   the middle of a big empty circle. !important forces the img to
+   fill its .mp-photo container. */
+.mp-photo img,.mp-photo .av{width:100% !important;height:100% !important;object-fit:cover;display:block;border-radius:50%}
 .mp-meta{width:100%;text-align:center;display:flex;flex-direction:column;gap:12px}
 @media(min-width:769px){ .mp-meta{text-align:left;padding:0 4px} }
 .mp-name{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:28px;line-height:1.15;color:var(--accent);letter-spacing:-.3px}
@@ -451,6 +456,11 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .me-input[type="date"]{text-align:left;-webkit-appearance:none;appearance:none}
 .me-area{resize:vertical;min-height:60px;line-height:1.5}
 .me-help{font-size:11.5px;color:var(--faint);margin-top:6px;font-weight:500}
+/* Settings-wrap under the mp-grid — matches mp-grid's max-width +
+   padding so it aligns with the profile cards above. */
+.me-settings-wrap{margin:20px auto 0;padding:0 16px 40px}
+@media(min-width:769px){ .me-settings-wrap{max-width:1200px;padding:0 24px 60px} }
+@media(min-width:1280px){ .me-settings-wrap{max-width:1300px} }
 /* Camera chip on the profile photo — bottom-right, tap to upload. */
 .me-photo-edit{position:relative}
 .me-upl{position:absolute;bottom:6px;right:6px;width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;border:3px solid #fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:6;transition:transform .12s}
@@ -1738,9 +1748,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </section>
       </main>
     </div>
-    <!-- Settings sections live outside the mp-grid so they use the
-         legacy .setbox layout for now. Follow-up: convert to mp-card. -->
-    <div style="max-width:1400px;margin:20px auto 0;padding:0 24px">
+    <!-- Settings sections. Match mp-grid's max-width + padding so the
+         Notifications / Support / Delete-account cards sit under the
+         same left/right edge as the profile cards above them. -->
+    <div class="me-settings-wrap">
     <!-- 🔔 how you'd like to hear about messages and follows -->
     <div class="setbox">
       <div class="seth">Notifications</div>
