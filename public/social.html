@@ -1197,11 +1197,12 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .sect{padding:22px 2px 0}
   .pacts{display:flex}
   .pw{height:300px}
-  /* Member profile lives inside .mp-grid which already caps at 1200/1300 —
-     no extra narrow cap here or the sidebar + cards get squeezed. Other
-     tabs stay at 660 (conversation-column width, comfortable for chats). */
-  #tabMember{max-width:1400px;margin:0 auto}
-  #tabMe,#tabChats,#tabChat{max-width:660px;margin:0 auto}
+  /* Member AND Me profiles both use the wide 1400px layout — same
+     Speaky-style hero/sidebar/cards grid, just with editable fields
+     on Me. Chats stay narrow (660px) since a conversation column
+     reads better that way. */
+  #tabMember,#tabMe{max-width:1400px;margin:0 auto}
+  #tabChats,#tabChat{max-width:660px;margin:0 auto}
   .composer{max-width:660px}
   .picker{max-width:636px}
 }
