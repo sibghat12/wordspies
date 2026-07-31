@@ -384,7 +384,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
   .mp-side{padding-top:0;align-items:flex-start}
 }
 .mp-photo{width:170px;height:170px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:68px;font-weight:800;font-family:'Fredoka','Nunito',system-ui,sans-serif;flex-shrink:0}
-@media(min-width:769px){ .mp-photo{width:200px;height:200px;border:7px solid #fff;box-shadow:0 6px 30px rgba(0,0,0,.08);margin-top:-115px;align-self:flex-start;position:relative;z-index:5} }
+@media(min-width:769px){ .mp-photo{width:200px;height:200px;box-shadow:0 6px 30px rgba(0,0,0,.10),0 0 0 4px rgba(255,255,255,.9);margin-top:-115px;align-self:flex-start;position:relative;z-index:5} }
 /* Ensure the sidebar sits above the hero so the photo can overlap it
    properly. Without this the hero paints on top of the photo. */
 .mp-side{position:relative;z-index:2}
@@ -4327,9 +4327,16 @@ let EDIT_SPEAKS = [], EDIT_LEARNS = [], EDIT_INTERESTS = [], EDIT_GOALS = [];
 function renderChips(hostId, arr, kind){
   const host = document.getElementById(hostId);
   if (!host) return;
+  const isLang = (kind === 'speaks' || kind === 'learns');
   host.innerHTML = arr.map((v, i) => {
-    const label = (kind === 'speaks' || kind === 'learns') ? langFlag(v) + ' ' + langName(v) : v;
-    return `<span class="chip">${esc(label)}<button type="button" class="chipx" onclick="removeChip('${kind}',${i})" aria-label="Remove">×</button></span>`;
+    // Lang chips contain trusted HTML (our own flag <img>), everything
+    // else is plain user text and must be escaped. Bug fix: was
+    // esc()-wrapping the whole label including the img tag, which
+    // rendered as literal '&lt;img …&gt;' text next to the name.
+    const label = isLang
+      ? `${langFlag(v)} <span class="chip-nm">${esc(langName(v))}</span>`
+      : esc(v);
+    return `<span class="chip">${label}<button type="button" class="chipx" onclick="removeChip('${kind}',${i})" aria-label="Remove">×</button></span>`;
   }).join('');
 }
 function removeChip(kind, i){
