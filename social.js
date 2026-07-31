@@ -1569,6 +1569,12 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     }
     return anthropicClient;
   }
+  // Boot-time visibility. Without this the app starts perfectly and is
+  // silently mute if the SDK or key is missing — the exact failure that
+  // ate a session earlier. Now journalctl tells you at every restart.
+  if (!Anthropic)                          console.warn('[ai] DISABLED — @anthropic-ai/sdk not installed (run: cd /opt/wordspies && npm ci)');
+  else if (!process.env.ANTHROPIC_API_KEY) console.warn('[ai] DISABLED — ANTHROPIC_API_KEY not set');
+  else                                     console.log('[ai] ready — provider=' + (process.env.BOT_PROVIDER || 'anthropic') + ' model=' + (process.env.BOT_MODEL || 'claude-haiku-4-5'));
 
   // POST /api/social/ai/reply — the user sends a message to an AI, we
   // save it to the normal chat store, call Claude, save the reply, and
