@@ -1279,7 +1279,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <h2 id="myName"></h2>
       <div class="loc" id="myEmail"></div>
     </div>
-    <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" class="hidden">
+    <!-- capture="user" opens the FRONT camera directly on mobile so people
+         default to taking a live selfie instead of picking a stock photo
+         from the gallery. Desktop browsers ignore the attribute and show
+         the normal file picker. Users can still choose from library by
+         cancelling the camera. -->
+    <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" capture="user" class="hidden">
     <div class="stats">
       <div><b id="myGames">0</b><span>Games</span></div>
       <div><b id="myWins">0</b><span>Wins</span><div class="winrate" id="myRate">—</div></div>
@@ -3335,9 +3340,36 @@ async function saveProfile(){
   } catch(e){ toast(e.message); }
 }
 
+// Best-effort face check. Uses the browser's native FaceDetector where
+// available (Chrome, Edge, Samsung Internet) — silently skipped on
+// Safari/Firefox where the API doesn't exist. This is a NUDGE, not a
+// rejection: we prompt the user if we couldn't see a face, but they can
+// still upload. Owner's principle: fair play — don't Tandem-reject people
+// for a bad photo.
+async function faceCheck(file){
+  if (!('FaceDetector' in window)) return { supported:false, hasFace:null };
+  try {
+    const bmp = await createImageBitmap(file);
+    const det = new window.FaceDetector({ maxDetectedFaces: 3, fastMode: true });
+    const faces = await det.detect(bmp);
+    try { bmp.close && bmp.close(); } catch(e){}
+    return { supported:true, hasFace: faces && faces.length > 0, count: (faces||[]).length };
+  } catch(e){
+    return { supported:false, hasFace:null, err:e.message };
+  }
+}
+
 $('photoIn').onchange = async () => {
   const f = $('photoIn').files[0]; if (!f) return;
-  if (f.size > 2 * 1024 * 1024) { toast('Photo too large — max 2 MB'); return; }
+  if (f.size > 2 * 1024 * 1024) { toast('Photo too large — max 2 MB'); $('photoIn').value=''; return; }
+  // Nudge: if we can check for a face and don't see one, ask before uploading.
+  try {
+    const chk = await faceCheck(f);
+    if (chk.supported && chk.hasFace === false) {
+      const ok = confirm("We couldn't see a face in that photo. Real photos help people trust you — try again with a clearer selfie, or upload anyway?");
+      if (!ok) { $('photoIn').value=''; return; }
+    }
+  } catch(e){ /* face check is best-effort — never blocks upload */ }
   const fd = new FormData(); fd.append('photo', f);
   try {
     const first = !ME.photo;
