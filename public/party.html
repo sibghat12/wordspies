@@ -64,6 +64,36 @@ a{color:inherit;text-decoration:none}
 @media(max-width:999px){ .kbdhint{display:none} }
 .hidden{display:none !important}
 
+/* Party header — title + subtitle on the left, End (host only) right. */
+.phead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(14px + env(safe-area-inset-top)) 4px 8px;flex-shrink:0}
+.phead-txt{min-width:0;flex:1}
+.phead-txt h1{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;color:var(--ink);letter-spacing:-.2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phead-txt p{font-size:12.5px;color:var(--faint);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phead-txt p:empty{display:none}
+.pheadEnd{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;flex-shrink:0;transition:background .12s,transform .1s}
+.pheadEnd:hover{background:#ffe4e4}
+.pheadEnd:active{transform:scale(.95)}
+
+/* Centred emoji picker — floats over everything, backdrop dims. */
+.emopop{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(20,22,28,.45);animation:emofade .15s ease-out}
+.emopop.show{display:flex}
+.emopop .emopop-card{background:#fff;border-radius:22px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:min(320px,90vw)}
+.emopop .emopop-card button{background:transparent;border:0;font-size:32px;padding:12px 6px;border-radius:14px;cursor:pointer;line-height:1;transition:background .12s,transform .06s}
+.emopop .emopop-card button:hover{background:var(--hover)}
+.emopop .emopop-card button:active{transform:scale(.9)}
+@keyframes emofade{from{opacity:0}to{opacity:1}}
+
+/* Emoji burst centred over a member's avatar. Shows one at a time per
+   member — a new emoji replaces the old one. */
+.pav .pav-emo{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:44px;pointer-events:none;animation:pavEmoPop .9s cubic-bezier(.34,1.56,.64,1) forwards;z-index:9;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+@keyframes pavEmoPop{
+  0%{transform:translateX(-50%) scale(.2);opacity:0}
+  20%{transform:translateX(-50%) scale(1.25);opacity:1}
+  70%{transform:translateX(-50%) scale(1);opacity:1}
+  100%{transform:translateX(-50%) scale(1);opacity:0}
+}
+.listeners .pav .pav-emo{font-size:32px;top:8px;width:44px;height:44px}
+
 /* Compact floating actions in the top-right (replaces the old header). */
 .ptop{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:40;display:flex;gap:6px;align-items:center}
 .ptopbtn{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 12px;min-width:38px;height:38px;font-size:14px;font-weight:700;cursor:pointer;transition:background .12s,color .12s,transform .1s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
@@ -242,14 +272,17 @@ a{color:inherit;text-decoration:none}
 <body>
 
 <div class="wrap">
-  <!-- Header fully removed per owner ask. Invite + End were pulled out
-       of the top-right and folded into the bottom-right quickact stack
-       so the entire top of the page is clean. Section labels + counts
-       are also stripped — the avatar grids speak for themselves. -->
-
-  <!-- Title + counts stay in the DOM as hidden shells so paint() and
-       iframe-title messaging can still write into them. -->
-  <span id="pTitle" class="hidden"></span><span id="pSub" class="hidden"></span>
+  <!-- Party header: title + subtitle on the left, End (host only) on
+       the right. Section labels/counts stay stripped — the avatar
+       grids speak for themselves. Counts kept as hidden shells so
+       paint() can still write into them. -->
+  <header class="phead" id="pHead">
+    <div class="phead-txt">
+      <h1 id="pTitle"></h1>
+      <p id="pSub"></p>
+    </div>
+    <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
+  </header>
   <span id="speakerCnt" class="hidden">0</span><span id="listenerCnt" class="hidden">0</span>
 
   <main id="pMain">
@@ -272,12 +305,16 @@ a{color:inherit;text-decoration:none}
   <button class="qmute" id="qMuteBtn" onclick="toggleMyMic()" title="Mute / unmute (Speakers only)">🎤</button>
   <button class="qrx" id="qRxBtn" onclick="toggleReactionsMenu(event)" title="Send a reaction">🎉</button>
   <button class="qinv" id="pInviteBtn" onclick="copyInvite()" title="Copy invite link">🔗</button>
-  <button class="qend hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">🏁</button>
-  <div class="qrxmenu" id="qRxMenu">
-    <button data-e="❤️">❤️</button><button data-e="😂">😂</button><button data-e="🔥">🔥</button>
-    <button data-e="👏">👏</button><button data-e="😮">😮</button><button data-e="🎉">🎉</button>
-    <button data-e="💯">💯</button><button data-e="🙌">🙌</button><button data-e="👍">👍</button>
-    <button data-e="🤔">🤔</button><button data-e="😢">😢</button><button data-e="✨">✨</button>
+</div>
+
+<!-- Centred emoji picker — replaces the bottom-right popover. Owner asked:
+     picker floats mid-screen, pick ONE emoji, it displays over the sender's
+     avatar. -->
+<div class="emopop" id="pEmoPop" onclick="if(event.target===this)closeEmoPop()">
+  <div class="emopop-card" id="pEmoCard">
+    <button data-e="❤️">❤️</button><button data-e="😂">😂</button><button data-e="🔥">🔥</button><button data-e="👏">👏</button>
+    <button data-e="😮">😮</button><button data-e="🎉">🎉</button><button data-e="💯">💯</button><button data-e="🙌">🙌</button>
+    <button data-e="👍">👍</button><button data-e="🤔">🤔</button><button data-e="😢">😢</button><button data-e="✨">✨</button>
   </div>
 </div>
 
@@ -442,7 +479,10 @@ function conn(){
         }
       });
     }
-    if (window.wsEmojiFly) wsEmojiFly.init({ socket });
+    // Party emoji — bursts over the sender's avatar, not flying across
+     // the screen. Register our own handler; skip wsEmojiFly.init() so it
+     // doesn't attach the default fly-across listener.
+     socket.on('emoji', d => { if (d && d.e) burstOnMember(d.from, d.e); });
     // Defensive: if the server seated me as a non-host but the room
     // was actually created by me, ask it to reclaim host. Server verifies
     // the uid so this can't be spoofed by anyone else. Slight delay so
@@ -490,10 +530,56 @@ function send(){
 $('pSendBtn').onclick = send;
 $('pInput').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
 
-// Emoji picker → floating burst
-document.getElementById('pEmojiPick').querySelectorAll('button[data-e]').forEach(b => {
-  b.onclick = () => { if (window.wsEmojiFly) wsEmojiFly.send(b.dataset.e); document.getElementById('pEmojiPick').classList.remove('show'); };
+// Legacy composer-emoji picker (kept in DOM, hidden by default) — the
+// centered popover replaces it. Wire it up defensively in case it re-appears.
+(function(){
+  const legacy = document.getElementById('pEmojiPick');
+  if (!legacy) return;
+  legacy.querySelectorAll('button[data-e]').forEach(b => {
+    b.onclick = () => { sendPartyEmoji(b.dataset.e); legacy.classList.remove('show'); };
+  });
+})();
+
+// Centered emoji picker — floats over the whole viewport. Owner ask:
+// "middle of the screen as float, show one, display in middle of his profile".
+function openEmoPop(){
+  const pop = document.getElementById('pEmoPop');
+  if (pop) pop.classList.add('show');
+}
+function closeEmoPop(){
+  const pop = document.getElementById('pEmoPop');
+  if (pop) pop.classList.remove('show');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const card = document.getElementById('pEmoCard');
+  if (!card) return;
+  card.querySelectorAll('button[data-e]').forEach(b => {
+    b.onclick = () => { sendPartyEmoji(b.dataset.e); closeEmoPop(); };
+  });
 });
+
+// Send one emoji: server broadcasts to the room; we also burst locally
+// over MY own avatar so the sender sees their pick immediately.
+function sendPartyEmoji(e){
+  if (!socket || !e) return;
+  try { socket.emit('emoji', { e }); } catch(err){}
+  if (myId) burstOnMember(myId, e);
+}
+
+// Show a single emoji centered on a member's avatar. Only ONE is visible
+// at a time per member — a new emoji replaces the old one.
+function burstOnMember(memberId, emoji){
+  if (!memberId || !emoji) return;
+  const av = document.querySelector('.pav[data-id="' + CSS.escape(memberId) + '"]');
+  if (!av) return;
+  const prev = av.querySelector('.pav-emo');
+  if (prev) prev.remove();
+  const el = document.createElement('div');
+  el.className = 'pav-emo';
+  el.textContent = String(emoji);
+  av.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 900);
+}
 
 // Raise-hand for listeners.
 function toggleHand(){
@@ -557,28 +643,12 @@ async function copyInvite(){
   } catch(e){ toast(link); }
 }
 
-// Toggle the small reactions menu that sits above the quick-actions pair.
+// Reactions button now opens the centered picker (owner: "middle of the
+// screen as float"). The old popover stack was removed.
 function toggleReactionsMenu(ev){
-  ev.stopPropagation();
-  const menu = $('qRxMenu');
-  menu.classList.toggle('show');
+  if (ev) ev.stopPropagation();
+  openEmoPop();
 }
-document.addEventListener('click', (ev) => {
-  const menu = $('qRxMenu');
-  if (!menu || !menu.classList.contains('show')) return;
-  if (ev.target.closest('#qRxMenu') || ev.target.closest('#qRxBtn')) return;
-  menu.classList.remove('show');
-});
-document.addEventListener('DOMContentLoaded', () => {
-  const menu = document.getElementById('qRxMenu');
-  if (!menu) return;
-  menu.querySelectorAll('button[data-e]').forEach(b => {
-    b.onclick = () => {
-      if (window.wsEmojiFly) wsEmojiFly.send(b.dataset.e);
-      menu.classList.remove('show');
-    };
-  });
-});
 
 async function toggleMyMic(){
   if (!window.wsVoice) return;
@@ -610,7 +680,7 @@ function paint(){
   if (fab && fabLbl) {
     fab.classList.toggle('show', iAmSpeaker);
     fab.classList.toggle('on', !!micOn);
-    fabLbl.textContent = micOn ? 'You\'re live — tap to mute' : 'Tap to talk';
+    fabLbl.textContent = micOn ? 'Live' : 'Tap to talk';
   }
   // Compact quick actions: same visibility as the FAB (speakers only for
   // mute), but everyone gets the reaction button.
@@ -737,7 +807,7 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
     ? `onclick="event.stopPropagation();selectMember('${esc(m.id)}')"`
     : '';
 
-  return `<div class="${cls.join(' ')}" ${onclick}>
+  return `<div class="${cls.join(' ')}" data-id="${esc(m.id)}" ${onclick}>
     <div class="circ">${av}</div>
     ${micChip}
     <div class="nm">${esc(m.name)}</div>
