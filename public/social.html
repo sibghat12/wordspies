@@ -903,7 +903,7 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
   .chwall::before{content:'👥';font-size:16px;line-height:1}
 }
 .splitview .chwall{display:none}
-.chname{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chname{font-weight:800;font-size:17px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chstate{font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .msgs{padding:14px 16px 150px;display:flex;flex-direction:column;gap:8px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .mb{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;min-width:0}
@@ -2863,7 +2863,12 @@ async function refreshChat(first){
   try {
     const j = await api('/chat/' + curChat);
     $('chAv').innerHTML = avatarHtml(j.user, 38);
-    $('chName').innerHTML = esc(j.user.name) + mark(j.user);
+    // Chat header shows the name Title-Cased so "sibi khan" reads as
+     // "Sibi Khan". Applies to display only — the stored name is never
+     // changed. Handles single names, hyphens, and apostrophes.
+     const titleCase = s => String(s || '').split(/(\s+)/).map(w =>
+       w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join('');
+     $('chName').innerHTML = esc(titleCase(j.user.name)) + mark(j.user);
     $('chState').innerHTML = j.user.online ? '<span style="color:var(--green)">● online</span>' : 'offline';
     // A fingerprint of what we last drew — includes reactions and edits so
     // a purely metadata change (like someone hearting an old message) still
