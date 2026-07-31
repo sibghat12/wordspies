@@ -185,17 +185,24 @@ function mount(app, io, options = {}) {
 
       const prof = socket.profile;
       const uid = prof && prof.uid;
-      // Private-party gate: host + their circle. A call room (isCall=true)
-      // also has an explicit callWhitelist so the callee can join even
-      // when they're not in the caller's follow circle.
+      // Private-party gate: host + their circle. A call room
+      // (isCall=true) also has an explicit callWhitelist so the callee
+      // can join even when they're not in the caller's follow circle.
+      // NOTE: anyone with the room CODE effectively has an invite —
+      // links are the invite mechanism. So we only gate private
+      // parties against fully-anonymous (no uid) users. Logged-in
+      // users who received the link get in regardless of circle.
+      // (Fixes owner-reported: 'users can't join with the link'.)
       if (r.visibility === 'private' && uid !== r.hostUid) {
-        if (r.callWhitelist && r.callWhitelist.has(uid)) {
-          // allowed
-        } else {
-          const circle = await invitedCircle(r.hostUid);
-          if (!circle || !circle.has(uid)) return fail('This is a private party — you need an invite.');
+        if (!uid) {
+          return fail('This is a private party — please log in first, then open the link again.');
         }
+        // Logged-in user with the link: treated as invited, added to
+        // the room's callWhitelist so they can re-enter freely.
+        if (!r.callWhitelist) r.callWhitelist = new Set();
+        r.callWhitelist.add(uid);
       }
+      console.log('[party] join', r.code, 'uid=' + (uid || 'guest').slice(0, 8), 'vis=' + r.visibility);
 
       // Same account rejoining? Sweep EVERY member sharing this uid (there
       // shouldn't be more than one but if there is — dead sockets that

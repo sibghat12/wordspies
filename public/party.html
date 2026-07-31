@@ -615,7 +615,16 @@ function conn(){
     postToParent({ type: 'party:closed' });
     if (!EMBED) setTimeout(() => location.href='/social', 1400);
   });
-  socket.on('err', e => toast(e.msg || 'Something went wrong.'));
+  // Server refused the join (party ended / full / private). Show the
+   // real reason as a toast AND bounce back to the community after a
+   // moment so users aren't stranded on an empty party page.
+   socket.on('err', e => {
+     const msg = e && e.msg ? e.msg : 'Could not join this party.';
+     toast(msg);
+     if (/party has ended|full|private|invite/i.test(msg)) {
+       setTimeout(() => { location.href = '/social'; }, 2200);
+     }
+   });
   return socket;
 }
 boot();
