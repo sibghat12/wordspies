@@ -433,9 +433,9 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-card p.mp-empty{color:var(--faint);font-style:italic;font-size:13.5px}
 .mp-2col{display:grid;gap:16px}
 @media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
-/* "Let's talk about" narrower on desktop per owner ask — quote cards
-   read better shorter, don't need the whole column. */
-@media(min-width:769px){ .mp-narrow{max-width:60%} }
+/* "Let's talk about" now fills the full column per owner ask —
+   .mp-narrow kept for backwards compat but no longer caps width. */
+@media(min-width:769px){ .mp-narrow{max-width:100%} }
 
 /* Editable inputs inside Me-tab cards — flat, borderless field that
    reads as body text but is fully typable. Focus grows a subtle
