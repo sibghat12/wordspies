@@ -891,7 +891,8 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         ludo:      { path: '/ludo',      icon: '🎲', label: 'Ludo' },
         four:      { path: '/four',      icon: '🔴', label: 'Connect 4' },
         pool:      { path: '/pool',      icon: '🎱', label: '8-Ball Pool' },
-        meld:      { path: '/meld',      icon: '🧠', label: 'Mind Meld' }
+        meld:      { path: '/meld',      icon: '🧠', label: 'Mind Meld' },
+        party:     { path: '/party',     icon: '🎉', label: 'a party' }
       };
       const gKey = String(body.game || 'wordspies').toLowerCase();
       const g = GAMES[gKey] || GAMES.wordspies;

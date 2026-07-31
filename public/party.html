@@ -77,6 +77,40 @@ a{color:inherit;text-decoration:none}
 .emopop{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(20,22,28,.45);animation:emofade .15s ease-out}
 .emopop.show{display:flex}
 .emopop .emopop-card{background:#fff;border-radius:22px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:min(320px,90vw)}
+
+/* Invite modal — reuses the .emopop backdrop, own card layout. */
+.invpop .invcard{background:#fff;border-radius:22px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:min(400px,92vw);max-height:82vh;display:flex;flex-direction:column;overflow:hidden}
+.invstep{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
+.invstep.hidden{display:none}
+.invstep h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;color:var(--ink);margin-bottom:6px}
+.invopt{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-family:inherit;text-align:left;cursor:pointer;transition:background .12s,transform .1s}
+.invopt:hover{background:var(--hover)}
+.invopt:active{transform:scale(.98)}
+.invopt .invopt-ic{width:44px;height:44px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid var(--line)}
+.invopt b{display:block;font-weight:700;font-size:14.5px;color:var(--ink);margin-bottom:2px}
+.invopt span{font-size:12px;color:var(--faint);font-weight:600}
+.invclose,.invback{background:transparent;border:0;color:var(--sub);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;padding:8px}
+.invclose{align-self:center;margin-top:4px}
+.invtop{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.invtop h3{margin-bottom:0}
+.invback{padding:6px 8px;border-radius:8px}
+.invback:hover{background:var(--hover);color:var(--ink)}
+.invlist{flex:1;min-height:120px;max-height:50vh;overflow-y:auto;margin:4px -6px;padding:0 6px}
+.invempty{padding:22px 0;text-align:center;font-size:13px;color:var(--faint);font-weight:600}
+.invrow{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;cursor:pointer;transition:background .12s}
+.invrow:hover{background:var(--hover)}
+.invrow.on{background:#eef1ff}
+.invrow .invav{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;overflow:hidden;flex-shrink:0}
+.invrow .invav img{width:100%;height:100%;object-fit:cover}
+.invrow .invmeta{flex:1;min-width:0}
+.invrow .invnm{font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.invrow .invrl{font-size:11.5px;color:var(--faint);font-weight:600}
+.invrow.online .invnm::after{content:'';display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-left:6px;vertical-align:middle}
+.invrow .invchk{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s,border-color .12s;color:#fff;font-size:12px}
+.invrow.on .invchk{background:var(--accent);border-color:var(--accent)}
+.invsend{background:var(--accent);color:#fff;border:0;border-radius:99px;padding:12px;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;margin-top:6px;transition:background .12s,opacity .12s}
+.invsend:hover:not(:disabled){background:#4a68e0}
+.invsend:disabled{opacity:.45;cursor:default}
 .emopop .emopop-card button{background:transparent;border:0;font-size:32px;padding:12px 6px;border-radius:14px;cursor:pointer;line-height:1;transition:background .12s,transform .06s}
 .emopop .emopop-card button:hover{background:var(--hover)}
 .emopop .emopop-card button:active{transform:scale(.9)}
@@ -314,6 +348,26 @@ a{color:inherit;text-decoration:none}
   <button class="qmute" id="qMuteBtn" onclick="toggleMyMic()" title="Mute / unmute (Speakers only)">🎤</button>
   <button class="qrx" id="qRxBtn" onclick="toggleReactionsMenu(event)" title="Send a reaction">🎉</button>
   <button class="qinv" id="pInviteBtn" onclick="copyInvite()" title="Copy invite link">🔗</button>
+</div>
+
+<!-- Invite modal: two-step. Step 1 = choose "Copy link" or "Invite friends".
+     Step 2 (only if friends) = the follower/following list with checkboxes. -->
+<div class="emopop invpop" id="pInvPop" onclick="if(event.target===this)closeInvPop()">
+  <div class="invcard" id="pInvCard">
+    <!-- Step 1 -->
+    <div class="invstep" id="pInvStep1">
+      <h3>Invite to the party</h3>
+      <button class="invopt" onclick="doCopyLink()"><span class="invopt-ic">🔗</span><div><b>Copy link</b><span>Paste it anywhere</span></div></button>
+      <button class="invopt" onclick="openInvFriends()"><span class="invopt-ic">👥</span><div><b>Invite friends</b><span>Send to followers &amp; following</span></div></button>
+      <button class="invclose" onclick="closeInvPop()">Close</button>
+    </div>
+    <!-- Step 2 -->
+    <div class="invstep hidden" id="pInvStep2">
+      <div class="invtop"><button class="invback" onclick="showInvStep1()">← Back</button><h3>Invite friends</h3></div>
+      <div class="invlist" id="pInvList"><div class="invempty">Loading…</div></div>
+      <button class="invsend" id="pInvSend" onclick="sendPartyInvites()" disabled>Send invites</button>
+    </div>
+  </div>
 </div>
 
 <!-- Centred emoji picker — replaces the bottom-right popover. Owner asked:
@@ -643,15 +697,92 @@ document.addEventListener('keyup', (e) => {
 
 // Copy the party invite link to the clipboard. Same URL that opens the
 // party from anywhere — includes the room code, no auth token.
-async function copyInvite(){
-  const btn = $('pInviteBtn');
+// Invite entry point — opens the two-step modal.
+function copyInvite(){ openInvPop(); }
+function openInvPop(){
+  showInvStep1();
+  document.getElementById('pInvPop').classList.add('show');
+}
+function closeInvPop(){ document.getElementById('pInvPop').classList.remove('show'); }
+function showInvStep1(){
+  document.getElementById('pInvStep1').classList.remove('hidden');
+  document.getElementById('pInvStep2').classList.add('hidden');
+}
+
+// "Copy link" option — actually copy + close.
+async function doCopyLink(){
   const link = location.origin + '/party?room=' + encodeURIComponent(CODE);
+  try { await navigator.clipboard.writeText(link); toast('Invite link copied — share it anywhere.'); }
+  catch(e){ toast(link); }
+  closeInvPop();
+}
+
+// "Invite friends" option — swap to step 2 and fetch the invite circle.
+let INV_PEOPLE = [];
+const INV_SELECTED = new Set();
+async function openInvFriends(){
+  document.getElementById('pInvStep1').classList.add('hidden');
+  document.getElementById('pInvStep2').classList.remove('hidden');
+  INV_SELECTED.clear();
+  refreshInvSendBtn();
+  const list = document.getElementById('pInvList');
+  list.innerHTML = '<div class="invempty">Loading…</div>';
   try {
-    await navigator.clipboard.writeText(link);
-    btn.classList.add('done'); btn.textContent = '✓';
-    setTimeout(() => { btn.classList.remove('done'); btn.textContent = '🔗'; }, 1500);
-    toast('Invite link copied — share it anywhere.');
-  } catch(e){ toast(link); }
+    const r = await fetch('/api/social/people');
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Could not load your friends.');
+    INV_PEOPLE = j.people || [];
+    renderInvList();
+  } catch(e){
+    list.innerHTML = '<div class="invempty">' + esc(e.message) + '</div>';
+  }
+}
+function renderInvList(){
+  const list = document.getElementById('pInvList');
+  if (!INV_PEOPLE.length) {
+    list.innerHTML = '<div class="invempty">No followers or following yet — copy the link instead.</div>';
+    return;
+  }
+  list.innerHTML = INV_PEOPLE.map(p => {
+    const av = p.photo ? '<img src="' + esc(p.photo) + '" alt="">' : esc((p.name || '?').charAt(0).toUpperCase());
+    const on = INV_SELECTED.has(p.id);
+    const cls = ['invrow']; if (on) cls.push('on'); if (p.online) cls.push('online');
+    return '<div class="' + cls.join(' ') + '" data-id="' + esc(p.id) + '" onclick="toggleInvPick(\'' + esc(p.id) + '\')">' +
+      '<div class="invav">' + av + '</div>' +
+      '<div class="invmeta"><div class="invnm">' + esc(p.name) + '</div><div class="invrl">' + esc(p.rel || '') + '</div></div>' +
+      '<div class="invchk">' + (on ? '✓' : '') + '</div>' +
+    '</div>';
+  }).join('');
+}
+function toggleInvPick(id){
+  if (INV_SELECTED.has(id)) INV_SELECTED.delete(id); else INV_SELECTED.add(id);
+  renderInvList();
+  refreshInvSendBtn();
+}
+function refreshInvSendBtn(){
+  const btn = document.getElementById('pInvSend');
+  const n = INV_SELECTED.size;
+  btn.disabled = n === 0;
+  btn.textContent = n ? ('Send invites (' + n + ')') : 'Send invites';
+}
+async function sendPartyInvites(){
+  const ids = [...INV_SELECTED];
+  if (!ids.length) return;
+  const btn = document.getElementById('pInvSend');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const r = await fetch('/api/social/invite', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: CODE, ids, game: 'party' })
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Could not send invites.');
+    toast('Invited ' + (j.sent || ids.length) + ' friend' + ((j.sent || ids.length) === 1 ? '' : 's') + ' to the party.');
+    closeInvPop();
+  } catch(e){
+    toast(e.message);
+    refreshInvSendBtn();
+  }
 }
 
 // Reactions button now opens the centered picker (owner: "middle of the
