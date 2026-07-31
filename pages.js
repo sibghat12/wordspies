@@ -80,65 +80,122 @@ function aboutPage() {
 function privacyPage() {
   const body = `
 <h1>Privacy Policy</h1>
-<div class="updated">Last updated: 22 July 2026</div>
-<p>This Privacy Policy explains what information WordSpies ("we", "us") collects when you use <a href="/">wordspies.co.uk</a> (the "Site"), how it is used, and the choices you have. We keep data collection to the minimum needed to run the game and understand how it is used.</p>
-<h2>Information we collect</h2>
+<div class="updated">Last updated: 31 July 2026</div>
+<p>This Privacy Policy explains what WordSpies ("we", "us") collects, why, who processes it on our behalf, and the choices you have. We collect only what we need to run the service.</p>
+<h2>Who we are</h2>
+<p>WordSpies is a solo-developer project run from the United Kingdom. The data controller is Sibghatullah Khan. Contact: <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>
+<h2>What we collect</h2>
 <ul>
-<li><strong>Game information you provide:</strong> the display name you type when you create or join a game. This is stored only in your browser and in the temporary game room memory while you play, and is not linked to your real identity.</li>
-<li><strong>No account data:</strong> WordSpies has no sign-up and no accounts. We do not collect your email address, password, or payment details, and we never ask for them to play.</li>
-<li><strong>Local storage:</strong> we store a short session token and your chosen name in your browser's local storage so that refreshing the page returns you to your game. You can clear this at any time from your browser settings.</li>
-<li><strong>Usage and analytics data:</strong> like most websites, we use analytics to understand how the Site is used (see below).</li>
+<li><strong>Account information</strong> — display name, email address, an optional birthdate (used for the 13+ age check), and a bcrypt hash of your password. If you sign in with Google, we receive your Google name, email and profile photo.</li>
+<li><strong>Profile content</strong> — the profile photo, city, and short bio you choose to add.</li>
+<li><strong>Messages, voice messages and party audio</strong> — direct messages (text, GIF selections, voice notes) are stored on our servers to deliver them. Live party audio is relayed in real time and is not recorded by us.</li>
+<li><strong>Follows and social graph</strong> — who you follow and who follows you.</li>
+<li><strong>Approximate location</strong> — derived from your IP address at sign-up to suggest your city. We do not collect precise GPS location.</li>
+<li><strong>Technical logs</strong> — IP address, browser type, device type, and page requests for security and abuse prevention. Session cookies keep you signed in.</li>
+<li><strong>Push notification identifiers</strong> — if you opt in to push notifications, we store the endpoint your browser gives us so we can deliver them.</li>
 </ul>
-<h2>Cookies and analytics</h2>
-<p>We use <strong>Google Analytics</strong> to understand aggregate, anonymised usage — for example how many games are played, how long they last, and which pages are popular. Google Analytics sets cookies and collects information such as your approximate location (country/region), device type, browser, and the pages you visit. This helps us improve the game. You can learn more at <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Google's Privacy Policy</a>, and you can opt out using the <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" target="_blank">Google Analytics Opt-out Browser Add-on</a>.</p>
-<h2>Advertising</h2>
-<p>We may in future display advertising on the Site, including through Google and its partners. When we do, third-party vendors, including Google, may use cookies to serve ads based on your prior visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads to you based on your visits to the Site and/or other sites on the internet. You may opt out of personalised advertising by visiting <a href="https://www.google.com/settings/ads" rel="noopener" target="_blank">Google Ads Settings</a>, or opt out of some third-party vendors' use of cookies for personalised advertising at <a href="https://www.aboutads.info" rel="noopener" target="_blank">aboutads.info</a>. This section will be updated with specific ad-network details once advertising is enabled.</p>
-<h2>How we use information</h2>
+<h2>How we use it</h2>
 <ul>
-<li>To run games and return you to your room after a refresh.</li>
-<li>To understand and improve how the game and website are used.</li>
-<li>To keep the Site secure and working correctly.</li>
+<li>To let you sign in, message others, join parties, and play games.</li>
+<li>To send you invite, message and follower notifications (email, push) that you have not disabled.</li>
+<li>To keep the service secure and abuse-free (rate limits, block/report enforcement).</li>
+<li>To understand aggregate usage via anonymised analytics.</li>
 </ul>
-<p>We do not sell your personal information.</p>
-<h2>Data retention</h2>
-<p>Game rooms and the names in them exist only while a game is active and are cleared when rooms expire or the server restarts. Analytics data is retained by Google according to our configured retention settings and Google's policies.</p>
-<h2>Children's privacy</h2>
-<p>WordSpies is a family-friendly game, but it is not directed at children under 13, and we do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, please contact us and we will remove it.</p>
-<h2>Your rights</h2>
-<p>Depending on where you live, you may have rights to access, correct or delete personal data we hold about you. Because we hold almost no personal data, most requests can be satisfied simply by clearing your browser storage. For anything else, contact us below.</p>
-<h2>Changes to this policy</h2>
-<p>We may update this policy from time to time. Material changes will be reflected by the "Last updated" date above.</p>
-<h2>Contact</h2>
-<p>Questions about this policy? Email <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>`;
-  return layout('Privacy Policy — WordSpies', 'How WordSpies handles data: no accounts, minimal collection, Google Analytics for anonymised usage, and how cookies and advertising work.', '/privacy', body);
+<p>We do not sell your personal information. We do not use your messages or photos to train AI models.</p>
+<h2>Who processes data on our behalf</h2>
+<ul>
+<li><strong>Google Sign-In</strong> (Google LLC) — authentication if you use "Sign in with Google".</li>
+<li><strong>Cloudflare Realtime SFU</strong> (Cloudflare Inc.) — relays live party audio in real time. No recordings.</li>
+<li><strong>Brevo</strong> (Sendinblue SAS) — transactional email (invites, password resets, notifications).</li>
+<li><strong>DigitalOcean</strong> — server hosting (London, UK).</li>
+<li><strong>Google Analytics</strong> — anonymised usage statistics.</li>
+</ul>
+<h2>Retention</h2>
+<p>Account data is kept while your account is active. When you delete your account (Me → Delete account) we remove your profile, photo, messages, follows, and session tokens immediately. Server logs are kept for up to 30 days for abuse investigation.</p>
+<h2>Your rights (UK/EU GDPR)</h2>
+<p>You may access, correct, export or delete personal data we hold about you. Most is available inside the app; for anything else email <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a> and we will respond within 30 days. You may also complain to the UK Information Commissioner's Office at <a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a>.</p>
+<h2>Age</h2>
+<p>WordSpies is for users aged 13 and over. We do not knowingly collect personal information from children under 13. If you believe a child has an account, email us and we will remove it.</p>
+<h2>Changes</h2>
+<p>We may update this policy. Material changes will be reflected by the "Last updated" date above.</p>`;
+  return layout('Privacy Policy — WordSpies', 'How WordSpies handles data: accounts, messages, party audio, and the third parties who process data on our behalf.', '/privacy', body);
 }
 
 function termsPage() {
   const body = `
 <h1>Terms of Use</h1>
-<div class="updated">Last updated: 22 July 2026</div>
-<p>By using <a href="/">wordspies.co.uk</a> (the "Site") you agree to these Terms of Use. If you do not agree, please do not use the Site.</p>
-<h2>The service</h2>
-<p>WordSpies is a free online word game provided "as is" and "as available". Features may change, and the Site may occasionally be unavailable or lose in-progress games (for example when the server restarts).</p>
+<div class="updated">Last updated: 31 July 2026</div>
+<p>By creating an account or otherwise using WordSpies ("we", "us", "the service") you agree to these Terms of Use. If you do not agree, do not use the service.</p>
+<h2>Who can use WordSpies</h2>
+<p>You must be at least 13 years old to create an account. You agree to provide accurate information about yourself and to keep it accurate.</p>
 <h2>Acceptable use</h2>
+<p>You agree not to:</p>
 <ul>
-<li>Play fairly and be respectful to other players.</li>
-<li>Do not use names, clues or messages that are abusive, hateful, harassing, or unlawful.</li>
-<li>Do not attempt to disrupt, overload, hack, or reverse-engineer the Site or its servers.</li>
-<li>Do not use the Site for any unlawful purpose.</li>
+<li>Post, send or share content that is unlawful, abusive, hateful, harassing, sexually explicit, defamatory, or that infringes anyone else's rights.</li>
+<li>Impersonate others, use fake profiles, use another person's photo without their permission, or misrepresent your identity.</li>
+<li>Send unsolicited advertising, spam, malware or phishing.</li>
+<li>Attempt to access, disrupt or overload the service, or reverse-engineer or scrape it.</li>
+<li>Use the service to solicit money, sexual services, or personal information from other users.</li>
+<li>Use the service in any way that endangers or exploits minors.</li>
 </ul>
-<p>We may block access or end games that breach these terms.</p>
-<h2>Content and conduct</h2>
-<p>You are responsible for the names and text you enter. WordSpies does not pre-moderate player-entered text and is not responsible for content created by players. Play with people you trust.</p>
-<h2>Intellectual property</h2>
-<p>The WordSpies name, design, code and content are owned by their creator. WordSpies is an independent game and is not affiliated with Codenames or Czech Games Edition; comparisons are descriptive only.</p>
-<h2>Disclaimer and liability</h2>
-<p>To the maximum extent permitted by law, WordSpies is provided without warranties of any kind, and we are not liable for any loss arising from your use of the Site, including lost games or unavailability. Nothing in these terms limits liability that cannot be limited under applicable law.</p>
-<h2>Changes</h2>
-<p>We may update these terms from time to time. Continued use of the Site after changes means you accept the updated terms.</p>
+<h2>Zero-tolerance content</h2>
+<p>The following are strictly prohibited and will result in immediate account termination and referral to law enforcement where required:</p>
+<ul>
+<li>Child sexual abuse material (CSAM) of any kind.</li>
+<li>Content that grooms, sexualises or endangers minors.</li>
+<li>Non-consensual intimate imagery.</li>
+<li>Threats of violence, terrorism, or self-harm encouragement.</li>
+</ul>
+<p>To report such content immediately, email <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a>. We aim to respond within 24 hours.</p>
+<h2>Reporting and moderation</h2>
+<p>Every user profile and every message includes Report and Block controls. Reports are reviewed by us; we may remove content, warn users, suspend or delete accounts. We may also act without a report where we become aware of a serious violation.</p>
+<h2>Your content</h2>
+<p>You keep the rights to the content you post. You grant us a limited licence to store and display it so we can operate the service (for example, showing your message to the person you sent it to).</p>
+<h2>Suspension and termination</h2>
+<p>We may suspend or terminate your account for breach of these Terms. Where possible we will explain the reason. You may delete your account at any time from inside the app (Me → Delete account).</p>
+<h2>The service is provided "as is"</h2>
+<p>WordSpies is a free service provided without warranties. We do not guarantee it will always be available or free from bugs. To the maximum extent permitted by law we are not liable for indirect losses arising from your use of the service. Nothing here limits liability that cannot be limited under UK law.</p>
 <h2>Contact</h2>
-<p>Questions? Email <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>`;
-  return layout('Terms of Use — WordSpies', 'The terms for using WordSpies, the free online word game: acceptable use, content, intellectual property and disclaimers.', '/terms', body);
+<p>General questions: <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>Safety reports: <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a></p>
+<h2>Changes</h2>
+<p>We may update these terms. Continued use after changes means you accept the updated terms.</p>`;
+  return layout('Terms of Use — WordSpies', 'The rules for using WordSpies: acceptable use, zero-tolerance content, reporting, and account termination.', '/terms', body);
+}
+
+// Google Play requires a publicly reachable Child Safety Standards page
+// for any app in the Social category — regardless of whether the app
+// actually has child users. Must name the app and the developer, and
+// list our position and controls.
+function childSafetyPage() {
+  const body = `
+<h1>Child Safety Standards</h1>
+<div class="updated">Last updated: 31 July 2026</div>
+<p>WordSpies takes the safety of minors seriously. This page describes the standards we apply and how to reach us.</p>
+<h2>Our position</h2>
+<p>WordSpies is intended for users aged 13 and over. Creating an account requires that you are at least 13. We do not knowingly permit anyone under 13 to use the service, and we do not knowingly collect personal information from children under 13.</p>
+<p>Any content depicting, sexualising, grooming or endangering a minor is <strong>strictly and permanently prohibited</strong> and will result in immediate account termination and reporting to the appropriate authorities.</p>
+<h2>What we do</h2>
+<ul>
+<li>13+ age gate at account creation.</li>
+<li>A Report button on every message and every user profile.</li>
+<li>A Block button on every user profile that hides them in both directions.</li>
+<li>Server-side profanity and slur filtering on text messages.</li>
+<li>Review of reports within 24 hours of receipt.</li>
+<li>Removal of offending content and termination of offending accounts.</li>
+<li>Reporting of any suspected child sexual abuse material to the National Center for Missing &amp; Exploited Children (NCMEC) in the United States and the Internet Watch Foundation (IWF) in the United Kingdom.</li>
+</ul>
+<h2>Reporting child safety concerns</h2>
+<p>If you believe a user is under 13, or you become aware of content that endangers a minor, email <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a> immediately. Include as much detail as you safely can: the username in question, a link or screenshot if possible, and any context.</p>
+<p>Suspected child sexual abuse material can also be reported directly to:</p>
+<ul>
+<li>United Kingdom: <a href="https://iwf.org.uk" rel="noopener" target="_blank">Internet Watch Foundation</a></li>
+<li>United States: <a href="https://report.cybertip.org" rel="noopener" target="_blank">NCMEC CyberTipline</a></li>
+</ul>
+<h2>CSAM point of contact</h2>
+<p>The designated point of contact for child sexual abuse material at WordSpies is Sibghatullah Khan, reachable at <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a>.</p>
+<h2>About us</h2>
+<p>WordSpies is a solo-developer project run from the United Kingdom by Sibghatullah Khan.</p>`;
+  return layout('Child Safety Standards — WordSpies', 'Our standards for protecting minors: 13+ age gate, reporting, moderation, and the designated CSAM contact.', '/child-safety', body);
 }
 
 // A canonical URL for "how to play". The old shared nav pointed at `/#how`,
@@ -189,4 +246,4 @@ function howToPlayPage() {
   );
 }
 
-module.exports = { aboutPage, privacyPage, termsPage, howToPlayPage };
+module.exports = { aboutPage, privacyPage, termsPage, howToPlayPage, childSafetyPage };

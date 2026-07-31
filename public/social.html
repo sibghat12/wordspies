@@ -1001,6 +1001,17 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="field"><input id="fCode" maxlength="6" inputmode="numeric" placeholder="6-digit code from your email"></div>
       <div class="field"><input id="fNewPass" type="password" maxlength="100" placeholder="New password (6+ characters)"></div>
     </div>
+    <!-- Terms acceptance — Google Play requires explicit acceptance
+         before UGC creation. Only shown on the signup step; hidden for
+         login/forgot-password. -->
+    <div id="suTerms" class="field" style="padding:6px 4px 0;font-size:12.5px;color:var(--muted);line-height:1.5">
+      <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer">
+        <input type="checkbox" id="fAcceptTerms" style="margin-top:3px;accent-color:var(--accent)">
+        <span>I confirm I am at least 13 years old and I agree to the
+          <a href="/terms" target="_blank" rel="noopener">Terms of Use</a> and
+          <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span>
+      </label>
+    </div>
     <div class="err" id="authErr"></div>
     <button class="btn btn-dark" id="authGo">Create my profile</button>
     <div class="alt hidden" id="forgotLink"><a>Forgot password?</a></div>
@@ -1162,6 +1173,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="mbtns">
       <button class="btn btn-accent" id="followBtn" onclick="toggleFollow()">Follow</button>
       <button class="btn btn-line" onclick="openChatWith(curMember)">💬 Message</button>
+    </div>
+    <div class="mbtns" style="margin-top:8px">
+      <button class="btn btn-line" onclick="reportUser()" style="font-size:12.5px;color:var(--muted)">🚩 Report</button>
+      <button class="btn btn-line" id="blockBtn" onclick="toggleBlock()" style="font-size:12.5px;color:var(--muted)">🚫 Block</button>
     </div>
     <div class="stats">
       <div><b id="mGames">0</b><span>Games</span></div>
@@ -1326,6 +1341,33 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <button class="btn btn-dark" id="a2hsGo" style="width:auto;padding:9px 18px;flex:none">Add</button>
       </div>
     </div>
+    <!-- Support & safety — required links for App Store / Play Store review
+         plus a visible contact address. Keeps the trust surface obvious
+         without steering users away from the app. -->
+    <div class="setbox" style="margin-top:16px">
+      <div class="seth">Support &amp; safety</div>
+      <div class="setrow" style="display:block">
+        <div class="sc" style="width:100%">
+          <b>Contact</b>
+          <span>General questions: <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a></span>
+          <span>Safety &amp; abuse reports: <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a></span>
+        </div>
+      </div>
+      <div class="setrow" style="display:block">
+        <div class="sc" style="width:100%">
+          <b>Policies</b>
+          <span>
+            <a href="/terms" target="_blank" rel="noopener">Terms of Use</a> ·
+            <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> ·
+            <a href="/child-safety" target="_blank" rel="noopener">Child Safety Standards</a>
+          </span>
+        </div>
+      </div>
+      <div class="setrow">
+        <div class="sc"><b>Blocked users</b><span>People you've blocked. Tap to unblock.</span></div>
+        <button class="btn btn-line" style="width:auto;padding:8px 14px;flex:none;font-size:12.5px" onclick="showBlocked()">Manage</button>
+      </div>
+    </div>
     <div style="padding:0 24px;margin-top:20px">
       <button class="btn btn-line" style="color:var(--err);border-color:var(--err)" onclick="confirmDelete()">Delete account</button>
       <div class="note" style="color:var(--err);margin-top:10px">This action cannot be undone. You'll lose all your profile data and game history.</div>
@@ -1467,6 +1509,7 @@ function setMode(m){
   mode = m;
   $('suName').classList.toggle('hidden', m !== 'signup');
   $('suBirth').classList.toggle('hidden', m !== 'signup');
+  $('suTerms').classList.toggle('hidden', m !== 'signup');
   $('fPass').parentElement.classList.toggle('hidden', m === 'forgot');
   $('resetFields').classList.toggle('hidden', m !== 'forgot');
   $('forgotLink').classList.toggle('hidden', m !== 'login');
@@ -1499,8 +1542,14 @@ $('authGo').onclick = async () => {
     } else {
       const body = { email: $('fEmail').value, password: $('fPass').value };
       if (mode === 'signup') {
+        if (!$('fAcceptTerms').checked) {
+          $('authErr').textContent = 'Please tick the Terms & Privacy box to continue.';
+          $('authGo').disabled = false;
+          return;
+        }
         body.name = $('fName').value;
         body.birthdate = $('fSignupBirth').value || '';
+        body.acceptedTerms = true;
       }
       const j = await api(mode === 'signup' ? '/signup' : '/login', {
         method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
@@ -1583,7 +1632,7 @@ function enterApp(justJoined){
     guestChipHtml = null;
   }
 
-  paintMe(); loadMembers();
+  paintMe(); loadMembers(); refreshBlocks();
   pingLoop(); if (!window.__pingT) window.__pingT = setInterval(pingLoop, 25000);
   // the moment you swipe away, say so — a push should land straight away, not
   // after the next tick, and the moment you come back it should fall silent
@@ -2997,6 +3046,87 @@ function msCopy(){
   closeMsAct();
 }
 
+// Report the currently-selected message. Sends a note the moderator can
+// walk through. Only fires against messages that aren't yours.
+async function msReport(){
+  if (!curActMsg || !curChat) return;
+  if (curActMsg.mine) { toast("You can't report your own message."); closeMsAct(); return; }
+  const reason = prompt('What\'s wrong with this message?\n(e.g. spam, harassment, unsafe, other)');
+  if (reason === null) { closeMsAct(); return; }
+  try {
+    await api('/report', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ kind:'message', targetId: curChat, msgId: curActMsg.id, reason: (reason||'other').slice(0,40) })
+    });
+    toast('Thanks — we\'ll review this within 24 hours.');
+  } catch(e){ toast(e.message); }
+  closeMsAct();
+}
+
+// Report the profile currently on screen (tabMember). Prompts for a
+// short reason. Reports go into the same moderation queue as messages.
+async function reportUser(){
+  if (!curMember) return;
+  const reason = prompt('What\'s wrong with this profile?\n(e.g. fake photo, spam, harassment, unsafe, other)');
+  if (reason === null) return;
+  try {
+    await api('/report', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ kind:'user', targetId: curMember, reason: (reason||'other').slice(0,40) })
+    });
+    toast('Thanks — we\'ll review this within 24 hours.');
+  } catch(e){ toast(e.message); }
+}
+
+// Block / unblock the profile on screen. Blocking hides them everywhere
+// in both directions and unfollows both sides.
+let MY_BLOCKS = new Set();
+async function toggleBlock(){
+  if (!curMember) return;
+  const blocked = MY_BLOCKS.has(curMember);
+  if (!blocked && !confirm('Block this person? They won\'t be able to see or message you, and you won\'t see them.')) return;
+  try {
+    await api(blocked ? '/unblock' : '/block', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ targetId: curMember })
+    });
+    if (blocked) MY_BLOCKS.delete(curMember); else MY_BLOCKS.add(curMember);
+    paintBlockBtn();
+    toast(blocked ? 'Unblocked.' : 'Blocked. You won\'t see them anywhere in the app.');
+    // Force a refresh of the wall so blocked users vanish from view.
+    if (!blocked && typeof loadMembers === 'function') loadMembers();
+  } catch(e){ toast(e.message); }
+}
+function paintBlockBtn(){
+  const btn = document.getElementById('blockBtn');
+  if (!btn || !curMember) return;
+  btn.textContent = MY_BLOCKS.has(curMember) ? '✓ Unblock' : '🚫 Block';
+}
+async function refreshBlocks(){
+  try {
+    const j = await api('/blocks');
+    MY_BLOCKS = new Set((j.blocked || []).map(b => b.id));
+    paintBlockBtn();
+  } catch(e){ /* not logged in — silent */ }
+}
+
+// Blocked-users manager modal.
+async function showBlocked(){
+  try {
+    const j = await api('/blocks');
+    const list = j.blocked || [];
+    if (!list.length) { alert('You haven\'t blocked anyone.'); return; }
+    const names = list.map((b, i) => (i+1) + '. ' + b.name).join('\n');
+    const pick = prompt('Blocked users:\n\n' + names + '\n\nEnter a number to unblock (or Cancel):');
+    const n = parseInt(pick, 10);
+    if (!n || n < 1 || n > list.length) return;
+    const target = list[n-1];
+    await api('/unblock', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ targetId: target.id })
+    });
+    MY_BLOCKS.delete(target.id);
+    toast('Unblocked ' + target.name + '.');
+    if (typeof loadMembers === 'function') loadMembers();
+  } catch(e){ toast(e.message); }
+}
+
 // Long-press on mobile, right-click on desktop, both open the action sheet.
 // Live-wired every render because innerHTML replaces the whole thread.
 let pressTimer = null;
@@ -3326,6 +3456,7 @@ function openMemberObj(m){
     $('followBtn').dataset.f = j.isFollowing ? '1' : '';
     if (j.online) $('mLoc').innerHTML = '<span style="color:var(--green)">● online</span> · ' + esc($('mLoc').textContent);
   }).catch(()=>{});
+  paintBlockBtn();
   showTab('member');
 }
 
@@ -3608,6 +3739,7 @@ function maybeWelcome(){
   <button class="mact" onclick="msReply()"><span class="mai">↩︎</span><span class="mal">Reply</span></button>
   <button class="mact" id="msActEdit" onclick="msEdit()"><span class="mai">✎</span><span class="mal">Edit</span></button>
   <button class="mact" id="msActCopy" onclick="msCopy()"><span class="mai">⧉</span><span class="mal">Copy</span></button>
+  <button class="mact" id="msActReport" onclick="msReport()"><span class="mai">🚩</span><span class="mal">Report</span></button>
   <button class="mact danger" id="msActDel" onclick="msDelete()"><span class="mai">🗑</span><span class="mal">Delete</span></button>
 </div>
 <script src="/wsbrand.js" defer></script>

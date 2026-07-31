@@ -101,6 +101,8 @@ const pages = require('./pages');
 app.get('/about', (req, res) => res.type('html').send(pages.aboutPage()));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage()));
 app.get('/terms', (req, res) => res.type('html').send(pages.termsPage()));
+app.get('/child-safety', (req, res) => res.type('html').send(pages.childSafetyPage()));
+app.get('/safety', (req, res) => res.redirect(301, '/child-safety'));
 app.get('/how-to-play', (req, res) => res.type('html').send(pages.howToPlayPage()));
 // The shared marketing nav used to link `/#how`, which stopped working when
 // `/` moved from the landing page to the community app. Anyone who lands on

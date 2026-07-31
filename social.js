@@ -204,11 +204,14 @@ function mount(app, redis) {
   api.post('/signup', async (req, res) => {
     try {
       if (limited(req, 'su', 5)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
-      let { name, email, password, birthdate } = req.body || {};
+      let { name, email, password, birthdate, acceptedTerms } = req.body || {};
       name = String(name || '').trim();
       email = String(email || '').trim().toLowerCase();
       password = String(password || '');
       birthdate = String(birthdate || '').trim();
+      // Google Play requires terms acceptance before UGC creation. Refuse
+      // signup without the explicit box checked.
+      if (!acceptedTerms) return res.status(400).json({ error: 'Please accept the Terms and Privacy Policy to continue.' });
       if (!/^[a-zA-Z0-9_ ]{3,15}$/.test(name)) return res.status(400).json({ error: 'Name: 3–15 letters, numbers or spaces.' });
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 100) return res.status(400).json({ error: 'That email doesn\'t look right.' });
       if (password.length < 6 || password.length > 100) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
@@ -220,7 +223,8 @@ function mount(app, redis) {
       const user = { id, name, email, passHash: bcrypt.hashSync(password, 10), bio: '', location: geoLabel(geo),
         country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
         birthdate: birthdate || null,
-        games: 0, wins: 0, createdAt: Date.now() };
+        games: 0, wins: 0, createdAt: Date.now(),
+        termsAcceptedAt: Date.now() };
       await db.set('soc:user:' + id, JSON.stringify(user));
       await db.set('soc:email:' + email, id);
       await db.set('soc:uname:' + name.toLowerCase(), id);
@@ -548,6 +552,121 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     res.json({ ok: true });
   });
 
+  // ─── SAFETY / MODERATION ──────────────────────────────────────────────
+  // App-store compliance (Apple Guideline 1.2, Google UGC policy): every
+  // user can (1) report other users, (2) report specific messages, and
+  // (3) block users completely. Reports queue for moderator review, blocks
+  // take effect immediately in both directions.
+
+  // Cheap wordlist filter — Google requires "a method for filtering
+  // objectionable material." A small list satisfies the letter of the
+  // policy without pretending to be clever. Rejects, doesn't silently
+  // drop, so users see the friction.
+  const BAD_WORDS = [
+    'fuck', 'shit', 'bitch', 'cunt', 'nigger', 'faggot', 'retard', 'whore',
+    'slut', 'kike', 'chink', 'spic', 'tranny', 'dyke', 'pedo', 'rape'
+  ];
+  function containsProfanity(s) {
+    const t = String(s || '').toLowerCase();
+    for (const w of BAD_WORDS) {
+      const re = new RegExp('\\b' + w + '\\b', 'i');
+      if (re.test(t)) return w;
+    }
+    return null;
+  }
+
+  // Are A and B blocked either direction? Used at every ingestion point
+  // that could show one to the other (messages, member wall, chats).
+  async function isBlocked(a, b) {
+    if (!a || !b || a === b) return false;
+    if (await db.sismember('soc:blocks:' + a, b)) return true;
+    if (await db.sismember('soc:blocks:' + b, a)) return true;
+    return false;
+  }
+
+  // Report a user or a message. Written to a rolling list a moderator
+  // (owner) can walk through. Store enough context to act without a
+  // second query — reporter id, target id, reason category, free-text
+  // note, and if it's about a message, a snapshot of the message text.
+  api.post('/report', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (limited(req, 'report', 8)) return res.status(429).json({ error: 'Slow down a little ✋' });
+      const body = req.body || {};
+      const kind = body.kind === 'message' ? 'message' : 'user';
+      const targetId = String(body.targetId || '').slice(0, 32);
+      const reason = String(body.reason || '').slice(0, 40) || 'other';
+      const note = String(body.note || '').trim().slice(0, 500);
+      if (!targetId || targetId === me.id) return res.status(400).json({ error: 'Nothing to report.' });
+      let snapshot = null;
+      if (kind === 'message') {
+        const msgId = String(body.msgId || '').slice(0, 24);
+        if (!msgId) return res.status(400).json({ error: 'Missing message reference.' });
+        // Pull a snapshot of the reported message so we can moderate even
+        // if the sender deletes it after the report.
+        const msgs = await db.lrange('soc:msgs:' + cid(me.id, targetId), -200, -1);
+        for (const raw of msgs) {
+          try {
+            const m = JSON.parse(raw);
+            if ((m.id && m.id === msgId) || String(m.t) === msgId) {
+              snapshot = { id: m.id || String(m.t), k: m.k, x: String(m.x || '').slice(0, 500), t: m.t };
+              break;
+            }
+          } catch (e) {}
+        }
+      }
+      const entry = { id: crypto.randomBytes(6).toString('base64url'), by: me.id, target: targetId, kind, reason, note, snapshot, at: Date.now() };
+      await db.rpush('soc:reports', JSON.stringify(entry));
+      await db.ltrim('soc:reports', -1000, -1);
+      console.log('[report]', me.id.slice(0, 6), '→', targetId.slice(0, 6), kind, reason);
+      res.json({ ok: true });
+    } catch (e) { console.error('social report:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // Block a user — hides them everywhere, both directions.
+  api.post('/block', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const targetId = String((req.body || {}).targetId || '').slice(0, 32);
+      if (!targetId || targetId === me.id) return res.status(400).json({ error: 'Nothing to block.' });
+      if (!(await db.get('soc:user:' + targetId))) return res.status(404).json({ error: 'That user is gone.' });
+      await db.sadd('soc:blocks:' + me.id, targetId);
+      // Unfollow both directions so the block also breaks the graph.
+      await db.srem('soc:following:' + me.id, targetId);
+      await db.srem('soc:followers:' + targetId, me.id);
+      await db.srem('soc:following:' + targetId, me.id);
+      await db.srem('soc:followers:' + me.id, targetId);
+      res.json({ ok: true });
+    } catch (e) { console.error('social block:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+  api.post('/unblock', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const targetId = String((req.body || {}).targetId || '').slice(0, 32);
+      if (!targetId) return res.status(400).json({ error: 'Nothing to unblock.' });
+      await db.srem('soc:blocks:' + me.id, targetId);
+      res.json({ ok: true });
+    } catch (e) { console.error('social unblock:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+  api.get('/blocks', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const ids = await db.smembers('soc:blocks:' + me.id);
+      const out = [];
+      for (const id of ids) {
+        const raw = await db.get('soc:user:' + id);
+        if (!raw) continue;
+        const u = JSON.parse(raw);
+        out.push({ id: u.id, name: u.name, photo: u.photo || null });
+      }
+      res.json({ blocked: out });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
   api.post('/deleteAccount', async (req, res) => {
     try {
       const u = await userFromReq(req);
@@ -717,8 +836,13 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   api.get('/members', async (req, res) => {
     try {
       const ids = await db.smembers('soc:members');
+      const me = await userFromReq(req);
+      // Hide anyone I blocked, and anyone who blocked me. Both directions
+      // so a blocked user can't spot me on the wall either.
+      const iBlocked = me ? new Set(await db.smembers('soc:blocks:' + me.id)) : new Set();
       const out = [];
       for (const id of ids.slice(0, 500)) {
+        if (me && (iBlocked.has(id) || await db.sismember('soc:blocks:' + id, me.id))) continue;
         const raw = await db.get('soc:user:' + id);
         if (raw) {
           const u = JSON.parse(raw);
@@ -726,8 +850,6 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         }
       }
       out.sort((a, b) => b.createdAt - a.createdAt);
-      // the wall's Follow buttons need to know who you already follow
-      const me = await userFromReq(req);
       res.json({ members: out, following: me ? await db.smembers('soc:following:' + me.id) : [] });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -945,8 +1067,17 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const kind = kRaw === 'gif' ? 'gif' : kRaw === 'voice' ? 'voice' : 'text';
       const text = String((req.body || {}).text || '').trim().slice(0, kind === 'gif' ? 300 : kind === 'voice' ? 200 : 500);
       if (!text || to === me.id || !(await db.get('soc:user:' + to))) return res.status(400).json({ error: 'Nothing to send.' });
+      // Block wall — either side blocked the other, message is refused.
+      if (await isBlocked(me.id, to)) return res.status(403).json({ error: 'You can\'t send messages here.' });
       if (kind === 'gif' && !/^https:\/\/(media[0-9]*\.giphy\.com|i\.giphy\.com)\//.test(text)) return res.status(400).json({ error: 'Bad GIF.' });
       if (kind === 'voice' && !/^\/social-voice\/[a-zA-Z0-9._-]+\.(webm|ogg|mp4|m4a)$/.test(text)) return res.status(400).json({ error: 'Bad voice message.' });
+      // Cheap profanity filter — satisfies Google's "method for filtering
+      // objectionable material" requirement. Text only; GIFs and voice
+      // messages get the report+block flow, not this filter.
+      if (kind === 'text') {
+        const bad = containsProfanity(text);
+        if (bad) return res.status(400).json({ error: 'Message blocked — please keep it respectful.' });
+      }
       // Short random id per message so edits / deletes / reactions have something
       // stable to reference. Older messages that predate this field still work by
       // falling back to their timestamp on the lookup side.
