@@ -95,21 +95,57 @@ body.authmodal{overflow:hidden}
 .topnav .tnlink{color:var(--sub);text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;transition:background .12s,color .12s;white-space:nowrap}
 .topnav .tnlink:hover{background:#f4f5f7;color:var(--ink)}
 .topnav .mechip{border:1px solid var(--line);flex-shrink:0}
-/* Mobile top nav — every tab shows its label always ("spread out"), like
-   a mobile app's native segmented control. Labels sit UNDER the icon so
-   both fit at ≤340px with room for the LIVE chip and profile chip in the
-   right corner. Tabs share the whole row width evenly. */
+/* Mobile top nav — TWO ROWS:
+     row 1 = logo LEFT, profile chip RIGHT
+     row 2 = tab bar full-width underneath
+   Fixes the old cramped one-row layout where everything was fighting
+   for space in the corner. */
 @media(max-width:640px){
-  .topnav{padding:5px 8px;gap:6px;min-height:56px;align-items:stretch}
-  .topnav .tnlogo{display:none}
-  .topnav .tnlink.hideSm{display:none}
-  .topnav .tntabs{gap:2px;flex:1 1 0;overflow:hidden;justify-content:space-between}
-  .topnav .tntabs .tnt{flex:1 1 0;min-width:0;flex-direction:column;gap:2px;padding:5px 4px;font-size:10px;font-weight:700;letter-spacing:-.1px;justify-content:center;line-height:1.2}
-  .topnav .tntabs .tnt .ico{font-size:18px;line-height:1}
-  .topnav .tntabs .tnt .badge{position:absolute;top:2px;right:2px;font-size:8.5px;padding:1px 4px;min-width:12px}
-  .topnav .tnright{gap:6px}
+  .topnav{
+    grid-template-columns:1fr auto;
+    grid-template-areas:
+      'logo right'
+      'tabs tabs';
+    padding:8px 14px 6px;
+    gap:8px 10px;
+    min-height:0;
+    align-items:center;
+  }
+  .topnav .tnlogo{grid-area:logo;display:block;font-size:19px;justify-self:start}
+  .topnav .tnright{grid-area:right;gap:8px;justify-self:end}
+  .topnav .tntabs{
+    grid-area:tabs;
+    justify-self:stretch;
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    margin:2px -14px 0;   /* bleed edges so scroll feels edge-to-edge */
+    padding:0 14px 4px;
+  }
+  .topnav .tntabs::-webkit-scrollbar{display:none}
+  .topnav .tntabs .tnt{
+    flex:1 1 0;
+    min-width:74px;
+    flex-direction:row;
+    gap:5px;
+    padding:8px 10px;
+    font-size:12.5px;
+    font-weight:600;
+    justify-content:center;
+    line-height:1.2;
+    border-radius:99px;
+  }
+  .topnav .tntabs .tnt .ico{font-size:14px;line-height:1}
+  .topnav .tntabs .tnt .badge{position:static;transform:none;font-size:9.5px;padding:1px 5px;min-width:14px;margin-left:2px}
+  .topnav .mechip{padding:3px 8px 3px 3px;border:1px solid var(--line);border-radius:99px}
   .topnav .mechip .mename{display:none}
-  .topnav .mechip{padding:3px}
+}
+@media(max-width:380px){
+  /* Extra tight — hide the icon inside each tab, keep the label. */
+  .topnav .tntabs .tnt .ico{display:none}
+  .topnav .tntabs .tnt{padding:8px 12px;font-size:13px}
 }
 /* LIVE chip that sits inside .tnright next to the profile: red pulsing
    dot + "LIVE" label + count. Only shows when there's at least one live
