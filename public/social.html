@@ -3112,6 +3112,18 @@ async function sendMsg(kind, gifUrl){
       const j = await api('/ai/reply', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ to: curChat, text }) });
       if (typeof j.msgsLeft === 'number') CUR_AI_MSGS_LEFT = j.msgsLeft;
+      // Show the user's message first so they see it land while the
+      // AI "types" its reply.
+      lastSig = ''; lastMsgCount = -1;
+      await refreshChat();
+      toBottom($('msgs'));
+      // Then typewrite the reply into the thread. Feels natural
+      // instead of the full-paragraph pop that was jarring.
+      showAITyping(false);
+      await typewriteAIReply(j.reply);
+      // Real message is already in the server store; refresh so it
+      // shows up as a proper bubble (with tap-to-react etc.) and the
+      // typewriter placeholder is replaced.
       lastSig = ''; lastMsgCount = -1;
       await refreshChat();
       toBottom($('msgs'));
@@ -3154,6 +3166,32 @@ function showAITyping(on){
     el.remove();
   }
   if (on) { const msgs = document.getElementById('msgs'); if (msgs) msgs.scrollTop = msgs.scrollHeight; }
+}
+
+// Typewriter reveal for AI replies — Claude's answer arrives all at
+// once but we display it character by character so it feels natural
+// instead of the whole paragraph slamming in. Owner ask: "bit slow".
+async function typewriteAIReply(msg){
+  if (!msg || !msg.x) return;
+  const msgs = document.getElementById('msgs');
+  if (!msgs) return;
+  const bubble = document.createElement('div');
+  bubble.className = 'mb them ai-typewrite';
+  bubble.dataset.aiTypewriter = '1';
+  msgs.appendChild(bubble);
+  const text = String(msg.x);
+  // ~28ms per character = ~35 chars/sec — matches a natural typing
+  // pace. Long messages get slightly faster so they don't drag.
+  const perChar = text.length > 240 ? 15 : 28;
+  const wasAtBottom = atBottom(msgs);
+  for (let i = 1; i <= text.length; i++) {
+    bubble.textContent = text.slice(0, i);
+    if (wasAtBottom || atBottom(msgs)) msgs.scrollTop = msgs.scrollHeight;
+    await new Promise(r => setTimeout(r, perChar));
+  }
+  // Short pause so the reader gets a beat before the real bubble
+  // replaces the placeholder (avoids a visible flicker).
+  await new Promise(r => setTimeout(r, 250));
 }
 $('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
 $('msgIn').addEventListener('input', () => { sendTypingSoon(); refreshAutocomplete(); });
