@@ -2941,6 +2941,12 @@ function openChatWith(id){
   const peer = (MEMBERS || []).find(m => m.id === id);
   CUR_CHAT_IS_AI = !!(peer && peer.isAI);
   CUR_AI_MSGS_LEFT = null;
+  // Hide the call button for AI chats — real-time voice calls with an
+  // AI would need OpenAI Realtime API (~$0.10/min streaming STT+TTS+
+  // LLM), not shipped. Text chat already speaks the reply via
+  // ElevenLabs so the "hear them talk" need is covered.
+  const call = document.getElementById('chCall');
+  if (call) call.classList.toggle('hidden', CUR_CHAT_IS_AI);
   showTab('chat');
 }
 
