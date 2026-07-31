@@ -114,7 +114,7 @@ body.authmodal{overflow:hidden}
     grid-template-areas:
       'logo right'
       'tabs tabs';
-    padding:calc(50px + env(safe-area-inset-top)) 14px 6px;  /* 50px from top per owner ask */
+    padding:calc(8px + env(safe-area-inset-top)) 14px 6px;   /* just clear the notch — no big void above nav */
     gap:8px 10px;
     min-height:0;
     align-items:center;
@@ -233,12 +233,12 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .wcard-photo img{width:100%;height:100%;object-fit:cover;display:block}
 .wcard-photo .pcircph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:48px;font-family:'Fredoka','Nunito',system-ui,sans-serif}
 .wcard-body{display:flex;flex-direction:column;justify-content:flex-start;min-width:0;gap:8px}
-.wcard-name{font-size:19px;font-weight:700;color:var(--accent);line-height:1.15;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px}
+.wcard-name{font-size:17px;font-weight:700;color:var(--accent);line-height:1.15;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px}
 .wcard-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0}
 /* Talk-about text sits right under the name (owner ask: on top, not
    floating in the middle). Colour bumped to black-ink + weight 500
    so it reads as content instead of ghost text. */
-.wcard-talk{font-size:15px;color:var(--ink);line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;font-style:normal;font-weight:500}
+.wcard-talk{font-size:13.5px;color:var(--ink);line-height:1.45;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;font-style:normal;font-weight:500}
 /* Language row pushes to the BOTTOM of the card via margin-top:auto
    so name + talk stay at the top regardless of card height. */
 .wcard-langs{margin-top:auto}
@@ -246,18 +246,18 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .wcard-langs{display:flex;justify-content:space-between;gap:12px;padding-top:4px}
 .wcard-langs .wf-col{display:flex;flex-direction:column;gap:5px;min-width:0}
 .wcard-langs .wf-col:last-child{align-items:flex-end;text-align:right}
-.wcard-langs .wf-lbl{font-size:13.5px;color:var(--ink);font-weight:800;letter-spacing:.1px}
+.wcard-langs .wf-lbl{font-size:11.5px;color:var(--ink);font-weight:700;letter-spacing:.1px}
 .wcard-langs .wf-row{display:inline-flex;align-items:center;gap:6px}
 /* Circular country flag on wall cards — real SVG flags (via
    circle-flags CDN) with no border/background, so they read as clean
    round country badges. */
-.wcard-langs .wf-flag{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;overflow:hidden;flex-shrink:0}
+.wcard-langs .wf-flag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;overflow:hidden;flex-shrink:0}
 .wcard-langs .wf-flag .cflag,.wcard-langs .wf-flag img{width:100%;height:100%;display:block;border-radius:50%}
 /* Shared circle-flag class used in profile / picker / etc. */
-.cflag{width:22px;height:22px;border-radius:50%;display:inline-block;object-fit:cover;vertical-align:middle}
-.mp-lang .cflag{width:26px;height:26px}
-.chip .cflag,.chiprow .cflag{width:16px;height:16px}
-.wcard-langs .wf-more{font-size:13.5px;color:var(--sub);font-weight:800}
+.cflag{width:18px;height:18px;border-radius:50%;display:inline-block;object-fit:cover;vertical-align:middle}
+.mp-lang .cflag{width:22px;height:22px}
+.chip .cflag,.chiprow .cflag{width:14px;height:14px}
+.wcard-langs .wf-more{font-size:11.5px;color:var(--sub);font-weight:700}
 
 /* ═══ AI persona badge (Speaky-style) ═══ */
 .ai-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(302deg,#0262FF,#e100ff);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:2px 7px 2px 5px;border-radius:99px;line-height:1.15;margin-left:6px;vertical-align:1px;position:relative}
