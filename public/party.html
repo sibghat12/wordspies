@@ -82,16 +82,16 @@ a{color:inherit;text-decoration:none}
 .emopop .emopop-card button:active{transform:scale(.9)}
 @keyframes emofade{from{opacity:0}to{opacity:1}}
 
-/* Emoji burst centred over a member's avatar. Shows one at a time per
-   member — a new emoji replaces the old one. */
-.pav .pav-emo{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:44px;pointer-events:none;animation:pavEmoPop .9s cubic-bezier(.34,1.56,.64,1) forwards;z-index:9;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+/* Emoji burst — small, sits inside the profile circle. One at a time
+   per member; a new emoji replaces the old. */
+.pav .pav-emo{position:absolute;top:22px;left:50%;transform:translateX(-50%);width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:22px;pointer-events:none;animation:pavEmoPop 1.1s cubic-bezier(.34,1.56,.64,1) forwards;z-index:9;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
 @keyframes pavEmoPop{
   0%{transform:translateX(-50%) scale(.2);opacity:0}
   20%{transform:translateX(-50%) scale(1.25);opacity:1}
   70%{transform:translateX(-50%) scale(1);opacity:1}
   100%{transform:translateX(-50%) scale(1);opacity:0}
 }
-.listeners .pav .pav-emo{font-size:32px;top:8px;width:44px;height:44px}
+.listeners .pav .pav-emo{font-size:16px;top:12px;width:22px;height:22px}
 
 /* Compact floating actions in the top-right (replaces the old header). */
 .ptop{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:40;display:flex;gap:6px;align-items:center}
@@ -137,8 +137,13 @@ a{color:inherit;text-decoration:none}
    the avatar. Shows for EVERY speaker (host + speaker), driven by their
    live mic state. Owner ask: "make the cute mic icon on the profile
    icon mute unmute display". */
-.pav .micchip{position:absolute;bottom:30px;right:calc(50% - 32px);background:#d93025;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.15);transition:background .12s}
-.pav .micchip.on{background:var(--green)}
+/* Mic chip: tucked bottom-right of the avatar circle. Red when muted,
+   green when live. Present on every speaker + host — tap the avatar to
+   toggle your own. */
+.pav .micchip{position:absolute;bottom:34px;right:calc(50% - 34px);background:#d93025;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:background .18s,transform .1s}
+.pav .micchip.on{background:linear-gradient(135deg,#22c07a,#159f5d)}
+.pav.tapMe .micchip{cursor:pointer}
+.pav.tapMe:active .micchip{transform:scale(.9)}
 /* Small crown chip so the host is still distinguishable from a speaker
    without breaking the unified colour rule. */
 .pav.host::before{content:'👑';position:absolute;top:-2px;right:calc(50% - 32px);font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,.2)}
@@ -292,7 +297,7 @@ a{color:inherit;text-decoration:none}
     <div class="hostqueue hidden" id="pQueue"></div>
 
     <div class="psect">
-      <div class="ph"><h3>Speakers <b id="speakerCnt">0</b></h3><span class="phelp">Tap your avatar to talk</span></div>
+      <div class="ph"><h3>Speakers <b id="speakerCnt">0</b></h3></div>
       <div class="speakers" id="speakers"></div>
     </div>
     <div class="psect">
