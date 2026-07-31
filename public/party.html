@@ -61,17 +61,16 @@ a{color:inherit;text-decoration:none}
 @media(max-width:999px){ .kbdhint{display:none} }
 .hidden{display:none !important}
 
-/* Header — party title + subtitle, exit. Flat, no shadows. */
-.phead{display:flex;align-items:center;gap:12px;padding:14px 0 18px;border-bottom:1px solid var(--line);margin-bottom:20px}
-.pback{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:50%;width:38px;height:38px;font-size:17px;cursor:pointer;flex-shrink:0;transition:background .12s}
-.pback:hover{background:var(--hover)}
-.pinfo{flex:1;min-width:0}
-.ptitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:20px;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
-.psub{color:var(--sub);font-size:13px;font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pmeta{display:flex;gap:6px;flex-shrink:0}
-.pchip{background:var(--panel);color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:700;letter-spacing:.02em;display:inline-flex;align-items:center;gap:5px}
-.pchip.live{background:#fff5f5;border-color:#f8d3d3;color:#d93025}
-.pchip.live::before{content:'';width:6px;height:6px;border-radius:50%;background:#d93025;display:inline-block;animation:plive 1.4s ease-in-out infinite}
+/* Compact floating actions in the top-right (replaces the old header). */
+.ptop{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:40;display:flex;gap:6px}
+.ptopbtn{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:8px 12px;min-width:38px;height:38px;font-size:14px;font-weight:700;cursor:pointer;transition:background .12s,color .12s,transform .1s;display:inline-flex;align-items:center;justify-content:center}
+.ptopbtn:hover{background:var(--hover)}
+.ptopbtn:active{transform:scale(.94)}
+.ptopbtn.danger{background:#fff5f5;color:var(--err);border-color:#f8d3d3;padding:8px 14px}
+.ptopbtn.danger:hover{background:#ffe4e4}
+/* On mobile the wrap has no top padding — first section sits at 8px.
+   Nudge it down so the section header clears the floating actions. */
+.psect:first-of-type{margin-top:14px}
 @keyframes plive{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
 
 /* Section headers */
@@ -81,9 +80,10 @@ a{color:inherit;text-decoration:none}
 .psect .ph h3 b{color:var(--faint);font-weight:600;font-size:13px;margin-left:6px}
 .psect .ph .phelp{font-size:11.5px;color:var(--faint);font-weight:600}
 
-/* Speaker + listener grids */
-.speakers{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
-.listeners{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:10px}
+/* Speaker + listener grids — tighter gap so avatars sit close, more
+   like a real "room" than a wide-spaced tile grid. */
+.speakers{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:4px}
+.listeners{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:4px}
 
 /* Avatar tile — clean, borderless. Optional coloured ring for host / live. */
 .pav{position:relative;text-align:center;padding:8px 2px;border-radius:14px;transition:background .12s;cursor:default}
@@ -91,17 +91,22 @@ a{color:inherit;text-decoration:none}
 .pav.tapMe:active{background:var(--hover)}
 .pav .circ{width:60px;height:60px;border-radius:50%;margin:0 auto 8px;background:#5a7bff;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:24px;overflow:hidden;position:relative}
 .pav .circ img{width:100%;height:100%;object-fit:cover;display:block}
-/* Host: gold ring, gold accent — very clear who runs the room. */
-.pav.host .circ{outline:3px solid var(--host);outline-offset:2px;background:linear-gradient(135deg,#f5b52e,#e07200)}
-/* Speaker ring is blue */
-.pav.speaker .circ{outline:2px solid var(--accent);outline-offset:2px}
-/* Live-mic pulse */
+/* Speakers all share the SAME green ring — owner asked: no more
+   gold vs blue distinction. Host is still marked by a small crown chip
+   below, but the ring is one colour everyone recognises as "speaker".*/
+.pav.host .circ,.pav.speaker .circ{outline:3px solid var(--green);outline-offset:2px;background:linear-gradient(135deg,#5a7bff,#7c5cff)}
+.pav.host .circ{background:linear-gradient(135deg,#22c07a,#159f5d)}
+/* Live-mic pulse: still green, just a brighter outer glow */
 .pav.live .circ::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--green);animation:plive 1.2s ease-out infinite}
-.pav.live .circ{outline-color:var(--green)}
-/* Muted overlay (someone connected but mic off) */
-.pav .micchip{position:absolute;bottom:32px;right:calc(50% - 32px);background:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:1px solid var(--line)}
-.pav .micchip.on{background:var(--green);color:#fff;border-color:var(--green)}
-.pav .micchip.off{color:var(--faint)}
+/* Mic mute/unmute badge — a cute circular chip sitting bottom-right of
+   the avatar. Shows for EVERY speaker (host + speaker), driven by their
+   live mic state. Owner ask: "make the cute mic icon on the profile
+   icon mute unmute display". */
+.pav .micchip{position:absolute;bottom:30px;right:calc(50% - 32px);background:#d93025;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.15);transition:background .12s}
+.pav .micchip.on{background:var(--green)}
+/* Small crown chip so the host is still distinguishable from a speaker
+   without breaking the unified colour rule. */
+.pav.host::before{content:'👑';position:absolute;top:-2px;right:calc(50% - 32px);font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,.2)}
 /* Little tap-to-talk hint over my own avatar */
 .pav.tapMe .circ::before{content:'Tap to talk';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap}
 .pav.tapMe:hover .circ::before{opacity:.9}
@@ -225,21 +230,17 @@ a{color:inherit;text-decoration:none}
 <body>
 
 <div class="wrap">
-  <div class="phead">
-    <button class="pback" onclick="leaveAndGo()" title="Leave the party">←</button>
-    <div class="pinfo">
-      <div class="ptitle" id="pTitle">Loading…</div>
-      <div class="psub" id="pSub"></div>
-    </div>
-    <div class="pmeta">
-      <span class="pchip live" id="pLive">LIVE</span>
-    </div>
-    <!-- Two actions in the header: everyone gets Leave; only the host gets
-         End party. Placed together so the flow is obvious. -->
-    <button class="pinvite" id="pInviteBtn" onclick="copyInvite()" title="Copy invite link">🔗 Invite</button>
-    <button class="pleave" id="pLeaveBtn" onclick="leaveAndGo()">Leave</button>
-    <button class="pend hidden" id="pEndBtn" onclick="endParty()">End party</button>
+  <!-- Header removed per owner ask. Actions relocated to a compact
+       floating top-right stack so the room still has Leave / Invite /
+       End without stealing a full row. -->
+  <div class="ptop">
+    <button class="ptopbtn" onclick="copyInvite()" id="pInviteBtn" title="Copy invite link">🔗</button>
+    <button class="ptopbtn" onclick="leaveAndGo()" title="Leave">✕</button>
+    <button class="ptopbtn danger hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End</button>
   </div>
+  <!-- Title still lives in JS variables for logs and iframe messaging;
+       hidden shells keep the paint() references safe. -->
+  <span id="pTitle" class="hidden"></span><span id="pSub" class="hidden"></span>
 
   <!-- Raise-hand queue — only rendered for hosts. -->
   <div class="hostqueue hidden" id="pQueue"></div>
@@ -415,6 +416,12 @@ function conn(){
     }, 800);
   });
   socket.on('chat', addMsg);
+  // Host demoted me back to listener — force the mic off immediately so
+  // I can't keep speaking. Server also stripped my tracks server-side.
+  socket.on('force-mute', () => {
+    if (window.wsVoice) { try { wsVoice.setMic(false); } catch(e){} }
+    toast('You\'re a listener now — mic muted.');
+  });
   socket.on('chatMeta', m => { msgsLeft = m.msgsLeft; paintQuota(); });
   socket.on('chatBlocked', d => toast(d.reason || 'Chat blocked'));
   socket.on('replaced', () => toast('You joined from another tab — this one\'s inactive.'));
@@ -584,18 +591,30 @@ function paint(){
   $('speakers').innerHTML = speakers.map(m => memberCard(m, true, iAmHost, micOn)).join('');
   $('listeners').innerHTML = listeners.map(m => memberCard(m, false, iAmHost, micOn)).join('');
 
-  // Message rail — cheap re-render if the count changed.
-  if (room.messages && $('pMsgs').childElementCount !== room.messages.length) {
-    $('pMsgs').innerHTML = '';
-    room.messages.forEach(addMsg);
-  }
+  // Chat rail: NEVER rebuild from state. Old code wiped the list on
+   // every count change and it wrecked scroll + flashed messages away
+   // while they were being read. Now we do it once (first paint) and
+   // rely on the socket 'chat' event to append new ones. If we ever
+   // reload a fresh room, `_msgsInit` is false → seed once.
+   if (!room._msgsInit) {
+     $('pMsgs').innerHTML = '';
+     (room.messages || []).forEach(addMsg);
+     room._msgsInit = true;
+   }
 
   // Detect role change (promoted / demoted) and react.
   const me = room.members.find(m => m.id === myId);
   if (me && me.role !== myRole) {
     const wasListener = myRole === 'listener';
+    const wasSpeaker = myRole === 'host' || myRole === 'speaker';
     myRole = me.role;
     if (window.wsVoice) wsVoice.setCanPublish(myRole === 'host' || myRole === 'speaker');
+    // If I got demoted to listener, force my mic off even if the server's
+    // force-mute event races. Belt-and-braces so a listener can NEVER
+    // still be broadcasting.
+    if (myRole === 'listener' && wasSpeaker && window.wsVoice && wsVoice.micOn) {
+      try { wsVoice.setMic(false); } catch(e){}
+    }
     if (myRole === 'host') { msgsLeft = 999; toast('You\'re now a co-host! Full mic + unlimited chat.'); myHandUp = false; }
     else if (myRole === 'speaker') { msgsLeft = 999; toast('You\'re a speaker! Tap your avatar to talk.'); myHandUp = false; }
     else if (wasListener === false) { toast('You\'re a listener now.'); }
@@ -654,7 +673,14 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
     : m.role === 'speaker' ? (isMe ? 'You · Speaker' : 'Speaker')
     : (isMe ? 'You' : 'Listener');
   const roleCls = isHost ? ' host' : '';
-  const micChip = isSpeakerPanel && isMe ? `<span class="micchip ${myMicOn ? 'on' : 'off'}">${myMicOn ? '🎤' : '🔇'}</span>` : '';
+  // Mic mute/unmute chip on EVERY speaker card. My own state comes from
+   // wsVoice.micOn; remote members' state is derived from whether they've
+   // published any tracks (their m.tracks length). If they published a
+   // track and it's currently sending audio the tray also shows on.
+   let micLive = false;
+   if (isMe) micLive = !!myMicOn;
+   else if (isSpeakerPanel) micLive = !!(m.tracks && m.tracks.length);
+   const micChip = isSpeakerPanel ? `<span class="micchip ${micLive ? 'on' : ''}">${micLive ? '🎤' : '🔇'}</span>` : '';
   // Menu buttons MUST stopPropagation so they don't bubble to the .pav's
   // own onclick — which would re-toggle the selection and undo the action.
   // (Real bug that made "Approve" seem to do nothing sometimes.)
@@ -709,9 +735,14 @@ function paintQuota(){
     inp.placeholder = 'Chat limit reached';
   }
 }
+const _seenMsgs = new Set();
 function addMsg(m){
+  if (!m || !m.id) return;
+  if (_seenMsgs.has(m.id)) return;       // de-dupe seed vs socket events
+  _seenMsgs.add(m.id);
   const el = document.createElement('div');
   el.className = 'pmsg' + (m.f === myId ? ' mine' : '');
+  el.dataset.id = m.id;
   const roleCls = m.r === 'host' ? ' host' : '';
   el.innerHTML = '<span class="pmwho' + roleCls + '">' + esc(m.n) + '</span>' + esc(m.x);
   $('pMsgs').appendChild(el);

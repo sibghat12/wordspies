@@ -53,6 +53,10 @@ function mount(app, io, options = {}) {
     const members = [...r.members.values()].map(m => ({
       id: m.id, uid: m.uid || null, name: m.name, photo: m.photo || null,
       role: m.role, connected: !!m.connected, cfSession: m.cfSession || null,
+      // Which CF trackNames this member has published — non-empty means
+      // their mic is currently open. Clients render the mic mute/unmute
+      // chip from this and the local micOn state for self.
+      tracks: (m.vTracks || []).slice(0, 4),
       handRaised: !!m.handRaised, handAt: m.handAt || 0,
       // How many of your 2 messages you've used (only sent back to yourself
       // via the personal `you` field below).
@@ -296,6 +300,16 @@ function mount(app, io, options = {}) {
       if (!room || !iAmHost()) return;
       const target = room.members.get(String((data && data.id) || ''));
       if (!target) return;
+      // Force-close their microphone AT the moment of demotion. Owner
+      // reported: "make the listener never able to speak — as someone
+      // moves from the speaker they should not be able to speak, they
+      // still able to speak." Root cause: role changed to listener but
+      // their published tracks stayed. Now we clear vTracks on the server
+      // AND emit a targeted 'force-mute' event so their client tears
+      // down its local mic stream.
+      target.vTracks = [];
+      const tsock = nsp.sockets.get(target.id);
+      if (tsock) { try { tsock.emit('force-mute'); } catch (e) {} }
       // The ORIGINAL host (creatorUid) can't be demoted — otherwise a fresh
       // co-host could stage a coup and boot them.
       if (target.uid && target.uid === room.hostUid) return;
@@ -443,10 +457,14 @@ function mount(app, io, options = {}) {
     });
     socket.on('v-tracks', (data) => {
       if (!room || !me) return;
+      // Reject publish attempts from listeners. Their voice.js may have
+      // published tracks to Cloudflare before demotion; we refuse to
+      // relay their presence so nobody subscribes to them.
+      if (me.role !== 'host' && me.role !== 'speaker') return;
       me.cfSession = (data && data.cfSession) || me.cfSession;
       me.vTracks = (data && data.tracks) || [];
       socket.to(room.code).emit('v-peer', {
-        id: socket.id, on: true, pub: me.role === 'host' || me.role === 'speaker',
+        id: socket.id, on: true, pub: true,
         cfSession: me.cfSession, tracks: me.vTracks
       });
     });
