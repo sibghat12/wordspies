@@ -1975,7 +1975,23 @@ $('authGo').onclick = async () => {
 };
 ['fEmail','fPass','fName'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('authGo').click(); }));
 
-async function logout(){ await api('/logout', {method:'POST'}); ME = null; $('vApp').classList.add('hidden'); $('vAuth').classList.remove('hidden'); }
+async function logout(){
+  await api('/logout', {method:'POST'});
+  ME = null;
+  // Stop any in-flight AI voice + clear pollers so they don't keep
+  // hammering /me after logout.
+  if (typeof stopAIVoice === 'function') stopAIVoice();
+  if (window.__pingT) { clearInterval(window.__pingT); window.__pingT = null; }
+  if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+  $('vApp').classList.add('hidden');
+  $('vAuth').classList.remove('hidden');
+  // Re-render the Google Sign-In button — Google's SDK doesn't
+  // reliably survive being rendered into a hidden container on
+  // first mount (renderButton needs the target to be in-layout).
+  // After logout the auth screen becomes visible again; we need a
+  // fresh render or the button appears blank until refresh.
+  try { if (typeof setupGoogle === 'function') await setupGoogle(); } catch(e){}
+}
 
 async function confirmDelete(){
   const result = await Swal.fire({
