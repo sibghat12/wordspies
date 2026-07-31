@@ -4326,6 +4326,18 @@ function openMemberObj(m){
   }).catch(()=>{});
   paintBlockBtn();
   showTab('member');
+  // Belt AND braces: scroll to top on multiple frames so the profile
+  // always lands with the hero/photo at the top of the viewport,
+  // never mid-page. showTab already scrolls but async loads (photo,
+  // stats fetch) can shift layout after and appear to "move" the
+  // scroll — repeated scrollTo(0,0) over the next second keeps it
+  // pinned to the top.
+  const pinTop = () => { try { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } catch(e){} };
+  pinTop();
+  requestAnimationFrame(pinTop);
+  setTimeout(pinTop, 80);
+  setTimeout(pinTop, 250);
+  setTimeout(pinTop, 600);
 }
 // "…" more menu on the profile — Report / Block.
 function toggleMoreMenu(ev){ if (ev) ev.stopPropagation(); document.getElementById('moreMenu').classList.toggle('hidden'); }
@@ -4688,7 +4700,9 @@ function maybeWelcome(){
    the most-tapped control on the page — and it was asking a question the
    full-screen install wall in /a2hs.js has already asked. One ask, and
    nothing parked over the menu. */
-#a2hsSteps{position:fixed;inset:0;z-index:90;background:rgba(20,22,28,.55);display:flex;align-items:center;justify-content:center;padding:22px}
+/* Install-app steps modal retired per owner ask — never shows. */
+#a2hsSteps{display:none !important}
+#a2hsSteps.showdead{position:fixed;inset:0;z-index:90;background:rgba(20,22,28,.55);display:flex;align-items:center;justify-content:center;padding:22px}
 #a2hsSteps .card{background:#fff;border-radius:20px;padding:24px 22px;max-width:360px;width:100%}
 #a2hsSteps h3{font-size:17px;font-weight:800;margin-bottom:14px}
 #a2hsSteps p{font-size:13.2px;color:var(--sub);line-height:1.65;margin-bottom:9px}

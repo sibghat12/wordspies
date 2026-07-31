@@ -45,7 +45,7 @@ ul{padding-left:22px}li{margin-bottom:6px}
 a{color:#1c1e21}
 /* Footer: everything centre-aligned, generous spacing between rows so
    the columns/social row/app-store badges don't collide. */
-footer.sitefoot{margin-top:56px;padding:44px 20px 56px;border-top:1px solid #e5e7eb;background:#fff;font-family:'Inter',sans-serif;color:#5f6675;font-size:13.5px;line-height:1.6}
+footer.sitefoot{margin-top:56px;padding:32px 20px 40px;border-top:1px solid #e5e7eb;background:#fff;font-family:'Inter',sans-serif;color:#5f6675;font-size:13px;line-height:1.5}
 footer.sitefoot .fwrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center}
 footer.sitefoot .flinks{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 22px;font-weight:600}
 footer.sitefoot .flinks a{color:#1c1e21;text-decoration:none;padding:4px 2px}
@@ -53,6 +53,7 @@ footer.sitefoot .flinks a:hover{color:#5a7bff}
 /* App-store badges — CSS-drawn approximations of the Apple / Google
    marks. Real vector badges will drop in when the store URLs land. */
 footer.sitefoot .fstores{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+footer.sitefoot .fstores.hidden{display:none}
 footer.sitefoot .stbadge{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;text-decoration:none;padding:9px 18px;border-radius:12px;font-weight:600;font-size:14px;transition:transform .12s,background .12s}
 footer.sitefoot .stbadge:hover{transform:translateY(-1px);background:#1a1a1a}
 footer.sitefoot .stbadge span{display:flex;flex-direction:column;line-height:1.1;text-align:left}
@@ -79,16 +80,12 @@ ${body}
 </div>
 <footer class="sitefoot"><div class="fwrap">
   <div class="flinks">
-    <a href="/">Home</a>
-    <a href="/how-to-play">How to play</a>
-    <a href="/about">About</a>
-    <a href="/blog">Blog</a>
     <a href="/privacy">Privacy</a>
     <a href="/terms">Terms</a>
     <a href="/child-safety">Child safety</a>
     <a href="mailto:contact@wordspies.co.uk">Contact</a>
   </div>
-  <div class="fstores">
+  <div class="fstores hidden">
     <a class="stbadge" href="#" title="Coming soon on the App Store">
       <svg viewBox="0 0 24 24"><path d="M17.72 12.71c-.02-2.36 1.93-3.5 2.02-3.55-1.1-1.6-2.81-1.82-3.42-1.85-1.45-.15-2.85.86-3.59.86-.75 0-1.89-.84-3.11-.82-1.6.02-3.07.93-3.9 2.36-1.66 2.87-.42 7.12 1.2 9.44.79 1.14 1.72 2.41 2.94 2.37 1.19-.05 1.63-.77 3.07-.77 1.43 0 1.83.77 3.08.75 1.28-.02 2.08-1.15 2.87-2.3.9-1.32 1.27-2.6 1.29-2.67-.03-.01-2.47-.95-2.49-3.77zM15.34 5.65c.65-.79 1.09-1.9.97-3-.94.04-2.07.63-2.75 1.42-.61.7-1.14 1.82-.99 2.9 1.05.08 2.12-.53 2.77-1.32z"/></svg>
       <span><small>Download on the</small><b>App Store</b></span>
