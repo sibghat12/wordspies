@@ -1425,11 +1425,18 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     'Curious about your world',
     'Just here to practise'
   ];
-  const pickTalk = uid => TALK_POOL[
-    // Simple deterministic hash — sum of char codes mod pool length.
-    // Stable across restarts, no dependency.
-    [...(uid || '')].reduce((n, c) => n + c.charCodeAt(0), 0) % TALK_POOL.length
-  ];
+  // Longer generic opener that half the users get (owner ask: mix the
+  // varied short-pool phrases with this one so the wall has a bit of
+  // rhythm — some cards short, some fuller).
+  const TALK_LONG = "Hey! I'm really into languages, culture, and good conversations.";
+  const pickTalk = uid => {
+    // Deterministic hash — same user always gets the same phrase.
+    const h = [...(uid || '')].reduce((n, c) => n + c.charCodeAt(0), 0);
+    // Half the users (even hash) get the longer opener, half get a
+    // varied short one from the pool.
+    if (h % 2 === 0) return TALK_LONG;
+    return TALK_POOL[h % TALK_POOL.length];
+  };
   const CC_TO_LANG = {
     GB:'en', UK:'en', US:'en', CA:'en', AU:'en', NZ:'en', IE:'en',
     PK:'ur', IN:'hi', BD:'bn', LK:'si',
@@ -1454,9 +1461,15 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         if (!raw) continue;
         const u = JSON.parse(raw);
         let dirty = false;
-        // Fill empty AND also replace the old legacy seed text — but
-        // never touch anything else the user actually typed.
-        if (!u.talkAbout || u.talkAbout === DEFAULT_TALK_LEGACY) {
+        // Fill empty AND re-shuffle previously-seeded values so the
+        // new half-long / half-short mix takes effect. Never touch
+        // anything else the user actually typed — detected by not
+        // being one of our known seeds.
+        const isSeed = !u.talkAbout
+          || u.talkAbout === DEFAULT_TALK_LEGACY
+          || u.talkAbout === TALK_LONG
+          || TALK_POOL.includes(u.talkAbout);
+        if (isSeed) {
           u.talkAbout = pickTalk(u.id);
           dirty = true;
         }
