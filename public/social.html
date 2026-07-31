@@ -336,13 +336,24 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-hero{display:none;height:120px;background:linear-gradient(90deg,#5a7bff 0%,#a656e0 100%);position:relative}
 .mp-hero .mp-back{position:absolute;top:16px;left:16px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);border:0;font-size:16px;cursor:pointer;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:background .12s}
 .mp-hero .mp-back:hover{background:#fff}
-@media(min-width:769px){ .mp-hero{display:block} }
-/* mp-grid fills whatever it's given — .wrap already caps the whole page
-   at a sensible desktop width. No inner cap here so the cards column
-   actually uses the room on the right. */
-.mp-grid{margin:0;padding:0 16px 40px;display:grid;gap:24px}
-@media(min-width:769px){ .mp-grid{grid-template-columns:320px minmax(0,1fr);padding:0 24px 60px;gap:32px} }
-@media(min-width:1280px){ .mp-grid{grid-template-columns:340px minmax(0,1fr);gap:40px} }
+/* Hero band: extend to full viewport width on desktop even though
+   tabMember lives inside .wrap (max-width 1400px). The negative-margin
+   trick breaks the child out to the viewport edges — Speaky's exact
+   look. Row height bumped to 150px to match. */
+@media(min-width:769px){
+  .mp-hero{
+    display:block;
+    width:100vw;
+    margin-left:calc(50% - 50vw);
+    margin-right:calc(50% - 50vw);
+    height:150px;
+  }
+}
+/* Grid centred with a Speaky-style max so the sidebar column sits
+   under the same left edge as the top-nav logo — content aligned. */
+.mp-grid{margin:0 auto;padding:0 16px 40px;display:grid;gap:24px}
+@media(min-width:769px){ .mp-grid{max-width:1200px;grid-template-columns:300px minmax(0,1fr);padding:0 24px 60px;gap:32px} }
+@media(min-width:1280px){ .mp-grid{max-width:1300px;grid-template-columns:320px minmax(0,1fr);gap:40px} }
 /* Left column */
 .mp-side{padding-top:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
 @media(min-width:769px){ .mp-side{padding-top:0;transform:translateY(-90px)} }
