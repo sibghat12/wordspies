@@ -77,18 +77,21 @@ body.authmodal{overflow:hidden}
 /* Top navigation bar: logo + primary tabs on the left, secondary links +
    your profile chip on the right. Persistent across every tab so the site
    header stops being a per-tab afterthought. */
-.topnav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:20;display:flex;align-items:center;gap:14px;padding:9px 16px;min-height:56px;max-width:100%;box-sizing:border-box;overflow:hidden}
+/* Full-width three-column top nav: logo LEFT, tabs CENTER, profile chip RIGHT.
+   Grid so the tabs stay dead-centre no matter how wide the logo or right
+   side get. */
+.topnav{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);z-index:20;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:10px 24px;min-height:60px;max-width:100%;box-sizing:border-box}
 .topnav > *{min-width:0}
-.topnav .tnlogo{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:20px;text-decoration:none;color:inherit;letter-spacing:-.3px;flex-shrink:0;min-width:0}
+.topnav .tnlogo{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;text-decoration:none;color:inherit;letter-spacing:-.3px;justify-self:start}
 .topnav .tnlogo em{font-style:normal;color:var(--accent)}
-.topnav .tntabs{display:flex;gap:2px;flex:1 1 0;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.topnav .tntabs{display:flex;gap:4px;justify-self:center;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .topnav .tntabs::-webkit-scrollbar{display:none}
 .topnav .tntabs .tnt{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;border-radius:12px;padding:8px 12px;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--sub);cursor:pointer;position:relative;white-space:nowrap;transition:background .12s,color .12s;flex-shrink:0}
 .topnav .tntabs .tnt:hover{color:var(--ink);background:#f4f5f7}
 .topnav .tntabs .tnt.on{color:var(--ink);background:#eef1ff}
 .topnav .tntabs .tnt .ico{font-size:15px;line-height:1}
 .topnav .tntabs .tnt .badge{position:static;transform:none;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:99px;min-width:16px;text-align:center;line-height:1.35}
-.topnav .tnright{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.topnav .tnright{display:flex;gap:8px;align-items:center;justify-self:end}
 .topnav .tnlink{color:var(--sub);text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;transition:background .12s,color .12s;white-space:nowrap}
 .topnav .tnlink:hover{background:#f4f5f7;color:var(--ink)}
 .topnav .mechip{border:1px solid var(--line);flex-shrink:0}
@@ -174,7 +177,28 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    it reads as a round badge next to the worded chips rather than a gap. */
 .fchip.ico{padding:9px 12px}
 .fchip.ico .ktick{margin:0}
-.wall{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 20px 30px}
+.wall{display:grid;grid-template-columns:1fr;gap:12px;padding:6px 20px 30px}
+/* ═══ Speaky-style horizontal wall card ═══
+   Photo on the left, name + quote + language flags on the right. Simple
+   border, no shadow. 3-column grid on desktop (see breakpoints below). */
+.wcard{display:grid;grid-template-columns:120px 1fr;gap:14px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;cursor:pointer;color:inherit;text-decoration:none;transition:border-color .15s,transform .1s;overflow:hidden;min-width:0}
+.wcard:hover{border-color:var(--accent);transform:translateY(-1px)}
+.wcard:active{transform:translateY(0)}
+.wcard-photo{width:120px;height:130px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);flex-shrink:0}
+.wcard-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.wcard-photo .pcircph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:44px;font-family:'Fredoka','Nunito',system-ui,sans-serif}
+.wcard-body{display:flex;flex-direction:column;justify-content:space-between;min-width:0;gap:8px}
+.wcard-name{font-size:16px;font-weight:700;color:var(--accent);line-height:1.15;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wcard-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0}
+.wcard-talk{font-size:13.5px;color:var(--sub);line-height:1.4;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;font-style:normal;font-weight:400}
+.wcard-talk.wcard-empty{color:var(--faint);font-style:italic}
+.wcard-langs{display:flex;justify-content:space-between;gap:12px;font-size:11.5px;color:var(--faint);font-weight:600;padding-top:2px}
+.wcard-langs .wf-col{display:flex;flex-direction:column;gap:3px;min-width:0}
+.wcard-langs .wf-col:last-child{align-items:flex-end;text-align:right}
+.wcard-langs .wf-lbl{font-size:10.5px;color:var(--faint);font-weight:600;letter-spacing:.2px}
+.wcard-langs .wf-row{display:inline-flex;align-items:center;gap:4px}
+.wcard-langs .wf-flag{font-size:16px;line-height:1}
+.wcard-langs .wf-more{font-size:11px;color:var(--sub);font-weight:700}
 .pcard{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 12px 18px;text-align:center;cursor:pointer;transition:transform .14s ease,box-shadow .14s ease}
 .pcard:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.08)}
 .pcirc{width:104px;height:104px;border-radius:50%;overflow:hidden;margin:0 auto 12px;box-shadow:0 6px 18px rgba(0,0,0,.14);border:3px solid #fff;outline:1px solid var(--line)}
@@ -251,6 +275,71 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .psect2 .psect2h{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
 .psect2 .chiprow{padding:0}
 .precs{margin:6px 24px 20px;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:14px;font-size:13.5px;color:var(--sub);line-height:1.6;white-space:pre-wrap}
+
+/* ═══ Speaky-style member profile ═══
+   Left sidebar (photo + meta + actions), right cards (talk / interests /
+   goals / speaks / learns / recommendations / photos). Two-column on
+   desktop; stacked on mobile. */
+.mp-hero{display:none;height:120px;background:linear-gradient(90deg,#5a7bff 0%,#a656e0 100%);position:relative}
+.mp-hero .mp-back{position:absolute;top:16px;left:16px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);border:0;font-size:16px;cursor:pointer;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:background .12s}
+.mp-hero .mp-back:hover{background:#fff}
+@media(min-width:769px){ .mp-hero{display:block} }
+.mp-grid{max-width:1300px;margin:0 auto;padding:0 16px 40px;display:grid;gap:24px}
+@media(min-width:769px){ .mp-grid{grid-template-columns:300px 1fr;padding:0 24px 60px;gap:32px} }
+@media(min-width:1280px){ .mp-grid{grid-template-columns:320px 1fr} }
+/* Left column */
+.mp-side{padding-top:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
+@media(min-width:769px){ .mp-side{padding-top:0;transform:translateY(-90px)} }
+.mp-photo{width:170px;height:170px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:68px;font-weight:800;font-family:'Fredoka','Nunito',system-ui,sans-serif;flex-shrink:0}
+@media(min-width:769px){ .mp-photo{width:220px;height:220px;border:7px solid #fff;box-shadow:0 6px 30px rgba(0,0,0,.08)} }
+.mp-photo img{width:100%;height:100%;object-fit:cover}
+.mp-meta{width:100%;text-align:center;display:flex;flex-direction:column;gap:12px}
+@media(min-width:769px){ .mp-meta{text-align:left;padding:0 4px} }
+.mp-name{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:28px;line-height:1.15;color:var(--accent);letter-spacing:-.3px}
+.mp-active{font-size:14px;color:var(--sub);font-weight:500}
+.mp-info-row{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--sub);font-weight:500;justify-content:center}
+@media(min-width:769px){ .mp-info-row{justify-content:flex-start} }
+.mp-info-row .mp-icn{opacity:.6;font-size:14px;width:18px;text-align:center;font-weight:600}
+.mp-info-row span:last-child{word-break:break-all}
+.mp-counts{display:flex;gap:22px;padding:14px 0 4px;justify-content:center;flex-wrap:wrap}
+@media(min-width:769px){ .mp-counts{justify-content:flex-start;gap:26px} }
+.mp-counts>div{display:flex;flex-direction:column;align-items:center}
+.mp-counts b{font-size:20px;font-weight:800;color:var(--ink)}
+.mp-counts span{font-size:12px;color:var(--sub);font-weight:600;margin-top:2px}
+.mp-actions{display:flex;flex-direction:column;gap:10px;padding-top:6px;width:100%}
+@media(min-width:769px){ .mp-actions{flex-direction:row;flex-wrap:wrap} }
+.mp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:14px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;border:1px solid transparent;transition:background .12s,color .12s,transform .1s;flex:1 1 auto}
+.mp-btn:active{transform:scale(.97)}
+.mp-btn.primary{background:var(--accent);color:#fff}
+.mp-btn.primary:hover{background:#4a68e0}
+.mp-btn.line{background:#fff;color:var(--ink);border-color:var(--line)}
+.mp-btn.line:hover{background:var(--hover)}
+.mp-btn.square{flex:0 0 46px;padding:12px 0}
+.mp-actions-row{display:flex;gap:10px;position:relative;width:100%}
+@media(min-width:769px){ .mp-actions-row{width:auto;flex:1} }
+.mp-more{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);z-index:30;min-width:160px;padding:6px}
+.mp-more.hidden{display:none}
+.mp-more button{display:block;width:100%;text-align:left;background:transparent;border:0;padding:10px 14px;font-family:inherit;font-size:13.5px;color:var(--ink);font-weight:600;border-radius:8px;cursor:pointer}
+.mp-more button:hover{background:var(--hover)}
+/* Right column cards */
+.mp-main{display:flex;flex-direction:column;gap:20px;padding-top:24px}
+@media(min-width:769px){ .mp-main{padding-top:0} }
+.mp-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px}
+.mp-card h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:17px;color:var(--ink);margin-bottom:14px}
+.mp-card p{font-size:14.5px;color:var(--sub);line-height:1.6;word-break:break-word}
+.mp-card p.mp-empty{color:var(--faint);font-style:italic;font-size:13.5px}
+.mp-2col{display:grid;gap:20px}
+@media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
+.mp-chips{display:flex;flex-wrap:wrap;gap:8px}
+.mp-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500;color:#2A2AD5;background:linear-gradient(302deg,#f5faff,#fef7ff);border:1px solid transparent;background-origin:border-box}
+.mp-langs{display:flex;flex-direction:column;gap:12px}
+.mp-lang{display:grid;grid-template-columns:28px 1fr auto;gap:14px;align-items:center}
+.mp-lang-flag{font-size:24px;line-height:1;text-align:center}
+.mp-lang-name{font-size:14.5px;font-weight:700;color:var(--ink)}
+.mp-lang-lvl{font-size:12.5px;color:var(--faint);font-weight:600;text-align:right}
+.mp-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.mp-photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px;cursor:pointer;transition:transform .15s}
+.mp-photos img:hover{transform:scale(1.02)}
 
 /* Quiet buttons. Two solid slabs of pink and black on every single card made the
    wall shout; the faces are the content, so the actions sit back and wait. */
@@ -962,7 +1051,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .walllay{display:block;padding:0}
   .wallside{display:none}
   .filterrow{margin:0 0 4px}
-  .wall{grid-template-columns:repeat(3,1fr);gap:16px;padding:8px 0 30px}
+  .wall{grid-template-columns:repeat(2,1fr);gap:16px;padding:8px 0 30px}
   .sect{padding:22px 2px 0}
   .pacts{display:flex}
   .pw{height:300px}
@@ -971,13 +1060,10 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .picker{max-width:636px}
 }
 @media(min-width:1100px){
+  .wall{grid-template-columns:repeat(3,1fr)}
+}
+@media(min-width:1600px){
   .wall{grid-template-columns:repeat(4,1fr)}
-}
-@media(min-width:1450px){
-  .wall{grid-template-columns:repeat(5,1fr)}
-}
-@media(min-width:1700px){
-  .wall{grid-template-columns:repeat(6,1fr)}
 }
 
 /* desktop: WhatsApp-style split — every chat on the left, the open one on the right */
@@ -1214,45 +1300,82 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
   </div>
 
-  <!-- member profile -->
+  <!-- member profile — Speaky-style two-column layout on desktop, stacked
+       on mobile. Left = photo + meta + actions. Right = content cards. -->
   <div id="tabMember" class="hidden">
-    <div class="cover"><button class="back" onclick="showTab('wall')">←</button></div>
-    <div class="prof">
-      <span class="pav" id="mAv"></span>
-      <h2 id="mName"></h2>
-      <div class="loc" id="mLoc"></div>
-    </div>
-    <div class="mbtns">
-      <button class="btn btn-accent" id="followBtn" onclick="toggleFollow()">Follow</button>
-      <button class="btn btn-line" onclick="openChatWith(curMember)">💬 Message</button>
-    </div>
-    <div class="mbtns" style="margin-top:8px">
-      <button class="btn btn-line" onclick="reportUser()" style="font-size:12.5px;color:var(--muted)">🚩 Report</button>
-      <button class="btn btn-line" id="blockBtn" onclick="toggleBlock()" style="font-size:12.5px;color:var(--muted)">🚫 Block</button>
-    </div>
-    <div class="stats">
-      <div><b id="mGames">0</b><span>Games</span></div>
-      <div><b id="mWins">0</b><span>Wins</span><div class="winrate" id="mRate">—</div></div>
-      <div><b id="mFollowers">0</b><span>Followers</span></div>
-      <div><b id="mSince">—</b><span>Joined</span></div>
-    </div>
-    <div class="bio" id="mBio"></div>
-    <!-- Speaky-style profile extras. Filled by openMemberObj; each row
-         self-hides when empty. -->
-    <div class="pquote hidden" id="mQuote"></div>
-    <div class="plangrow hidden" id="mSpeaks"></div>
-    <div class="plangrow hidden" id="mLearns"></div>
-    <div class="psect2 hidden" id="mInterestsBox">
-      <div class="psect2h">Interests</div>
-      <div class="chiprow" id="mInterests"></div>
-    </div>
-    <div class="psect2 hidden" id="mGoalsBox">
-      <div class="psect2h">Goals</div>
-      <div class="chiprow" id="mGoals"></div>
-    </div>
-    <div class="psect2 hidden" id="mRecsBox">
-      <div class="psect2h">Recommendations</div>
-      <div class="precs" id="mRecs"></div>
+    <div class="mp-hero"><button class="mp-back" onclick="showTab('wall')">←</button></div>
+    <div class="mp-grid">
+      <!-- LEFT COLUMN: photo, name, meta, counts, actions -->
+      <aside class="mp-side">
+        <div class="mp-photo" id="mAv"></div>
+        <div class="mp-meta">
+          <h1 class="mp-name"><span id="mName"></span></h1>
+          <div class="mp-active" id="mActive"></div>
+          <div class="mp-info-row"><span class="mp-icn">📍</span><span id="mLoc"></span></div>
+          <div class="mp-info-row"><span class="mp-icn">@</span><span id="mHandle"></span></div>
+          <div class="mp-counts">
+            <div><b id="mFollowers">0</b><span>Followers</span></div>
+            <div><b id="mFollowing">0</b><span>Following</span></div>
+            <div><b id="mRecCount">0</b><span>Recommendations</span></div>
+          </div>
+          <div class="mp-actions">
+            <button class="mp-btn primary" onclick="openChatWith(curMember)">💬 Chat</button>
+            <div class="mp-actions-row">
+              <button class="mp-btn line" id="followBtn" onclick="toggleFollow()">＋ Follow</button>
+              <button class="mp-btn line square" onclick="toggleMoreMenu(event)" title="More" id="moreBtn">⋯</button>
+              <div class="mp-more hidden" id="moreMenu">
+                <button onclick="reportUser();closeMoreMenu()">🚩 Report</button>
+                <button id="blockBtn" onclick="toggleBlock();closeMoreMenu()">🚫 Block</button>
+              </div>
+            </div>
+          </div>
+          <!-- Legacy stat targets kept as hidden shells so old JS writes
+               don't error even though the block itself is retired. -->
+          <span id="mGames" class="hidden"></span><span id="mWins" class="hidden"></span>
+          <span id="mRate" class="hidden"></span><span id="mSince" class="hidden"></span>
+          <span id="mBio" class="hidden"></span>
+        </div>
+      </aside>
+
+      <!-- RIGHT COLUMN: content cards -->
+      <main class="mp-main">
+        <section class="mp-card hidden" id="mQuoteCard">
+          <h3>Let's talk about</h3>
+          <p id="mQuote"></p>
+        </section>
+
+        <div class="mp-2col">
+          <section class="mp-card hidden" id="mInterestsBox">
+            <h3>My Interests</h3>
+            <div class="mp-chips" id="mInterests"></div>
+          </section>
+          <section class="mp-card hidden" id="mGoalsBox">
+            <h3>My Goals</h3>
+            <div class="mp-chips" id="mGoals"></div>
+          </section>
+        </div>
+
+        <div class="mp-2col">
+          <section class="mp-card hidden" id="mSpeaksBox">
+            <h3>Speaks</h3>
+            <div class="mp-langs" id="mSpeaks"></div>
+          </section>
+          <section class="mp-card hidden" id="mLearnsBox">
+            <h3>Learns</h3>
+            <div class="mp-langs" id="mLearns"></div>
+          </section>
+        </div>
+
+        <section class="mp-card">
+          <h3>Recommendations</h3>
+          <p class="mp-empty" id="mRecs">This user doesn't have any recommendations yet</p>
+        </section>
+
+        <section class="mp-card hidden" id="mPhotosCard">
+          <h3>Photos</h3>
+          <div class="mp-photos" id="mPhotos"></div>
+        </section>
+      </main>
     </div>
   </div>
 
@@ -3455,25 +3578,35 @@ function renderWall(){
                        m.wins ? m.wins + ' win' + (m.wins === 1 ? '' : 's') : null].filter(Boolean).join(' · ');
     const rate = m.games >= 3 ? Math.round((m.wins / m.games) * 100) : null;
     const fol = FOLLOWING.has(m.id);
-    // Short "Let's talk about" snippet — Speaky-style card teaser.
-    const talkSnip = m.talkAbout ? esc(String(m.talkAbout).slice(0, 90)) + (m.talkAbout.length > 90 ? '…' : '') : '';
+    // Speaky-style horizontal card: photo on the LEFT, name + quote +
+    // language flags on the right.
+    const talkSnip = m.talkAbout ? esc(String(m.talkAbout).slice(0, 110)) + (m.talkAbout.length > 110 ? '…' : '') : '';
+    const photo = m.photo
+      ? `<img src="${esc(m.photo)}" alt="" loading="lazy">`
+      : `<div class="pcircph g${hue(m.name)}">${esc(m.name[0].toUpperCase())}</div>`;
+    // Language row: "Native"/"Speaks" flag + N, "Learns" flag + N.
+    const flagRow = (label, arr) => {
+      if (!arr || !arr.length) return '';
+      const first = arr[0];
+      const more = arr.length > 1 ? `<span class="wf-more">+${arr.length - 1}</span>` : '';
+      return `<div class="wf-col"><span class="wf-lbl">${label}</span><span class="wf-row"><span class="wf-flag">${langFlag(first)}</span>${more}</span></div>`;
+    };
+    const langsRow =
+      (m.speaks && m.speaks.length) || (m.learns && m.learns.length)
+        ? `<div class="wcard-langs">
+             ${flagRow('Native', m.speaks)}
+             ${flagRow('Learns', m.learns)}
+           </div>`
+        : '';
     return `
-    <div class="pcard" onclick="openMember(${i})" data-i="${i}">
-      ${mine ? '<span class="chip-you">YOU</span>'
-             : (rate !== null ? `<span class="prate">${rate}%</span>` : '')}
-      <div class="pcirc ${m.online ? 'live ' : ''}${m.photo ? '' : 'g' + hue(m.name)}">
-        ${m.photo ? `<img src="${esc(m.photo)}" loading="lazy">` : `<div class="pcircph">${esc(m.name[0].toUpperCase())}</div>`}
+    <a class="wcard" onclick="openMember(${i})" data-i="${i}">
+      <div class="wcard-photo">${photo}</div>
+      <div class="wcard-body">
+        <div class="wcard-name">${esc(m.name)}${mark(m)}${m.online ? '<span class="wcard-dot" title="Online"></span>' : ''}</div>
+        ${talkSnip ? `<p class="wcard-talk">${talkSnip}</p>` : `<p class="wcard-talk wcard-empty">Hello 👋</p>`}
+        ${langsRow}
       </div>
-      <div class="pnm">${esc(m.name)}${mark(m)}${m.online ? '<span class="dot"></span>' : ''}</div>
-      <div class="psub">${countryPart}${agePart}</div>
-      <div class="psub2">${statsLine || 'No games yet'}</div>
-      ${talkSnip ? `<div class="ptalk">${talkSnip}</div>` : ''}
-      <div class="pacts">${mine
-        ? `<button onclick="event.stopPropagation();showTab('me')">Edit your profile</button>`
-        : `<button class="msg" onclick="wallMsg(event,'${m.id}')">Message</button>
-           <button class="fol${fol ? ' on' : ''}" onclick="wallFollow(event,'${m.id}',this)">${fol ? 'Following' : 'Follow'}</button>`}
-      </div>
-    </div>`;
+    </a>`;
   };
   const grid = idx => idx.length ? `<div class="wall">${idx.map(card).join('')}</div>` : '';
   const head = (t, n) => `<div class="sect"><h3>${t}</h3><span class="cnt">${n}</span><span class="ln"></span></div>`;
@@ -3578,53 +3711,68 @@ function openMemberObj(m){
   if (!m) return;
   if (ME && m.id === ME.id) { showTab('me'); return; }
   curMember = m.id;
-  $('mAv').innerHTML = avatarHtml(m, 104, 'big');
-  $('mName').innerHTML = esc(m.name) + mark(m) + (m.age ? ' <span style="color:var(--faint);font-weight:600">· ' + m.age + '</span>' : '');
-  $('mLoc').textContent = flag(m.cc) + ' ' + (m.location || m.country || 'Somewhere on Earth');
-  $('mGames').textContent = m.games; $('mWins').textContent = m.wins;
-  $('mRate').textContent = winRate(m);
-  $('mSince').textContent = new Date(m.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
-  $('mBio').textContent = m.bio || 'No bio yet.';
-  // Speaky-style extras — each block self-hides when empty.
-  const setBlock = (id, html) => {
-    const el = document.getElementById(id); if (!el) return;
-    if (html) { el.innerHTML = html; el.classList.remove('hidden'); }
-    else el.classList.add('hidden');
+  // Photo: big circle, initial letter fallback.
+  const av = m.photo
+    ? `<img src="${esc(m.photo)}" alt="${esc(m.name)}">`
+    : esc((m.name || '?').charAt(0).toUpperCase());
+  $('mAv').innerHTML = av;
+  // Name + age (age inline, faint weight).
+  $('mName').innerHTML = esc(m.name) + mark(m) + (m.age ? ` <span style="color:var(--faint);font-weight:500">, ${m.age}</span>` : '');
+  // Active status placeholder — replaced by API call below if online.
+  $('mActive').textContent = 'Active: recently';
+  // Location + handle rows.
+  $('mLoc').innerHTML = flag(m.cc) + ' ' + esc(m.location || m.country || 'Somewhere on Earth');
+  $('mHandle').textContent = (m.name || '').toLowerCase().replace(/\s+/g,'-') + m.id.slice(0,4);
+  // Counts default while we fetch the real numbers.
+  $('mFollowers').textContent = '—'; $('mFollowing').textContent = '—'; $('mRecCount').textContent = '0';
+  // Content cards — each block self-hides when empty.
+  const setCard = (boxId, textId, val, isHtml) => {
+    const box = document.getElementById(boxId); const el = document.getElementById(textId);
+    if (!box || !el) return;
+    if (val) { if (isHtml) el.innerHTML = val; else el.textContent = val; box.classList.remove('hidden'); }
+    else box.classList.add('hidden');
   };
-  const langsBlock = (label, arr) => {
-    if (!arr || !arr.length) return '';
-    const chips = arr.map(c => `<span class="plangchip">${langFlag(c)} ${esc(langName(c))}</span>`).join('');
-    return `<span class="plabel">${label}</span>${chips}`;
-  };
-  setBlock('mQuote', m.talkAbout ? esc(m.talkAbout).replace(/\n/g,'<br>') : '');
-  setBlock('mSpeaks', langsBlock('Speaks', m.speaks));
-  setBlock('mLearns', langsBlock('Learning', m.learns));
-  const iBox = document.getElementById('mInterestsBox');
-  const iEl = document.getElementById('mInterests');
-  if (m.interests && m.interests.length) {
-    iEl.innerHTML = m.interests.map(x => `<span class="chip">${esc(x)}</span>`).join('');
-    iBox.classList.remove('hidden');
-  } else iBox.classList.add('hidden');
-  const gBox = document.getElementById('mGoalsBox');
-  const gEl = document.getElementById('mGoals');
-  if (m.goals && m.goals.length) {
-    gEl.innerHTML = m.goals.map(x => `<span class="chip">${esc(x)}</span>`).join('');
-    gBox.classList.remove('hidden');
-  } else gBox.classList.add('hidden');
-  const rBox = document.getElementById('mRecsBox');
-  const rEl = document.getElementById('mRecs');
-  if (m.recs) { rEl.textContent = m.recs; rBox.classList.remove('hidden'); }
-  else rBox.classList.add('hidden');
-  $('followBtn').textContent = '…'; $('followBtn').dataset.f = ''; $('mFollowers').textContent = '—';
+  setCard('mQuoteCard', 'mQuote', m.talkAbout ? esc(m.talkAbout).replace(/\n/g,'<br>') : '', true);
+  // Interests + goals as chips.
+  const chipsHTML = arr => arr.map(x => `<span class="mp-chip">${esc(x)}</span>`).join('');
+  if (m.interests && m.interests.length) { $('mInterests').innerHTML = chipsHTML(m.interests); $('mInterestsBox').classList.remove('hidden'); }
+  else $('mInterestsBox').classList.add('hidden');
+  if (m.goals && m.goals.length) { $('mGoals').innerHTML = chipsHTML(m.goals); $('mGoalsBox').classList.remove('hidden'); }
+  else $('mGoalsBox').classList.add('hidden');
+  // Languages — one row per language: flag + name + level.
+  const langRow = (code, lvl) =>
+    `<div class="mp-lang"><span class="mp-lang-flag">${langFlag(code)}</span><span class="mp-lang-name">${esc(langName(code))}</span><span class="mp-lang-lvl">${esc(lvl)}</span></div>`;
+  if (m.speaks && m.speaks.length) {
+    $('mSpeaks').innerHTML = m.speaks.map(c => langRow(c, 'Native')).join('');
+    $('mSpeaksBox').classList.remove('hidden');
+  } else $('mSpeaksBox').classList.add('hidden');
+  if (m.learns && m.learns.length) {
+    $('mLearns').innerHTML = m.learns.map(c => langRow(c, 'Learning')).join('');
+    $('mLearnsBox').classList.remove('hidden');
+  } else $('mLearnsBox').classList.add('hidden');
+  // Recommendations: text if present, otherwise the friendly placeholder.
+  const recsEl = $('mRecs');
+  if (m.recs) { recsEl.textContent = m.recs; recsEl.classList.remove('mp-empty'); }
+  else { recsEl.textContent = "This user doesn't have any recommendations yet"; recsEl.classList.add('mp-empty'); }
+  // Photos card retired until multi-photo gallery ships.
+  $('mPhotosCard').classList.add('hidden');
+  // Follow button reset, then fill from API.
+  $('followBtn').textContent = '＋ Follow'; $('followBtn').dataset.f = '';
   api('/user/' + m.id).then(j => {
-    $('mFollowers').textContent = j.followers;
-    $('followBtn').textContent = j.isFollowing ? 'Following ✓' : 'Follow';
+    $('mFollowers').textContent = j.followers || 0;
+    $('mFollowing').textContent = j.following || 0;
+    $('followBtn').textContent = j.isFollowing ? '✓ Following' : '＋ Follow';
     $('followBtn').dataset.f = j.isFollowing ? '1' : '';
-    if (j.online) $('mLoc').innerHTML = '<span style="color:var(--green)">● online</span> · ' + esc($('mLoc').textContent);
+    if (j.online) $('mActive').innerHTML = '<span style="color:var(--green)">● Online now</span>';
+    else if (j.lastActive) $('mActive').textContent = 'Active: ' + j.lastActive;
   }).catch(()=>{});
   paintBlockBtn();
   showTab('member');
 }
+// "…" more menu on the profile — Report / Block.
+function toggleMoreMenu(ev){ if (ev) ev.stopPropagation(); document.getElementById('moreMenu').classList.toggle('hidden'); }
+function closeMoreMenu(){ const m = document.getElementById('moreMenu'); if (m) m.classList.add('hidden'); }
+document.addEventListener('click', ev => { if (!ev.target.closest('#moreBtn') && !ev.target.closest('#moreMenu')) closeMoreMenu(); });
 
 async function saveProfile(){
   try {
