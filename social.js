@@ -1307,6 +1307,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         out.push({
           id: u.id, name: u.name, photo: u.photo || null, cc: u.cc || '',
           ...marks(u),
+          isAI: !!u.isAI,
           online: await db.exists('soc:online:' + o),
           last: last.length ? JSON.parse(last[0]) : null,
           unread: parseInt(await db.get('soc:unread:' + me.id + ':' + o)) || 0
@@ -1333,7 +1334,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const theirRead = parseInt(await db.get('soc:read:' + convo + ':' + o)) || 0;
       const theirTyping = await db.exists('soc:typing:' + o + ':' + me.id);
       res.json({
-        user: { id: u.id, name: u.name, photo: u.photo || null, ...marks(u), online: await db.exists('soc:online:' + o) },
+        user: { id: u.id, name: u.name, photo: u.photo || null, ...marks(u), isAI: !!u.isAI, online: await db.exists('soc:online:' + o) },
         messages: msgs,
         theirRead,
         theirTyping: !!theirTyping
