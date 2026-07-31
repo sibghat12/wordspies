@@ -149,6 +149,14 @@ function mount(app, redis) {
     country: u.country || '', cc: u.cc || '',
     photo: u.photo || null, createdAt: u.createdAt, games: u.games || 0, wins: u.wins || 0,
     age: calcAge(u.birthdate), birthdate: u.birthdate || null,
+    // Speaky-style profile fields — languages spoken/learning, interests,
+    // goals, a short "Let's talk about" quote, and recommendations.
+    talkAbout: u.talkAbout || '',
+    speaks: Array.isArray(u.speaks) ? u.speaks : [],
+    learns: Array.isArray(u.learns) ? u.learns : [],
+    interests: Array.isArray(u.interests) ? u.interests : [],
+    goals: Array.isArray(u.goals) ? u.goals : [],
+    recs: u.recs || '',
     ...marks(u) });
 
   // ---- simple rate limit (per ip per route bucket) ----
@@ -790,6 +798,17 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         if (bd && !/^\d{4}-\d{2}-\d{2}$/.test(bd)) return res.status(400).json({ error: 'Invalid birthdate format.' });
         u.birthdate = bd || null;
       }
+      // Speaky-style extras: short quote, native + learning languages,
+      // interests, goals, recommendations. All caps + light shape checks.
+      const b = req.body || {};
+      const cleanArr = (v, cap, max) =>
+        (Array.isArray(v) ? v : []).map(x => String(x || '').trim().slice(0, cap)).filter(Boolean).slice(0, max);
+      if (b.talkAbout !== undefined) u.talkAbout = String(b.talkAbout || '').slice(0, 500);
+      if (b.speaks !== undefined) u.speaks = cleanArr(b.speaks, 6, 5);
+      if (b.learns !== undefined) u.learns = cleanArr(b.learns, 6, 5);
+      if (b.interests !== undefined) u.interests = cleanArr(b.interests, 30, 12);
+      if (b.goals !== undefined) u.goals = cleanArr(b.goals, 30, 6);
+      if (b.recs !== undefined) u.recs = String(b.recs || '').slice(0, 500);
       await db.set('soc:user:' + u.id, JSON.stringify(u));
       res.json({ me: pub(u) });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }

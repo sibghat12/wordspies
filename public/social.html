@@ -164,7 +164,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 }
 
 /* wall */
-.filterrow{display:flex;gap:10px;align-items:center;margin:4px 20px 12px;flex-wrap:wrap}
+.filterrow{display:flex;gap:10px;align-items:center;margin:18px 20px 20px;flex-wrap:wrap}
 .search{background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 16px;display:flex;gap:10px;align-items:center;flex:1;min-width:170px}
 .search input{border:none;background:none;flex:1;padding:12px 0;font-size:13.5px;font-weight:500;min-width:0}
 .fchips{display:flex;gap:7px;flex-wrap:wrap}
@@ -214,6 +214,41 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    stats bar went: social profiles aren't leaderboards. */
 .prate{display:none}
 .pcirc.live{outline:2px solid var(--green);outline-offset:2px}
+/* Section label above chip fields in the profile editor. Sits above
+   .field, feels like a proper form label. */
+.flbl{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--faint);margin:14px 4px 6px}
+.chipfield{background:transparent;border:0;padding:0}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:1px}
+.chiprow:empty{display:none}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#eef1ff;color:var(--accent);border:1px solid #d0d7ff;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600}
+.chip .chipx{background:transparent;border:0;color:inherit;font-size:14px;cursor:pointer;padding:0;line-height:1;opacity:.6}
+.chip .chipx:hover{opacity:1}
+.chipadd{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px dashed var(--line);color:var(--sub);border-radius:99px;padding:8px 14px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
+.chipadd:hover{background:var(--hover);border-color:var(--accent);color:var(--accent)}
+/* Language + interest picker modal — same backdrop pattern as elsewhere. */
+.pkmod{position:fixed;inset:0;background:rgba(20,22,28,.5);display:none;align-items:center;justify-content:center;z-index:90;padding:20px}
+.pkmod.show{display:flex}
+.pkcard{background:#fff;border-radius:20px;padding:20px;max-width:min(440px,92vw);max-height:80vh;display:flex;flex-direction:column;gap:12px}
+.pkcard h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:18px;margin:0}
+.pkinp{flex:none;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-family:inherit;font-size:14px;outline:none}
+.pkinp:focus{border-color:var(--accent)}
+.pklist{flex:1;min-height:200px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
+.pklist button{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:99px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .12s,border-color .12s}
+.pklist button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pkclose{align-self:center;background:transparent;border:0;font-family:inherit;color:var(--sub);font-weight:600;font-size:13px;cursor:pointer;padding:6px}
+
+/* Profile display of the new fields — quote block, language rows, goal
+   chips, recommendations. Reused across Me + Member views. */
+.pquote{margin:8px 24px 6px;padding:14px 18px;background:linear-gradient(135deg,#f5f6ff,#ffffff);border-left:3px solid var(--accent);border-radius:12px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-style:italic;font-size:14.5px;color:var(--sub);line-height:1.5}
+.plangrow{display:flex;flex-wrap:wrap;gap:10px 16px;padding:6px 24px 4px;font-size:12.5px;color:var(--sub);font-weight:600}
+.plangrow .plabel{color:var(--faint);font-weight:600;margin-right:4px;text-transform:uppercase;letter-spacing:.4px;font-size:10.5px}
+.plangrow .plangchip{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:4px 10px;font-size:13px}
+.pmore{color:var(--faint);font-size:11.5px;font-weight:600;margin-left:2px}
+.psect2{padding:14px 24px 2px}
+.psect2 .psect2h{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+.psect2 .chiprow{padding:0}
+.precs{margin:6px 24px 20px;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:14px;font-size:13.5px;color:var(--sub);line-height:1.6;white-space:pre-wrap}
+
 /* Quiet buttons. Two solid slabs of pink and black on every single card made the
    wall shout; the faces are the content, so the actions sit back and wait. */
 /* Message + Follow buttons retired from wall cards per owner ask.
@@ -1199,6 +1234,23 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div><b id="mSince">—</b><span>Joined</span></div>
     </div>
     <div class="bio" id="mBio"></div>
+    <!-- Speaky-style profile extras. Filled by openMemberObj; each row
+         self-hides when empty. -->
+    <div class="pquote hidden" id="mQuote"></div>
+    <div class="plangrow hidden" id="mSpeaks"></div>
+    <div class="plangrow hidden" id="mLearns"></div>
+    <div class="psect2 hidden" id="mInterestsBox">
+      <div class="psect2h">Interests</div>
+      <div class="chiprow" id="mInterests"></div>
+    </div>
+    <div class="psect2 hidden" id="mGoalsBox">
+      <div class="psect2h">Goals</div>
+      <div class="chiprow" id="mGoals"></div>
+    </div>
+    <div class="psect2 hidden" id="mRecsBox">
+      <div class="psect2h">Recommendations</div>
+      <div class="precs" id="mRecs"></div>
+    </div>
   </div>
 
   <!-- ═══ PARTIES — audio rooms with speakers + listeners ═══ -->
@@ -1326,6 +1378,40 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="field"><input id="fBirth" type="date" placeholder="Your birthdate (optional)"></div>
       <div class="field"><input id="fLoc" maxlength="40" placeholder="Your city (optional)"></div>
       <div class="field"><textarea id="fBio" maxlength="200" rows="3" placeholder="Say something about yourself…"></textarea></div>
+
+      <!-- Let's talk about — the "quote" line at the top of a profile.
+           Owner ask: 100–150 words, shows up on the profile card. -->
+      <label class="flbl">Let's talk about</label>
+      <div class="field"><textarea id="fTalk" maxlength="500" rows="3" placeholder='e.g. "Wherever your heart is, there you will find your treasure."'></textarea></div>
+
+      <!-- Native and learning languages. Owner ask: multiple allowed;
+           when displayed, first flag + "+N" if there are extras. -->
+      <label class="flbl">Native language(s)</label>
+      <div class="field chipfield" id="fSpeaksBox">
+        <div class="chiprow" id="fSpeaksChips"></div>
+        <button type="button" class="chipadd" onclick="openLangPicker('speaks')">+ Add native language</button>
+      </div>
+
+      <label class="flbl">Learning</label>
+      <div class="field chipfield" id="fLearnsBox">
+        <div class="chiprow" id="fLearnsChips"></div>
+        <button type="button" class="chipadd" onclick="openLangPicker('learns')">+ Add a language you're learning</button>
+      </div>
+
+      <label class="flbl">My interests</label>
+      <div class="field chipfield" id="fInterestsBox">
+        <div class="chiprow" id="fInterestsChips"></div>
+        <button type="button" class="chipadd" onclick="openInterestPicker()">+ Add an interest</button>
+      </div>
+
+      <label class="flbl">My end goal</label>
+      <div class="field chipfield" id="fGoalsBox">
+        <div class="chiprow" id="fGoalsChips"></div>
+        <button type="button" class="chipadd" onclick="openGoalPicker()">+ Add a goal</button>
+      </div>
+
+      <label class="flbl">Recommendations</label>
+      <div class="field"><textarea id="fRecs" maxlength="500" rows="3" placeholder="Books, films, songs, apps — things you'd recommend to someone learning your language."></textarea></div>
     </div>
     <div class="prow">
       <button class="btn btn-accent" onclick="saveProfile()">Save profile</button>
@@ -1712,6 +1798,8 @@ function paintMe(){
   $('fMyName').value = ME.name || '';
   $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
   $('myEmail').textContent = ME.location || 'Add your city below';
+  // Sync the Speaky-style chip editors + textareas from ME each paint.
+  try { syncProfileEditor(); } catch(e){}
   paintTabs();
 }
 // The tab bar is the one thing on screen at all times, so it earns its keep:
@@ -3481,6 +3569,36 @@ function openMemberObj(m){
   $('mRate').textContent = winRate(m);
   $('mSince').textContent = new Date(m.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
   $('mBio').textContent = m.bio || 'No bio yet.';
+  // Speaky-style extras — each block self-hides when empty.
+  const setBlock = (id, html) => {
+    const el = document.getElementById(id); if (!el) return;
+    if (html) { el.innerHTML = html; el.classList.remove('hidden'); }
+    else el.classList.add('hidden');
+  };
+  const langsBlock = (label, arr) => {
+    if (!arr || !arr.length) return '';
+    const chips = arr.map(c => `<span class="plangchip">${langFlag(c)} ${esc(langName(c))}</span>`).join('');
+    return `<span class="plabel">${label}</span>${chips}`;
+  };
+  setBlock('mQuote', m.talkAbout ? esc(m.talkAbout).replace(/\n/g,'<br>') : '');
+  setBlock('mSpeaks', langsBlock('Speaks', m.speaks));
+  setBlock('mLearns', langsBlock('Learning', m.learns));
+  const iBox = document.getElementById('mInterestsBox');
+  const iEl = document.getElementById('mInterests');
+  if (m.interests && m.interests.length) {
+    iEl.innerHTML = m.interests.map(x => `<span class="chip">${esc(x)}</span>`).join('');
+    iBox.classList.remove('hidden');
+  } else iBox.classList.add('hidden');
+  const gBox = document.getElementById('mGoalsBox');
+  const gEl = document.getElementById('mGoals');
+  if (m.goals && m.goals.length) {
+    gEl.innerHTML = m.goals.map(x => `<span class="chip">${esc(x)}</span>`).join('');
+    gBox.classList.remove('hidden');
+  } else gBox.classList.add('hidden');
+  const rBox = document.getElementById('mRecsBox');
+  const rEl = document.getElementById('mRecs');
+  if (m.recs) { rEl.textContent = m.recs; rBox.classList.remove('hidden'); }
+  else rBox.classList.add('hidden');
   $('followBtn').textContent = '…'; $('followBtn').dataset.f = ''; $('mFollowers').textContent = '—';
   api('/user/' + m.id).then(j => {
     $('mFollowers').textContent = j.followers;
@@ -3495,8 +3613,18 @@ function openMemberObj(m){
 async function saveProfile(){
   try {
     const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ name: $('fMyName').value, bio: $('fBio').value,
-                             location: $('fLoc').value, birthdate: $('fBirth').value }) });
+      body: JSON.stringify({
+        name: $('fMyName').value,
+        bio: $('fBio').value,
+        location: $('fLoc').value,
+        birthdate: $('fBirth').value,
+        talkAbout: ($('fTalk') || {}).value || '',
+        speaks: EDIT_SPEAKS,
+        learns: EDIT_LEARNS,
+        interests: EDIT_INTERESTS,
+        goals: EDIT_GOALS,
+        recs: ($('fRecs') || {}).value || ''
+      }) });
     const renamed = ME.name !== j.me.name;
     ME = j.me; paintMe(); loadMembers();
     toast(renamed ? '✓ You\'re ' + j.me.name + ' now — everywhere' : '✓ Profile saved');
@@ -3520,6 +3648,127 @@ async function faceCheck(file){
   } catch(e){
     return { supported:false, hasFace:null, err:e.message };
   }
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// Speaky-style profile extras — language / interest / goal chip pickers
+// + save/load into the editor and display on member profiles.
+// ═════════════════════════════════════════════════════════════════════
+
+// Common language flag list. Codes match Speaky's ISO-2 style so we can
+// swap in a bigger set later without breaking stored profiles.
+const LANGS = [
+  {c:'en', f:'🇬🇧', n:'English'},   {c:'es', f:'🇪🇸', n:'Spanish'},   {c:'fr', f:'🇫🇷', n:'French'},
+  {c:'de', f:'🇩🇪', n:'German'},   {c:'it', f:'🇮🇹', n:'Italian'},   {c:'pt', f:'🇵🇹', n:'Portuguese'},
+  {c:'ru', f:'🇷🇺', n:'Russian'},  {c:'zh', f:'🇨🇳', n:'Chinese'},   {c:'ja', f:'🇯🇵', n:'Japanese'},
+  {c:'ko', f:'🇰🇷', n:'Korean'},   {c:'ar', f:'🇸🇦', n:'Arabic'},    {c:'hi', f:'🇮🇳', n:'Hindi'},
+  {c:'ur', f:'🇵🇰', n:'Urdu'},     {c:'id', f:'🇮🇩', n:'Indonesian'},{c:'tr', f:'🇹🇷', n:'Turkish'},
+  {c:'nl', f:'🇳🇱', n:'Dutch'},    {c:'sv', f:'🇸🇪', n:'Swedish'},   {c:'pl', f:'🇵🇱', n:'Polish'},
+  {c:'no', f:'🇳🇴', n:'Norwegian'},{c:'da', f:'🇩🇰', n:'Danish'},    {c:'fi', f:'🇫🇮', n:'Finnish'},
+  {c:'el', f:'🇬🇷', n:'Greek'},    {c:'he', f:'🇮🇱', n:'Hebrew'},    {c:'th', f:'🇹🇭', n:'Thai'},
+  {c:'vi', f:'🇻🇳', n:'Vietnamese'},{c:'uk',f:'🇺🇦', n:'Ukrainian'}, {c:'ro', f:'🇷🇴', n:'Romanian'},
+  {c:'bn', f:'🇧🇩', n:'Bengali'},  {c:'fa', f:'🇮🇷', n:'Persian'},   {c:'sw', f:'🇰🇪', n:'Swahili'}
+];
+const langByCode = c => LANGS.find(l => l.c === c);
+const langFlag = c => (langByCode(c) || {}).f || '🌐';
+const langName = c => (langByCode(c) || {}).n || c;
+
+// Suggested interests + goals. Full Speaky-style set — user picks any.
+const INTERESTS = ['Art','Books','Business','Cooking','Culture','Economics','Fashion','Fitness',
+  'Food','Gaming','Gardening','History','Languages','Meditation','Movies','Music','Nature',
+  'Nightlife','Outdoors','Philosophy','Photography','Politics','Religion','Science','Social',
+  'Space','Sports','Technology','Travel','Work'];
+const GOALS = ['Travel','Cultural','Professional','Academic','Social','Proficiency'];
+
+// Local staging arrays for the profile editor. Committed on Save.
+let EDIT_SPEAKS = [], EDIT_LEARNS = [], EDIT_INTERESTS = [], EDIT_GOALS = [];
+
+function renderChips(hostId, arr, kind){
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.innerHTML = arr.map((v, i) => {
+    const label = (kind === 'speaks' || kind === 'learns') ? langFlag(v) + ' ' + langName(v) : v;
+    return `<span class="chip">${esc(label)}<button type="button" class="chipx" onclick="removeChip('${kind}',${i})" aria-label="Remove">×</button></span>`;
+  }).join('');
+}
+function removeChip(kind, i){
+  const map = { speaks:EDIT_SPEAKS, learns:EDIT_LEARNS, interests:EDIT_INTERESTS, goals:EDIT_GOALS };
+  const arr = map[kind]; if (!arr) return;
+  arr.splice(i, 1);
+  renderChips('f' + kind[0].toUpperCase() + kind.slice(1) + 'Chips', arr, kind);
+}
+function addChip(kind, value){
+  const map = { speaks:EDIT_SPEAKS, learns:EDIT_LEARNS, interests:EDIT_INTERESTS, goals:EDIT_GOALS };
+  const arr = map[kind]; if (!arr) return;
+  if (arr.includes(value)) return;
+  const caps = { speaks:5, learns:5, interests:12, goals:6 };
+  if (arr.length >= caps[kind]) { toast('Max ' + caps[kind] + ' — remove one first.'); return; }
+  arr.push(value);
+  renderChips('f' + kind[0].toUpperCase() + kind.slice(1) + 'Chips', arr, kind);
+}
+
+// One shared picker modal used for languages, interests, and goals.
+function openPicker(title, items, filterHint, onPick){
+  let overlay = document.getElementById('genPicker');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'genPicker';
+    overlay.className = 'pkmod';
+    overlay.innerHTML = `<div class="pkcard">
+      <h3 id="pkTitle"></h3>
+      <input class="pkinp" id="pkSearch" placeholder="Search…">
+      <div class="pklist" id="pkList"></div>
+      <button class="pkclose" onclick="closePicker()">Cancel</button>
+    </div>`;
+    overlay.addEventListener('click', ev => { if (ev.target === overlay) closePicker(); });
+    document.body.appendChild(overlay);
+  }
+  document.getElementById('pkTitle').textContent = title;
+  const search = document.getElementById('pkSearch');
+  search.placeholder = filterHint || 'Search…';
+  search.value = '';
+  const list = document.getElementById('pkList');
+  const paint = () => {
+    const q = (search.value || '').toLowerCase();
+    list.innerHTML = items
+      .filter(it => !q || it.label.toLowerCase().includes(q))
+      .map(it => `<button data-v="${esc(it.value)}">${esc(it.label)}</button>`)
+      .join('');
+    list.querySelectorAll('button').forEach(b => b.onclick = () => { onPick(b.dataset.v); closePicker(); });
+  };
+  search.oninput = paint;
+  paint();
+  overlay.classList.add('show');
+  setTimeout(() => search.focus(), 40);
+}
+function closePicker(){ const o = document.getElementById('genPicker'); if (o) o.classList.remove('show'); }
+function openLangPicker(kind){
+  openPicker(kind === 'speaks' ? 'Add a native language' : 'Add a language you\'re learning',
+    LANGS.map(l => ({ value:l.c, label: l.f + ' ' + l.n })),
+    'Search language…',
+    v => addChip(kind, v));
+}
+function openInterestPicker(){
+  openPicker('Add an interest', INTERESTS.map(x => ({ value:x, label:x })), 'Search or type an interest…',
+    v => addChip('interests', v));
+}
+function openGoalPicker(){
+  openPicker('Add a goal', GOALS.map(x => ({ value:x, label:x })), 'Search a goal…',
+    v => addChip('goals', v));
+}
+
+// Sync the editor arrays FROM ME when we open the Me tab.
+function syncProfileEditor(){
+  EDIT_SPEAKS = [...(ME.speaks || [])];
+  EDIT_LEARNS = [...(ME.learns || [])];
+  EDIT_INTERESTS = [...(ME.interests || [])];
+  EDIT_GOALS = [...(ME.goals || [])];
+  renderChips('fSpeaksChips', EDIT_SPEAKS, 'speaks');
+  renderChips('fLearnsChips', EDIT_LEARNS, 'learns');
+  renderChips('fInterestsChips', EDIT_INTERESTS, 'interests');
+  renderChips('fGoalsChips', EDIT_GOALS, 'goals');
+  const talk = document.getElementById('fTalk'); if (talk) talk.value = ME.talkAbout || '';
+  const recs = document.getElementById('fRecs'); if (recs) recs.value = ME.recs || '';
 }
 
 $('photoIn').onchange = async () => {
