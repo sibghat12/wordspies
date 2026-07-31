@@ -1673,9 +1673,17 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // all users, no cloning required). Each persona keeps this voice
   // forever so users hear consistent characters.
   const AI_VOICE_MAP = {
-    ai_amy:     '21m00Tcm4TlvDq8ikWAM', // Rachel — warm British female
-    ai_matthew: 'pNInz6obpgDQGcFmaJgB', // Adam — deep American male
-    ai_ashley:  'EXAVITQu4vr4xnSDxMaL'  // Bella — bright young female
+    ai_amy:     '21m00Tcm4TlvDq8ikWAM', // Rachel  — warm British female
+    ai_matthew: 'pNInz6obpgDQGcFmaJgB', // Adam    — deep American male
+    ai_ashley:  'EXAVITQu4vr4xnSDxMaL', // Bella   — bright young female
+    ai_callum:  'N2lVS1w4EtoT3dr4eOWO', // Callum  — Scottish male
+    ai_lily:    'pFZP5JQG7iQjIQuC4Bku', // Lily    — British female
+    ai_daniel:  'onwK4e9ZLuTAKqWW03F9', // Daniel  — deep British male
+    ai_charlie: 'IKne3meq5aSn9XLyUdCD', // Charlie — Australian male
+    ai_grace:   'oWAxZDx7w5VEj9dCyTzz', // Grace   — Southern American female
+    ai_emma:    'jsCqWAovK2LkecY7zXl4', // Freya   — warm American female (Canadian stand-in)
+    ai_fin:     'D38z5RcWu1voky8WS1ja', // Fin     — Irish male
+    ai_aisha:   'Xb7hH8MSUJpSbSDYk0k2'  // Alice   — British female (Kenyan-English stand-in)
   };
 
   // POST /api/social/ai/voice — proxy to ElevenLabs so the API key
