@@ -427,7 +427,20 @@ const pendingCalls = new Map();  // calleeUid → { code, fromUid, fromName, fro
 setInterval(() => {
   const now = Date.now();
   for (const [uid, c] of pendingCalls) {
-    if (now - (c.at || 0) > 45 * 1000) pendingCalls.delete(uid);
+    if (now - (c.at || 0) > 45 * 1000) {
+      pendingCalls.delete(uid);
+      // Also destroy the call room + log a missed-call entry.
+      if (partyMod && partyMod.rooms && partyMod.rooms.has(c.code)) {
+        try { io.of('/party').to(c.code).emit('closed'); } catch (e) {}
+        partyMod.rooms.delete(c.code);
+        try {
+          if (social && social.postCallLog) social.postCallLog({
+            hostUid: c.fromUid, calleeUid: uid,
+            startedAt: 0, endedAt: Date.now(), answered: false
+          });
+        } catch (e) {}
+      }
+    }
   }
 }, 15 * 1000).unref?.();
 
@@ -518,10 +531,18 @@ app.post('/api/social/call/decline', express.json({ limit: '2kb' }), async (req,
   if (!c || c.code !== code) return res.json({ ok: true });   // idempotent
   pendingCalls.delete(uid);
   // Delete the call room so the caller sees "they declined" (party socket
-  // will emit 'closed' to whoever's in it).
+  // will emit 'closed' to whoever's in it) + post a "Missed call" log
+  // entry to their DM chat so it shows up like WhatsApp.
   if (partyMod && partyMod.rooms && partyMod.rooms.has(code)) {
+    const r = partyMod.rooms.get(code);
     try { io.of('/party').to(code).emit('closed'); } catch (e) {}
     partyMod.rooms.delete(code);
+    try {
+      if (social && social.postCallLog) social.postCallLog({
+        hostUid: r.hostUid, calleeUid: uid,
+        startedAt: 0, endedAt: Date.now(), answered: false
+      });
+    } catch (e) {}
   }
   console.log('[call] decline', code, 'by=' + uid.slice(0, 8));
   res.json({ ok: true });
@@ -600,7 +621,14 @@ try {
     uidFromReq: uidFromCookie,
     // For private-party gating: social module tells us who's in the host's
     // circle (follows / followers / recent chats).
-    socialCircle: social && social.inviteCircle ? social.inviteCircle : null
+    socialCircle: social && social.inviteCircle ? social.inviteCircle : null,
+    // When a call room ends, drop a system message into the DM chat so both
+    // sides see "📞 Call · 1:24" (or "Missed call") in the thread. Handled
+    // by social.postCallLog when available; silent no-op otherwise.
+    onCallEnd: (info) => {
+      try { if (social && social.postCallLog) social.postCallLog(info); }
+      catch (e) { console.error('onCallEnd:', e.message); }
+    }
   }) || null;
 } catch (e) { console.error('party module failed to load (rest of site unaffected):', e.message); }
 

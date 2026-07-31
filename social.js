@@ -1257,7 +1257,38 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     catch (e) { console.error('uidBySession:', e.message); return null; }
   }
 
-  return { recordResult, profileByUid, uidBySession, inviteCircle, sendPush };
+  // Called by the party module when a call room ends. Posts a system
+  // message ("📞 Call · 1:24" or "📞 Missed call") into both users'
+  // shared DM chat so the call shows up as a chat log entry.
+  async function postCallLog({ hostUid, calleeUid, startedAt, endedAt, answered }) {
+    if (!hostUid || !calleeUid || hostUid === calleeUid) return;
+    const key = 'soc:msgs:' + cid(hostUid, calleeUid);
+    const durS = answered && startedAt ? Math.max(0, Math.floor((endedAt - startedAt) / 1000)) : 0;
+    const mm = Math.floor(durS / 60), ss = durS % 60;
+    const durStr = mm + ':' + String(ss).padStart(2, '0');
+    const text = answered
+      ? '📞 Voice call · ' + durStr
+      : '📞 Missed call';
+    const msg = {
+      id: crypto.randomBytes(6).toString('base64url'),
+      f: hostUid,            // caller side originates the log entry
+      k: 'call',             // clients render this as a system-style bubble
+      x: text,
+      t: Date.now(),
+      cdur: durS,            // machine-readable duration (seconds)
+      cans: !!answered
+    };
+    try {
+      await db.rpush(key, JSON.stringify(msg));
+      await db.ltrim(key, -500, -1);
+      await db.sadd('soc:convos:' + hostUid, calleeUid);
+      await db.sadd('soc:convos:' + calleeUid, hostUid);
+      // Bump unread on the callee if it was a missed call — like WhatsApp.
+      if (!answered) await db.incr('soc:unread:' + calleeUid + ':' + hostUid);
+    } catch (e) { console.error('postCallLog:', e.message); }
+  }
+
+  return { recordResult, profileByUid, uidBySession, inviteCircle, sendPush, postCallLog };
 }
 
 module.exports = { mount };

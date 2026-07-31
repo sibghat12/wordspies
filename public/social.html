@@ -850,6 +850,13 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .vbub .vprog::after{content:'';position:absolute;left:50%;top:50%;width:70%;height:8px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.6) 0 2px,transparent 2px 5px);transform:translate(-50%,-50%);border-radius:2px;pointer-events:none}
 .mb.them .vbub .vprog::after{background:repeating-linear-gradient(90deg,rgba(90,123,255,.55) 0 2px,transparent 2px 5px)}
 .vbub .vdur{font-size:11.5px;font-weight:700;opacity:.85;flex-shrink:0;font-variant-numeric:tabular-nums}
+
+/* Call log entry in the DM thread — WhatsApp-style. */
+.callbub{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--sub);padding:2px 0}
+.callbub .cbico{display:inline-flex;align-items:center;justify-content:center;background:rgba(34,192,122,.14);color:#159f5d;font-size:14px;width:26px;height:26px;border-radius:50%;flex-shrink:0}
+.callbub.missed .cbico{background:rgba(217,48,37,.12);color:#d93025}
+.mb.me .callbub{color:rgba(255,255,255,.9)}
+.mb.me .callbub .cbico{background:rgba(255,255,255,.2);color:#fff}
 /* read receipts: one white tick when sent, two dark ones once they've read it */
 /* Read-receipt ticks live inside the bubble. One faint tick = sent, two
    bright coloured ticks = read. Colour was ink-dark and looked heavy on
@@ -2414,7 +2421,7 @@ async function refreshChats(){
         <span class="cav">${avatarHtml(c, 46)}${c.online ? '<span class="dot cdot"></span>' : ''}</span>
         <div class="cmid">
           <div class="cname">${esc(c.name)}${mark(c)}</div>
-          <div class="cprev">${c.last ? (c.last.f === ME.id ? 'You: ' : '') + (c.last.k === 'gif' ? '🖼 GIF' : c.last.k === 'voice' ? '🎤 Voice message' : esc(c.last.x.slice(0, 46))) : 'Say hello 👋'}</div>
+          <div class="cprev">${c.last ? (c.last.f === ME.id ? 'You: ' : '') + (c.last.k === 'gif' ? '🖼 GIF' : c.last.k === 'voice' ? '🎤 Voice message' : c.last.k === 'call' ? (c.last.cans ? '📞 Voice call' : '📞 Missed call') : esc(c.last.x.slice(0, 46))) : 'Say hello 👋'}</div>
         </div>
         <div class="cright">
           <div class="ctime">${c.last ? fmtT(c.last.t) : ''}</div>
@@ -2548,6 +2555,7 @@ const ACCEPTED = {};   // room code → accepter's name (or true), learned by po
 function msgBody(m){
   if (m.d) return `<span class="gone-txt">🚫 This message was deleted</span>`;
   if (m.k === 'voice') return voiceBubble(m);
+  if (m.k === 'call') return callLogBubble(m);
   if (m.k === 'gif') return `<img src="${esc(m.x)}" loading="lazy">`;
   // Any game invite — WordSpies or the arcade — becomes a big tappable Join
   // card, and a message can hold several of them. The regex runs on the
@@ -2762,6 +2770,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Tap without hold on desktop: treat as click-to-toggle.
   btn.addEventListener('click', (ev) => { ev.preventDefault(); });
 });
+
+// Call-log bubble — WhatsApp-style call entry in the DM thread. Shows
+// "Voice call · 1:24" for answered, "Missed call" for unanswered.
+// Direction is inferred from m.f (caller uid) vs my uid.
+function callLogBubble(m){
+  const inbound = ME && m.f !== ME.id;
+  const answered = !!m.cans;
+  const dur = m.cdur ? Math.floor(m.cdur/60) + ':' + String(m.cdur%60).padStart(2,'0') : '';
+  const icon = answered ? (inbound ? '📞↙' : '📞↗') : (inbound ? '📞✕' : '📞↗');
+  const label = answered ? 'Voice call' + (dur ? ' · ' + dur : '') : (inbound ? 'Missed call' : 'No answer');
+  const cls = answered ? 'callbub' : 'callbub missed';
+  return `<span class="${cls}"><span class="cbico">${icon}</span>${esc(label)}</span>`;
+}
 
 // Voice bubble renderer + tiny audio player. Progress bar is a plain
 // <div>; audio events update its width. One <audio> is created per bubble

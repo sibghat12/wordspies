@@ -235,6 +235,9 @@ function mount(app, io, options = {}) {
       if (role === 'host' && (!r.hostId || isCreator)) r.hostId = socket.id;
       socket.join(r.code);
       room = r; me = member;
+      // For call rooms: stamp startedAt the moment the SECOND party arrives.
+      // Enables accurate "Call · 2:14" durations in the chat log later.
+      if (r.isCall && !r.startedAt && r.members.size >= 2) r.startedAt = Date.now();
       console.log('[party] join', r.code, 'uid=' + (uid || 'guest').slice(0, 8), 'role=' + member.role, 'members=' + r.members.size, 'isCreator=' + !!isCreator);
       socket.emit('joined', {
         code: r.code, you: socket.id, role: member.role,
@@ -249,7 +252,25 @@ function mount(app, io, options = {}) {
       const r = room; room = null;
       r.members.delete(socket.id);
       socket.leave(r.code);
-      broadcast(r);
+      // Call rooms are 2-person only: one leaves → call ends for both.
+      // Fires the same 'closed' event so the other party sees "Call
+      // ended" and their UI navigates home cleanly.
+      if (r.isCall) {
+        // Log for the DM chat entry (if options.onCallEnd is wired).
+        try {
+          if (options.onCallEnd) options.onCallEnd({
+            hostUid: r.hostUid,
+            calleeUid: [...(r.callWhitelist || [])].find(u => u !== r.hostUid) || null,
+            startedAt: r.startedAt || 0,
+            endedAt: Date.now(),
+            answered: !!r.startedAt
+          });
+        } catch (e) { console.error('onCallEnd:', e.message); }
+        try { nsp.to(r.code).emit('closed'); } catch (e) {}
+        rooms.delete(r.code);
+      } else {
+        broadcast(r);
+      }
     });
 
     // Any host can promote/demote (co-hosts are also hosts for this purpose).
@@ -442,6 +463,24 @@ function mount(app, io, options = {}) {
       // Owner rule: I stay in the room even if my tab closes / I refresh.
       // Keep the slot, flip the connected flag. A grace-window sweeper
       // (below) actually removes the slot only after 5 minutes offline.
+      // EXCEPTION: call rooms end the moment either party drops. A call
+      // is a phone call — if the other side hangs up, the whole thing
+      // ends for both of us. No "waiting for reconnect".
+      if (r.isCall) {
+        r.members.delete(socket.id);
+        try {
+          if (options.onCallEnd) options.onCallEnd({
+            hostUid: r.hostUid,
+            calleeUid: [...(r.callWhitelist || [])].find(u => u !== r.hostUid) || null,
+            startedAt: r.startedAt || 0,
+            endedAt: Date.now(),
+            answered: !!r.startedAt
+          });
+        } catch (e) { console.error('onCallEnd:', e.message); }
+        try { nsp.to(r.code).emit('closed'); } catch (e) {}
+        rooms.delete(r.code);
+        return;
+      }
       const m = r.members.get(socket.id);
       if (m) { m.connected = false; m.discAt = Date.now(); }
       socket.to(r.code).emit('v-peer', { id: socket.id, on: false });
