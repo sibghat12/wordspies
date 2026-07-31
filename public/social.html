@@ -2553,7 +2553,7 @@ addEventListener('orientationchange', () => setTimeout(fitChat, 250));
 // other links clickable. Everything is escaped first.
 const GAME_TAGS = {
   play: ['🕵️', 'WordSpies'], ludo: ['🎲', 'Ludo'], four: ['🔴', 'Connect 4'],
-  pool: ['🎱', '8-Ball Pool'], meld: ['🧠', 'Mind Meld']
+  pool: ['🎱', '8-Ball Pool'], meld: ['🧠', 'Mind Meld'], party: ['🎉', 'party']
 };
 // Challenges you sent wait politely: the card sits in the chat saying
 // "waiting for them to accept", and only once your friend has actually taken
@@ -2570,10 +2570,16 @@ function msgBody(m){
   // escaped text, so & in the URL appears as &amp; here.
   const mine = ME && m.f === ME.id;
   let found = false;
-  let out = esc(m.x).replace(/(?:https?:\/\/[^\s<]+)?\/(play|ludo|four|pool|meld)\?room=([A-Za-z0-9]{4})(?:&amp;go=1)?/g, (all, g, code) => {
+  let out = esc(m.x).replace(/(?:https?:\/\/[^\s<]+)?\/(play|ludo|four|pool|meld|party)\?room=([A-Za-z0-9]{4})(?:&amp;go=1)?/g, (all, g, code) => {
     found = true;
     const [ic, nm] = GAME_TAGS[g];
     const c = code.toUpperCase();
+    // Party links don't need the &go=1 auto-join query. Party invites
+    // are also symmetrical — no waiting handshake, anyone can jump in
+    // any time — so both sender and recipient see the same Join card.
+    if (g === 'party') {
+      return `<a class="ginvite" href="/party?room=${c}">${ic} Join the ${nm} · ${c}</a>`;
+    }
     const href = `/${g}?room=${c}${g === 'play' ? '' : '&go=1'}`;
     if (mine) {
       const who = ACCEPTED[c];
