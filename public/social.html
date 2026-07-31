@@ -461,10 +461,16 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .me-settings-wrap{margin:20px auto 0;padding:0 16px 40px}
 @media(min-width:769px){ .me-settings-wrap{max-width:1200px;padding:0 24px 60px} }
 @media(min-width:1280px){ .me-settings-wrap{max-width:1300px} }
-/* Camera chip on the profile photo — bottom-right, tap to upload. */
-.me-photo-edit{position:relative}
-.me-upl{position:absolute;bottom:6px;right:6px;width:36px;height:36px;border-radius:50%;background:var(--ink);color:#fff;border:3px solid #fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:6;transition:transform .12s}
-.me-upl:hover{transform:scale(1.05)}
+/* Whole photo is the tap target for upload — cleaner than a corner
+   chip that read as a speaker/mic icon at a glance. Hover reveals
+   a soft "Change photo" overlay. */
+.me-photo-edit{position:relative;cursor:pointer}
+.me-photo-edit::after{content:'Change photo';position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14px;opacity:0;transition:opacity .18s;pointer-events:none}
+.me-photo-edit:hover::after{opacity:1}
+/* The old corner camera chip is retired — the whole circle is
+   clickable now. Kept as a hidden shell so any JS click ref still
+   works. */
+.me-upl{display:none}
 .mp-chips{display:flex;flex-wrap:wrap;gap:8px}
 /* Interest + goal pills. Gradient border via double-background trick
    (padding-box white + border-box gradient) so each pill has a
@@ -1668,7 +1674,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="mp-grid">
       <!-- LEFT: photo (with upload), name, meta, save/logout. -->
       <aside class="mp-side">
-        <div class="mp-photo me-photo-edit">
+        <div class="mp-photo me-photo-edit" onclick="$('photoIn').click()" title="Change photo">
           <span id="myAv"></span>
           <button class="me-upl" onclick="$('photoIn').click()" title="Change photo">📷</button>
         </div>
