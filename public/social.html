@@ -216,11 +216,11 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pcirc.live{outline:2px solid var(--green);outline-offset:2px}
 /* Quiet buttons. Two solid slabs of pink and black on every single card made the
    wall shout; the faces are the content, so the actions sit back and wait. */
-.pacts{display:none;gap:6px;margin-top:11px}
-.pacts button{flex:1;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:10.5px;font-weight:700;padding:5px 0;color:var(--sub);white-space:nowrap;transition:background .13s,color .13s,border-color .13s}
-.pacts button:hover{border-color:#d8dae0;background:#fafbfc}
-.pacts button.msg{color:var(--accent);border-color:#f2d6dd}
-.pacts button.msg:hover{background:#fdf2f4;border-color:var(--accent)}
+/* Message + Follow buttons retired from wall cards per owner ask.
+   Tap the card → land on the profile → Message + Follow live there.
+   Keeps cards visually clean and stops accidental follows/messages
+   from mis-taps on dense grids. */
+.pacts{display:none !important}
 .pacts button.fol{color:var(--ink)}
 .pacts button.fol.on{background:#f4f5f7;color:var(--faint);border-color:transparent}
 .pacts button:disabled{opacity:.55}
@@ -918,14 +918,13 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 @media(min-width:900px){
   .wrap{max-width:1400px;padding-left:36px;padding-right:36px}
   .head{padding:28px 8px 16px}
-  /* the wall becomes a two-column page: a sticky rail, then the grid */
-  .walllay{display:grid;grid-template-columns:262px minmax(0,1fr);gap:28px;align-items:start;padding:0 8px}
-  /* Wall sidebar retired per owner ask — the games/wins/top-spies rail
-     was noisy and off-brand for a community-first surface. Node kept in
-     the DOM so the JS that populates it doesn't need to be touched. */
+  /* Wall used to be a two-column page (sticky sidebar + grid). Sidebar
+     is retired, so the layout is now a single full-width column with
+     the wall grid taking the entire viewport. */
+  .walllay{display:block;padding:0}
   .wallside{display:none}
   .filterrow{margin:0 0 4px}
-  .wall{grid-template-columns:1fr 1fr;gap:18px;padding:8px 0 30px}
+  .wall{grid-template-columns:repeat(3,1fr);gap:16px;padding:8px 0 30px}
   .sect{padding:22px 2px 0}
   .pacts{display:flex}
   .pw{height:300px}
@@ -934,10 +933,13 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .picker{max-width:636px}
 }
 @media(min-width:1100px){
-  .wall{grid-template-columns:repeat(3,1fr)}
+  .wall{grid-template-columns:repeat(4,1fr)}
 }
 @media(min-width:1450px){
-  .wall{grid-template-columns:repeat(4,1fr)}
+  .wall{grid-template-columns:repeat(5,1fr)}
+}
+@media(min-width:1700px){
+  .wall{grid-template-columns:repeat(6,1fr)}
 }
 
 /* desktop: WhatsApp-style split — every chat on the left, the open one on the right */
