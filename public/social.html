@@ -995,6 +995,10 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:5px;box-shadow:var(--cme-shadow)}
 .mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:5px}
 .mb img{max-width:220px;border-radius:10px;display:block}
+/* Chat image messages — bigger than GIFs so photos are actually
+   visible. Tap opens the full image in a new tab. */
+.mb img.chatimg{max-width:280px;max-height:360px;object-fit:cover;cursor:zoom-in;transition:transform .1s}
+.mb img.chatimg:hover{transform:scale(1.02)}
 .mb .mtime{font-size:9.5px;margin-top:4px;display:flex;align-items:center;justify-content:flex-end;gap:5px;line-height:1;font-weight:500}
 .mb.me .mtime{color:rgba(255,255,255,.82)}
 .mb.them .mtime{color:var(--faint)}
@@ -1586,6 +1590,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="composer">
       <button class="cbtn" onclick="toggleGamePick()" title="Invite to a game">🎮</button>
       <button class="cbtn" onclick="togglePicker()">😊</button>
+      <button class="cbtn" onclick="$('imgIn').click()" title="Send a photo">📷</button>
+      <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
       <!-- Hold-to-record mic button. When empty composer, tap sends voice.
            When there's text, the same slot becomes the send button. -->
@@ -2900,6 +2906,7 @@ async function refreshChats(){
     const previewLast = (m) => {
       if (!m) return '';
       if (m.k === 'gif') return '🖼 GIF';
+      if (m.k === 'image') return '📷 Photo';
       if (m.k === 'voice') return 'Voice message';
       if (m.k === 'call') return m.cans ? '📞 Voice call' : '📞 Missed call';
       const t = String(m.x || '');
@@ -3059,6 +3066,7 @@ function msgBody(m){
   if (m.k === 'voice') return voiceBubble(m);
   if (m.k === 'call') return callLogBubble(m);
   if (m.k === 'gif') return `<img src="${esc(m.x)}" loading="lazy">`;
+  if (m.k === 'image') return `<a href="${esc(m.x)}" target="_blank" rel="noopener"><img class="chatimg" src="${esc(m.x)}" loading="lazy" alt="photo"></a>`;
   // Any game invite — WordSpies or the arcade — becomes a big tappable Join
   // card, and a message can hold several of them. The regex runs on the
   // escaped text, so & in the URL appears as &amp; here.
@@ -3163,29 +3171,25 @@ async function sendMsg(kind, gifUrl){
   hideAutocomplete();
 
   // AI chat: route through /ai/reply so Claude answers. Text only —
-  // GIFs and voice don't make sense to an AI (yet), fall back to
-  // normal /message which will show an error like "not an AI partner".
+  // GIFs and voice don't make sense to an AI (yet). No refreshChat
+  // calls in this whole path — refresh was pulling the AI reply from
+  // Redis (server saves both msgs inside /ai/reply) and showing it
+  // as a real bubble in parallel with the typewriter placeholder =
+  // the "shows once, then again, then merges" bug. Everything here
+  // is optimistic; the next natural refresh (chat reopen) syncs.
   if (CUR_CHAT_IS_AI && kind !== 'gif' && !editingMsg) {
+    // 1. Optimistically add the user's own bubble so it lands
+    //    immediately, no server round-trip.
+    addOptimisticUserBubble(text);
     showAITyping(true);
     try {
       const j = await api('/ai/reply', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ to: curChat, text }) });
       if (typeof j.msgsLeft === 'number') CUR_AI_MSGS_LEFT = j.msgsLeft;
-      // Show the user's message first so they see it land while the
-      // AI "types" its reply.
-      lastSig = ''; lastMsgCount = -1;
-      await refreshChat();
-      toBottom($('msgs'));
-      // Then typewrite the reply into the thread. Feels natural
-      // instead of the full-paragraph pop that was jarring.
       showAITyping(false);
+      // 2. Typewrite the reply. This is now the ONLY visible AI
+      //    bubble — no duplicate from a Redis-pulled refresh.
       await typewriteAIReply(j.reply);
-      // NO refreshChat here — the earlier refresh was wiping the
-      // typewriter bubble and re-rendering, causing the user-visible
-      // "types → disappears → retypes" flash. The typewriter bubble
-      // IS the final visible message; the real one is already saved
-      // in Redis and will sync on the next natural refresh (opening
-      // the chat again, or the split-view poll).
     } catch(e) {
       toast(e.message || 'AI could not reply.');
     } finally {
@@ -3213,6 +3217,20 @@ async function sendMsg(kind, gifUrl){
     toBottom($('msgs'));                     // your own message always lands in view
   } catch(e){ toast(e.message); }
 }
+// Add your own message bubble to the chat DOM immediately without
+// waiting for a server round-trip. Used in the AI chat path to avoid
+// the double-render bug where refreshChat would pull the message from
+// Redis (which /ai/reply already saved) and add a real bubble in
+// parallel with the optimistic one.
+function addOptimisticUserBubble(text){
+  const msgs = document.getElementById('msgs'); if (!msgs) return;
+  const bubble = document.createElement('div');
+  bubble.className = 'mb me';
+  bubble.textContent = String(text || '');
+  msgs.appendChild(bubble);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
 function showAITyping(on){
   let el = document.getElementById('aiTyping');
   if (!el && on) {
@@ -3344,6 +3362,23 @@ async function typewriteAIReply(msg){
 }
 $('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
 $('msgIn').addEventListener('input', () => { sendTypingSoon(); refreshAutocomplete(); });
+
+// Image picker → upload → send as kind:'image' message with URL.
+$('imgIn').onchange = async () => {
+  const f = $('imgIn').files[0]; if (!f || !curChat) return;
+  if (f.size > 5 * 1024 * 1024) { toast('Image too large — max 5 MB'); $('imgIn').value=''; return; }
+  const fd = new FormData(); fd.append('image', f);
+  try {
+    const up = await api('/message/image', { method:'POST', body: fd });
+    if (!up || !up.url) throw new Error('Upload failed.');
+    await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to: curChat, kind:'image', text: up.url }) });
+    lastSig = ''; lastMsgCount = -1;
+    await refreshChat();
+    toBottom($('msgs'));
+  } catch(e){ toast(e.message || 'Could not send image.'); }
+  $('imgIn').value = '';
+};
 
 // ---------- voice messages ----------
 // Hold-to-record: press mic → open MediaRecorder → red overlay shows time →

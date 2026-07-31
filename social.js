@@ -18,6 +18,7 @@ catch (e) { /* AI features off */ }
 const SESS_TTL = 60 * 60 * 24 * 90; // 90 days
 const PHOTO_DIR = process.env.SOC_PHOTOS || path.join(__dirname, 'social-photos');
 const VOICE_DIR = process.env.SOC_VOICE   || path.join(__dirname, 'social-voice');
+const IMAGE_DIR = process.env.SOC_IMAGES  || path.join(__dirname, 'social-images');
 // "Continue with Google": set SOC_GOOGLE_CLIENT_ID in the service environment
 // to switch the button on. Without it, email sign-up still works fine.
 const GOOGLE_CLIENT_ID = process.env.SOC_GOOGLE_CLIENT_ID || null;
@@ -25,6 +26,7 @@ const GOOGLE_CLIENT_ID = process.env.SOC_GOOGLE_CLIENT_ID || null;
 function mount(app, redis) {
   fs.mkdirSync(PHOTO_DIR, { recursive: true });
   fs.mkdirSync(VOICE_DIR, { recursive: true });
+  fs.mkdirSync(IMAGE_DIR, { recursive: true });
 
   // ---- tiny store: redis when available, in-memory otherwise (local dev) ----
   const mem = new Map();
@@ -856,6 +858,37 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     });
   });
 
+  // Image messages — user picks a photo, we save it under /social-images
+  // and return the URL. Client then sends /message with kind:'image'
+  // and text set to that URL. Same pattern as voice messages above.
+  const imageUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024, files: 1 }   // 5 MB — larger than profile pic
+  });
+  api.post('/message/image', (req, res) => {
+    imageUpload.single('image')(req, res, async err => {
+      try {
+        if (err) return res.status(400).json({ error: 'Image too large (max 5 MB).' });
+        const u = await userFromReq(req);
+        if (!u) return res.status(401).json({ error: 'Please log in.' });
+        if (limited(req, 'imgmsg', 30)) return res.status(429).json({ error: 'Slow down a little ✋' });
+        const f = req.file;
+        if (!f || !f.buffer || !f.buffer.length) return res.status(400).json({ error: 'No image received.' });
+        // Sniff the bytes so someone can't rename an .exe to .jpg.
+        const sig = f.buffer.slice(0, 12);
+        const isJpg  = sig[0] === 0xFF && sig[1] === 0xD8;
+        const isPng  = sig[0] === 0x89 && sig[1] === 0x50;
+        const isWebp = sig.slice(8, 12).toString() === 'WEBP';
+        const isGif  = sig[0] === 0x47 && sig[1] === 0x49 && sig[2] === 0x46;
+        if (!isJpg && !isPng && !isWebp && !isGif) return res.status(400).json({ error: 'Use a JPG, PNG, WebP or GIF image.' });
+        const ext = isJpg ? 'jpg' : isPng ? 'png' : isWebp ? 'webp' : 'gif';
+        const fname = u.id + '.' + Date.now().toString(36) + '.' + crypto.randomBytes(3).toString('hex') + '.' + ext;
+        fs.writeFileSync(path.join(IMAGE_DIR, fname), f.buffer);
+        res.json({ url: '/social-images/' + fname });
+      } catch (e) { console.error('social image:', e.message); res.status(500).json({ error: 'Upload failed.' }); }
+    });
+  });
+
   api.post('/photo', (req, res) => {
     upload.single('photo')(req, res, async err => {
       try {
@@ -1113,13 +1146,14 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       // Text, GIF, and now voice — voice payloads carry the /social-voice URL
       // returned by /message/voice below, plus an optional duration hint.
       const kRaw = (req.body || {}).kind;
-      const kind = kRaw === 'gif' ? 'gif' : kRaw === 'voice' ? 'voice' : 'text';
-      const text = String((req.body || {}).text || '').trim().slice(0, kind === 'gif' ? 300 : kind === 'voice' ? 200 : 500);
+      const kind = kRaw === 'gif' ? 'gif' : kRaw === 'voice' ? 'voice' : kRaw === 'image' ? 'image' : 'text';
+      const text = String((req.body || {}).text || '').trim().slice(0, kind === 'gif' ? 300 : kind === 'voice' ? 200 : kind === 'image' ? 300 : 500);
       if (!text || to === me.id || !(await db.get('soc:user:' + to))) return res.status(400).json({ error: 'Nothing to send.' });
       // Block wall — either side blocked the other, message is refused.
       if (await isBlocked(me.id, to)) return res.status(403).json({ error: 'You can\'t send messages here.' });
       if (kind === 'gif' && !/^https:\/\/(media[0-9]*\.giphy\.com|i\.giphy\.com)\//.test(text)) return res.status(400).json({ error: 'Bad GIF.' });
       if (kind === 'voice' && !/^\/social-voice\/[a-zA-Z0-9._-]+\.(webm|ogg|mp4|m4a)$/.test(text)) return res.status(400).json({ error: 'Bad voice message.' });
+      if (kind === 'image' && !/^\/social-images\/[a-zA-Z0-9._-]+\.(jpg|png|webp|gif)$/.test(text)) return res.status(400).json({ error: 'Bad image.' });
       // Cheap profanity filter — satisfies Google's "method for filtering
       // objectionable material" requirement. Text only; GIFs and voice
       // messages get the report+block flow, not this filter.
@@ -1391,6 +1425,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   app.use('/api/social', api);
   app.use('/social-photos', express.static(PHOTO_DIR, { maxAge: '30d', immutable: true }));
   app.use('/social-voice',  express.static(VOICE_DIR, { maxAge: '30d', immutable: true }));
+  app.use('/social-images', express.static(IMAGE_DIR, { maxAge: '30d', immutable: true }));
   app.get('/social', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(__dirname, 'public', 'social.html'));
