@@ -109,10 +109,11 @@ function mount(app, io, options = {}) {
       // Only surface PUBLIC parties in the list — private ones require a
       // direct link or invite from a member of the host's circle.
       if (r.visibility !== 'public') continue;
-      // Show even empty rooms for the first 10 minutes after creation, so
-      // a host who made the room via REST but hasn't opened it in a socket
-      // yet still appears in the list for friends who spotted the link.
-      const isFresh = (Date.now() - (r.createdAt || r.touched || 0)) < 10 * 60 * 1000;
+      // Show even empty rooms for the first 60 minutes after creation so
+      // hosts who created a party but haven't opened it in a socket yet
+      // (owner-reported bug: "I created a party but I don't see it")
+      // still appear. Bumped from 10 → 60 min.
+      const isFresh = (Date.now() - (r.createdAt || r.touched || 0)) < 60 * 60 * 1000;
       if (!r.members.size && !isFresh) continue;
       const all = [...r.members.values()];
       const speakers = all.filter(m => m.role === 'speaker' || m.role === 'host');
