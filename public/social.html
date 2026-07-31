@@ -443,8 +443,12 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Editable inputs inside Me-tab cards — flat, borderless field that
    reads as body text but is fully typable. Focus grows a subtle
    underline accent so it's obvious you can edit. */
-.me-input{width:100%;background:transparent;border:0;border-bottom:1px solid transparent;outline:0;font-family:inherit;font-size:14.5px;color:var(--ink);padding:6px 0;transition:border-color .12s}
+.me-input{width:100%;background:transparent;border:0;border-bottom:1px solid transparent;outline:0;font-family:inherit;font-size:14.5px;color:var(--ink);padding:6px 0;transition:border-color .12s;text-align:left}
 .me-input:focus{border-bottom-color:var(--accent)}
+/* Force type="date" to left-align too — Chrome centres its native
+   date field by default which looks odd against the left-aligned
+   text inputs above/below. */
+.me-input[type="date"]{text-align:left;-webkit-appearance:none;appearance:none}
 .me-area{resize:vertical;min-height:60px;line-height:1.5}
 .me-help{font-size:11.5px;color:var(--faint);margin-top:6px;font-weight:500}
 /* Camera chip on the profile photo — bottom-right, tap to upload. */
