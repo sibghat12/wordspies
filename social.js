@@ -1576,6 +1576,94 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   else if (!process.env.ANTHROPIC_API_KEY) console.warn('[ai] DISABLED — ANTHROPIC_API_KEY not set');
   else                                     console.log('[ai] ready — provider=' + (process.env.BOT_PROVIDER || 'anthropic') + ' model=' + (process.env.BOT_MODEL || 'claude-haiku-4-5'));
 
+  // Voice status — mirrors the AI status pattern above.
+  if (process.env.AI_VOICE_ENABLED === 'false') console.warn('[voice] DISABLED — AI_VOICE_ENABLED=false');
+  else if (!process.env.ELEVENLABS_API_KEY)     console.warn('[voice] DISABLED — ELEVENLABS_API_KEY not set (browser fallback will be used)');
+  else                                          console.log('[voice] ready — ElevenLabs (Rachel / Adam / Bella)');
+
+  // Per-persona voice IDs (ElevenLabs public voice library — free for
+  // all users, no cloning required). Each persona keeps this voice
+  // forever so users hear consistent characters.
+  const AI_VOICE_MAP = {
+    ai_amy:     '21m00Tcm4TlvDq8ikWAM', // Rachel — warm British female
+    ai_matthew: 'pNInz6obpgDQGcFmaJgB', // Adam — deep American male
+    ai_ashley:  'EXAVITQu4vr4xnSDxMaL'  // Bella — bright young female
+  };
+
+  // POST /api/social/ai/voice — proxy to ElevenLabs so the API key
+  // never touches the client. Returns audio/mpeg. Falls back on the
+  // client to browser SpeechSynthesis if we return an error, so voice
+  // never breaks the chat.
+  api.post('/ai/voice', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (process.env.AI_VOICE_ENABLED === 'false') return res.status(503).json({ error: 'Voice is off.' });
+      if (!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ error: 'Voice is not configured.' });
+      const persona = String((req.body || {}).persona || '');
+      const text = String((req.body || {}).text || '').trim().slice(0, 500);
+      const voiceId = AI_VOICE_MAP[persona];
+      if (!voiceId) return res.status(400).json({ error: 'Unknown persona.' });
+      if (!text) return res.status(400).json({ error: 'Empty text.' });
+
+      // Reuse the AI daily counter — voice is only generated as part
+      // of an AI reply, so the same 20/day cap gates it. Global cap
+      // still separate below.
+      const day = new Date().toISOString().slice(0, 10);
+      const VOICE_GLOBAL_LIMIT = parseInt(process.env.VOICE_GLOBAL_DAILY_LIMIT || '20000', 10);
+      const gKey = 'soc:voice-global:' + day;
+      const gN = parseInt((await db.get(gKey)) || '0', 10);
+      if (gN >= VOICE_GLOBAL_LIMIT) return res.status(429).json({ error: 'Voice quota reached — falling back to browser voice.' });
+
+      // Call ElevenLabs. Flash v2.5 = fastest + cheapest (~75ms
+      // latency, $0.30 / 1K credits, 1 credit ≈ 1 char).
+      const model = process.env.VOICE_MODEL || 'eleven_flash_v2_5';
+      const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=mp3_22050_32`;
+      let upstream;
+      try {
+        upstream = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'xi-api-key': process.env.ELEVENLABS_API_KEY,
+            'Content-Type': 'application/json',
+            'Accept': 'audio/mpeg'
+          },
+          body: JSON.stringify({
+            text,
+            model_id: model,
+            voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true }
+          })
+        });
+      } catch (e) {
+        console.error('[voice] fetch failed:', e.message);
+        return res.status(502).json({ error: 'Voice service unreachable.' });
+      }
+      if (!upstream.ok) {
+        const errBody = await upstream.text().catch(() => '');
+        console.error('[voice] ElevenLabs', upstream.status, errBody.slice(0, 200));
+        // 401/402 mean bad key or out-of-quota — return 503 so client
+        // falls back cleanly to browser voice.
+        return res.status(upstream.status === 401 || upstream.status === 402 ? 503 : 502).json({ error: 'Voice generation failed.' });
+      }
+      const buf = Buffer.from(await upstream.arrayBuffer());
+
+      // Cost log: Flash v2.5 = ~$0.30 per 1000 chars.
+      const cost = text.length * 0.00030;
+      const logEntry = { u: me.id, persona, chars: text.length, bytes: buf.length, $: (cost / 1000).toFixed(6), t: Date.now() };
+      await db.rpush('soc:voice-usage:' + day, JSON.stringify(logEntry));
+      await db.ltrim('soc:voice-usage:' + day, -1000, -1);
+      await db.incr(gKey); try { await db.expire(gKey, 90000); } catch (e) {}
+
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Content-Length', String(buf.length));
+      res.send(buf);
+    } catch (e) {
+      console.error('[voice] error:', e.message);
+      res.status(500).json({ error: 'Something went wrong.' });
+    }
+  });
+
   // POST /api/social/ai/reply — the user sends a message to an AI, we
   // save it to the normal chat store, call Claude, save the reply, and
   // send it back. Kill switch: BOT_ENABLED=false. Rate-limited per user
@@ -1598,8 +1686,9 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const bad = containsProfanity(text);
       if (bad) return res.status(400).json({ error: 'Message blocked — please keep it respectful.' });
 
-      // Rate limits.
-      const DAILY_LIMIT = parseInt(process.env.BOT_DAILY_LIMIT || '20', 10);
+      // Rate limits. Free users get 5 messages/day per AI (owner ask —
+       // was 20). Override via BOT_DAILY_LIMIT env if a paid tier lands.
+      const DAILY_LIMIT = parseInt(process.env.BOT_DAILY_LIMIT || '5', 10);
       const GLOBAL_LIMIT = parseInt(process.env.BOT_GLOBAL_DAILY_LIMIT || '5000', 10);
       const day = new Date().toISOString().slice(0, 10);
       const userKey = 'soc:ai-limit:' + me.id + ':' + to + ':' + day;

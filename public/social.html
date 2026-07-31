@@ -3244,20 +3244,58 @@ function pickVoice(personaId){
     || voices.find(x => x.lang.split('-')[0] === pref.lang.split('-')[0])
     || null;
 }
-function speakAIReply(text, personaId){
-  if (!AI_VOICE_ON) return;
-  if (!window.speechSynthesis) return;
-  try {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(String(text || '').slice(0, 500));
-    const v = pickVoice(personaId);
-    if (v) { u.voice = v; u.lang = v.lang; }
-    u.rate = 1.02;      // very slightly faster than default — feels alive without being rushed
-    u.pitch = 1.0;
-    window.speechSynthesis.speak(u);
-  } catch(e){}
+// Track the currently-playing MP3 (ElevenLabs) so we can stop it on
+// chat switch or replay.
+let _voiceAudio = null;
+let _voiceUrl = null;
+function stopServerVoice(){
+  if (_voiceAudio) { try { _voiceAudio.pause(); _voiceAudio.src = ''; } catch(e){} _voiceAudio = null; }
+  if (_voiceUrl)   { try { URL.revokeObjectURL(_voiceUrl); } catch(e){} _voiceUrl = null; }
 }
-function stopAIVoice(){ if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch(e){} } }
+// Try ElevenLabs first (real character voices via /api/social/ai/voice).
+// If the server returns 4xx/5xx (key missing, quota reached, network),
+// silently fall back to the browser's SpeechSynthesis so chat never
+// goes fully mute.
+async function speakAIReply(text, personaId){
+  if (!AI_VOICE_ON) return;
+  const cleaned = String(text || '').slice(0, 500);
+  if (!cleaned) return;
+  stopServerVoice();
+  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch(e){} }
+  try {
+    const res = await fetch('/api/social/ai/voice', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ persona: personaId, text: cleaned })
+    });
+    if (!res.ok) throw new Error('server voice ' + res.status);
+    const blob = await res.blob();
+    _voiceUrl = URL.createObjectURL(blob);
+    _voiceAudio = new Audio(_voiceUrl);
+    _voiceAudio.onended = stopServerVoice;
+    _voiceAudio.onerror = stopServerVoice;
+    // play() can reject if the browser hasn't seen a user gesture on
+    // this tab yet — since sendMsg is triggered by a user tap, it
+    // will normally succeed. If it fails, fall back to browser voice.
+    await _voiceAudio.play().catch(() => { throw new Error('play blocked'); });
+  } catch (e) {
+    // Fallback: browser SpeechSynthesis (the old path, per-persona
+    // voice by name → lang → default).
+    if (!window.speechSynthesis) return;
+    try {
+      const u = new SpeechSynthesisUtterance(cleaned);
+      const v = pickVoice(personaId);
+      if (v) { u.voice = v; u.lang = v.lang; }
+      u.rate = 1.02;
+      u.pitch = 1.0;
+      window.speechSynthesis.speak(u);
+    } catch(err){}
+  }
+}
+function stopAIVoice(){
+  stopServerVoice();
+  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch(e){} }
+}
 // Stop speech if the user leaves the chat / navigates away.
 window.addEventListener('beforeunload', stopAIVoice);
 
