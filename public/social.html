@@ -257,7 +257,11 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .prof .big{width:104px;height:104px;border:4px solid var(--bg);font-size:38px}
 .prof h2{font-size:21px;margin-top:10px;font-weight:500;letter-spacing:-.4px}
 .prof .loc{color:var(--faint);font-weight:500;font-size:12.5px;margin-top:3px}
-.stats{display:flex;margin:18px 24px;border:1px solid var(--line);border-radius:14px;background:#fff;flex-wrap:wrap}
+/* Games/Wins/% stats bar retired per owner ask — social profiles focus
+   on the person, not a leaderboard. Nodes remain in the DOM (JS still
+   writes to them) but never render. */
+.stats{display:none !important}
+.stats-was{display:flex;margin:18px 24px;border:1px solid var(--line);border-radius:14px;background:#fff;flex-wrap:wrap}
 .stats>div{flex:1;min-width:45%;padding:13px 0;text-align:center}
 .stats>div+div{border-left:1px solid var(--line)}
 .stats b{display:block;font-size:17px;font-weight:800}
@@ -1031,9 +1035,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <a class="tnlogo" href="/" aria-label="WordSpies home">WordSpies <em>Social</em></a>
     <div class="tntabs" role="tablist">
       <button id="tbWall" class="tnt on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge hidden" id="wallBadge"></span></button>
-      <button id="tbGames" class="tnt" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
       <button id="tbParties" class="tnt" onclick="showTab('parties')"><span class="ico">🎉</span>Parties<span class="badge hidden" id="partyBadge"></span></button>
       <button id="tbChats" class="tnt" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
+      <!-- Games kept as a hidden route target so /?tab=games and internal
+           calls still work; label removed from the nav per owner ask. -->
+      <button id="tbGames" class="tnt hidden" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
     </div>
     <div class="tnright">
       <!-- LIVE chip: pulsing red pill in the corner, only when there's a
@@ -1041,8 +1047,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="tnlive" id="tnLive" onclick="showTab('live')" title="Live games right now">
         <span class="tnlivedot"></span>LIVE<span class="tnlivecnt" id="tnLiveCnt">0</span>
       </button>
-      <a class="tnlink hideSm" href="/blog">Blog</a>
-      <a class="tnlink hideSm" href="/how-to-play">How to play</a>
+      <!-- Blog + How-to-play were living here as top-nav chrome. Moved to
+           the marketing footer per owner ask; kept out of the app to
+           reduce clutter. -->
       <button id="pwaRefresh" class="pwaref hidden" onclick="pwaRefresh()">↻ Refresh</button>
       <div class="mechip" id="tbMe" onclick="showTab('me')">
         <span class="mename" id="meName"></span>
@@ -1237,9 +1244,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="chathead">
       <button class="back2" onclick="showTab('chats')">←</button>
       <span id="chAv"></span>
-      <div class="chwho"><div class="chname" id="chName"></div><div class="chstate" id="chState"></div></div>
+      <div class="chwho"><div class="chname" id="chName"></div><!-- state subtitle removed per owner ask: just the name in the chat header. Kept id in DOM as an empty hidden shell so any code still writing to chState doesn't crash. --><div class="chstate hidden" id="chState"></div></div>
       <button class="chcall" id="chCall" onclick="ringCurrentChat()" title="Voice call">📞</button>
-      <button class="chwall" id="chWall" onclick="showTab('wall')">👥 Community</button>
     </div>
     <div class="msgs" id="msgs"></div>
     <button class="jumpnew" id="jumpNew" onclick="toBottom($('msgs'))">↓ New messages</button>
@@ -1334,12 +1340,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
          Community button. It lives here now — a settings row you come to when
          you want it, instead of a thing that lands on what you were tapping.
          Hidden once the app is installed, or where the browser can't do it. -->
-    <div class="setbox" id="instBox" style="display:none">
-      <div class="seth">App</div>
-      <div class="setrow">
-        <div class="sc"><b>Add to home screen</b><span>Opens full-screen, like a real app — no app store.</span></div>
-        <button class="btn btn-dark" id="a2hsGo" style="width:auto;padding:9px 18px;flex:none">Add</button>
-      </div>
+    <!-- "Add to home screen" install prompt retired per owner ask; when
+         the native App Store / Play Store apps ship the download link
+         will move to the marketing footer. Node kept hidden so the
+         beforeinstallprompt wiring in JS doesn't crash. -->
+    <div class="setbox hidden" id="instBox">
+      <button class="hidden" id="a2hsGo"></button>
     </div>
     <!-- Support & safety — required links for App Store / Play Store review
          plus a visible contact address. Keeps the trust surface obvious

@@ -31,32 +31,82 @@ body{font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:#1c1e21;m
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
 .logo{font-family:'Fredoka',sans-serif;font-weight:600;font-size:23px;text-decoration:none;cursor:pointer}
 .logo .r{color:#ff4d6b}.logo .b{color:#3d7bff}
-.navlinks{display:flex;gap:34px;align-items:center;font-weight:500;font-size:14.5px;color:#5f6675}
+.navlinks{display:flex;gap:22px;align-items:center;font-weight:600;font-size:14.5px;color:#5f6675}
 .navlinks a{color:#5f6675;text-decoration:none}.navlinks a:hover{color:#1c1e21}
-.play{background:#0f7500;color:#fff!important;text-decoration:none;font-weight:600;padding:10px 20px;border-radius:12px;font-size:14px;white-space:nowrap}
-@media(max-width:600px){.navlinks{gap:16px;font-size:14px}.navlinks .hideSm{display:none}.play{padding:9px 15px;font-size:13.5px}}
-.play:hover{background:#0b5a00}
+.navlinks .open{color:#1c1e21;background:#f2f4f7;padding:8px 16px;border-radius:99px}
+.navlinks .open:hover{background:#e6e9ee}
+@media(max-width:600px){.navlinks{gap:12px;font-size:14px}}
 .wrap{max-width:760px;margin:0 auto;padding:40px 20px 70px}
 h1{font-size:32px;line-height:1.2;letter-spacing:-.5px;margin:0 0 6px;font-weight:800}
 .updated{color:#6b7280;font-size:14px;margin-bottom:28px}
 h2{font-size:21px;margin:32px 0 10px;font-weight:700}
 p,li{font-size:16.5px;line-height:1.75;color:#242628}
 ul{padding-left:22px}li{margin-bottom:6px}
-a{color:#0f7500}
-footer{margin-top:44px;padding:36px 0 44px;border-top:1px solid #e5e7eb;text-align:center;color:#6b7280;font-size:13.5px;font-weight:700;line-height:2;font-family:'Inter',sans-serif}
-footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
+a{color:#1c1e21}
+/* Footer: everything centre-aligned, generous spacing between rows so
+   the columns/social row/app-store badges don't collide. */
+footer.sitefoot{margin-top:56px;padding:44px 20px 56px;border-top:1px solid #e5e7eb;background:#fff;font-family:'Inter',sans-serif;color:#5f6675;font-size:13.5px;line-height:1.6}
+footer.sitefoot .fwrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center}
+footer.sitefoot .flinks{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 22px;font-weight:600}
+footer.sitefoot .flinks a{color:#1c1e21;text-decoration:none;padding:4px 2px}
+footer.sitefoot .flinks a:hover{color:#5a7bff}
+/* App-store badges — CSS-drawn approximations of the Apple / Google
+   marks. Real vector badges will drop in when the store URLs land. */
+footer.sitefoot .fstores{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+footer.sitefoot .stbadge{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;text-decoration:none;padding:9px 18px;border-radius:12px;font-weight:600;font-size:14px;transition:transform .12s,background .12s}
+footer.sitefoot .stbadge:hover{transform:translateY(-1px);background:#1a1a1a}
+footer.sitefoot .stbadge span{display:flex;flex-direction:column;line-height:1.1;text-align:left}
+footer.sitefoot .stbadge span small{font-size:10px;font-weight:500;letter-spacing:.02em;opacity:.75;text-transform:uppercase}
+footer.sitefoot .stbadge span b{font-size:15px;font-weight:700;letter-spacing:.01em}
+footer.sitefoot .stbadge svg{width:22px;height:22px;fill:#fff;flex:none}
+footer.sitefoot .fsocial{display:flex;gap:14px;justify-content:center;align-items:center}
+footer.sitefoot .fsocial a{width:38px;height:38px;border-radius:50%;background:#f2f4f7;color:#1c1e21;display:inline-flex;align-items:center;justify-content:center;transition:background .12s,color .12s}
+footer.sitefoot .fsocial a:hover{background:#5a7bff;color:#fff}
+footer.sitefoot .fsocial svg{width:18px;height:18px;fill:currentColor}
+footer.sitefoot .fmeta{color:#8a8f99;font-size:12.5px;letter-spacing:.02em}
 </style></head>
 <body>
 <header class="sitehead"><div class="hwrap">
-<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a class="hideSm" href="/how-to-play">How to play</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/play">&#9654; Play Codenames</a></div></div>
+<div class="top">
+  <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
+  <div class="navlinks">
+    <a class="open" href="/">Open app</a>
+  </div>
+</div>
 </div></header>
 <div class="wrap">
 ${body}
-<footer>
-<a href="/">Home</a> · <a href="/play">Play</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
-© 2026 WordSpies. All rights reserved.
-</footer>
-</div></body></html>`;
+</div>
+<footer class="sitefoot"><div class="fwrap">
+  <div class="flinks">
+    <a href="/">Home</a>
+    <a href="/how-to-play">How to play</a>
+    <a href="/about">About</a>
+    <a href="/blog">Blog</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/child-safety">Child safety</a>
+    <a href="mailto:contact@wordspies.co.uk">Contact</a>
+  </div>
+  <div class="fstores">
+    <a class="stbadge" href="#" title="Coming soon on the App Store">
+      <svg viewBox="0 0 24 24"><path d="M17.72 12.71c-.02-2.36 1.93-3.5 2.02-3.55-1.1-1.6-2.81-1.82-3.42-1.85-1.45-.15-2.85.86-3.59.86-.75 0-1.89-.84-3.11-.82-1.6.02-3.07.93-3.9 2.36-1.66 2.87-.42 7.12 1.2 9.44.79 1.14 1.72 2.41 2.94 2.37 1.19-.05 1.63-.77 3.07-.77 1.43 0 1.83.77 3.08.75 1.28-.02 2.08-1.15 2.87-2.3.9-1.32 1.27-2.6 1.29-2.67-.03-.01-2.47-.95-2.49-3.77zM15.34 5.65c.65-.79 1.09-1.9.97-3-.94.04-2.07.63-2.75 1.42-.61.7-1.14 1.82-.99 2.9 1.05.08 2.12-.53 2.77-1.32z"/></svg>
+      <span><small>Download on the</small><b>App Store</b></span>
+    </a>
+    <a class="stbadge" href="#" title="Coming soon on Google Play">
+      <svg viewBox="0 0 24 24"><path d="M4.05 3.5C3.72 3.72 3.5 4.11 3.5 4.61v14.78c0 .5.22.89.55 1.11l8.35-8.5-8.35-8.5zM17.34 10.5l-2.62-1.51-8.15 8.13 10.77-6.62zM17.34 13.5l-10.77-6.63 8.15 8.13 2.62-1.5zM19.11 11.4l-2.32-1.34-2.7 1.94 2.7 1.94 2.32-1.34c.53-.31.53-1.09 0-1.4z"/></svg>
+      <span><small>Get it on</small><b>Google Play</b></span>
+    </a>
+  </div>
+  <div class="fsocial">
+    <a href="#" aria-label="X (Twitter)"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.64.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.64-.07-4.85s.01-3.58.07-4.85C2.38 3.92 3.9 2.38 7.15 2.23 8.42 2.17 8.8 2.16 12 2.16zM12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95C.27 21.31 2.69 23.73 7.05 23.93c1.28.06 1.69.07 4.95.07s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95C23.73 2.69 21.31.27 16.95.07 15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 100 12.32 6.16 6.16 0 000-12.32zm0 10.16a4 4 0 110-8 4 4 0 010 8zm6.4-11.85a1.44 1.44 0 100 2.88 1.44 1.44 0 000-2.88z"/></svg></a>
+    <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M19.32 6.68a5.34 5.34 0 01-3.13-1.01 5.4 5.4 0 01-2.13-3.14V2.5h-3.3v11.68a3 3 0 11-2.05-2.83V8.02a6.3 6.3 0 105.35 6.24V8.83a8.6 8.6 0 005.26 1.78z"/></svg></a>
+    <a href="mailto:contact@wordspies.co.uk" aria-label="Email"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+  </div>
+  <div class="fmeta">© 2026 WordSpies · Built with 💚 in the UK</div>
+</div></footer>
+</body></html>`;
 }
 
 function aboutPage() {
