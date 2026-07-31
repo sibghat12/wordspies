@@ -2136,14 +2136,15 @@ function showTab(t){
   // to the window that's actually visible (the keyboard eats part of it)
   document.body.classList.toggle('chatlock', t === 'chat' && !split);
   $('jumpNew').classList.remove('show');
-  // Scroll to top on tab change so a card tap that opens the profile
-  // (or Me / Parties / etc.) lands you at the header, not wherever the
-  // wall scroll happened to be. Chat and split-view manage their own
-  // scroll internally and shouldn't be jumped.
-  if (t !== 'chat' && t !== 'chats') {
-    // Belt AND braces: scroll now (before layout settles) and again on
-    // the next frame after the tab's content has painted. Fixes the
-    // "profile lands mid-page" case where the hero + sidebar transform
+  // Scroll to top on ANY top-nav tab click so Community / Chats /
+  // Parties / Games / Me all land you at the top of the page. Single
+  // chat view (t === 'chat') keeps its own scroll — the msgs list
+  // manages that internally and jumping the outer page would lose
+  // the message you were reading.
+  if (t !== 'chat') {
+    // Belt AND braces: scroll now (before layout settles) and again
+    // on the next frame + at 50ms after content has painted. Fixes
+    // the "lands mid-page" case where the hero + sidebar transform
     // made the initial scroll happen before real layout was ready.
     try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch(e) { window.scrollTo(0, 0); }
     requestAnimationFrame(() => { try { window.scrollTo(0, 0); } catch(e){} });
