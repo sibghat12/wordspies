@@ -1391,6 +1391,54 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
 
   console.log('social module: mounted');
 
+  // ─── One-shot profile backfill (Speaky-style seed data) ─────────────
+  // Populates every existing account's talkAbout / speaks / learns if
+  // they haven't been set yet, so the wall doesn't look empty during
+  // the Speaky-style redesign. Idempotent — only fills empty fields.
+  // Safe: never overwrites anything the user actually typed.
+  const DEFAULT_TALK = "Hey! I'm really into languages, culture, and good conversations.";
+  const CC_TO_LANG = {
+    GB:'en', UK:'en', US:'en', CA:'en', AU:'en', NZ:'en', IE:'en',
+    PK:'ur', IN:'hi', BD:'bn', LK:'si',
+    ID:'id', MY:'id',
+    DE:'de', AT:'de', CH:'de',
+    FR:'fr', BE:'fr',
+    ES:'es', MX:'es', AR:'es', CO:'es', CL:'es', PE:'es',
+    IT:'it',
+    BR:'pt', PT:'pt',
+    RU:'ru', BY:'ru', KZ:'ru',
+    JP:'ja', CN:'zh', KR:'ko', TW:'zh', HK:'zh',
+    SA:'ar', EG:'ar', AE:'ar', MA:'ar', DZ:'ar', TN:'ar', JO:'ar', LB:'ar', IQ:'ar',
+    TR:'tr', NL:'nl', SE:'sv', NO:'no', DK:'da', FI:'fi', PL:'pl',
+    GR:'el', UA:'uk', RO:'ro', VN:'vi', TH:'th', IL:'he', KE:'sw'
+  };
+  async function backfillProfiles() {
+    try {
+      const ids = await db.smembers('soc:members');
+      let touched = 0;
+      for (const id of ids) {
+        const raw = await db.get('soc:user:' + id);
+        if (!raw) continue;
+        const u = JSON.parse(raw);
+        let dirty = false;
+        if (!u.talkAbout) { u.talkAbout = DEFAULT_TALK; dirty = true; }
+        if (!Array.isArray(u.speaks) || !u.speaks.length) {
+          const native = CC_TO_LANG[(u.cc || '').toUpperCase()] || 'en';
+          u.speaks = [native]; dirty = true;
+        }
+        if (!Array.isArray(u.learns) || !u.learns.length) {
+          const native = (u.speaks && u.speaks[0]) || 'en';
+          u.learns = [native === 'en' ? 'es' : 'en']; dirty = true;
+        }
+        if (dirty) { await db.set('soc:user:' + id, JSON.stringify(u)); touched++; }
+      }
+      if (touched) console.log('[social] backfilled ' + touched + ' profile(s) with default talk/speaks/learns');
+    } catch (e) { console.error('[social] backfill error:', e.message); }
+  }
+  // Run once, ~2s after mount so Redis is fully warm. Silent no-op on
+  // empty DB.
+  setTimeout(backfillProfiles, 2000);
+
   // Called by the game server when a match ends: winners/losers are social
   // profile ids. Everyone gets +1 game played; winners also get +1 win.
   async function recordResult(winnerIds, loserIds) {
