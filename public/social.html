@@ -352,21 +352,28 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Grid centred with a Speaky-style max so the sidebar column sits
    under the same left edge as the top-nav logo — content aligned. */
 .mp-grid{margin:0 auto;padding:0 16px 40px;display:grid;gap:24px}
-@media(min-width:769px){ .mp-grid{max-width:1200px;grid-template-columns:300px minmax(0,1fr);padding:0 24px 60px;gap:32px} }
-@media(min-width:1280px){ .mp-grid{max-width:1300px;grid-template-columns:320px minmax(0,1fr);gap:40px} }
+@media(min-width:769px){ .mp-grid{max-width:1200px;grid-template-columns:380px minmax(0,1fr);padding:0 24px 60px;gap:32px} }
+@media(min-width:1280px){ .mp-grid{max-width:1400px;grid-template-columns:420px minmax(0,1fr);gap:40px} }
 /* Left column */
 .mp-side{padding-top:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
-@media(min-width:769px){ .mp-side{padding-top:0;transform:translateY(-90px)} }
+@media(min-width:769px){
+  /* Only the PHOTO pulls up into the hero — the rest of the sidebar
+     (name, meta, buttons) starts at the top of the grid, at the same
+     Y as the first content card. Owner ask: align cards in front of
+     the name on desktop. */
+  .mp-side{padding-top:0;align-items:flex-start}
+}
 .mp-photo{width:170px;height:170px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:68px;font-weight:800;font-family:'Fredoka','Nunito',system-ui,sans-serif;flex-shrink:0}
-@media(min-width:769px){ .mp-photo{width:220px;height:220px;border:7px solid #fff;box-shadow:0 6px 30px rgba(0,0,0,.08)} }
+@media(min-width:769px){ .mp-photo{width:200px;height:200px;border:7px solid #fff;box-shadow:0 6px 30px rgba(0,0,0,.08);margin-top:-115px;align-self:flex-start} }
 .mp-photo img{width:100%;height:100%;object-fit:cover}
 .mp-meta{width:100%;text-align:center;display:flex;flex-direction:column;gap:12px}
 @media(min-width:769px){ .mp-meta{text-align:left;padding:0 4px} }
 .mp-name{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:28px;line-height:1.15;color:var(--accent);letter-spacing:-.3px}
-.mp-active{font-size:14px;color:var(--sub);font-weight:500}
+.mp-active{font-size:15.5px;color:var(--sub);font-weight:500}
 /* Location + @handle rows. Tighter icon-to-text gap so '@username'
-   reads as one unit. Body font a touch bigger for readability. */
-.mp-info-row{display:flex;align-items:center;gap:4px;font-size:14.5px;color:var(--sub);font-weight:500;justify-content:center}
+   reads as one unit. Body font bumped so the address + username are
+   comfortably readable at a glance. */
+.mp-info-row{display:flex;align-items:center;gap:4px;font-size:16px;color:var(--sub);font-weight:500;justify-content:center}
 @media(min-width:769px){ .mp-info-row{justify-content:flex-start} }
 .mp-info-row .mp-icn{opacity:.6;font-size:14px;width:16px;text-align:center;font-weight:700;margin-right:0}
 .mp-info-row span:last-child{word-break:break-all}
@@ -375,17 +382,18 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-counts>div{display:flex;flex-direction:column;align-items:center}
 .mp-counts b{font-size:20px;font-weight:800;color:var(--ink)}
 .mp-counts span{font-size:12px;color:var(--sub);font-weight:600;margin-top:2px}
-.mp-actions{display:flex;flex-direction:column;gap:10px;padding-top:6px;width:100%}
-@media(min-width:769px){ .mp-actions{flex-direction:row;flex-wrap:wrap} }
-.mp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:14px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;border:1px solid transparent;transition:background .12s,color .12s,transform .1s;flex:1 1 auto}
+/* Chat + Follow are equal-width columns, "…" is a fixed square.
+   Mobile: stack. Desktop: 1fr 1fr auto grid so the two main buttons
+   are always the same width. */
+.mp-actions{display:grid;grid-template-columns:1fr;gap:10px;padding-top:6px;width:100%;position:relative}
+@media(min-width:769px){ .mp-actions{grid-template-columns:1fr 1fr 46px} }
+.mp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:14px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;border:1px solid transparent;transition:background .12s,color .12s,transform .1s;min-width:0}
 .mp-btn:active{transform:scale(.97)}
 .mp-btn.primary{background:var(--accent);color:#fff}
 .mp-btn.primary:hover{background:#4a68e0}
 .mp-btn.line{background:#fff;color:var(--ink);border-color:var(--line)}
 .mp-btn.line:hover{background:var(--hover)}
-.mp-btn.square{flex:0 0 46px;padding:12px 0}
-.mp-actions-row{display:flex;gap:10px;position:relative;width:100%}
-@media(min-width:769px){ .mp-actions-row{width:auto;flex:1} }
+.mp-btn.square{padding:12px 0}
 .mp-more{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);z-index:30;min-width:160px;padding:6px}
 .mp-more.hidden{display:none}
 .mp-more button{display:block;width:100%;text-align:left;background:transparent;border:0;padding:10px 14px;font-family:inherit;font-size:13.5px;color:var(--ink);font-weight:600;border-radius:8px;cursor:pointer}
@@ -1399,13 +1407,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           </div>
           <div class="mp-actions">
             <button class="mp-btn primary" onclick="openChatWith(curMember)">💬 Chat</button>
-            <div class="mp-actions-row">
-              <button class="mp-btn line" id="followBtn" onclick="toggleFollow()">＋ Follow</button>
-              <button class="mp-btn line square" onclick="toggleMoreMenu(event)" title="More" id="moreBtn">⋯</button>
-              <div class="mp-more hidden" id="moreMenu">
-                <button onclick="reportUser();closeMoreMenu()">🚩 Report</button>
-                <button id="blockBtn" onclick="toggleBlock();closeMoreMenu()">🚫 Block</button>
-              </div>
+            <button class="mp-btn line" id="followBtn" onclick="toggleFollow()">＋ Follow</button>
+            <button class="mp-btn line square" onclick="toggleMoreMenu(event)" title="More" id="moreBtn">⋯</button>
+            <div class="mp-more hidden" id="moreMenu">
+              <button onclick="reportUser();closeMoreMenu()">🚩 Report</button>
+              <button id="blockBtn" onclick="toggleBlock();closeMoreMenu()">🚫 Block</button>
             </div>
           </div>
           <!-- Legacy stat targets kept as hidden shells so old JS writes
