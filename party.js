@@ -254,19 +254,23 @@ function mount(app, io, options = {}) {
       socket.leave(r.code);
       // Call rooms are 2-person only: one leaves → call ends for both.
       // Fires the same 'closed' event so the other party sees "Call
-      // ended" and their UI navigates home cleanly.
+      // ended" and their UI navigates home cleanly. Guarded against a
+      // second fire — the other socket's disconnect handler ALSO tries
+      // to end the call, which previously double-logged the entry.
       if (r.isCall) {
-        // Log for the DM chat entry (if options.onCallEnd is wired).
-        try {
-          if (options.onCallEnd) options.onCallEnd({
-            hostUid: r.hostUid,
-            calleeUid: [...(r.callWhitelist || [])].find(u => u !== r.hostUid) || null,
-            startedAt: r.startedAt || 0,
-            endedAt: Date.now(),
-            answered: !!r.startedAt
-          });
-        } catch (e) { console.error('onCallEnd:', e.message); }
-        try { nsp.to(r.code).emit('closed'); } catch (e) {}
+        if (!r.ended) {
+          r.ended = true;
+          try {
+            if (options.onCallEnd) options.onCallEnd({
+              hostUid: r.hostUid,
+              calleeUid: [...(r.callWhitelist || [])].find(u => u !== r.hostUid) || null,
+              startedAt: r.startedAt || 0,
+              endedAt: Date.now(),
+              answered: !!r.startedAt
+            });
+          } catch (e) { console.error('onCallEnd:', e.message); }
+          try { nsp.to(r.code).emit('closed'); } catch (e) {}
+        }
         rooms.delete(r.code);
       } else {
         broadcast(r);
@@ -468,16 +472,19 @@ function mount(app, io, options = {}) {
       // ends for both of us. No "waiting for reconnect".
       if (r.isCall) {
         r.members.delete(socket.id);
-        try {
-          if (options.onCallEnd) options.onCallEnd({
-            hostUid: r.hostUid,
-            calleeUid: [...(r.callWhitelist || [])].find(u => u !== r.hostUid) || null,
-            startedAt: r.startedAt || 0,
-            endedAt: Date.now(),
-            answered: !!r.startedAt
-          });
-        } catch (e) { console.error('onCallEnd:', e.message); }
-        try { nsp.to(r.code).emit('closed'); } catch (e) {}
+        if (!r.ended) {
+          r.ended = true;
+          try {
+            if (options.onCallEnd) options.onCallEnd({
+              hostUid: r.hostUid,
+              calleeUid: [...(r.callWhitelist || [])].find(u => u !== r.hostUid) || null,
+              startedAt: r.startedAt || 0,
+              endedAt: Date.now(),
+              answered: !!r.startedAt
+            });
+          } catch (e) { console.error('onCallEnd:', e.message); }
+          try { nsp.to(r.code).emit('closed'); } catch (e) {}
+        }
         rooms.delete(r.code);
         return;
       }

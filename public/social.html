@@ -1885,10 +1885,51 @@ function showCallRing(c){
   $('crAv').innerHTML = c.fromPhoto ? `<img src="${esc(c.fromPhoto)}" alt="">` : esc((c.fromName || '?').charAt(0).toUpperCase());
   $('crNm').textContent = c.fromName || 'Someone';
   wrap.classList.remove('hidden');
-  // Play a ringtone if we have one (browsers may block first-play without gesture)
-  try { const a = new Audio('data:audio/wav;base64,'); a.play().catch(()=>{}); } catch(e){}
+  startRingtone();
 }
-function hideCallRing(){ const w = $('callRing'); if (w) w.classList.add('hidden'); }
+function hideCallRing(){ const w = $('callRing'); if (w) w.classList.add('hidden'); stopRingtone(); }
+
+// Ringtone for incoming calls — synthesised via Web Audio so no file
+// download. Modern browsers block autoplay without a user gesture, but
+// there's usually one recent gesture (the last tab click, chat click,
+// etc) that unlocks the AudioContext. If it stays blocked, the visual
+// overlay still communicates the ring.
+let _ringCtx = null, _ringTimer = null, _ringGain = null;
+function startRingtone(){
+  if (_ringTimer) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!_ringCtx) _ringCtx = new Ctx();
+    const ctx = _ringCtx;
+    const gain = ctx.createGain(); gain.gain.value = 0.2; gain.connect(ctx.destination);
+    _ringGain = gain;
+    const play = () => {
+      if (!_ringGain) return;
+      const t = ctx.currentTime;
+      // A classic "brrring-brrring" pattern: two 400 ms bursts,
+      // gap of ~2 s. Warmer than the caller's dial tone (fuller mix).
+      [0, 0.6].forEach(off => {
+        [440, 480, 660].forEach(f => {
+          const o = ctx.createOscillator(); o.frequency.value = f;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0, t + off);
+          g.gain.linearRampToValueAtTime(0.09, t + off + 0.03);
+          g.gain.linearRampToValueAtTime(0.09, t + off + 0.36);
+          g.gain.linearRampToValueAtTime(0, t + off + 0.40);
+          o.connect(g); g.connect(gain);
+          o.start(t + off); o.stop(t + off + 0.42);
+        });
+      });
+    };
+    play();
+    _ringTimer = setInterval(play, 2600);
+  } catch(e){}
+}
+function stopRingtone(){
+  if (_ringTimer) { clearInterval(_ringTimer); _ringTimer = null; }
+  if (_ringGain) { try { _ringGain.disconnect(); } catch(e){} _ringGain = null; }
+}
 async function acceptCall(){
   const c = INCOMING_CALL; if (!c) return;
   hideCallRing();

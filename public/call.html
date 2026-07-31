@@ -147,12 +147,60 @@ async function boot(){
   } catch(e){}
   conn();
 }
+// ── ringtone / dial-tone via Web Audio ────────────────────────────
+// Both sides need audible feedback while a call is ringing:
+//  · Caller: a dial "ring-ring" every ~3 s until the other side joins.
+//  · Callee: a slightly warmer ring pattern (same logic, different tone).
+// Uses Web Audio API oscillators so we don't ship an mp3.
+let toneCtx = null, toneTimer = null, toneGain = null;
+function ensureCtx(){
+  if (toneCtx) return toneCtx;
+  var Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
+  toneCtx = new Ctx();
+  return toneCtx;
+}
+function startDialTone(){
+  const ctx = ensureCtx(); if (!ctx) return;
+  if (toneTimer) return;
+  const gain = ctx.createGain(); gain.gain.value = 0.0001; gain.connect(ctx.destination);
+  toneGain = gain;
+  const play = () => {
+    // "ring-ring" — two short bursts at ~440 Hz + 480 Hz, then a pause.
+    if (!toneGain) return;
+    const t = ctx.currentTime;
+    [0, 0.5].forEach(offset => {
+      var o1 = ctx.createOscillator(); o1.frequency.value = 440;
+      var o2 = ctx.createOscillator(); o2.frequency.value = 480;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0, t + offset);
+      g.gain.linearRampToValueAtTime(0.10, t + offset + 0.02);
+      g.gain.linearRampToValueAtTime(0.10, t + offset + 0.38);
+      g.gain.linearRampToValueAtTime(0, t + offset + 0.40);
+      o1.connect(g); o2.connect(g); g.connect(gain);
+      o1.start(t + offset); o1.stop(t + offset + 0.40);
+      o2.start(t + offset); o2.stop(t + offset + 0.40);
+    });
+  };
+  gain.gain.value = 1;
+  play();
+  toneTimer = setInterval(play, 3000);
+}
+function stopDialTone(){
+  if (toneTimer) { clearInterval(toneTimer); toneTimer = null; }
+  if (toneGain) { try { toneGain.disconnect(); } catch (e) {} toneGain = null; }
+}
+
 function conn(){
   if (socket) return socket;
   socket = io('/party');
   socket.on('state', st => paintRoom(st));
   socket.on('joined', d => {
     myId = d.you; myUid = d.uid || null;
+    // Start the ringing sound the moment we're seated. Stops when the
+    // other side joins (paintRoom flips connected=true) or when the call
+    // ends.
+    if (!connected) startDialTone();
     // Wire voice — always a publisher on a call. Both parties speak.
     if (window.wsVoice) {
       wsVoice.setMyId(myId);
@@ -172,8 +220,8 @@ function conn(){
       wsVoice.setMic(true).catch(e => toast(e.message || 'Mic denied'));
     }
   });
-  socket.on('replaced', () => toast('Joined from another tab — this window inactive.'));
-  socket.on('closed', () => { toast('Call ended.'); goHome(1400); });
+  socket.on('replaced', () => { stopDialTone(); toast('Joined from another tab — this window inactive.'); });
+  socket.on('closed', () => { stopDialTone(); toast('Call ended.'); goHome(1400); });
   socket.on('err', e => toast(e.msg || 'Something went wrong.'));
 
   socket.emit('join', { code: CODE });
@@ -200,6 +248,7 @@ function paintRoom(st){
   if (nowConnected && !connected) {
     connected = true;
     document.body.classList.add('connected');
+    stopDialTone();
     startTimer();
   } else if (!nowConnected && connected) {
     // The other person dropped — we go back to "connecting" until they return.
@@ -251,6 +300,7 @@ function toggleSpeaker(){
 }
 
 async function endCall(){
+  stopDialTone();
   try { socket && socket.emit('leave'); } catch(e){}
   try {
     // Also proactively close the call room so the OTHER side sees "call

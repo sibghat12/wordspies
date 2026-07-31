@@ -429,16 +429,20 @@ setInterval(() => {
   for (const [uid, c] of pendingCalls) {
     if (now - (c.at || 0) > 45 * 1000) {
       pendingCalls.delete(uid);
-      // Also destroy the call room + log a missed-call entry.
+      // Also destroy the call room + log a missed-call entry (guarded).
       if (partyMod && partyMod.rooms && partyMod.rooms.has(c.code)) {
-        try { io.of('/party').to(c.code).emit('closed'); } catch (e) {}
+        const r = partyMod.rooms.get(c.code);
+        if (!r.ended) {
+          r.ended = true;
+          try { io.of('/party').to(c.code).emit('closed'); } catch (e) {}
+          try {
+            if (social && social.postCallLog) social.postCallLog({
+              hostUid: c.fromUid, calleeUid: uid,
+              startedAt: 0, endedAt: Date.now(), answered: false
+            });
+          } catch (e) {}
+        }
         partyMod.rooms.delete(c.code);
-        try {
-          if (social && social.postCallLog) social.postCallLog({
-            hostUid: c.fromUid, calleeUid: uid,
-            startedAt: 0, endedAt: Date.now(), answered: false
-          });
-        } catch (e) {}
       }
     }
   }
@@ -535,14 +539,18 @@ app.post('/api/social/call/decline', express.json({ limit: '2kb' }), async (req,
   // entry to their DM chat so it shows up like WhatsApp.
   if (partyMod && partyMod.rooms && partyMod.rooms.has(code)) {
     const r = partyMod.rooms.get(code);
-    try { io.of('/party').to(code).emit('closed'); } catch (e) {}
+    // Same double-fire guard as party.js: only one log entry per call.
+    if (!r.ended) {
+      r.ended = true;
+      try { io.of('/party').to(code).emit('closed'); } catch (e) {}
+      try {
+        if (social && social.postCallLog) social.postCallLog({
+          hostUid: r.hostUid, calleeUid: uid,
+          startedAt: 0, endedAt: Date.now(), answered: false
+        });
+      } catch (e) {}
+    }
     partyMod.rooms.delete(code);
-    try {
-      if (social && social.postCallLog) social.postCallLog({
-        hostUid: r.hostUid, calleeUid: uid,
-        startedAt: 0, endedAt: Date.now(), answered: false
-      });
-    } catch (e) {}
   }
   console.log('[call] decline', code, 'by=' + uid.slice(0, 8));
   res.json({ ok: true });
