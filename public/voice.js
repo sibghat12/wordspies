@@ -627,8 +627,60 @@
      }
    });
 
+  // ── connection-quality poll ─────────────────────────────────────────
+  // Every 3s we call pc.getStats() and translate per-track inbound-rtp
+  // packet-loss + jitter into a simple 0..3 score:
+  //   3 = green   (< 2% loss, < 30ms jitter)
+  //   2 = yellow  (< 8% loss, < 80ms jitter)
+  //   1 = orange  (< 20% loss)
+  //   0 = red     (worse — probably dropping words)
+  // The party page listens for the 'quality' event and paints the dot
+  // on each remote speaker's avatar.
+  var _qualTimer = null;
+  var _qualPrev = {}; // trackId -> { packets, lost, ts }
+  function scoreFrom(lossPct, jitterMs) {
+    if (lossPct < 2  && jitterMs < 30)  return 3;
+    if (lossPct < 8  && jitterMs < 80)  return 2;
+    if (lossPct < 20)                   return 1;
+    return 0;
+  }
+  async function pollQuality() {
+    if (!activePath || !activePath.pc) return;
+    try {
+      var stats = await activePath.pc.getStats();
+      var out = {};
+      stats.forEach(function (s) {
+        if (s.type !== 'inbound-rtp' || s.kind !== 'audio') return;
+        var id = s.trackIdentifier || s.id;
+        if (!id) return;
+        var packets = s.packetsReceived || 0;
+        var lost    = s.packetsLost || 0;
+        var jitter  = (s.jitter || 0) * 1000; // s → ms
+        var prev = _qualPrev[id];
+        var lossPct = 0;
+        if (prev) {
+          var dP = packets - prev.packets;
+          var dL = lost    - prev.lost;
+          if (dP + dL > 0) lossPct = (dL / (dP + dL)) * 100;
+        }
+        _qualPrev[id] = { packets: packets, lost: lost, ts: Date.now() };
+        out[id] = scoreFrom(lossPct, jitter);
+      });
+      emit('quality', out);
+    } catch (e) { /* getStats can throw during renegotiation — ignore */ }
+  }
+  function startQualityPoll() {
+    if (_qualTimer) return;
+    _qualTimer = setInterval(pollQuality, 3000);
+  }
+  function stopQualityPoll() {
+    if (_qualTimer) { clearInterval(_qualTimer); _qualTimer = null; }
+    _qualPrev = {};
+  }
+
   window.wsVoice = {
     init: init, destroy: destroy, setMic: setMic, on: on,
+    startQualityPoll: startQualityPoll, stopQualityPoll: stopQualityPoll,
     get micOn() { return micOn; },
     get canPublish() { return canPublish; },
     get mode() { return VOICE_MODE; },

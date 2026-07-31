@@ -436,6 +436,29 @@ const EMBED = params.get('embed') === '1';   // true when hosted inside /social'
 let socket = null, room = null, myId = null, myRole = 'listener', msgsLeft = 2, myHandUp = false, selectedMemberId = null;
 let ME_UID = null;   // set from the 'joined' event; used by the host-reclaim fallback
 let SPEAKING = new Set();   // socket ids currently detected as talking
+let QUALITY = {};           // trackId → connection quality (0..3, higher = better)
+let _wakeLock = null;       // navigator.wakeLock handle so we can release it
+
+// Wake Lock: keep the phone screen awake while in a party so mobile
+// browsers don't suspend the tab after screen dim. Silently unsupported
+// on Firefox / older Safari — no-op.
+async function acquireWakeLock(){
+  if (!('wakeLock' in navigator)) return;
+  try {
+    _wakeLock = await navigator.wakeLock.request('screen');
+    _wakeLock.addEventListener('release', () => { _wakeLock = null; });
+  } catch(e){ /* denied / not-focused / no perm — silent */ }
+}
+function releaseWakeLock(){
+  if (!_wakeLock) return;
+  try { _wakeLock.release(); } catch(e){}
+  _wakeLock = null;
+}
+// Re-acquire on visibility return — the browser drops the lock when
+// the tab loses focus.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && !_wakeLock && room) acquireWakeLock();
+});
 
 // Talk to the parent /social if we're embedded — used to close the host
 // iframe when the party ends, minimize on user gesture, etc.
@@ -519,6 +542,11 @@ function conn(){
       wsVoice.setCanPublish(myRole === 'host' || myRole === 'speaker');
       wsVoice.init({ socket, myId, canPublish: (myRole === 'host' || myRole === 'speaker') });
       wsVoice.on('mic', () => paint());       // avatar ring reflects mic state
+      // Keep the phone screen awake while the user is in the party.
+      acquireWakeLock();
+      // Poll connection stats every 3s + repaint avatars with dots.
+      wsVoice.startQualityPoll();
+      wsVoice.on('quality', (map) => { QUALITY = map || {}; paint(); });
       // Remote-speaker detection — audioLevel per inbound track (0..1).
       // Above 0.02 counts as "speaking"; a member gets the pulsing green
       // ring for 1.5s after their last spike so mid-sentence gaps don't

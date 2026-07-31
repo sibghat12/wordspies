@@ -459,7 +459,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-langs{display:flex;flex-direction:column;gap:8px}
 .mp-lang{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center}
 .mp-lang-flag{font-size:24px;line-height:1;text-align:center}
-.mp-lang-name{font-size:14.5px;font-weight:700;color:var(--ink)}
+.mp-lang-name{font-size:14.5px;font-weight:800;color:var(--ink);letter-spacing:-.1px}
 .mp-lang-lvl{font-size:12.5px;color:var(--faint);font-weight:600;text-align:right}
 .mp-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
 .mp-photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px;cursor:pointer;transition:transform .15s}
@@ -1158,6 +1158,9 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .jumpnew{position:fixed;left:50%;bottom:140px;transform:translateX(-50%) translateY(10px);background:var(--ink);color:#fff;border:none;border-radius:99px;padding:9px 17px;font-size:12.5px;font-weight:700;box-shadow:0 10px 26px rgba(0,0,0,.25);z-index:14;opacity:0;pointer-events:none;transition:.2s}
 .jumpnew.show{opacity:1;pointer-events:auto;transform:translateX(-50%)}
 .chatfull .jumpnew,.splitview .jumpnew{position:absolute;bottom:86px}
+/* "↓ New messages" pill retired per owner ask — was reappearing even
+   after fixes and cluttering the chat. Users can scroll manually. */
+.jumpnew{display:none !important}
 /* stop the page itself moving while you're inside a chat on a phone */
 body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:none}
 .composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:7px;padding:10px 14px;background:var(--bg);border-top:1px solid var(--line);z-index:12}
@@ -1624,15 +1627,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button type="button" class="rec-send" onclick="stopAndSendVoice()" title="Send">➤</button>
     </div>
     <div class="composer">
-      <button class="cbtn" onclick="toggleGamePick()" title="Invite to a game">🎮</button>
       <button class="cbtn" onclick="togglePicker()">😊</button>
       <button class="cbtn" onclick="$('imgIn').click()" title="Send a photo">📷</button>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
-      <!-- Hold-to-record mic button. When empty composer, tap sends voice.
-           When there's text, the same slot becomes the send button. -->
+      <!-- Smart action: shows the mic when the input is empty (hold to
+           record voice), swaps to the send arrow when there's text. -->
       <button class="cbtn micrec" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">🎤</button>
-      <button class="cbtn send" onclick="sendMsg()">➤</button>
+      <button class="cbtn send hidden" id="sendBtn" onclick="sendMsg()">➤</button>
     </div>
     <div class="picker hidden" id="emojiPick"></div>
     <div class="picker hidden" id="gamePick">
@@ -3423,7 +3425,16 @@ async function typewriteAIReply(msg){
   await new Promise(r => setTimeout(r, 250));
 }
 $('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
-$('msgIn').addEventListener('input', () => { sendTypingSoon(); refreshAutocomplete(); });
+$('msgIn').addEventListener('input', () => {
+  sendTypingSoon();
+  // Autocomplete word suggestions retired per owner ask — was cluttering
+  // the chat. Send button appears when there's text, mic when empty.
+  const hasText = !!$('msgIn').value.trim();
+  const send = document.getElementById('sendBtn');
+  const mic  = document.getElementById('micRecBtn');
+  if (send) send.classList.toggle('hidden', !hasText);
+  if (mic)  mic.classList.toggle('hidden', hasText);
+});
 
 // Shared upload path used by the 📷 picker + drag-drop + paste.
 // Uploads to /message/image, then sends /message with the URL.
@@ -3927,6 +3938,12 @@ const AC_COMPLETIONS = [
 
 function hideAutocomplete(){ $('acRow').style.display = 'none'; $('acRow').innerHTML = ''; }
 function refreshAutocomplete(j){
+  // Autocomplete word suggestions retired per owner ask — they were
+  // cluttering the chat composer with pill after pill after every
+  // keystroke. Now always empty. Function kept as a no-op so all the
+  // existing call sites don't need touching.
+  return hideAutocomplete();
+  /* eslint-disable */
   if (!curChat) return hideAutocomplete();
   j = j || lastChatJ;
   const val = $('msgIn').value;
