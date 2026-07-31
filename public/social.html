@@ -389,7 +389,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-more button{display:block;width:100%;text-align:left;background:transparent;border:0;padding:10px 14px;font-family:inherit;font-size:13.5px;color:var(--ink);font-weight:600;border-radius:8px;cursor:pointer}
 .mp-more button:hover{background:var(--hover)}
 /* Right column cards */
-.mp-main{display:flex;flex-direction:column;gap:20px;padding-top:24px}
+.mp-main{display:flex;flex-direction:column;gap:20px;padding-top:24px;margin-top:20px}
 @media(min-width:769px){ .mp-main{padding-top:0} }
 .mp-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px}
 .mp-card h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:17px;color:var(--ink);margin-bottom:14px}
@@ -1122,7 +1122,11 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .sect{padding:22px 2px 0}
   .pacts{display:flex}
   .pw{height:300px}
-  #tabMember,#tabMe,#tabChats,#tabChat{max-width:660px;margin:0 auto}
+  /* Member profile lives inside .mp-grid which already caps at 1200/1300 —
+     no extra narrow cap here or the sidebar + cards get squeezed. Other
+     tabs stay at 660 (conversation-column width, comfortable for chats). */
+  #tabMember{max-width:1400px;margin:0 auto}
+  #tabMe,#tabChats,#tabChat{max-width:660px;margin:0 auto}
   .composer{max-width:660px}
   .picker{max-width:636px}
 }
