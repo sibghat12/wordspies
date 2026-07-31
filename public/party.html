@@ -69,7 +69,11 @@ a{color:inherit;text-decoration:none}
 .phead-txt{min-width:0;flex:1}
 .phead-txt h1{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;color:var(--ink);letter-spacing:-.2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .phead-txt p{font-size:12.5px;color:var(--faint);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pheadEnd{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;flex-shrink:0;transition:background .12s,transform .1s}
+.phead-btns{display:flex;gap:8px;flex-shrink:0}
+.pheadLeave{background:#fff;color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background .12s,transform .1s}
+.pheadLeave:hover{background:var(--hover);color:var(--ink)}
+.pheadLeave:active{transform:scale(.95)}
+.pheadEnd{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background .12s,transform .1s}
 .pheadEnd:hover{background:#ffe4e4}
 .pheadEnd:active{transform:scale(.95)}
 
@@ -171,10 +175,11 @@ a{color:inherit;text-decoration:none}
    the avatar. Shows for EVERY speaker (host + speaker), driven by their
    live mic state. Owner ask: "make the cute mic icon on the profile
    icon mute unmute display". */
-/* Mic chip: tucked bottom-right of the avatar circle. Red when muted,
-   green when live. Present on every speaker + host — tap the avatar to
-   toggle your own. */
-.pav .micchip{position:absolute;bottom:34px;right:calc(50% - 34px);background:#d93025;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:background .18s,transform .1s}
+/* Mic chip: tucked bottom-right of the avatar circle. Soft grey when
+   muted (WhatsApp-style, no alarming red), green when live. Present on
+   every speaker + host — tap the avatar to toggle your own. */
+.pav .micchip{position:absolute;bottom:34px;right:calc(50% - 34px);background:#6b7280;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:background .18s,transform .1s;padding:4px}
+.pav .micchip svg{width:100%;height:100%;display:block}
 .pav .micchip.on{background:linear-gradient(135deg,#22c07a,#159f5d)}
 .pav.tapMe .micchip{cursor:pointer}
 .pav.tapMe:active .micchip{transform:scale(.9)}
@@ -323,7 +328,10 @@ a{color:inherit;text-decoration:none}
       <h1 id="pTitle"></h1>
       <p id="pSub"></p>
     </div>
-    <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
+    <div class="phead-btns">
+      <button class="pheadLeave" onclick="leaveAndGo()" title="Leave the party">Leave</button>
+      <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
+    </div>
   </header>
 
   <main id="pMain">
@@ -931,7 +939,11 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
    let micLive = false;
    if (isMe) micLive = !!myMicOn;
    else if (isSpeakerPanel) micLive = !!(m.tracks && m.tracks.length);
-   const micChip = isSpeakerPanel ? `<span class="micchip ${micLive ? 'on' : ''}">${micLive ? '🎤' : '🔇'}</span>` : '';
+   // WhatsApp-style mic glyph: clean mic when live, mic-with-slash when
+   // muted. Inline SVG so we can style stroke/fill without emoji colour.
+   const MIC_ON_SVG  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>';
+   const MIC_OFF_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M4 4l16 16"/></svg>';
+   const micChip = isSpeakerPanel ? `<span class="micchip ${micLive ? 'on' : ''}">${micLive ? MIC_ON_SVG : MIC_OFF_SVG}</span>` : '';
   // Menu buttons MUST stopPropagation so they don't bubble to the .pav's
   // own onclick — which would re-toggle the selection and undo the action.
   // (Real bug that made "Approve" seem to do nothing sometimes.)

@@ -594,16 +594,36 @@
   }
 
   // When the tab wakes back up from being hidden (screen unlocked, tab
-   // refocused, app foregrounded), give any active SFU session a health
-   // check. Browsers throttle background tabs aggressively and can silently
-   // let the peer connection wither; a quick rebuild is nearly instant and
-   // saves a "voice suddenly stopped working" call.
+   // refocused, app foregrounded), do THREE things — cheap ones first:
+   //   1. Force-play every remote <audio> element. Browsers routinely
+   //      pause background-tab media; on refocus they DON'T auto-resume
+   //      and the user hears silence with the mic chip still "on".
+   //   2. Resume the local AudioContext if the browser suspended it.
+   //   3. Only if the SFU peer connection is actually dead, rebuild.
+   //      A live PC + stopped audio is by far the more common failure
+   //      mode and doesn't need a full heal.
    document.addEventListener('visibilitychange', function () {
      if (document.hidden) return;
-     if (!joined || VOICE_MODE !== 'cloudflare' || !activePath || activePath !== sfu) return;
-     var pc = sfu.pc;
-     if (!pc || pc.connectionState === 'failed' || pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
-       sfu.heal('visibility');
+     if (!joined) return;
+     // (1) Kick every remote audio element. Older Safari especially
+     // needs an explicit .play() after backgrounding; the promise reject
+     // is fine — usually just "already playing".
+     document.querySelectorAll('audio[data-peer]').forEach(function (au) {
+       try { var p = au.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+     });
+     // (2) Resume the local analyser AudioContext if it was suspended
+     // in the background. Suspended contexts drop the mic-level events
+     // that pulse your own avatar, so the UI stops responding even
+     // though the underlying WebRTC stream is fine.
+     if (_localAnalyser && _localAnalyser.ac && _localAnalyser.ac.state === 'suspended') {
+       try { _localAnalyser.ac.resume(); } catch (e) {}
+     }
+     // (3) Heal only if the peer connection is genuinely dead.
+     if (VOICE_MODE === 'cloudflare' && activePath && activePath === sfu) {
+       var pc = sfu.pc;
+       if (!pc || pc.connectionState === 'failed' || pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
+         sfu.heal('visibility');
+       }
      }
    });
 
