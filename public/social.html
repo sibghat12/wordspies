@@ -1347,6 +1347,21 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="setbox hidden" id="instBox">
       <button class="hidden" id="a2hsGo"></button>
     </div>
+    <!-- App developer — small trust surface. Opens a DM with the app's
+         owner so bug reports + feedback go straight to a human, not an
+         inbox. Hidden if the config endpoint doesn't return a dev. -->
+    <div class="setbox hidden" id="devBox" style="margin-top:16px">
+      <div class="seth">App developer</div>
+      <div class="setrow" style="align-items:center">
+        <div class="sc" style="flex:1">
+          <b>Report a bug or share feedback</b>
+          <span>Chat directly with the person building WordSpies. Every message is read.</span>
+        </div>
+        <button class="btn btn-dark" id="devChatBtn" style="width:auto;padding:9px 16px;flex:none;font-size:13px" onclick="chatWithDeveloper()">💬 Chat</button>
+      </div>
+      <div class="note" style="padding:6px 4px 0;text-align:left;color:var(--faint);font-size:11.5px">Small solo project — replies usually within a day.</div>
+    </div>
+
     <!-- Support & safety — required links for App Store / Play Store review
          plus a visible contact address. Keeps the trust surface obvious
          without steering users away from the app. -->
@@ -3518,10 +3533,27 @@ $('photoIn').onchange = async () => {
   $('photoIn').value = '';
 };
 
+// App developer chat — stash the id + name from /config so any tap on
+// the "Chat with developer" pill opens a DM straight to the owner.
+let DEV_ID = null;
+function chatWithDeveloper(){
+  if (!ME) { toast('Please sign in first, then message the developer.'); return; }
+  if (!DEV_ID) { toast('Developer profile not available right now.'); return; }
+  if (ME.id === DEV_ID) { toast('That\'s you — nobody else to chat with here 🙂'); return; }
+  openChatWith(DEV_ID);
+}
+
 // ---------- Google sign-in (shows only when the server has a Google key) ----------
 async function setupGoogle(){
   try {
     const cfg = await api('/config');
+    // If the server told us who the developer is, remember it + reveal
+    // the "Chat with developer" section in Me. Hidden otherwise.
+    if (cfg && cfg.dev && cfg.dev.id) {
+      DEV_ID = cfg.dev.id;
+      const box = document.getElementById('devBox');
+      if (box) box.classList.remove('hidden');
+    }
     if (!cfg.google) return;
     await new Promise((ok, no) => {
       const s = document.createElement('script');

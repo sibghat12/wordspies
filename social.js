@@ -192,7 +192,31 @@ function mount(app, redis) {
     next();
   });
 
-  api.get('/config', (req, res) => res.json({ google: GOOGLE_CLIENT_ID, giphy: process.env.SOC_GIPHY_KEY || null }));
+  // Cache the developer's UID once we can look it up. OWNER_EMAIL env
+  // (or a hard fallback for the current owner) points at the account
+  // that gets the "Chat with developer" button on every user's Me tab.
+  const OWNER_EMAIL = (process.env.OWNER_EMAIL || 'sibghat726@gmail.com').toLowerCase();
+  let ownerCache = null;
+  async function ownerInfo() {
+    if (ownerCache && ownerCache._at > Date.now() - 60_000) return ownerCache;
+    const uid = await db.get('soc:email:' + OWNER_EMAIL);
+    if (!uid) return null;
+    const raw = await db.get('soc:user:' + uid);
+    if (!raw) return null;
+    const u = JSON.parse(raw);
+    ownerCache = { id: u.id, name: u.name, photo: u.photo || null, _at: Date.now() };
+    return ownerCache;
+  }
+  api.get('/config', async (req, res) => {
+    const owner = await ownerInfo();
+    res.json({
+      google: GOOGLE_CLIENT_ID,
+      giphy: process.env.SOC_GIPHY_KEY || null,
+      // Small public developer profile so the client can render a
+      // "Chat with developer" pill. Null if the account doesn't exist yet.
+      dev: owner ? { id: owner.id, name: owner.name, photo: owner.photo } : null
+    });
+  });
 
   // suggestion for the "your city" field, from the visitor's IP
   api.get('/geo', async (req, res) => {

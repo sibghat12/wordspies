@@ -104,7 +104,7 @@ ${body}
     <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M19.32 6.68a5.34 5.34 0 01-3.13-1.01 5.4 5.4 0 01-2.13-3.14V2.5h-3.3v11.68a3 3 0 11-2.05-2.83V8.02a6.3 6.3 0 105.35 6.24V8.83a8.6 8.6 0 005.26 1.78z"/></svg></a>
     <a href="mailto:contact@wordspies.co.uk" aria-label="Email"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
   </div>
-  <div class="fmeta">© 2026 WordSpies · Built with 💚 in the UK</div>
+  <div class="fmeta">© 2026 WordSpies. All rights reserved.</div>
 </div></footer>
 </body></html>`;
 }
