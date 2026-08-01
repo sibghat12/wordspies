@@ -65,23 +65,36 @@ body.authmodal{overflow:hidden}
    ONBOARDING WIZARD — full-screen white sheet with sliding steps.
    Owner ask 1 Aug 2026 (Tandem-inspired flow).
    ═══════════════════════════════════════════════════════════════════ */
+/* Onboarding wizard — full-screen premium experience. Owner ask
+   1 Aug 2026: 'make it as I said previously' referring to Tandem's
+   clean full-page onboarding. Big typography, generous whitespace,
+   logo-splash between steps, smooth slide+fade+scale transitions. */
 .ob-wizard{position:fixed;inset:0;z-index:200;background:#fff;display:flex;flex-direction:column;overflow:hidden}
 .ob-wizard.hidden{display:none}
 body.ob-open{overflow:hidden}
-.ob-shell{flex:1;position:relative;max-width:480px;width:100%;margin:0 auto;padding:calc(24px + env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;overflow:hidden}
-.ob-progress{display:flex;gap:6px;margin-bottom:18px;flex-shrink:0}
-.ob-progress span{flex:1;height:3px;border-radius:99px;background:#e6e6ef;transition:background .25s}
+.ob-shell{flex:1;position:relative;max-width:520px;width:100%;margin:0 auto;padding:calc(28px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;overflow:hidden}
+.ob-progress{display:flex;gap:5px;margin-bottom:32px;flex-shrink:0}
+.ob-progress span{flex:1;height:3px;border-radius:99px;background:#e6e6ef;transition:background .3s ease}
 .ob-progress span.done{background:var(--accent,#e8506b)}
 .ob-progress span.now{background:linear-gradient(90deg,var(--accent,#e8506b),var(--accent-d,#c33d55))}
 
-/* Each step is absolutely positioned and slides in/out. Only the
-   .show one is on-screen; the rest sit off to the right waiting. */
-.ob-step{position:absolute;inset:calc(24px + env(safe-area-inset-top) + 30px) 22px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:flex-start;gap:14px;opacity:0;transform:translateX(30px);pointer-events:none;transition:opacity .28s ease,transform .28s ease;overflow-y:auto;overflow-x:hidden}
-.ob-step.show{opacity:1;transform:translateX(0);pointer-events:auto}
-.ob-step.back-out{transform:translateX(-30px)}
-.ob-emoji{font-size:44px;line-height:1;margin-top:8px}
-.ob-step h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:24px;font-weight:700;letter-spacing:-.4px;line-height:1.2;color:var(--ink)}
-.ob-sub{color:var(--sub);font-size:14.5px;line-height:1.5}
+/* Each step absolutely positioned, slide + fade + subtle scale. */
+.ob-step{position:absolute;inset:calc(28px + env(safe-area-inset-top) + 40px) 24px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:flex-start;gap:16px;opacity:0;transform:translateX(28px) scale(.985);pointer-events:none;transition:opacity .32s cubic-bezier(.2,.7,.3,1),transform .32s cubic-bezier(.2,.7,.3,1);overflow-y:auto;overflow-x:hidden}
+.ob-step.show{opacity:1;transform:translateX(0) scale(1);pointer-events:auto}
+.ob-step.back-out{transform:translateX(-28px) scale(.985)}
+.ob-emoji{font-size:58px;line-height:1;margin:4px 0 6px;animation:obEmojiPop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes obEmojiPop{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
+.ob-step h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.15;color:var(--ink);margin:0}
+.ob-sub{color:var(--sub);font-size:15px;line-height:1.55;margin:0}
+
+/* Logo-splash overlay — shown for ~500ms between steps. Owner ask
+   1 Aug 2026: 'a nice animation from screen to other, the [Tandem]
+   logo like cool.' Fades in and out over the wizard body. */
+.ob-splash{position:absolute;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:5;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.ob-splash.show{opacity:1;pointer-events:auto}
+.ob-splash-mark{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:44px;letter-spacing:-.7px;color:var(--ink);animation:obSplashIn .5s ease-out both}
+.ob-splash-mark em{font-style:normal;color:var(--accent,#e8506b)}
+@keyframes obSplashIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 .ob-para{color:var(--ink);font-size:14.5px;line-height:1.65;margin:0}
 /* Fields — bigger, tighter, more premium. Owner ask 1 Aug 2026:
    'small input boxes and the continue button is so big and messy'.
@@ -1655,6 +1668,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
      ================================================ -->
 <div id="obWizard" class="ob-wizard hidden" aria-hidden="true">
   <div class="ob-shell" id="obShell">
+    <!-- Logo splash — briefly covers the shell between steps for
+         that Tandem-esque premium transition feel. -->
+    <div class="ob-splash" id="obSplash" aria-hidden="true">
+      <div class="ob-splash-mark">Word<em>Spies</em></div>
+    </div>
     <div class="ob-progress" id="obProgress"></div>
 
     <!-- STEP 1 · Name + DOB + Email (all on one page — owner ask
@@ -2805,11 +2823,13 @@ function enterApp(justJoined){
   const xc = $('authClose'); if (xc) xc.remove();
   $('vAuth').classList.add('hidden');
   // First-time signup? Show the onboarding wizard BEFORE the app.
-  // Detects incomplete profile: no bio + no talkAbout + no goal.
-  // Wizard call obFinish() which un-hides #vApp and completes enterApp().
-  if (justJoined && ME && !ME.onboardedAt && !(ME.talkAbout && ME.goal)) {
+  // Owner asks for the wizard to land RELIABLY on every fresh signup
+  // (email or Google). The single 'onboardedAt' flag is the source
+  // of truth — set at obFinish(); if it's absent AND this is a
+  // justJoined session, launch.
+  if (justJoined && ME && !ME.onboardedAt) {
     obStart();
-    return;   // wizard will call resumeEnterApp() when done
+    return;
   }
   $('vApp').classList.remove('hidden');
 
@@ -2892,17 +2912,39 @@ function obPaintProgress(current){
   }
   bar.innerHTML = html;
 }
+let _obLastStep = 0;
 function obShow(step){
-  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('show', 'back-out'));
-  const el = document.querySelector('.ob-step[data-step="' + step + '"]');
-  if (el) el.classList.add('show');
-  obPaintProgress(step);
-  // Autofocus the first input on each step for keyboard flow — skip on
-  // display-only steps (T&C, verification-wait, welcome).
+  // Splash-transition: brief WordSpies logo flash between step
+  // changes (not on the very first paint). Owner ask 1 Aug 2026 —
+  // 'nice animation from screen to other, the logo like cool'.
+  const doSplash = _obLastStep && step !== _obLastStep;
+  const paint = () => {
+    document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('show', 'back-out'));
+    // Re-trigger the emoji pop animation on each show.
+    const el = document.querySelector('.ob-step[data-step="' + step + '"]');
+    if (el) {
+      const emo = el.querySelector('.ob-emoji');
+      if (emo) { emo.style.animation = 'none'; requestAnimationFrame(() => { emo.style.animation = ''; }); }
+      el.classList.add('show');
+    }
+    obPaintProgress(step);
+    setTimeout(() => {
+      const inp = el && el.querySelector('.ob-input:not([readonly])');
+      if (inp) try { inp.focus({ preventScroll: true }); } catch(e){}
+    }, 320);
+    _obLastStep = step;
+  };
+  if (!doSplash) { paint(); return; }
+  const sp = document.getElementById('obSplash');
+  if (!sp) { paint(); return; }
+  // Replay the mark-in animation each show.
+  const mk = sp.querySelector('.ob-splash-mark');
+  if (mk) { mk.style.animation = 'none'; requestAnimationFrame(() => { mk.style.animation = ''; }); }
+  sp.classList.add('show');
   setTimeout(() => {
-    const inp = el && el.querySelector('.ob-input:not([readonly])');
-    if (inp) try { inp.focus({ preventScroll: true }); } catch(e){}
-  }, 300);
+    paint();
+    setTimeout(() => sp.classList.remove('show'), 60);
+  }, 280);
 }
 // Spinner DOB picker — simpler than the scroll wheel. Owner ask
 // 1 Aug 2026 (v2). Each column stores its items + a cursor index;
