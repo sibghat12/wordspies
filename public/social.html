@@ -3505,7 +3505,14 @@ async function submitCreateParty(){
       body: JSON.stringify({ title, subtitle, visibility }) });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'Could not create the party.');
-    location.href = '/party?room=' + j.code;
+    // Owner ask 2 Aug 2026: 'the moment I create the party, either
+    // open a full popup so I can close it and go back to messages,
+    // or keep me where I am'. Open in the iframe host (full-screen
+    // overlay you can minimise back to /social with the ← FAB) so
+    // navigation state and community context are never lost.
+    closeCreateParty();
+    if (typeof openPartyInApp === 'function') openPartyInApp(j.code, title);
+    else location.href = '/party?room=' + j.code;
   } catch(e){
     $('ptErr').textContent = e.message; $('ptErr').classList.remove('hidden');
     btn.disabled = false; btn.textContent = '🎉 Start party';
@@ -3847,8 +3854,12 @@ function openPartyInApp(code, title){
   // If a DIFFERENT party is already mounted, tear it down first.
   if (PHOST_CODE && PHOST_CODE !== code) closePartyInApp(true);
   PHOST_CODE = code;
-  if (title) $('phostTitle').textContent = title;
-  $('phostSub').textContent = 'Tap ▲ to expand';
+  if (title) { const t = $('phostTitle'); if (t) t.textContent = title; }
+  // #phostSub was removed 1 Aug 2026 when the mini-bar was reduced
+  // to name + arrow only. Null-guard the write so a stale reference
+  // doesn't throw and kill the whole openPartyInApp flow (that was
+  // the 'can't enter to the party, shows error' bug on 2 Aug 2026).
+  const sub = $('phostSub'); if (sub) sub.textContent = 'Tap ▲ to expand';
   host.classList.remove('hidden');
   host.classList.add('fs');
   host.classList.remove('mini');
