@@ -642,7 +642,9 @@ b,strong{font-weight:600}
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
         <button class="helpbtn" id="leaveBtn" title="Exit this game">🚪 Exit game</button>
-        <a class="helpbtn" id="commBtn" href="/social" target="_blank" rel="noopener" title="Open the Community in a new tab — this game keeps running here" style="text-decoration:none">👥 Community<span id="commLive" hidden></span></a>
+        <!-- 'Community' link retired 1 Aug 2026 per owner ask — the
+             persistent .gamebar pill on /social handles resume, so the
+             game page doesn't need an outbound Community link. -->
         <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
@@ -1523,8 +1525,14 @@ $('newGameBtn').onclick = () => {
   socket.emit('leaveRoom');
   S = null;
   clearLiveGame();
-  if (n) { socket.emit('create', { name: n }); track('game_created', { source: 'new_game_button' }); }
-  else location.href = '/play';
+  if (n) {
+    socket.emit('create', { name: n });
+    track('game_created', { source: 'new_game_button' });
+    // Owner ask 1 Aug 2026: 'if he click a new just show an alert new
+    // game started please'. A quiet toast, not a modal — the room
+    // code appears in the header as soon as the server responds.
+    try { toast('🎮 New game started'); } catch(e){}
+  } else location.href = '/play';
 };
 $('leaveBtn').onclick = () => {
   if (!confirmLeave()) return;
@@ -2295,19 +2303,10 @@ if (_instOv) _instOv.classList.add('hidden');
 
 <script src="/a2hs.js" defer></script>
 
-<!-- Back to Social: shows only when the visitor arrived from the social app -->
-<a id="socBack" style="display:none;position:fixed;top:14px;left:14px;z-index:9999;align-items:center;gap:7px;background:#16181f;color:#fff;text-decoration:none;font-weight:400;font-size:11.3px;padding:10px 16px;border-radius:99px;box-shadow:0 4px 16px rgba(0,0,0,.28)">← Back</a>
-<script>
-(function(){
-  var f = new URLSearchParams(location.search).get('from');
-  if (!f) return;
-  var a = document.getElementById('socBack');
-  var m = /^chat:([a-f0-9]{6,24})$/.exec(f);
-  a.href = m ? '/social#chat=' + m[1] : '/social';
-  a.textContent = m ? '← Back to chat' : '← Back to Social';
-  a.style.display = 'inline-flex';
-})();
-</script>
+<!-- 'Back to Social' pill retired 1 Aug 2026 per owner ask: 'we keep
+     the same header so no need it'. Shared wsbrand.js header provides
+     the same navigation context, and the .gamebar pill on /social
+     handles resume in the other direction. -->
 <script>window.WS_GAME = { slug: 'play', label: '🕵️ WordSpies' };</script>
 <script src="/game-session.js" defer></script>
 <script src="/wsbrand.js" defer></script>

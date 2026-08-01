@@ -62,64 +62,10 @@
   window.wsClearGameSession = function () {
     try { localStorage.removeItem('wsActiveGame'); } catch (e) {}
   };
-
-  /* wsGameCountdown(cb) — snappy full-screen 3 · 2 · 1 · Let's go
-   * overlay before a new game starts. Owner ask 1 Aug 2026: 'if
-   * someone starts a new game show a sweet alert like 3 2 1 and
-   * let's go, make it fast'. Total ~1.6s. Then fires the callback.
-   * Reuses SweetAlert2 if it's loaded on the page (it is on
-   * /codenames /spy /pool via their bundled CDN); otherwise falls
-   * back to a plain overlay div.
-   */
-  window.wsGameCountdown = function (cb) {
-    var steps = ['3', '2', '1', "Let's go!"];
-    var i = 0;
-    // Try SweetAlert2 first — matches the app's visual language and
-    // handles animation for us.
-    var useSwal = typeof window.Swal === 'object' && typeof window.Swal.fire === 'function';
-    var tick = function () {
-      if (i >= steps.length) {
-        if (useSwal) { try { window.Swal.close(); } catch (e) {} }
-        else {
-          var el = document.getElementById('_wsCountdown');
-          if (el && el.parentNode) el.parentNode.removeChild(el);
-        }
-        if (typeof cb === 'function') try { cb(); } catch (e) {}
-        return;
-      }
-      var text = steps[i++];
-      var isGo = text.indexOf('!') > -1;
-      if (useSwal) {
-        window.Swal.fire({
-          html: '<div style="font-family:Fredoka,Nunito,system-ui,sans-serif;font-weight:700;font-size:' + (isGo ? '48px' : '96px') + ';letter-spacing:-1.5px;color:#16181f;line-height:1;padding:22px 8px;animation:wsCdIn .28s cubic-bezier(.34,1.56,.64,1) both">' + text + '</div>',
-          showConfirmButton: false, timer: isGo ? 500 : 400, timerProgressBar: false,
-          allowOutsideClick: false, allowEscapeKey: false,
-          backdrop: 'rgba(255,255,255,.92)', width: 320
-        });
-      } else {
-        var el = document.getElementById('_wsCountdown');
-        if (!el) {
-          el = document.createElement('div');
-          el.id = '_wsCountdown';
-          el.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.94);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Fredoka,Nunito,system-ui,sans-serif;font-weight:700;color:#16181f;letter-spacing:-1.5px;line-height:1';
-          document.body.appendChild(el);
-        }
-        el.style.fontSize = isGo ? '48px' : '96px';
-        el.textContent = text;
-        el.style.animation = 'none'; void el.offsetHeight;
-        el.style.animation = 'wsCdIn .28s cubic-bezier(.34,1.56,.64,1) both';
-      }
-      setTimeout(tick, isGo ? 500 : 400);
-    };
-    // Inject the pop animation keyframes once.
-    if (!document.getElementById('_wsCdCss')) {
-      var css = document.createElement('style');
-      css.id = '_wsCdCss';
-      css.textContent = '@keyframes wsCdIn{from{opacity:0;transform:scale(.5)}70%{transform:scale(1.15)}to{opacity:1;transform:scale(1)}}';
-      document.head.appendChild(css);
-    }
-    tick();
-  };
+  /* wsGameCountdown was retired 1 Aug 2026 per owner ask 'remove the
+   * 3-2-1'. Stubbed as pass-through so any existing caller still runs
+   * the callback immediately without breaking. */
+  window.wsGameCountdown = function (cb) { if (typeof cb === 'function') try { cb(); } catch (e) {} };
   stamp();
   // Refresh the timestamp every 45s while the page is open so the
   // stale-clear on /social (6h) only fires after real inactivity.
