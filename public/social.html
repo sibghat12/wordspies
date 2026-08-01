@@ -175,8 +175,11 @@ body.authmodal{overflow:hidden}
     min-width:0;
     flex-direction:row;
     gap:5px;
-    padding:9px 8px;
-    font-size:14px;         /* bumped from 12.5 → 14 for legibility (owner ask 1 Aug 2026) */
+    /* padding: extra horizontal room so the active-tab pill
+       background doesn't touch 'Community' (the longest label) on
+       either side. Owner ask 1 Aug 2026. */
+    padding:9px 12px;
+    font-size:14px;
     font-weight:600;
     justify-content:center;
     line-height:1.2;
@@ -1443,15 +1446,15 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <!-- Chats + Community stay on monochrome SVG (owner: keep them
            'better and cleaner'). Parties + Learn back to the original
            emoji glyphs per owner ask. -->
-      <button id="tbChats" class="tnt" onclick="showTab('chats')">
-        <!-- Cleaner speech-bubble: rounded-corner square with three
-             tiny message dots inside. Duolingo-adjacent silhouette. -->
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><circle cx="9" cy="11" r=".7" fill="currentColor" stroke="none"/><circle cx="12" cy="11" r=".7" fill="currentColor" stroke="none"/><circle cx="15" cy="11" r=".7" fill="currentColor" stroke="none"/></svg></span>
-        Chats<span class="badge hidden" id="chatBadge"></span>
-      </button>
+      <!-- Owner ask 1 Aug 2026: 'make the community as first tab please'.
+           Order: Community · Chats · Parties · Learn. -->
       <button id="tbWall" class="tnt on" onclick="showTab('wall')">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a13.5 13.5 0 0 1 0 18"/><path d="M12 3a13.5 13.5 0 0 0 0 18"/></svg></span>
         Community<span class="badge hidden" id="wallBadge"></span>
+      </button>
+      <button id="tbChats" class="tnt" onclick="showTab('chats')">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><circle cx="9" cy="11" r=".7" fill="currentColor" stroke="none"/><circle cx="12" cy="11" r=".7" fill="currentColor" stroke="none"/><circle cx="15" cy="11" r=".7" fill="currentColor" stroke="none"/></svg></span>
+        Chats<span class="badge hidden" id="chatBadge"></span>
       </button>
       <button id="tbParties" class="tnt" onclick="showTab('parties')"><span class="ico">🎉</span>Parties<span class="badge hidden" id="partyBadge"></span></button>
       <button id="tbLearn" class="tnt" onclick="showTab('learn')"><span class="ico">📚</span>Learn</button>
