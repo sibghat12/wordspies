@@ -1748,6 +1748,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
             <button class="fchip" data-f="online">🟢 Online</button>
             <button class="fchip" data-f="nearby">📍 Nearby</button>
             <button class="fchip" data-f="new">New</button>
+            <!-- Owner ask 1 Aug 2026: AI users hidden from All / Online
+                 / Nearby / New / Kings. They only appear when this chip
+                 is active. 'Chat Experts' framing keeps it approachable
+                 (they're always-available conversation partners). -->
+            <button class="fchip" data-f="ai" title="AI conversation partners always ready to chat">✦ Chat Experts</button>
             <button class="fchip ico" data-f="kings" title="Kings" aria-label="Kings"><svg class="ktick" viewBox="0 0 24 21" aria-hidden="true"><path d="M2.6 5.8 7.2 11 12 3 16.8 11 21.4 5.8 20.2 14.4H3.8Z"/><rect x="3.6" y="15.4" width="16.8" height="3.4" rx="1.4"/><circle cx="2.6" cy="4.4" r="2"/><circle cx="12" cy="2.1" r="2.1"/><circle cx="21.4" cy="4.4" r="2"/></svg></button>
           </div>
         </div>
@@ -4849,12 +4854,17 @@ function renderWall(){
     .filter(m => m.photo)
     .filter(m => !ME || m.id !== ME.id)
     .filter(m => !q || m.name.toLowerCase().includes(q) || (m.location||'').toLowerCase().includes(q) || (m.country||'').toLowerCase().includes(q));
+  // Hide AI users from every default view — they only appear when the
+  // dedicated 'Chat Experts' filter is on. Owner ask 1 Aug 2026:
+  // 'remove them from the original list'.
+  if (wallFilter !== 'ai') list = list.filter(m => !m.isAI);
   // "Online now" is about who else is around — your own card there is just
   // noise, and it made the count read "1 here" when nobody else was on.
   if (wallFilter === 'online') list = list.filter(m => m.online && !(ME && m.id === ME.id));
   else if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
   else if (wallFilter === 'new') list = list.filter(m => Date.now() - m.createdAt < WEEK7);
   else if (wallFilter === 'kings') list = list.filter(m => m.king);
+  else if (wallFilter === 'ai') list = list.filter(m => m.isAI);
   // Sort by win rate (best players first), then by games played
   list.sort((a, b) => {
     const aRate = a.games ? (a.wins / a.games) : 0;

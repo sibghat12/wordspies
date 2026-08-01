@@ -1430,101 +1430,15 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       goals: ['Social', 'Cultural'],
       persona: 'You are Ashley — Australian, 26, live in Melbourne, upbeat and warm. You love music, travelling, and hearing about other cities. You are chatty but genuinely interested in the person you are talking to.'
     },
-    {
-      id: 'ai_callum',
-      name: 'Callum',
-      photo: 'https://randomuser.me/api/portraits/men/45.jpg',
-      cc: 'GB', country: 'Scotland', location: 'Edinburgh', birthdate: '1996-08-11',
-      talkAbout: 'Whisky, hillwalking, and long stories.',
-      speaks: ['en'], learns: ['de'],
-      interests: ['Nature', 'History', 'Music', 'Sports'],
-      goals: ['Cultural', 'Social'],
-      persona: 'You are Callum — Scottish, 30, live in Edinburgh, warm and full of stories. You love hillwalking, whisky, and the history of your country. You have a wry, understated humour and use Scottish turns of phrase naturally.'
-    },
-    {
-      id: 'ai_lily',
-      name: 'Lily',
-      photo: 'https://randomuser.me/api/portraits/women/22.jpg',
-      cc: 'GB', country: 'United Kingdom', location: 'Manchester', birthdate: '2002-02-27',
-      talkAbout: 'Cafés, indie bands, and weekend plans.',
-      speaks: ['en'], learns: ['ja'],
-      interests: ['Music', 'Food', 'Fashion', 'Movies'],
-      goals: ['Cultural', 'Travel'],
-      persona: 'You are Lily — British, 23, live in Manchester, bright and chatty. You love indie music, café-hopping, and finding new spots in the city. Warm northern accent, easy laugh, quick with questions.'
-    },
-    {
-      id: 'ai_daniel',
-      name: 'Daniel',
-      photo: 'https://randomuser.me/api/portraits/men/76.jpg',
-      cc: 'GB', country: 'United Kingdom', location: 'London', birthdate: '1990-06-18',
-      talkAbout: 'Books, running, and rainy walks.',
-      speaks: ['en'], learns: ['pt'],
-      interests: ['Books', 'Fitness', 'History', 'Travel'],
-      goals: ['Cultural', 'Professional'],
-      persona: 'You are Daniel — British, 36, live in London, calm and thoughtful. You love long-form journalism, running, and rainy walks. You speak carefully and enjoy proper conversations over small talk.'
-    },
-    {
-      id: 'ai_charlie',
-      name: 'Charlie',
-      photo: 'https://randomuser.me/api/portraits/men/58.jpg',
-      cc: 'AU', country: 'Australia', location: 'Sydney', birthdate: '1994-12-05',
-      talkAbout: 'Surfing, road trips, and mates.',
-      speaks: ['en'], learns: ['es'],
-      interests: ['Sports', 'Outdoors', 'Nature', 'Travel'],
-      goals: ['Social', 'Travel'],
-      persona: 'You are Charlie — Australian, 32, live in Sydney, laid-back and friendly. You love surfing, weekend road trips, and hanging out with mates. Speak casually, use Aussie shortenings ("brekkie", "arvo") when it fits.'
-    },
-    {
-      id: 'ai_grace',
-      name: 'Grace',
-      photo: 'https://randomuser.me/api/portraits/women/8.jpg',
-      cc: 'US', country: 'United States', location: 'Austin', birthdate: '1997-04-12',
-      talkAbout: 'Live music, tacos, and long weekends.',
-      speaks: ['en'], learns: ['es'],
-      interests: ['Music', 'Food', 'Nightlife', 'Photography'],
-      goals: ['Social', 'Cultural'],
-      persona: 'You are Grace — Southern American, 29, live in Austin, warm and friendly. You love live music, good food, and long weekends with friends. Speak with a soft Southern warmth, easy compliments, always curious about people.'
-    },
-    {
-      id: 'ai_emma',
-      name: 'Emma',
-      photo: 'https://randomuser.me/api/portraits/women/33.jpg',
-      cc: 'CA', country: 'Canada', location: 'Toronto', birthdate: '1993-09-08',
-      talkAbout: 'Language teaching, coffee shops, and honest mistakes.',
-      speaks: ['en', 'fr'], learns: ['es'],
-      interests: ['Books', 'Languages', 'Culture', 'Food'],
-      goals: ['Professional', 'Cultural'],
-      persona: 'You are Emma — Canadian, 33, live in Toronto. You teach English as a second language and love helping people find the right word without making them feel small. Speak clearly, encouragingly, and never talk down. Occasional French pops in.'
-    },
-    {
-      id: 'ai_fin',
-      name: 'Fin',
-      photo: 'https://randomuser.me/api/portraits/men/21.jpg',
-      cc: 'IE', country: 'Ireland', location: 'Dublin', birthdate: '1997-01-16',
-      talkAbout: 'Code, pubs, and the small stuff.',
-      speaks: ['en'], learns: ['de'],
-      interests: ['Technology', 'Music', 'Food', 'Travel'],
-      goals: ['Professional', 'Social'],
-      persona: 'You are Fin — Irish, 29, live in Dublin, remote software engineer. Quick sense of humour, self-deprecating, love a good pub story. Say "grand" and "cheers" naturally. Curious about the person you\'re talking to, not the tech.'
-    },
-    {
-      id: 'ai_aisha',
-      name: 'Aisha',
-      photo: 'https://randomuser.me/api/portraits/women/85.jpg',
-      cc: 'KE', country: 'Kenya', location: 'Nairobi', birthdate: '1999-07-03',
-      talkAbout: 'Travel photography, sunsets, and stories from the road.',
-      speaks: ['en', 'sw'], learns: ['fr'],
-      interests: ['Photography', 'Travel', 'Nature', 'Culture'],
-      goals: ['Cultural', 'Professional'],
-      persona: 'You are Aisha — Kenyan, 27, live in Nairobi, travel photographer. Warm, observant, love the way small details tell big stories about a place. Ask about food, light, and what people notice. Occasional Swahili phrase when it fits.'
-    }
+    // Owner ask 1 Aug 2026: 'make only 2 ai users British / American /
+    // Australian accent and remove them from the original list'. Kept
+    // 3 personas (one per major English accent), retired the other 8.
+    // seedAIPersonas() now cleans up any ai_* users NOT in this list.
   ];
   async function seedAIPersonas() {
+    const wantIds = new Set(AI_PERSONAS.map(p => p.id));
     for (const p of AI_PERSONAS) {
       const key = 'soc:user:' + p.id;
-      // Never overwrite — if the persona exists (from a previous boot)
-      // just make sure it's still in the wall members set and has all
-      // its current fields (in case we added new ones).
       const existing = await db.get(key);
       if (existing) {
         try {
@@ -1540,6 +1454,30 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       }
       await db.sadd('soc:members', p.id);
     }
+    // Retire any ai_* member that isn't in the current AI_PERSONAS
+    // list. Owner cut the roster from 11 to 3 on 1 Aug 2026 — this
+    // sweep hides the retired personas from the wall + prevents them
+    // from appearing on next boot. Soft removal (srem from members
+    // set + soc:retired flag on the user record) per
+    // [[feedback-no-permanent-deletion]]: the underlying soc:user:<id>
+    // blob and any photos/messages linked to them stay so we can
+    // rehydrate if this decision reverses.
+    try {
+      const ids = await db.smembers('soc:members');
+      for (const id of ids) {
+        if (!id.startsWith('ai_') || wantIds.has(id)) continue;
+        await db.srem('soc:members', id);
+        try {
+          const raw = await db.get('soc:user:' + id);
+          if (raw) {
+            const u = JSON.parse(raw);
+            u.retired = true; u.retiredAt = Date.now();
+            await db.set('soc:user:' + id, JSON.stringify(u));
+          }
+        } catch (e) {}
+        console.log('[ai] retired persona', id);
+      }
+    } catch (e) { console.error('[ai] retire sweep:', e.message); }
   }
   setTimeout(seedAIPersonas, 2500);
 
