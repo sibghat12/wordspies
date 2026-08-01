@@ -670,72 +670,15 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     }
   });
 
-  api.get('/me', async (req, res) => {
-    const u = await userFromReq(req);
-    // backfill country for members who joined before geo existed
-    if (u && !u.cc) {
-      const geo = await geoFromIp(reqIp(req));
-      if (geo && geo.cc) {
-        u.country = geo.country; u.cc = geo.cc;
-        if (!u.location) u.location = geoLabel(geo);
-        await db.set('soc:user:' + u.id, JSON.stringify(u));
-      }
-    }
-    res.json({ me: u ? pub(u) : null });
-  });
-
-  // ---- profile ----
-  api.post('/profile', async (req, res) => {
-    try {
-      const u = await userFromReq(req);
-      if (!u) return res.status(401).json({ error: 'Please log in.' });
-      const { name, bio, location, birthdate } = req.body || {};
-
-      // Your name is your identity here — it's on the wall, in every chat and on
-      // the scoreboard — so changing it is allowed but it moves the uniqueness
-      // index with it, otherwise the old name would stay reserved forever and
-      // someone else could claim the new one at the same moment.
-      if (name !== undefined) {
-        const nm = String(name).trim();
-        if (nm !== u.name) {
-          if (limited(req, 'rename', 6)) return res.status(429).json({ error: 'Too many changes — wait a minute.' });
-          if (!/^[a-zA-Z0-9_ ]{3,15}$/.test(nm)) return res.status(400).json({ error: 'Name: 3–15 letters, numbers or spaces.' });
-          if (nm.toLowerCase() !== u.name.toLowerCase()) {
-            const holder = await db.get('soc:uname:' + nm.toLowerCase());
-            if (holder && holder !== u.id) return res.status(409).json({ error: 'That name is taken.' });
-            await db.del('soc:uname:' + u.name.toLowerCase());
-            await db.set('soc:uname:' + nm.toLowerCase(), u.id);
-          }
-          u.name = nm;                        // same letters, new capitals is fine too
-        }
-      }
-
-      if (bio !== undefined) u.bio = String(bio).slice(0, 200);
-      if (location !== undefined) u.location = String(location).slice(0, 40);
-      if (birthdate !== undefined) {
-        const bd = String(birthdate).trim();
-        if (bd && !/^\d{4}-\d{2}-\d{2}$/.test(bd)) return res.status(400).json({ error: 'Invalid birthdate format.' });
-        u.birthdate = bd || null;
-      }
-      // Speaky-style extras: short quote, native + learning languages,
-      // interests, goals, recommendations. All caps + light shape checks.
-      const b = req.body || {};
-      const cleanArr = (v, cap, max) =>
-        (Array.isArray(v) ? v : []).map(x => String(x || '').trim().slice(0, cap)).filter(Boolean).slice(0, max);
-      if (b.talkAbout !== undefined) u.talkAbout = String(b.talkAbout || '').slice(0, 500);
-      if (b.speaks !== undefined) u.speaks = cleanArr(b.speaks, 6, 5);
-      if (b.learns !== undefined) u.learns = cleanArr(b.learns, 6, 5);
-      if (b.interests !== undefined) u.interests = cleanArr(b.interests, 30, 12);
-      if (b.goals !== undefined) u.goals = cleanArr(b.goals, 30, 6);
-      if (b.recs !== undefined) u.recs = String(b.recs || '').slice(0, 500);
-      await db.set('soc:user:' + u.id, JSON.stringify(u));
-      res.json({ me: pub(u) });
-    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
-  });
-
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 2 * 1024 * 1024, files: 1 }
+  // ---- profile (GET /me, POST /profile, POST /photo) ----
+  // Moved to ./profile.js on 1 Aug 2026 as the second modularisation
+  // slice. Same URL surface, same Redis keys, same photo directory —
+  // pure refactor.
+  require('./profile').mount(api, {
+    db, userFromReq, pub,
+    reqIp, geoFromIp, geoLabel,
+    limited,
+    PHOTO_DIR
   });
   // Voice messages in DMs. Client records a short opus/webm blob (60 s max),
   // POSTs it here as multipart form-data, we save under /social-voice with a
@@ -800,30 +743,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     });
   });
 
-  api.post('/photo', (req, res) => {
-    upload.single('photo')(req, res, async err => {
-      try {
-        if (err) return res.status(400).json({ error: 'Photo too large (max 2 MB).' });
-        const u = await userFromReq(req);
-        if (!u) return res.status(401).json({ error: 'Please log in.' });
-        const f = req.file;
-        if (!f) return res.status(400).json({ error: 'No photo received.' });
-        const sig = f.buffer.slice(0, 12);
-        const isJpg = sig[0] === 0xFF && sig[1] === 0xD8;
-        const isPng = sig[0] === 0x89 && sig[1] === 0x50;
-        const isWebp = sig.slice(8, 12).toString() === 'WEBP';
-        if (!isJpg && !isPng && !isWebp) return res.status(400).json({ error: 'Use a JPG, PNG or WebP image.' });
-        const ext = isJpg ? 'jpg' : isPng ? 'png' : 'webp';
-        // remove any previous photo, then save under a fresh cache-busting name
-        for (const old of fs.readdirSync(PHOTO_DIR)) if (old.startsWith(u.id + '.')) fs.unlinkSync(path.join(PHOTO_DIR, old));
-        const fname = `${u.id}.${Date.now().toString(36)}.${ext}`;
-        fs.writeFileSync(path.join(PHOTO_DIR, fname), f.buffer);
-        u.photo = '/social-photos/' + fname;
-        await db.set('soc:user:' + u.id, JSON.stringify(u));
-        res.json({ me: pub(u) });
-      } catch (e) { console.error('social photo:', e.message); res.status(500).json({ error: 'Upload failed.' }); }
-    });
-  });
+  // (/photo moved to ./profile.js above along with GET /me + POST /profile.)
 
   // ---- members wall ----
   api.get('/members', async (req, res) => {
