@@ -903,7 +903,8 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .playhead h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--ink)}
 .playhead p{font-size:14px;color:var(--sub);margin-top:6px;line-height:1.55;max-width:520px}
 .playgrid{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 0 30px}
-@media(min-width:760px){.playgrid{grid-template-columns:repeat(3,1fr);gap:18px}}
+@media(min-width:640px){.playgrid{grid-template-columns:repeat(2,1fr);gap:18px}}
+@media(min-width:1080px){.playgrid{grid-template-columns:repeat(4,1fr)}}
 .playcard{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;text-decoration:none;color:var(--ink);transition:transform .12s ease,box-shadow .18s ease,border-color .18s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .playcard:hover{transform:translateY(-3px);box-shadow:0 12px 34px rgba(20,25,45,.08);border-color:transparent}
 .playcard:active{transform:translateY(-1px)}
@@ -928,13 +929,25 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pc-face{position:absolute;font-size:24px;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.24))}
 .pc-face-x{font-size:32px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
 
-/* 8-Ball Pool: green felt with balls */
-.playcard-pool .playcard-art{background:radial-gradient(ellipse at center,#1e8f56 0%,#0d5c34 100%);position:relative}
-.pc-ball{position:absolute;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:12px;box-shadow:inset 0 -3px 6px rgba(0,0,0,.35),inset 0 3px 6px rgba(255,255,255,.15),0 4px 8px rgba(0,0,0,.28)}
-.pc-ball-8{background:#1c1e21;color:#fff}
-.pc-ball-r{background:#e0324f;color:#fff}
-.pc-ball-y{background:#f0b62b;color:#fff}
-.pc-ball-cue{background:#fff}
+/* Word Chain: teal → mint gradient with a horizontal chain of
+   linked words. Owner ask 1 Aug 2026: 'bring 2 more English
+   learning games'. */
+.playcard-chain .playcard-art{background:linear-gradient(135deg,#3aa88f,#1f7a63);padding:18px;display:flex;align-items:center;justify-content:center}
+.pc-chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+.pc-chain > span:not(.pc-arr){background:#fff;color:#0d3a2d;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:11.5px;padding:6px 10px;border-radius:8px;letter-spacing:.3px;box-shadow:0 3px 8px rgba(0,0,0,.16)}
+.pc-arr{color:rgba(255,255,255,.85);font-weight:800;font-size:14px}
+
+/* Guess the Word: warm amber with mystery '???' + three emoji clues. */
+.playcard-guess .playcard-art{background:linear-gradient(135deg,#ffbf58,#e9852b);padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.pc-guess-word{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:28px;color:#fff;letter-spacing:2px;text-shadow:0 3px 8px rgba(0,0,0,.18)}
+.pc-guess-clues{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.pc-guess-clues > span{background:#fff;color:#7a3f00;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:10.5px;padding:4px 8px;border-radius:99px;box-shadow:0 2px 5px rgba(0,0,0,.12)}
+
+/* Coming-soon cards get a slightly muted CTA. */
+.playcard-chain .playcard-cta,
+.playcard-guess .playcard-cta{color:var(--sub);font-weight:700}
+.playcard-chain:hover .playcard-cta,
+.playcard-guess:hover .playcard-cta{color:var(--ink)}
 .ggrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:16px 20px 26px}
 .ggrid .gcard{width:auto}
 .ggrid .g-spy{grid-column:1/-1}
@@ -2062,19 +2075,37 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <span class="playcard-cta">Start a room →</span>
         </div>
       </a>
-      <!-- 3 · 8-Ball Pool -->
-      <a class="playcard playcard-pool" href="/pool?from=social" onclick="return wsPlayStart(this,event)">
+      <!-- 3 · Word Chain (English-learning; coming soon) -->
+      <a class="playcard playcard-chain" onclick="return wsPlayComingSoon('word-chain',event)">
         <div class="playcard-art">
-          <div class="pc-ball pc-ball-8" style="left:60%;top:44%">8</div>
-          <div class="pc-ball pc-ball-r" style="left:26%;top:34%">3</div>
-          <div class="pc-ball pc-ball-y" style="right:22%;top:60%">1</div>
-          <div class="pc-ball pc-ball-cue" style="left:14%;top:66%"></div>
+          <div class="pc-chain">
+            <span>LIGHT</span><span class="pc-arr">→</span>
+            <span>TIGER</span><span class="pc-arr">→</span>
+            <span>RIVER</span>
+          </div>
         </div>
         <div class="playcard-body">
-          <div class="playcard-badge">1v1 · Head-to-head</div>
-          <h3>8-Ball Pool</h3>
-          <p>Real physics, one shared table. Pot your colour, then the black — and don't sink the cue.</p>
-          <span class="playcard-cta">Rack 'em →</span>
+          <div class="playcard-badge">Vocabulary · 2+ players</div>
+          <h3>Word Chain</h3>
+          <p>Each player says a word starting with the last letter of the previous one. Fast, silly, and a great vocabulary warm-up.</p>
+          <span class="playcard-cta">Coming soon</span>
+        </div>
+      </a>
+      <!-- 4 · Guess the Word (English-learning; coming soon) -->
+      <a class="playcard playcard-guess" onclick="return wsPlayComingSoon('guess-the-word',event)">
+        <div class="playcard-art">
+          <div class="pc-guess-word">???</div>
+          <div class="pc-guess-clues">
+            <span>🍋 sour</span>
+            <span>🌳 tree</span>
+            <span>🟡 fruit</span>
+          </div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Describe & Guess · 3+ players</div>
+          <h3>Guess the Word</h3>
+          <p>One player describes a word without saying it, everyone else races to guess. Brilliant for learners at any level.</p>
+          <span class="playcard-cta">Coming soon</span>
         </div>
       </a>
     </div>
@@ -3696,6 +3727,37 @@ setInterval(refreshGameBar, 20000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshGameBar(); });
 // Cross-tab: if the game page clears the stamp, hide our pill immediately.
 window.addEventListener('storage', ev => { if (ev.key === 'wsActiveGame') refreshGameBar(); });
+
+// 'Coming soon' games (Word Chain, Guess the Word) — friendly modal
+// that captures interest via the same /learn-idea endpoint the Learn
+// tab uses. Owner ask 1 Aug 2026 — swap 8-Ball Pool for two English-
+// learning placeholders.
+function wsPlayComingSoon(slug, ev){
+  if (ev) ev.preventDefault();
+  const nice = { 'word-chain': 'Word Chain', 'guess-the-word': 'Guess the Word' }[slug] || slug;
+  const useSwal = typeof window.Swal === 'object' && typeof window.Swal.fire === 'function';
+  if (!useSwal) { toast('Coming soon — ' + nice); return false; }
+  Swal.fire({
+    icon: 'info',
+    title: nice + ' is on the way',
+    text: 'This one\'s coming soon. Tap Notify me and we\'ll ping you the moment it lands.',
+    showCancelButton: true,
+    confirmButtonText: 'Notify me',
+    cancelButtonText: 'Later',
+    confirmButtonColor: '#e8506b',
+    reverseButtons: true
+  }).then(res => {
+    if (!res.isConfirmed) return;
+    // Fire-and-forget note to the Learn-idea queue so the owner can
+    // see who's asking for it.
+    try {
+      api('/learn-idea', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ idea: 'Play interest: ' + nice }) });
+    } catch (e) {}
+    toast('Thanks — we\'ll ping you when ' + nice + ' launches.');
+  });
+  return false;
+}
 
 // Snappy 3-2-1-Let's-go countdown when the user taps a game card.
 // Owner ask 1 Aug 2026: 'if someone starts a new game show a sweet
