@@ -179,16 +179,19 @@ body.authmodal{overflow:hidden}
   }
   .topnav .tntabs .tnt .ico{font-size:14px;line-height:1}
   .topnav .tntabs .tnt .badge{position:static;transform:none;font-size:9.5px;padding:1px 5px;min-width:14px;margin-left:2px}
-  /* Owner ask 2026-08-01: 'the user profile on the top left corner i
-     see the border away from the image as the image is big'. Root
-     cause: mobile hid the name label but kept the 3px padding + 1px
-     border + white background, so what remained visually was a pill
-     with a small photo sitting inside it. Now on mobile the chip is
-     just the avatar itself — no padding, no background, no visible
-     border — so what you see is the photo, full stop. */
-  .topnav .mechip{padding:0;border:0;background:transparent;border-radius:99px;overflow:hidden;line-height:0}
+  /* Mobile profile chip = JUST the avatar, sized cleanly.
+     Owner reports 1 Aug 2026: 'user profile on the top left corner i
+     see the border away from the image as the image is big' + 'profile
+     picture still broke on the right corner on the header'.
+     Root cause: the chip had padding + border + background wrapping
+     an inline-natural-sized img, leaving a visible pill around a
+     small photo. Now the chip itself is a fixed 34×34 circle, the
+     inner <span> wrapper fills it, and the <img> inside fills the
+     wrapper — one clean circle, no ring, no border. */
+  .topnav .mechip{padding:0;border:0;background:transparent;border-radius:50%;overflow:hidden;line-height:0;width:34px;height:34px;display:inline-block}
   .topnav .mechip .mename{display:none}
-  .topnav .mechip img,.topnav .mechip .av{display:block;border-radius:50%}
+  .topnav .mechip > span{display:block;width:100%;height:100%}
+  .topnav .mechip img,.topnav .mechip .av,.topnav .mechip .avph{width:100% !important;height:100% !important;display:block;border-radius:50%;object-fit:cover}
 }
 @media(max-width:380px){
   /* Extra tight — hide the icon inside each tab, keep the label. */
@@ -1453,7 +1456,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="mechip" id="tbMe" onclick="showTab('me')">
         <span class="mename" id="meName"></span>
         <span id="meAvSmall"></span>
-        <span class="tdot hidden" id="meDot"></span>
+        <!-- Owner ask 1 Aug 2026: 'remove that online or offline option
+             or stuff'. The old .tdot span was a profile-completion
+             prompt (photo/bio/location missing) rendered as an accent
+             dot on the corner of the avatar — visually reads as an
+             online-status indicator and adds noise. Removed. -->
       </div>
     </div>
   </nav>
@@ -2350,8 +2357,10 @@ function paintMe(){
 function paintTabs(){
   const av = $('tbMeAv');
   if (av) av.innerHTML = ME ? avatarHtml(ME, 24) : '👤';
+  // #meDot removed 1 Aug 2026 — the null-guard `if (dot)` keeps this
+  // safe if any old cached HTML still references the id.
   const dot = $('meDot');
-  if (dot) dot.classList.toggle('hidden', !ME || !!(ME.photo && ME.bio && ME.location));
+  if (dot) dot.classList.add('hidden');
   const wb = $('wallBadge');
   if (wb) {
     const n = (MEMBERS || []).filter(m => m.online && (!ME || m.id !== ME.id)).length;
