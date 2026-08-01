@@ -66,7 +66,7 @@
       .wsfoot a{color:#c9ccd4;text-decoration:none;transition:color .12s}
       .wsfoot a:hover{color:#fff}
       .wsfoot-inner{max-width:1180px;margin:0 auto}
-      .wsfoot-cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px;padding-bottom:32px}
+      .wsfoot-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px;padding-bottom:32px}
       .wsfoot-col h4{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:15.5px;color:#fff;font-weight:600;margin:0 0 14px;letter-spacing:-.2px}
       .wsfoot-col a{display:block;padding:5px 0;font-size:13.5px;font-weight:500}
       .wsfoot-col .row{display:flex;gap:9px;flex-wrap:wrap;margin-top:2px}
@@ -140,19 +140,7 @@
           <div class="wsfoot-col">
             <h4>WordSpies</h4>
             <a href="/">Community</a>
-            <a href="/games">All games</a>
-            <a href="/how-to-play">How to play</a>
-            <a href="/blog">Blog</a>
             <a href="/about">About</a>
-          </div>
-          <div class="wsfoot-col">
-            <h4>Play now</h4>
-            <a href="/codenames">🕵️ WordSpies</a>
-            <a href="/spy">🎭 Who is the Spy?</a>
-            <a href="/ludo">🎲 Ludo</a>
-            <a href="/pool">🎱 8-Ball Pool</a>
-            <a href="/four">🔴 Connect 4</a>
-            <a href="/meld">🧠 Mind Meld</a>
           </div>
           <div class="wsfoot-col">
             <h4>Legal</h4>
@@ -166,11 +154,6 @@
               <a class="wsfoot-sicon" href="https://facebook.com/wordspies" target="_blank" rel="noopener" aria-label="Facebook">${ICONS.fb}</a>
               <a class="wsfoot-sicon" href="https://youtube.com/@wordspies" target="_blank" rel="noopener" aria-label="YouTube">${ICONS.yt}</a>
             </div>
-          </div>
-          <div class="wsfoot-col">
-            <h4>Get the app</h4>
-            <button class="wsinstall" type="button" onclick="wsDoInstall()"><span class="wsi-ico">📲</span>Install WordSpies</button>
-            <div class="wsfoot-note">Works in every browser — no download needed. Install for a full-screen, offline-ready experience on your phone or desktop.</div>
           </div>
         </div>
         <div class="wsfoot-bar">
@@ -200,9 +183,7 @@
     return `<header class="wshead" role="banner">
       <a class="wsh-logo" href="/">Word<em>Spies</em></a>
       ${label ? `<span class="wsh-page">${label.replace(/</g,'&lt;')}</span>` : '<span style="flex:1"></span>'}
-      <a class="wsh-link hideSm" href="/games">🎮 All games</a>
       <a class="wsh-link hideSm" href="/social">👥 Community</a>
-      <button class="wsh-install" type="button" onclick="wsDoInstall()">📲 Install</button>
     </header>`;
   }
 
