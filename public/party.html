@@ -76,15 +76,27 @@ a{color:inherit;text-decoration:none}
    is white color it is confusing… people can easily move from the party
    to the other tabs'. Now high-contrast dark pill with a back arrow so
    it reads unambiguously as 'exit'. */
-/* Party page top strip — same rounded-black-pill design as the
-   /social mini-bar (owner shared screenshot 1 Aug 2026 v3, said
-   'love that'). Whole pill is a click target to minimise. */
-.phead-strip{display:flex;gap:10px;align-items:center;background:var(--ink,#16181f);color:#fff;margin:calc(10px + env(safe-area-inset-top)) 10px 6px;padding:9px 14px;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.22);min-height:48px;position:sticky;top:calc(10px + env(safe-area-inset-top));z-index:30;cursor:pointer;transition:opacity .12s}
-.phead-strip:hover{opacity:.94}
-.phead-strip:active{opacity:.88}
-.phead-dot{width:10px;height:10px;border-radius:50%;background:#22c07a;box-shadow:0 0 0 3px rgba(34,192,122,.22);animation:phead-dot 1.6s ease-in-out infinite;flex-shrink:0}
-@keyframes phead-dot{0%,100%{opacity:1}50%{opacity:.55}}
-.phead-back-lbl{flex:1;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14px;letter-spacing:.1px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Party page top header — title + subtitle on the left, tiny action
+   buttons (Leave / End) on the right. Owner ask 1 Aug 2026 v5.
+   The FAB below handles going back to Community. */
+.phead-full{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:calc(20px + env(safe-area-inset-top)) 20px 12px}
+.phead-full-txt{min-width:0;flex:1}
+.phead-full-txt h1{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:22px;color:var(--ink);letter-spacing:-.3px;line-height:1.15;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phead-full-txt p{font-size:13px;color:var(--sub);font-weight:500;margin-top:4px;line-height:1.45}
+.phead-full-actions{display:flex;gap:6px;flex-shrink:0;padding-top:2px}
+.phead-mini-btn{background:#f2f4f7;color:var(--sub);border:0;border-radius:99px;padding:6px 12px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap}
+.phead-mini-btn:hover{background:#e6e9ee;color:var(--ink)}
+.phead-mini-btn.danger{background:#fff2f3;color:var(--err,#d93025)}
+.phead-mini-btn.danger:hover{background:#ffe3e5;color:#a30f31}
+.phead-mini-btn.hidden{display:none}
+/* Floating back button — 44px round black FAB anchored bottom-left,
+   above the safe-area inset. Tap = minimise (party keeps running). */
+.phead-fab-back{position:fixed;left:14px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:120;width:48px;height:48px;border-radius:50%;background:var(--ink,#16181f);color:#fff;border:0;font-size:22px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;transition:transform .12s,background .12s}
+.phead-fab-back:hover{background:#000;transform:scale(1.05)}
+.phead-fab-back:active{transform:scale(.94)}
+@media(min-width:1000px){
+  .phead-fab-back{left:24px;bottom:24px;width:52px;height:52px;font-size:24px}
+}
 .phead-actions{display:flex;gap:6px;flex-shrink:0}
 .phead-leave{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:99px;padding:6px 12px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;transition:background .12s}
 .phead-leave:hover{background:rgba(255,255,255,.28)}
@@ -350,24 +362,24 @@ a{color:inherit;text-decoration:none}
        the right. Section labels/counts stay stripped — the avatar
        grids speak for themselves. Counts kept as hidden shells so
        paint() can still write into them. -->
-  <!-- Black rounded pill — same design as the /social mini-bar the
-       user loved. Whole pill is a click target that minimises back
-       to Community. Owner ask 1 Aug 2026 v4. -->
-  <header class="phead-strip" id="pHead" onclick="leaveAndGo()" title="Tap to return to Community — the party keeps going in the background">
-    <span class="phead-dot"></span>
-    <span class="phead-back-lbl">← Back to Community</span>
-    <div class="phead-actions">
-      <button class="phead-leave" onclick="event.stopPropagation();confirmLeaveParty()" title="Leave the party">Leave</button>
-      <button class="phead-end hidden" id="pEndBtn" onclick="event.stopPropagation();endParty()" title="End party for everyone">End 🎉</button>
+  <!-- Owner ask 1 Aug 2026 v5: 'show party title + subtitle +
+       Speakers + Listeners, put Leave + End as small buttons top-
+       right, and a floating ← back icon on the side so a speaker
+       can go back to where they came from'. -->
+  <header class="phead-full" id="pHead">
+    <div class="phead-full-txt">
+      <h1 id="pTitle"></h1>
+      <p id="pSub"></p>
+    </div>
+    <div class="phead-full-actions">
+      <button class="phead-mini-btn" onclick="confirmLeaveParty()" title="Leave the party">Leave</button>
+      <button class="phead-mini-btn danger hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End</button>
     </div>
   </header>
-  <!-- Title + subtitle demoted to a quiet sub-header below the strip
-       so they still read as context but don't crowd the primary
-       action. -->
-  <div class="phead-sub">
-    <h1 id="pTitle"></h1>
-    <p id="pSub"></p>
-  </div>
+  <!-- Floating back button — one-tap minimise back to Community. Keeps
+       the party running (socket + audio stay alive), user comes back
+       via the /social mini-pill. -->
+  <button class="phead-fab-back" onclick="leaveAndGo()" title="Back to Community — party keeps going" aria-label="Back to Community">←</button>
 
   <main id="pMain">
     <!-- Raise-hand queue — only rendered for hosts. -->
