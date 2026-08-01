@@ -640,13 +640,13 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ref-btn-save{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
 .ref-btn-save:hover{background:#000}
 .ref-btn-save:disabled{opacity:.5;pointer-events:none}
-/* Wall-card corner slot: stacked vertically so the NEW pill sits on
-   top of the reference count when both are present. Owner ask
-   1 Aug 2026: 'if i have references show that with the [count] and
-   quotes icon on the top right corner'. */
-.wcard-corner{position:absolute;top:10px;right:10px;z-index:2;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.wcard-newref{background:#00c2a0;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18)}
-.wcard-refct{display:inline-flex;align-items:center;gap:3px;color:#7b8595;font-size:12.5px;font-weight:700}
+/* Wall-card corner badge — mutually exclusive:
+     - NEW pill (teal) if the member joined in the last 7 days AND
+       has zero references.
+     - Reference count + quote icon (quiet grey) if refCount > 0.
+   Owner clarified 1 Aug 2026. */
+.wcard-newref{position:absolute;top:10px;right:10px;z-index:2;background:#00c2a0;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18)}
+.wcard-refct{position:absolute;top:10px;right:10px;z-index:2;display:inline-flex;align-items:center;gap:3px;color:#7b8595;font-size:12.5px;font-weight:700}
 .wcard-refct svg{width:14px;height:14px;fill:currentColor}
 .wcard{position:relative}
 .mp-2col{display:grid;gap:16px}
@@ -5128,27 +5128,23 @@ function renderWall(){
     // said was online recently or a day ago'.
     const seenTxt = m.online ? 'Online now'
       : (m.lastSeenAt ? 'Active ' + relTimeShort(m.lastSeenAt) : '');
-    // Corner slot — owner ask 1 Aug 2026: 'if i have references show
-    // that with the 3 and quotes icon on the top right corner'. So
-    // the reference COUNT is now the primary indicator (shown any
-    // time refCount > 0), and the teal NEW pill stacks above it when
-    // any reference was posted in the last 7 days.
-    const REF_FRESH_MS = 7 * 24 * 3600 * 1000;
-    const hasNewRef = m.latestRefAt && (Date.now() - m.latestRefAt) < REF_FRESH_MS;
+    // Corner slot — owner clarified 1 Aug 2026: 'if no reference and
+    // someone is new show new, but if has 1 reference show references
+    // in card, remove the new badge'.
+    //  · refCount > 0 → reference count + quote icon (NEW hidden)
+    //  · refCount === 0 AND joined < 7 days ago → teal NEW pill
+    //  · otherwise → nothing
+    // The two states are mutually exclusive so we don't need the
+    // stacked .wcard-corner container.
+    const NEW_MEMBER_MS = 7 * 24 * 3600 * 1000;
     const refCount = m.refCount || 0;
-    // Quote / speech-bubble icon (open double-quote glyph inside a
-    // speech-bubble outline). More 'testimonial' than a plain chat
-    // bubble.
     const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3l3 3v-3h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-9.5 9-1.3-.4a1.5 1.5 0 0 1-1-1.4v-.9c0-.8.7-1.5 1.5-1.5H11V7H9.7c-1.8 0-3.3 1.5-3.3 3.3v.9c0 1.5 1 2.7 2.4 3.1l1.7.4zm5.9 0-1.3-.4a1.5 1.5 0 0 1-1-1.4v-.9c0-.8.7-1.5 1.5-1.5H17V7h-1.3c-1.8 0-3.3 1.5-3.3 3.3v.9c0 1.5 1 2.7 2.4 3.1l1.6.4z"/></svg>';
-    const countPill = refCount > 0
-      ? `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}">${refCount}${REF_QUOTE_SVG}</span>`
-      : '';
-    const newPill = hasNewRef
-      ? '<span class="wcard-newref" title="New reference this week">NEW</span>'
-      : '';
-    const cornerBadge = (newPill || countPill)
-      ? `<div class="wcard-corner">${newPill}${countPill}</div>`
-      : '';
+    let cornerBadge = '';
+    if (refCount > 0) {
+      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}">${refCount}${REF_QUOTE_SVG}</span>`;
+    } else if (m.createdAt && (Date.now() - m.createdAt) < NEW_MEMBER_MS) {
+      cornerBadge = '<span class="wcard-newref" title="New member">NEW</span>';
+    }
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
       ${cornerBadge}

@@ -290,6 +290,72 @@ const articles = {
 <p>Letting a group pick categories tailors the game to them: film buffs love a movies pack, families lean on easy everyday words, football fans want a sports pack. Same rules, totally different feel.</p>
 <h2>How many words is enough?</h2>
 <p>For genuinely fresh boards you want hundreds of words at minimum. <a href="/">WordSpies</a> draws each 25-word board from a pool of 700+ across multiple categories, and lets the host choose which packs to include — so boards stay fresh and match your group's taste. <a href="/">Start a free game</a> and pick your categories.</p>`
+  },
+
+  'the-app-a-tour': {
+    title: 'WordSpies: A Tour of the App',
+    desc: 'What is WordSpies? A quick tour of the community, chats, parties, learn tab, party games and AI conversation partners — everything in one place.',
+    date: '2026-08-01',
+    html: `
+<p>WordSpies started as a browser word game and grew into a language-exchange community — one place where you can meet real people from around the world, message and voice-call them, drop into audio "parties," pick up phrases you actually need, and play a game together when you feel like it. Here's the guided tour.</p>
+<h2>The Community wall</h2>
+<p>The heart of it. A grid of profiles from members around the world — their native language, what they're learning, a short bio, and how recently they were active. Filter by online now, nearby, brand new, or the always-available Chat Experts. Every card takes one tap to open the full profile, and one tap from there to say hello.</p>
+<h2>Chats</h2>
+<p>Direct messages with anyone on the wall. Text, images, emoji, voice notes and one-tap voice calls — clean rounded bubbles, no ads, no algorithm shuffling replies. If a chat isn't right for you, every profile has Report and Block one tap away, and the chat itself shows a system message on both sides when a block goes into effect.</p>
+<h2>Parties — live audio rooms</h2>
+<p>Anyone can host a party: pick a topic, share a code, and up to twenty people drop in. Some talk, others listen and react with emoji + rationed chat. The audio runs on Cloudflare's real-time network, so it stays crisp across continents. Great for language-exchange nights when you want more than a one-to-one chat.</p>
+<h2>Learn</h2>
+<p>The language surface: coming-soon shelf for phrasebooks, week-by-week roadmaps, curated resources and (soon) verified language teachers. You can already leave a note on what would help you most — those requests shape what we build next.</p>
+<h2>AI conversation partners</h2>
+<p>Three always-available "Chat Experts" — Amy (British), Matthew (American) and Ashley (Australian). Not for cheating your homework, just for practising conversation when nobody's online. They know they're AI, chat naturally, and remember what you said in the same conversation.</p>
+<h2>The word game</h2>
+<p>The original game is still here for group nights: create a room, share a 4-letter code, and up to ten friends join from any phone or laptop. Two teams, 5×5 grid, one-word clues, and one assassin word that ends everything. Full rules in <a href="/blog/codenames-rules-explained">this guide</a>.</p>
+<h2>References</h2>
+<p>Members can leave written testimonials for people they've enjoyed chatting with. They show on your profile with the author's name and photo — real social proof that you're a good person to chat with. New references get a badge on your community card so people scanning the wall can spot fresh recommendations.</p>
+<p><a href="/">Sign up in under a minute</a> — email or Google, 18+ only, no downloads.</p>`
+  },
+
+  'meet-the-chat-experts': {
+    title: 'Meet the Chat Experts: Amy, Matthew and Ashley',
+    desc: 'Three always-available AI conversation partners on WordSpies — British, American and Australian accents — for language practice when nobody\'s online.',
+    date: '2026-08-01',
+    html: `
+<p>Not every language-learning session lines up with someone else's schedule. That's why WordSpies has three "Chat Experts" — AI conversation partners who are always around, chat naturally, and adapt to whatever you want to talk about.</p>
+<h2>Amy — British, from Bristol</h2>
+<p>Warm, curious, gentle sense of humour. Loves hearing about other cultures, books, and everyday life. If you want to practise British English or just a calm conversation about the small stuff, she's a great first chat.</p>
+<h2>Matthew — American, from Portland</h2>
+<p>Dry sense of humour, into indie films and good coffee. Speaks with an easy, unhurried American cadence. Ideal if you're working on West-Coast American English or want conversations that don't feel rushed.</p>
+<h2>Ashley — Australian, from Melbourne</h2>
+<p>Upbeat, chatty, loves music and travel talk. Uses the odd Aussie phrase naturally without laying it on thick. If you want to hear how Australians actually speak day-to-day, she's your person.</p>
+<h2>How they work</h2>
+<p>Each Chat Expert speaks in their own voice — literally: they use real text-to-speech voices so you can hear pronunciation, rhythm and accent. Voice notes ARE available in their chats. They remember what you've said in the same conversation, so you can build on earlier topics.</p>
+<h2>When to use them</h2>
+<p>Late-night practice sessions. Warm-up before a real conversation with a language partner. Working through a specific topic (ordering food, small-talk, job interview) without feeling embarrassed. They're not a replacement for real people — but they're always there when you need a low-pressure chat.</p>
+<h2>Everyone else</h2>
+<p>The community wall shows real members by default. To find the Chat Experts, tap the "✦ Chat Experts" filter above the wall. <a href="/">Sign up free</a> to start chatting with them and everyone else.</p>`
+  },
+
+  'party-games-shelf': {
+    title: 'The WordSpies Games Shelf: One Place, Free, No Sign-Up',
+    desc: 'Codenames-style word game, Ludo, 8-ball pool, Connect 4, Mind Meld and Who is the Spy — all free, in the browser, with friends or against the bot.',
+    date: '2026-08-01',
+    html: `
+<p>WordSpies is a language-exchange community first, but games are part of how we bring people together. Here's what's on the shelf — all free, all browser-based, all playable in seconds.</p>
+<h2>WordSpies (the original word game)</h2>
+<p>The Codenames-style spy game the whole site was named after. Two teams, a 5×5 grid, one-word clues, one assassin word that ends everything. 4-10+ players from any device. <a href="/blog/codenames-rules-explained">Full rules here</a>.</p>
+<h2>Who is the Spy?</h2>
+<p>A conversation game for 4+ players. Everyone gets a word except the spy, who has to blend in without knowing what everyone else is describing. Perfect for a party or a warm-up before a language-exchange session — the deception is the fun.</p>
+<h2>Ludo</h2>
+<p>The classic board race — roll, move around the board, send other players' pieces back to start. 2-4 players, plays in about 15 minutes. Great for hanging out with friends without needing intense concentration.</p>
+<h2>8-Ball Pool</h2>
+<p>Real physics, 8-ball rules, one shared table. Play a friend with a link or take on the bot. The satisfying click when you sink the black ball is universal.</p>
+<h2>Connect 4</h2>
+<p>Drop pieces, make four in a row, block theirs. Thirty-second rounds, quick and addictive. Good filler between longer games.</p>
+<h2>Mind Meld</h2>
+<p>Two players type a word at the same time trying to say the SAME word. Miss? Both those words become the new prompt. Aim for a match. Sounds simple, is oddly beautiful, and only takes a minute.</p>
+<h2>How the games fit the community</h2>
+<p>Games are the low-pressure entry point. New members hop into a room, chat while playing, and by the third round they're comfortable enough to start a real conversation. The whole shelf is one tap from the Community tab, and you can invite anyone on your wall to a game with a single button on their profile.</p>
+<p><a href="/">Sign up</a> to start meeting people — games are open to everyone, sign-up or not.</p>`
   }
 };
 

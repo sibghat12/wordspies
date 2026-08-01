@@ -44,42 +44,39 @@ h2{font-size:21px;margin:32px 0 10px;font-weight:700}
 p,li{font-size:16.5px;line-height:1.75;color:#242628}
 ul{padding-left:22px}li{margin-bottom:6px}
 a{color:#1c1e21}
-/* Tandem-style four-column footer. Owner shared Tandem HTML on 1 Aug
-   2026 as the reference; we mirror the same information architecture
-   (Useful Info / Legal / Social / Site language + store badges) but
-   in our own visual language. Content is centred within each column,
-   columns collapse to two on tablet, one on phone. */
-footer.sitefoot{margin-top:56px;padding:40px 20px 28px;border-top:1px solid #e5e7eb;background:#fff;font-family:'Inter',sans-serif;color:#5f6675;font-size:13px;line-height:1.5}
-footer.sitefoot .fwrap{max-width:1080px;margin:0 auto}
-footer.sitefoot .fmenu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 32px}
+/* Tandem-style dark four-column footer. Owner shared Tandem screenshot
+   1 Aug 2026 (dark bg, light text, monochrome icons in circles).
+   Columns collapse 4 → 2 on tablet, → 1 on phone. */
+footer.sitefoot{margin-top:56px;padding:44px 24px 24px;background:#1a1d23;color:#a4a8b1;font-family:'Inter',sans-serif;font-size:13px;line-height:1.5;border-top:0}
+footer.sitefoot .fwrap{max-width:1200px;margin:0 auto}
+footer.sitefoot .fmenu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 32px;align-items:flex-start}
 @media(max-width:840px){footer.sitefoot .fmenu{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}}
 @media(max-width:520px){footer.sitefoot .fmenu{grid-template-columns:1fr;gap:28px}}
-footer.sitefoot .fcol h4{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:14px;color:#1c1e21;letter-spacing:-.1px;margin:0 0 12px;text-transform:none}
-footer.sitefoot .fcol a{display:block;color:#5f6675;text-decoration:none;font-size:13px;font-weight:500;padding:5px 0;transition:color .12s}
-footer.sitefoot .fcol a:hover{color:#1c1e21}
-/* Social icons row — clean SVG monochromes in a grid, matching the
-   quiet greyscale palette Tandem uses. */
-footer.sitefoot .fsocial-grid{display:grid;grid-template-columns:repeat(4,32px);gap:12px 12px;margin-top:2px}
-footer.sitefoot .fsocial-grid a{padding:0;width:32px;height:32px;border-radius:50%;background:#f2f4f7;color:#5f6675;display:inline-flex;align-items:center;justify-content:center;transition:background .12s,color .12s}
-footer.sitefoot .fsocial-grid a:hover{background:#e5e8ee;color:#1c1e21}
-footer.sitefoot .fsocial-grid svg{width:15px;height:15px;fill:currentColor}
-/* App-store badges — solid black pills as before, stacked vertically
-   inside the last column above the Site Language selector. */
-footer.sitefoot .fstores{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-footer.sitefoot .stbadge{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;text-decoration:none;padding:9px 14px;border-radius:12px;font-weight:600;font-size:13px;transition:transform .12s,background .12s;justify-content:flex-start}
-footer.sitefoot .stbadge:hover{transform:translateY(-1px);background:#1a1a1a}
+footer.sitefoot .fcol h4{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:15px;color:#fff;letter-spacing:-.1px;margin:0 0 14px}
+footer.sitefoot .fcol a{display:block;color:#c9ccd4;text-decoration:none;font-size:13.5px;font-weight:500;padding:6px 0;transition:color .12s}
+footer.sitefoot .fcol a:hover{color:#fff}
+/* Social icons — dark grey circles with white glyphs. */
+footer.sitefoot .fsocial-grid{display:grid;grid-template-columns:repeat(3,36px);gap:12px;margin-top:2px}
+footer.sitefoot .fsocial-grid a{padding:0;width:36px;height:36px;border-radius:50%;background:#2b2e36;color:#fff;display:inline-flex;align-items:center;justify-content:center;transition:background .12s}
+footer.sitefoot .fsocial-grid a:hover{background:#3b3f4a}
+footer.sitefoot .fsocial-grid svg{width:16px;height:16px;fill:currentColor}
+/* Store badges — real Apple/Play visual language (black bg pill). */
+footer.sitefoot .fstores{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+footer.sitefoot .stbadge{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;text-decoration:none;padding:9px 14px;border-radius:10px;font-weight:600;font-size:13px;border:1px solid #3b3f4a;transition:border-color .12s}
+footer.sitefoot .stbadge:hover{border-color:#5b6070}
 footer.sitefoot .stbadge span{display:flex;flex-direction:column;line-height:1.1;text-align:left}
 footer.sitefoot .stbadge span small{font-size:9.5px;font-weight:500;letter-spacing:.02em;opacity:.75;text-transform:uppercase}
 footer.sitefoot .stbadge span b{font-size:14px;font-weight:700;letter-spacing:.01em}
 footer.sitefoot .stbadge svg{width:20px;height:20px;fill:#fff;flex:none}
-/* Site-language selector (English only for now; dropdown a follow-up). */
-footer.sitefoot .flang{display:inline-flex;align-items:center;gap:8px;background:#f2f4f7;border:1px solid #e5e8ee;border-radius:10px;padding:8px 12px;font-weight:600;font-size:13px;color:#1c1e21;cursor:default}
-footer.sitefoot .flang .fflag{width:18px;height:18px;border-radius:50%;overflow:hidden;flex:none;font-size:14px;line-height:18px;text-align:center}
-/* Sub-footer: copyright left, brand right. */
-footer.sitefoot .fsub{margin-top:32px;padding-top:20px;border-top:1px solid #eef0f4;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-footer.sitefoot .fmeta{color:#8a8f99;font-size:12px;letter-spacing:.02em;line-height:1.6}
-footer.sitefoot .fbrand{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:15px;color:#1c1e21;text-decoration:none;letter-spacing:-.2px}
-footer.sitefoot .fbrand em{font-style:normal;color:#e8506b}
+/* Site-language selector — dark chip with flag + chevron. */
+footer.sitefoot .flang{display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 0;font-weight:600;font-size:14px;color:#fff;cursor:default}
+footer.sitefoot .flang .fflag{width:22px;height:22px;border-radius:50%;overflow:hidden;flex:none;font-size:16px;line-height:22px;text-align:center}
+footer.sitefoot .flang .fchev{color:#a4a8b1;font-weight:400;margin-left:2px}
+/* Sub-footer: quiet copyright + brand. */
+footer.sitefoot .fsub{margin-top:36px;padding-top:20px;border-top:1px solid #2b2e36;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+footer.sitefoot .fmeta{color:#7b8090;font-size:12px;letter-spacing:.02em;line-height:1.6}
+footer.sitefoot .fbrand{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:16px;color:#fff;text-decoration:none;letter-spacing:-.2px}
+footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
 </style></head>
 <body>
 <header class="sitehead"><div class="hwrap">
@@ -98,16 +95,15 @@ ${body}
 </div>
 <footer class="sitefoot"><div class="fwrap">
   <div class="fmenu">
-    <!-- Column 1 · Useful Information -->
+    <!-- Column 1 · Useful Information (matches Tandem's screenshot order) -->
     <div class="fcol">
       <h4>Useful Information</h4>
-      <a href="/home">Home</a>
-      <a href="/about">About us</a>
-      <a href="/blog">Blog</a>
-      <a href="/how-to-play">How it works</a>
       <a href="mailto:contact@wordspies.co.uk?subject=WordSpies%20—%20Bug%20report">Report a bug</a>
       <a href="mailto:contact@wordspies.co.uk?subject=WordSpies%20—%20Feature%20request">Request a feature</a>
+      <a href="/how-to-play">FAQs</a>
       <a href="mailto:contact@wordspies.co.uk">Contact us</a>
+      <a href="/about">About us</a>
+      <a href="/blog">Blog</a>
     </div>
     <!-- Column 2 · Legal -->
     <div class="fcol">
@@ -142,7 +138,7 @@ ${body}
       </div>
       <h4>Site Language</h4>
       <div class="flang" title="More languages coming soon">
-        <span class="fflag">🇬🇧</span> English
+        <span class="fflag">🇬🇧</span> English <span class="fchev">▾</span>
       </div>
     </div>
   </div>
