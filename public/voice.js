@@ -308,8 +308,28 @@
     pc: null,
     sessionId: null,
     localTrackNames: [],                 // trackNames Cloudflare gave us for our own published tracks
-    subscribed: {},                      // peerSessionId → [audioEls]
+    subscribed: {},                      // peerSessionId+trackName → true (dedup once CONFIRMED)
     pending: [],                         // remote peers we couldn't subscribe to yet (pc not ready)
+    // ── negotiation mutex ──────────────────────────────────────────────
+    // Every operation that touches the local RTCPeerConnection's SDP
+    // (createOffer / createAnswer / set{Local,Remote}Description) MUST
+    // run one-at-a-time. WebRTC's signalling state machine goes
+    // stable → have-local-offer → have-remote-pranswer/answer → stable,
+    // and firing a second setLocalDescription while the first is in
+    // flight throws "InvalidStateError" and silently drops the operation.
+    //
+    // Real-world symptom (owner-reported, 2026-08-01): a listener joining
+    // a room with 2 speakers already publishing got a v-roster event with
+    // BOTH speakers, fired subscribeTo() twice back-to-back, and the
+    // second subscription crashed — so the listener heard only one
+    // speaker. Now every SDP-mutating operation is queued behind
+    // _negoQueue and awaits the previous one.
+    _negoQueue: Promise.resolve(),
+    _serialize: function (fn) {
+      var p = this._negoQueue.then(fn, fn);
+      this._negoQueue = p.catch(function () {});
+      return p;
+    },
 
     async activate() {
       var self = this;
@@ -420,76 +440,106 @@
       this.sessionId = null;
       this.localTrackNames = [];
       this.subscribed = {};
+      // Reset the negotiation mutex so a fresh activate() doesn't chain
+      // behind the old session's queued operations (which now target a
+      // closed pc and will throw).
+      this._negoQueue = Promise.resolve();
     },
 
     // Register a new local track (mic just opened) with Cloudflare.
-    async publishTrack(track) {
-      if (!this.pc || !this.sessionId) return;
-      var transceiver = this.pc.addTransceiver(track, { direction: 'sendonly' });
-      var offer = await this.pc.createOffer();
-      // Rewrite our offer's Opus fmtp for stereo + FEC + 128 kbps + no DTX
-      // BEFORE handing it to the PC, so the local view already reflects
-      // the maxed-out params. CF echoes them back in its answer.
-      offer = new RTCSessionDescription({ type: offer.type, sdp: tuneOpus(offer.sdp) });
-      await this.pc.setLocalDescription(offer);
-      var body = {
-        sdp: { type: 'offer', sdp: offer.sdp },
-        tracks: [{ location: 'local', mid: transceiver.mid, trackName: track.id }]
-      };
-      var r = await fetch('/api/voice/cf/tracks/' + this.sessionId, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-      }).then(function (x) { return x.json(); });
-      if (!r || !r.sessionDescription) throw new Error('Cloudflare publish failed.');
-      await this.pc.setRemoteDescription(r.sessionDescription);
-      // Cloudflare returns the assigned trackName for each pushed track.
-      var names = (r.tracks || []).map(function (t) { return t.trackName; }).filter(Boolean);
-      this.localTrackNames = this.localTrackNames.concat(names);
-      // Tell the room what our tracks are called so subscribers can grab them.
-      socket.emit('v-tracks', { cfSession: this.sessionId, tracks: this.localTrackNames });
+    // Serialized behind _negoQueue so it never collides with a subscribe.
+    publishTrack: function (track) {
+      var self = this;
+      return this._serialize(async function () {
+        if (!self.pc || !self.sessionId) return;
+        var transceiver = self.pc.addTransceiver(track, { direction: 'sendonly' });
+        var offer = await self.pc.createOffer();
+        // Rewrite our offer's Opus fmtp for stereo + FEC + 128 kbps + no DTX
+        // BEFORE handing it to the PC, so the local view already reflects
+        // the maxed-out params. CF echoes them back in its answer.
+        offer = new RTCSessionDescription({ type: offer.type, sdp: tuneOpus(offer.sdp) });
+        await self.pc.setLocalDescription(offer);
+        var body = {
+          sdp: { type: 'offer', sdp: offer.sdp },
+          tracks: [{ location: 'local', mid: transceiver.mid, trackName: track.id }]
+        };
+        var r = await fetch('/api/voice/cf/tracks/' + self.sessionId, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        }).then(function (x) { return x.json(); });
+        if (!r || !r.sessionDescription) throw new Error('Cloudflare publish failed.');
+        await self.pc.setRemoteDescription(r.sessionDescription);
+        // Cloudflare returns the assigned trackName for each pushed track.
+        var names = (r.tracks || []).map(function (t) { return t.trackName; }).filter(Boolean);
+        self.localTrackNames = self.localTrackNames.concat(names);
+        // Tell the room what our tracks are called so subscribers can grab them.
+        socket.emit('v-tracks', { cfSession: self.sessionId, tracks: self.localTrackNames });
+      });
     },
 
     // Subscribe to every audio track a remote peer is publishing.
-    async subscribeTo(peer) {
-      if (!this.pc || !this.sessionId) return;
-      if (!peer || !peer.cfSession || peer.cfSession === this.sessionId) return;
-      if (!Array.isArray(peer.tracks) || !peer.tracks.length) return;
-      // Skip tracks we've already asked for (dedup by session+track).
+    // Serialized behind _negoQueue: renegotiation on the same PC MUST be
+    // strictly sequential — a second setLocalDescription mid-flight throws
+    // InvalidStateError and silently drops the subscription (owner bug
+    // 2026-08-01: listener heard only 1 of 2 concurrent speakers).
+    subscribeTo: function (peer) {
       var self = this;
-      var need = peer.tracks.filter(function (name) {
-        var key = peer.cfSession + ':' + name;
-        if (self.subscribed[key]) return false;
-        self.subscribed[key] = true;
-        return true;
-      });
-      if (!need.length) return;
-      var body = {
-        tracks: need.map(function (name) {
-          return { location: 'remote', sessionId: peer.cfSession, trackName: name };
-        })
-      };
-      var r = await fetch('/api/voice/cf/tracks/' + this.sessionId, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-      }).then(function (x) { return x.json(); });
-      if (!r) return;
-      // Cloudflare returns an OFFER we must answer via /renegotiate.
-      if (r.requiresImmediateRenegotiation && r.sessionDescription) {
-        await this.pc.setRemoteDescription(r.sessionDescription);
-        var ans = await this.pc.createAnswer();
-        // Tune Opus in our answer too so both directions run at 128 kbps.
-        ans = new RTCSessionDescription({ type: ans.type, sdp: tuneOpus(ans.sdp) });
-        await this.pc.setLocalDescription(ans);
-        await fetch('/api/voice/cf/renegotiate/' + this.sessionId, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sdp: { type: 'answer', sdp: ans.sdp } })
+      return this._serialize(async function () {
+        if (!self.pc || !self.sessionId) return;
+        if (!peer || !peer.cfSession || peer.cfSession === self.sessionId) return;
+        if (!Array.isArray(peer.tracks) || !peer.tracks.length) return;
+        // Dedup by (peer session, trackName). Filter BEFORE the fetch but
+        // mark AFTER success — a failed subscribe must be retriable when
+        // the next v-peer/v-roster event fires. (Old code marked before
+        // fetch, so a transient error left the track permanently unheard.)
+        var need = peer.tracks.filter(function (name) {
+          var key = peer.cfSession + ':' + name;
+          return !self.subscribed[key];
         });
-      }
+        if (!need.length) return;
+        var body = {
+          tracks: need.map(function (name) {
+            return { location: 'remote', sessionId: peer.cfSession, trackName: name };
+          })
+        };
+        try {
+          var r = await fetch('/api/voice/cf/tracks/' + self.sessionId, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+          }).then(function (x) { return x.json(); });
+          if (!r) return;
+          // Cloudflare returns an OFFER we must answer via /renegotiate.
+          if (r.requiresImmediateRenegotiation && r.sessionDescription) {
+            await self.pc.setRemoteDescription(r.sessionDescription);
+            var ans = await self.pc.createAnswer();
+            // Tune Opus in our answer too so both directions run at 128 kbps.
+            ans = new RTCSessionDescription({ type: ans.type, sdp: tuneOpus(ans.sdp) });
+            await self.pc.setLocalDescription(ans);
+            await fetch('/api/voice/cf/renegotiate/' + self.sessionId, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sdp: { type: 'answer', sdp: ans.sdp } })
+            });
+          }
+          // Only NOW mark these as subscribed — success confirmed.
+          need.forEach(function (name) {
+            self.subscribed[peer.cfSession + ':' + name] = true;
+          });
+        } catch (e) {
+          try { console && console.warn && console.warn('[voice] subscribeTo failed for', peer.cfSession, e); } catch (e2) {}
+          // Leave the dedup keys unset so the next v-peer for this speaker
+          // (roster refresh, tab-return, or v-tracks re-broadcast) retries.
+          throw e;
+        }
+      });
     },
 
     onPeer: function (m) {
       if (!m || m.id === myId) return;
       if (!m.on) { emit('peer-drop', { id: m.id }); return; }
-      // If they've published tracks and we can, subscribe.
-      if (m.cfSession && m.tracks && m.tracks.length) this.subscribeTo(m);
+      // If they've published tracks and we can, subscribe. Errors from
+      // subscribeTo are swallowed here — they're already logged and will
+      // retry on the next v-peer/v-roster/v-tracks event.
+      if (m.cfSession && m.tracks && m.tracks.length) {
+        this.subscribeTo(m).catch(function () {});
+      }
     },
 
     async publishLocal() {
