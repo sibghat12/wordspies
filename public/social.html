@@ -853,9 +853,11 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pt-mgo:disabled{opacity:.5;cursor:default;transform:none}
 .pt-err{color:var(--err);font-size:12.5px;font-weight:600;margin-top:10px}
 
-/* Voice-call button in the chat header — small green pill next to the
-   Community button. Only shows when we have a real chat open. */
-.chcall{background:#22c07a;color:#fff;border:0;border-radius:99px;font-size:16px;font-weight:800;padding:8px 14px;min-height:36px;cursor:pointer;box-shadow:0 3px 10px rgba(34,192,122,.28);margin-left:6px;flex-shrink:0}
+/* Voice-call button in the chat header. Matches the composer's send +
+   micrec buttons: 40px round pill, purple/blue gradient, same shadow.
+   Owner ask 1 Aug 2026: 'make the call icon same as the other send
+   and the mic icon'. */
+.chcall{background:linear-gradient(135deg,var(--cme-1,#5a7bff),var(--cme-2,#7c5cff));color:#fff;border:0;border-radius:50%;width:40px;height:40px;min-height:40px;padding:0;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(96,88,255,.22);margin-left:6px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 /* Overflow (⋯) menu on the chat header — report + block for the
    current chat peer. Same visual language as the profile page's
    .mp-more menu but scoped to .chmore so it doesn't collide. */
@@ -866,7 +868,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .chmore-menu button{background:transparent;border:0;text-align:left;padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;white-space:nowrap}
 .chmore-menu button:hover{background:var(--hover,#f1f3f4)}
 .chcall:hover{filter:brightness(1.05)}
-@media(max-width:520px){ .chcall{padding:8px 10px;font-size:15px} }
+@media(max-width:520px){ .chcall{width:38px;height:38px;min-height:38px;font-size:16px} }
 
 /* Full-screen ringing overlay — appears when someone is calling you.
    Modal with big avatar, name, and Accept/Decline buttons. */
