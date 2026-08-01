@@ -2345,18 +2345,31 @@ function showTab(t){
   document.body.classList.toggle('chatlock', t === 'chat' && !split);
   $('jumpNew').classList.remove('show');
   // Scroll to top on ANY top-nav tab click so Community / Chats /
-  // Parties / Games / Me all land you at the top of the page. Single
-  // chat view (t === 'chat') keeps its own scroll — the msgs list
-  // manages that internally and jumping the outer page would lose
+  // Parties / Games / Me / Learn all land you at the top of the page.
+  // Single chat view (t === 'chat') keeps its own scroll — the msgs
+  // list manages that internally and jumping the outer page would lose
   // the message you were reading.
+  //
+  // Belt-and-braces pinTop retry pattern (same one used in enterApp
+  // and openMemberObj): 5 successive fires at immediate / rAF / 80ms
+  // / 250ms / 600ms. Covers async image decode, font-swap, hero
+  // paints, and API-driven content injection that would otherwise
+  // shift layout AFTER the initial scroll fired and leave the user
+  // mid-page. iOS Safari also needs the documentElement + body
+  // scrollTop assignments — window.scrollTo alone isn't reliable
+  // there. Owner ask 2026-08-01: 'if we change any tab from the top
+  // place it should be back to the top'.
   if (t !== 'chat') {
-    // Belt AND braces: scroll now (before layout settles) and again
-    // on the next frame + at 50ms after content has painted. Fixes
-    // the "lands mid-page" case where the hero + sidebar transform
-    // made the initial scroll happen before real layout was ready.
-    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch(e) { window.scrollTo(0, 0); }
-    requestAnimationFrame(() => { try { window.scrollTo(0, 0); } catch(e){} });
-    setTimeout(() => { try { window.scrollTo(0, 0); } catch(e){} }, 50);
+    const pinTop = () => {
+      try { window.scrollTo(0, 0); } catch(e){}
+      try { document.documentElement.scrollTop = 0; } catch(e){}
+      try { document.body.scrollTop = 0; } catch(e){}
+    };
+    pinTop();
+    requestAnimationFrame(pinTop);
+    setTimeout(pinTop, 80);
+    setTimeout(pinTop, 250);
+    setTimeout(pinTop, 600);
   }
   fitChat();
   if (split) {
