@@ -110,6 +110,19 @@ function mount(api, ctx) {
       if (b.interests !== undefined) u.interests = cleanArr(b.interests, 30, 12);
       if (b.goals     !== undefined) u.goals     = cleanArr(b.goals,     30, 6);
       if (b.recs      !== undefined) u.recs      = String(b.recs || '').slice(0, 500);
+      // Onboarding wizard fields (1 Aug 2026):
+      //   goal        — one-of picker (learn / practise / friends / travel / other)
+      //   onboardedAt — millis of when the wizard was completed, so we
+      //                 don't re-show it on later logins. Client-set.
+      const ALLOWED_GOALS = ['learn', 'practise', 'friends', 'travel', 'other'];
+      if (b.goal !== undefined) {
+        const g = String(b.goal || '').toLowerCase().trim();
+        u.goal = ALLOWED_GOALS.includes(g) ? g : '';
+      }
+      if (b.onboardedAt !== undefined) {
+        const n = Number(b.onboardedAt);
+        if (Number.isFinite(n) && n > 0) u.onboardedAt = n;
+      }
 
       await db.set('soc:user:' + u.id, JSON.stringify(u));
       res.json({ me: pub(u) });

@@ -164,6 +164,8 @@ function mount(app, redis) {
     interests: Array.isArray(u.interests) ? u.interests : [],
     goals: Array.isArray(u.goals) ? u.goals : [],
     recs: u.recs || '',
+    goal: u.goal || '',
+    onboardedAt: u.onboardedAt || null,
     isAI: !!u.isAI,
     ...marks(u) });
 
@@ -515,6 +517,23 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     if (await db.sismember('soc:blocks:' + b, a)) return true;
     return false;
   }
+
+  // Account-verification queue: onboarding wizard writes here after
+  // the profile has enough content for a moderator to review. Owner
+  // ('you') walks the queue via the admin portal (next session).
+  // Redis key = 'soc:new-accounts', a rolling list of user ids. Users
+  // can safely appear multiple times if they call this again — we
+  // dedupe on read in the admin surface.
+  api.post('/account/pending', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      const entry = JSON.stringify({ t: Date.now(), uid: u.id, name: u.name, email: u.email });
+      await db.rpush('soc:new-accounts', entry);
+      await db.ltrim('soc:new-accounts', -2000, -1);
+      res.json({ ok: true });
+    } catch (e) { console.error('account/pending:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
 
   // Learn-tab interest capture (v1). The Learn shelf is a coming-soon
   // placeholder; this endpoint just appends whatever the user typed to a

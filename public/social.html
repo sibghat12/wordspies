@@ -60,6 +60,64 @@ body.authmodal #vAuth .authcol{width:100%}
 body.authmodal #authClose{position:absolute;top:10px;right:10px;left:auto;z-index:81;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:800;line-height:1;cursor:pointer;color:var(--sub);transition:background .12s,color .12s;padding:0;display:inline-flex;align-items:center;justify-content:center}
 body.authmodal #authClose:hover{background:var(--hover,#f1f3f4);color:var(--ink)}
 body.authmodal{overflow:hidden}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ONBOARDING WIZARD — full-screen white sheet with sliding steps.
+   Owner ask 1 Aug 2026 (Tandem-inspired flow).
+   ═══════════════════════════════════════════════════════════════════ */
+.ob-wizard{position:fixed;inset:0;z-index:200;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+.ob-wizard.hidden{display:none}
+body.ob-open{overflow:hidden}
+.ob-shell{flex:1;position:relative;max-width:480px;width:100%;margin:0 auto;padding:calc(24px + env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;overflow:hidden}
+.ob-progress{display:flex;gap:6px;margin-bottom:18px;flex-shrink:0}
+.ob-progress span{flex:1;height:3px;border-radius:99px;background:#e6e6ef;transition:background .25s}
+.ob-progress span.done{background:var(--accent,#e8506b)}
+.ob-progress span.now{background:linear-gradient(90deg,var(--accent,#e8506b),var(--accent-d,#c33d55))}
+
+/* Each step is absolutely positioned and slides in/out. Only the
+   .show one is on-screen; the rest sit off to the right waiting. */
+.ob-step{position:absolute;inset:calc(24px + env(safe-area-inset-top) + 30px) 22px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:flex-start;gap:14px;opacity:0;transform:translateX(30px);pointer-events:none;transition:opacity .28s ease,transform .28s ease;overflow-y:auto;overflow-x:hidden}
+.ob-step.show{opacity:1;transform:translateX(0);pointer-events:auto}
+.ob-step.back-out{transform:translateX(-30px)}
+.ob-emoji{font-size:44px;line-height:1;margin-top:8px}
+.ob-step h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:24px;font-weight:700;letter-spacing:-.4px;line-height:1.2;color:var(--ink)}
+.ob-sub{color:var(--sub);font-size:14.5px;line-height:1.5}
+.ob-para{color:var(--ink);font-size:14.5px;line-height:1.65;margin:0}
+.ob-fields{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.ob-input{width:100%;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-family:inherit;font-size:16px;background:#fff;color:var(--ink);outline:none;transition:border-color .12s,box-shadow .12s}
+.ob-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,80,107,.14)}
+textarea.ob-input{resize:none;line-height:1.45;min-height:80px}
+.ob-label{font-size:12.5px;font-weight:700;color:var(--sub);letter-spacing:.3px;text-transform:uppercase;margin-top:12px}
+.ob-err{color:var(--err);font-size:13px;font-weight:600;padding:4px 2px}
+.ob-row{display:flex;gap:10px;margin-top:auto;padding-top:16px}
+.ob-back{background:transparent;color:var(--sub);border:0;font-family:inherit;font-weight:700;font-size:15px;padding:14px 22px;border-radius:14px;cursor:pointer;flex-shrink:0}
+.ob-back:hover{color:var(--ink);background:var(--hover,#f4f5f7)}
+.ob-next{flex:1;background:var(--ink);color:#fff;border:0;border-radius:14px;padding:14px 22px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:transform .1s,background .12s}
+.ob-next:hover{background:#000}
+.ob-next:active{transform:scale(.98)}
+.ob-next:disabled{opacity:.5;pointer-events:none}
+.primary-big{background:linear-gradient(135deg,var(--accent,#e8506b),var(--accent-d,#c33d55));padding:16px 22px;font-size:16px}
+/* Photo step */
+.ob-photo-examples{display:flex;gap:8px;margin:6px 0}
+.ob-photo-ex{flex:1;background:#f8f9fb;border:1px dashed var(--line);border-radius:12px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--sub)}
+.ob-photo-ex span{font-size:20px;font-weight:800;line-height:1}
+.ob-photo-ex.ok span{color:#22c07a}
+.ob-photo-ex.bad span{color:var(--err)}
+.ob-photo-upload{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;border:2px dashed var(--line);border-radius:16px;cursor:pointer;transition:border-color .12s,background .12s;margin-top:6px}
+.ob-photo-upload:hover{border-color:var(--accent);background:#fafbff}
+.ob-photo-plus{width:80px;height:80px;border-radius:50%;background:#f4f5f7;display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--sub);font-weight:400}
+.ob-photo-upload.has-photo .ob-photo-plus{background:transparent}
+.ob-photo-upload.has-photo .ob-photo-plus img{width:80px;height:80px;border-radius:50%;object-fit:cover}
+.ob-photo-hint{color:var(--sub);font-size:13px;font-weight:600}
+/* Goal picker */
+.ob-goal-picker{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.ob-goal{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .12s,background .12s}
+.ob-goal:hover{border-color:var(--sub)}
+.ob-goal.on{border-color:var(--accent);background:#fff3f5;color:var(--accent-d)}
+/* Welcome logo */
+.ob-welcome-logo{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.6px;color:var(--ink);margin-bottom:10px;animation:obWelcomeIn .5s ease-out}
+.ob-welcome-logo em{font-style:normal;color:var(--accent,#e8506b)}
+@keyframes obWelcomeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 .wrap{max-width:520px;margin:0 auto;min-height:100%;position:relative;padding-bottom:86px;overflow-x:clip}
 .logo{font-family:'Fredoka';font-weight:600;font-size:19px}
 .logo em{font-style:normal;color:var(--accent)}
@@ -1459,6 +1517,137 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   </div>
 </div>
 
+<!-- ============ ONBOARDING WIZARD ============
+     Multi-step signup flow modelled on Tandem's onboarding (owner
+     research 1 Aug 2026). Shown ONCE per new account, after signup
+     completes and before the community tab is revealed. Steps are
+     rendered as absolutely-positioned cards inside #obShell; only
+     one is visible at a time via .ob-step.show. next()/back()
+     handle the slide animation + progress dot painting.
+     ================================================ -->
+<div id="obWizard" class="ob-wizard hidden" aria-hidden="true">
+  <div class="ob-shell" id="obShell">
+    <div class="ob-progress" id="obProgress"></div>
+
+    <!-- STEP 1 · Name (first + last) -->
+    <section class="ob-step" data-step="1">
+      <div class="ob-emoji">👋</div>
+      <h2>What's your name?</h2>
+      <p class="ob-sub">This is what other spies will call you. Real names build trust.</p>
+      <div class="ob-fields">
+        <input class="ob-input" id="obFirstName" maxlength="20" placeholder="First name" autocomplete="given-name">
+        <input class="ob-input" id="obLastName" maxlength="20" placeholder="Last name (optional)" autocomplete="family-name">
+      </div>
+      <div class="ob-err hidden" id="obErr1"></div>
+      <button class="ob-next" onclick="obNext(1)">Continue</button>
+    </section>
+
+    <!-- STEP 2 · Date of birth -->
+    <section class="ob-step" data-step="2">
+      <div class="ob-emoji">🎂</div>
+      <h2>When's your birthday?</h2>
+      <p class="ob-sub">WordSpies is strictly 18+. We ask so we can keep the community safe.</p>
+      <div class="ob-fields">
+        <input class="ob-input" id="obBirth" type="date" aria-label="Date of birth">
+      </div>
+      <div class="ob-err hidden" id="obErr2"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(2)">Back</button>
+        <button class="ob-next" onclick="obNext(2)">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 3 · Email (confirm) -->
+    <section class="ob-step" data-step="3">
+      <div class="ob-emoji">✉️</div>
+      <h2>Your email</h2>
+      <p class="ob-sub">This is where we'll send you invites and let you reset your password.</p>
+      <div class="ob-fields">
+        <input class="ob-input" id="obEmail" type="email" readonly aria-label="Email">
+      </div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(3)">Back</button>
+        <button class="ob-next" onclick="obNext(3)">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 4 · Photo (with 3 reference examples) -->
+    <section class="ob-step" data-step="4">
+      <div class="ob-emoji">📷</div>
+      <h2>Add a clear face photo</h2>
+      <p class="ob-sub">A real photo of your face helps others trust you're a real person.</p>
+      <div class="ob-photo-examples" aria-hidden="true">
+        <div class="ob-photo-ex ok"><span>✓</span><small>Clear face</small></div>
+        <div class="ob-photo-ex ok"><span>✓</span><small>Good light</small></div>
+        <div class="ob-photo-ex bad"><span>✗</span><small>No group / mask</small></div>
+      </div>
+      <div class="ob-photo-upload" id="obPhotoUpload">
+        <span id="obPhotoPreview" class="ob-photo-plus">+</span>
+        <input type="file" id="obPhotoIn" accept="image/jpeg,image/png,image/webp" capture="user" hidden>
+        <span class="ob-photo-hint" id="obPhotoHint">Tap to upload</span>
+      </div>
+      <div class="ob-err hidden" id="obErr4"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(4)">Back</button>
+        <button class="ob-next" onclick="obNext(4)">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 5 · Terms & Conditions -->
+    <section class="ob-step" data-step="5">
+      <div class="ob-emoji">📜</div>
+      <h2>Our house rules</h2>
+      <p class="ob-para"><b>Be kind and real.</b> WordSpies is a community of language learners around the world. Treat everyone with respect. No harassment, hate speech, spam, or nudity.</p>
+      <p class="ob-para"><b>Age matters.</b> You confirm you are 18 or over. We may ask for verification if we suspect otherwise, and we remove any account that turns out to be under 18.</p>
+      <p class="ob-para"><b>Report freely.</b> Every profile and every message has a Report and a Block button. We review reports within 24 hours and act firmly.</p>
+      <p class="ob-sub" style="margin-top:16px;font-size:12.5px">Full <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy" target="_blank" rel="noopener">Privacy</a> · <a href="/child-safety" target="_blank" rel="noopener">Child safety</a></p>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(5)">Back</button>
+        <button class="ob-next" onclick="obNext(5)">I agree</button>
+      </div>
+    </section>
+
+    <!-- STEP 6 · Interests + goal -->
+    <section class="ob-step" data-step="6">
+      <div class="ob-emoji">💬</div>
+      <h2>Tell us a bit more</h2>
+      <p class="ob-sub">This helps us match you with the right language partners.</p>
+      <div class="ob-fields">
+        <textarea class="ob-input" id="obTalkAbout" maxlength="200" rows="3" placeholder="What do you like to talk about? (food, films, travel…)"></textarea>
+        <label class="ob-label">Your main goal</label>
+        <div class="ob-goal-picker" id="obGoalPicker">
+          <button type="button" class="ob-goal" data-goal="learn">🎓 Learn a language</button>
+          <button type="button" class="ob-goal" data-goal="practise">💬 Practise conversation</button>
+          <button type="button" class="ob-goal" data-goal="friends">👥 Make friends</button>
+          <button type="button" class="ob-goal" data-goal="travel">✈️ Travel</button>
+          <button type="button" class="ob-goal" data-goal="other">🌱 Something else</button>
+        </div>
+      </div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(6)">Back</button>
+        <button class="ob-next" onclick="obNext(6)">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 7 · Verification pending -->
+    <section class="ob-step" data-step="7">
+      <div class="ob-emoji">🔒</div>
+      <h2>Almost there</h2>
+      <p class="ob-para">We review every new profile to keep the community safe. You can start exploring right now — reviewed accounts get a verified badge, usually within a day or two.</p>
+      <p class="ob-sub" style="font-size:12.5px">If we spot anything unclear we'll email you.</p>
+      <button class="ob-next" onclick="obNext(7)">Got it</button>
+    </section>
+
+    <!-- STEP 8 · Welcome -->
+    <section class="ob-step" data-step="8">
+      <div class="ob-welcome-logo">Word<em>Spies</em></div>
+      <h2 style="font-size:26px">Welcome, <span id="obWelcomeName">friend</span> 👋</h2>
+      <p class="ob-sub">Your profile is set up. Time to meet some people.</p>
+      <button class="ob-next primary-big" onclick="obFinish()">Enter WordSpies</button>
+    </section>
+  </div>
+</div>
+
 <!-- ============ APP ============ -->
 <div id="vApp" class="wrap hidden">
 
@@ -2336,6 +2525,13 @@ function enterApp(justJoined){
   document.body.classList.remove('authmodal');
   const xc = $('authClose'); if (xc) xc.remove();
   $('vAuth').classList.add('hidden');
+  // First-time signup? Show the onboarding wizard BEFORE the app.
+  // Detects incomplete profile: no bio + no talkAbout + no goal.
+  // Wizard call obFinish() which un-hides #vApp and completes enterApp().
+  if (justJoined && ME && !ME.onboardedAt && !(ME.talkAbout && ME.goal)) {
+    obStart();
+    return;   // wizard will call resumeEnterApp() when done
+  }
   $('vApp').classList.remove('hidden');
 
   // If they'd been browsing as a guest, the chip up top was swapped for a
@@ -2392,6 +2588,194 @@ function enterApp(justJoined){
   setTimeout(pinTop, 250);
   setTimeout(pinTop, 600);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// ONBOARDING WIZARD — 8-step Tandem-style flow.
+// Owner ask 1 Aug 2026. State machine:
+//   obStart()   — reveal wizard, jump to step 1
+//   obNext(n)   — validate + save step n, animate to n+1
+//   obBack(n)   — animate back to n-1 (no save)
+//   obFinish()  — hide wizard, un-hide #vApp, continue enterApp path
+// TOTAL_STEPS is kept in one place — bump progress dots + guards
+// automatically if we ever add or remove a step.
+// ═══════════════════════════════════════════════════════════════════
+const OB_TOTAL = 8;
+let obGoal = '';
+let obNewPhotoUploaded = false;
+
+function obPaintProgress(current){
+  const bar = $('obProgress');
+  if (!bar) return;
+  let html = '';
+  for (let i = 1; i <= OB_TOTAL; i++) {
+    const cls = i < current ? 'done' : i === current ? 'now' : '';
+    html += `<span class="${cls}"></span>`;
+  }
+  bar.innerHTML = html;
+}
+function obShow(step){
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('show', 'back-out'));
+  const el = document.querySelector('.ob-step[data-step="' + step + '"]');
+  if (el) el.classList.add('show');
+  obPaintProgress(step);
+  // Autofocus the first input on each step for keyboard flow — skip on
+  // display-only steps (T&C, verification-wait, welcome).
+  setTimeout(() => {
+    const inp = el && el.querySelector('.ob-input:not([readonly])');
+    if (inp) try { inp.focus({ preventScroll: true }); } catch(e){}
+  }, 300);
+}
+function obStart(){
+  document.body.classList.add('ob-open');
+  $('obWizard').classList.remove('hidden');
+  $('obWizard').setAttribute('aria-hidden', 'false');
+  // Prefill from ME what we already have.
+  if (ME) {
+    // Split ME.name into first / last if we can. Users signed up with
+    // "Jane Doe" get "Jane" + "Doe"; single-word names go in first only.
+    const parts = String(ME.name || '').trim().split(/\s+/);
+    $('obFirstName').value = parts[0] || '';
+    $('obLastName').value = parts.slice(1).join(' ') || '';
+    $('obBirth').value = ME.birthdate || '';
+    $('obEmail').value = ME.email || '';
+    $('obTalkAbout').value = ME.talkAbout || '';
+    if (ME.photo) {
+      const prev = $('obPhotoPreview');
+      prev.innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
+      $('obPhotoUpload').classList.add('has-photo');
+      $('obPhotoHint').textContent = 'Tap to change';
+      obNewPhotoUploaded = true;
+    }
+  }
+  obShow(1);
+}
+async function obNext(step){
+  const err = (msg) => {
+    const e = $('obErr' + step);
+    if (e) { e.textContent = msg; e.classList.remove('hidden'); }
+  };
+  const clearErr = () => { const e = $('obErr' + step); if (e) e.classList.add('hidden'); };
+  clearErr();
+
+  try {
+    // Per-step validate + save.
+    if (step === 1) {
+      const first = $('obFirstName').value.trim();
+      const last = $('obLastName').value.trim();
+      if (!first || first.length < 2) return err('Please enter your first name.');
+      const full = (last ? first + ' ' + last : first).replace(/[^a-zA-Z0-9_ ]/g, '').slice(0, 15);
+      if (full !== ME.name) {
+        try {
+          const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ name: full }) });
+          ME = j.me;
+        } catch (e2) {
+          if (/taken/i.test(e2.message)) return err('That name is taken — try adding your last name too.');
+          return err(e2.message);
+        }
+      }
+    }
+    if (step === 2) {
+      const bd = $('obBirth').value;
+      if (!bd) return err('Please enter your birthday.');
+      const age = ageFromISOClient(bd);
+      if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date.');
+      if (age < 18) return err('Sorry — WordSpies is for people aged 18 and over.');
+      if (bd !== ME.birthdate) {
+        const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ birthdate: bd }) });
+        ME = j.me;
+      }
+    }
+    // Step 3 (email): read-only, no action.
+    if (step === 4) {
+      if (!ME.photo) return err('Please upload a clear face photo.');
+    }
+    if (step === 5) {
+      // T&C: acceptance recorded server-side already at signup — this
+      // is a re-confirmation gate before we let the account continue.
+      // Nothing extra to save.
+    }
+    if (step === 6) {
+      const t = $('obTalkAbout').value.trim();
+      if (!obGoal) return err('Please pick your main goal.');
+      const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ talkAbout: t, goal: obGoal }) });
+      ME = j.me;
+      // Now that the profile is meaningful, register the account with
+      // the moderation queue so the owner can review + verify.
+      try {
+        await api('/account/pending', { method:'POST' });
+      } catch (e2) { /* best-effort */ }
+    }
+    // Step 7 (verification wait): display-only.
+
+    if (step >= OB_TOTAL) { obFinish(); return; }
+    // Populate welcome name just before showing.
+    if (step + 1 === 8 && ME) {
+      $('obWelcomeName').textContent = String(ME.name || 'friend').split(' ')[0];
+    }
+    obShow(step + 1);
+  } catch (e) { err(e.message || 'Something went wrong.'); }
+}
+function obBack(step){
+  if (step <= 1) return;
+  obShow(step - 1);
+}
+function obFinish(){
+  document.body.classList.remove('ob-open');
+  $('obWizard').classList.add('hidden');
+  $('obWizard').setAttribute('aria-hidden', 'true');
+  // Mark the wizard done so we don't re-show it on next login.
+  api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ onboardedAt: Date.now() }) }).catch(() => {});
+  // Un-hide the app and continue the rest of the enterApp path.
+  $('vApp').classList.remove('hidden');
+  const chip = document.querySelector('.mechip');
+  if (chip && typeof guestChipHtml !== 'undefined' && guestChipHtml !== null) {
+    chip.innerHTML = guestChipHtml;
+    chip.onclick = () => showTab('me');
+  }
+  paintMe(); loadMembers(); refreshBlocks();
+  pingLoop(); if (!window.__pingT) window.__pingT = setInterval(pingLoop, 25000);
+  showTab('wall');
+}
+
+// Photo-step wiring — reuse the existing /photo upload endpoint.
+document.addEventListener('DOMContentLoaded', () => {
+  const up = document.getElementById('obPhotoUpload');
+  const inp = document.getElementById('obPhotoIn');
+  if (up && inp) {
+    up.addEventListener('click', () => inp.click());
+    inp.addEventListener('change', async (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      if (!f) return;
+      const fd = new FormData();
+      fd.append('photo', f);
+      $('obPhotoHint').textContent = 'Uploading…';
+      try {
+        const r = await fetch('/api/social/photo', { method: 'POST', body: fd });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Upload failed');
+        ME = j.me;
+        $('obPhotoPreview').innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
+        up.classList.add('has-photo');
+        $('obPhotoHint').textContent = 'Tap to change';
+        obNewPhotoUploaded = true;
+      } catch (e) {
+        $('obPhotoHint').textContent = 'Upload failed — tap to retry';
+      }
+    });
+  }
+  // Goal picker — single-select buttons.
+  document.querySelectorAll('#obGoalPicker .ob-goal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      obGoal = btn.getAttribute('data-goal') || '';
+      document.querySelectorAll('#obGoalPicker .ob-goal').forEach(b => b.classList.toggle('on', b === btn));
+    });
+  });
+});
+
 // The one place that decides what goes after somebody's name. A crown outranks a
 // tick and replaces it, so this never returns both. Everything that draws a name
 // goes through here, which is why the badge can never end up on one list and not
