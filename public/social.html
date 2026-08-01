@@ -1005,7 +1005,12 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .chathead{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;min-height:56px;box-sizing:border-box}
 @media(min-width:700px){.chathead{top:56px}}
 .back2{background:var(--ink);color:#fff;border:none;font-size:17px;width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
-.chwho{min-width:0;overflow:hidden;flex:1}
+.chwho{min-width:0;overflow:hidden;flex:1;border-radius:8px;padding:4px 6px;margin:-4px -6px;transition:background .12s}
+/* Chat header is now a shortcut to the peer's profile — see
+   openChatPeerProfile(). Subtle hover tint on both avatar + name so
+   the click affordance reads clearly. */
+.chwho:hover,#chAv:hover{background:var(--hover,#f1f3f4)}
+#chAv{border-radius:50%;padding:2px;margin:-2px}
 /* On a phone the chat takes the whole screen and the tab bar goes away with
    it, which left no way out of a conversation except the ← that only goes as
    far as the chat list. This is the door back to the Community, sitting in the
@@ -1669,8 +1674,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   <div id="tabChat" class="hidden">
     <div class="chathead">
       <button class="back2" onclick="showTab('chats')">←</button>
-      <span id="chAv"></span>
-      <div class="chwho"><div class="chname" id="chName"></div><!-- state subtitle removed per owner ask: just the name in the chat header. Kept id in DOM as an empty hidden shell so any code still writing to chState doesn't crash. --><div class="chstate hidden" id="chState"></div></div>
+      <!-- Owner ask 2026-08-01: 'if i click on the user profile or name
+           or picture it should take me to the user profile page'. Both
+           avatar + name are now clickable and open the peer's profile.
+           Cursor:pointer + a hover tint so it reads as tappable. AI
+           partners open too so users can read the persona bio. -->
+      <span id="chAv" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"></span>
+      <div class="chwho" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"><div class="chname" id="chName"></div><!-- state subtitle removed per owner ask: just the name in the chat header. Kept id in DOM as an empty hidden shell so any code still writing to chState doesn't crash. --><div class="chstate hidden" id="chState"></div></div>
       <button class="chcall" id="chCall" onclick="ringCurrentChat()" title="Voice call">📞</button>
     </div>
     <div class="msgs" id="msgs"></div>
@@ -3144,6 +3154,20 @@ async function refreshChats(){
         </div>
       </div>`).join('');
   } catch(e){}
+}
+
+// Open the profile of whoever's on the other end of the currently
+// open chat. Wired to the chat header avatar + name. Handles both
+// human members (openMemberObj with the MEMBERS row) and AI personas
+// (openMemberById — /api/social/user/:id works for AI too since they
+// live in soc:members with isAI:true).
+function openChatPeerProfile(){
+  if (!curChat) return;
+  const m = (MEMBERS || []).find(x => x.id === curChat);
+  if (m) { openMemberObj(m); return; }
+  // Not in the members cache (rare — maybe blocked or first-load
+  // race): fall back to the by-id path which fetches fresh.
+  openMemberById(curChat);
 }
 
 function openChatWith(id){
