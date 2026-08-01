@@ -25,7 +25,7 @@ ${GA}
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-body{font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:#1c1e21;margin:0;padding-left:3%;padding-right:3%}
+body{font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:#1c1e21;margin:0;padding-left:4%;padding-right:4%}
 @media(min-width:769px){body{padding-left:10%;padding-right:10%}}
 .sitehead{background:#fff;border-bottom:1.5px solid #e6e8ef;position:sticky;top:0;z-index:50}
 .hwrap{max-width:1080px;margin:0 auto;padding:0 20px}

@@ -30,7 +30,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow-x:clip;max-width:100%}
-body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:pan-y;padding-left:3%;padding-right:3%}
+body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:pan-y;padding-left:4%;padding-right:4%}
 /* Responsive body gutters — matches marketing pages. Proportional both
    ways: 5% on phones (≈18px on a 375-wide iPhone), 10% on tablet-and-
    up so the community UI doesn't stretch to the browser edges on wide
@@ -151,10 +151,15 @@ body.authmodal{overflow:hidden}
   .topnav .tnright{grid-area:right;gap:8px;justify-self:end}
   .topnav .tntabs{
     grid-area:tabs;
+    /* justify-self:stretch alone wasn't reliably filling the grid
+       area on iOS Safari — belt-and-braces with width:100% so the
+       flex row genuinely spans the entire nav width. Owner report
+       1 Aug 2026: 'tabs are still show in the middle not sure how'. */
     justify-self:stretch;
+    width:100%;
     display:flex;
     gap:6px;
-    justify-content:flex-start;   /* Owner ask 1 Aug 2026: align tabs to the START (left), not centered — matches the logo on row 1 above. */
+    justify-content:flex-start;
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
