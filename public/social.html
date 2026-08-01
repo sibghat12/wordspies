@@ -2223,8 +2223,26 @@ function enterApp(justJoined){
     if (!$('fLoc').value) {
       api('/geo').then(j => { if (j.suggestion && !$('fLoc').value) $('fLoc').value = j.suggestion; }).catch(()=>{});
     }
-    $('fBio').focus();
+    // Focus the bio field WITHOUT scrolling — browsers auto-scroll a
+    // focused input into view, which was landing new users mid-page on
+    // the bio row (owner bug 2026-08-01: 'it start in the middle of
+    // the page like my goals and i need to scroll it is bad'). We keep
+    // the focus so the keyboard opens on mobile, but preventScroll:true
+    // keeps the page anchored at the top where showTab put it.
+    setTimeout(() => { try { $('fBio').focus({ preventScroll: true }); } catch(e){ /* older browsers: skip focus rather than scroll */ } }, 100);
   } else showTab('wall');
+  // Belt-and-braces scroll-pin AFTER enterApp — image loads (avatar,
+  // hero, cards) can cause layout shifts that push the page down
+  // AFTER showTab's initial scrollTo fired. Same pattern as
+  // openMemberObj: pin at 5 successive moments over 600ms so the
+  // profile lands with the hero at the top no matter which async
+  // paint finishes last.
+  const pinTop = () => { try { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } catch(e){} };
+  pinTop();
+  requestAnimationFrame(pinTop);
+  setTimeout(pinTop, 80);
+  setTimeout(pinTop, 250);
+  setTimeout(pinTop, 600);
 }
 // The one place that decides what goes after somebody's name. A crown outranks a
 // tick and replaces it, so this never returns both. Everything that draws a name
