@@ -180,10 +180,13 @@
 
   function headerHTML() {
     const label = pageLabel();
+    // Owner ask 1 Aug 2026: 'remove the community from inside the
+    // game link'. The persistent .gamebar pill on /social handles
+    // resume-into-game; the game pages don't need a link back — users
+    // hit the browser back button or the OS gesture.
     return `<header class="wshead" role="banner">
       <a class="wsh-logo" href="/">Word<em>Spies</em></a>
       ${label ? `<span class="wsh-page">${label.replace(/</g,'&lt;')}</span>` : '<span style="flex:1"></span>'}
-      <a class="wsh-link hideSm" href="/social">👥 Community</a>
     </header>`;
   }
 

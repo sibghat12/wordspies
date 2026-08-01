@@ -1158,6 +1158,15 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .partybar .pbtxt small{font-size:10.5px;opacity:.72;font-weight:600}
 .partybar .pbgo{background:linear-gradient(135deg,#7c5cff,#5a7bff);color:#fff;font-weight:700;font-size:12px;padding:5px 12px;border-radius:99px}
 @media(max-width:480px){ .partybar{padding:8px 14px} .partybar .pbtxt small{display:none} }
+/* Persistent game-session pill — same visual language as .partybar
+   but yellow-dot to distinguish. Nudged UP by 74px when both are
+   visible so they stack instead of overlap. Owner ask 1 Aug 2026. */
+.gamebar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111318;color:#fff;border-radius:99px;padding:10px 16px;display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Nunito',system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,23,42,.28);z-index:149;transition:transform .12s}
+.gamebar:hover{transform:translateX(-50%) translateY(-2px)}
+.gamebar .pbgo{background:linear-gradient(135deg,#ffb84d,#ff8f2c);color:#fff;font-weight:700;font-size:12px;padding:5px 12px;border-radius:99px}
+body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset-bottom))}
+@media(max-width:480px){ .gamebar{padding:8px 14px} .gamebar .pbtxt small{display:none} }
+.gamebar.hidden{display:none}
 
 /* live games — what is actually happening right now */
 .lv-head{padding:8px 22px 0}
@@ -2020,7 +2029,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <div class="playgrid">
       <!-- 1 · WordSpies (Codenames-style) -->
-      <a class="playcard playcard-spies" href="/codenames?from=social">
+      <a class="playcard playcard-spies" href="/codenames?from=social" onclick="return wsPlayStart(this,event)">
         <div class="playcard-art">
           <div class="pc-tile pc-r">RED</div>
           <div class="pc-tile pc-b">BLUE</div>
@@ -2037,7 +2046,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
       </a>
       <!-- 2 · Who is the Spy? (the Imposter) -->
-      <a class="playcard playcard-imp" href="/spy">
+      <a class="playcard playcard-imp" href="/spy" onclick="return wsPlayStart(this,event)">
         <div class="playcard-art">
           <div class="pc-face" style="left:14%;top:22%">🙂</div>
           <div class="pc-face" style="left:50%;top:12%;transform:translateX(-50%)">🙂</div>
@@ -2054,7 +2063,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
       </a>
       <!-- 3 · 8-Ball Pool -->
-      <a class="playcard playcard-pool" href="/pool?from=social">
+      <a class="playcard playcard-pool" href="/pool?from=social" onclick="return wsPlayStart(this,event)">
         <div class="playcard-art">
           <div class="pc-ball pc-ball-8" style="left:60%;top:44%">8</div>
           <div class="pc-ball pc-ball-r" style="left:26%;top:34%">3</div>
@@ -2492,6 +2501,19 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <small id="pbTitle">Tap to rejoin</small>
   </span>
   <span class="pbgo">Open →</span>
+</a>
+
+<!-- Persistent game-session pill. Owner ask 1 Aug 2026: 'if he left
+     the tab he can back with the black stripe'. Same visual as
+     partybar (black bottom pill), shows when localStorage has a live
+     game stamp written by the game pages. -->
+<a class="gamebar hidden" id="gameBar" href="#" onclick="return resumeGame(event)">
+  <span class="pbdot" style="background:#ffb84d"></span>
+  <span class="pbtxt">
+    <b id="gbTitle">🎮 In a game</b>
+    <small id="gbSub">Tap to continue</small>
+  </span>
+  <span class="pbgo">Resume →</span>
 </a>
 
 <!-- In-app party overlay: an iframe of /party?room=X&embed=1 that lives
@@ -3637,6 +3659,96 @@ function rejoinParty(ev){
 refreshPartyBar();
 setInterval(refreshPartyBar, 15000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshPartyBar(); });
+
+// ═══════════════════════════════════════════════════════════════════
+// Persistent game-session pill. Owner ask 1 Aug 2026: 'if he left the
+// tab he can come back with the black stripe'.
+// Game pages (index.html for WordSpies, spy.html, pool.html) stamp
+// { game, path, code, title } into localStorage['wsActiveGame'] on
+// mount and clear it on end/leave. This pill reads that stamp and
+// resumes the game with one tap when the user returns to /social.
+// Stale entries auto-clear after 6 hours.
+// ═══════════════════════════════════════════════════════════════════
+const GAME_STALE_MS = 6 * 60 * 60 * 1000;
+function refreshGameBar(){
+  const bar = $('gameBar');
+  if (!bar) return;
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem('wsActiveGame') || 'null'); } catch(e){}
+  if (!s || !s.path || (s.t && Date.now() - s.t > GAME_STALE_MS)) {
+    bar.classList.add('hidden');
+    return;
+  }
+  $('gbTitle').textContent = s.title || '🎮 In a game';
+  $('gbSub').textContent = s.code ? ('Room ' + s.code + ' · tap to continue') : 'Tap to continue';
+  bar.href = s.path;
+  bar.classList.remove('hidden');
+}
+function resumeGame(ev){
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem('wsActiveGame') || 'null'); } catch(e){}
+  if (!s || !s.path) { if (ev) ev.preventDefault(); return false; }
+  // Let the anchor navigate to the stamped path.
+  return true;
+}
+refreshGameBar();
+setInterval(refreshGameBar, 20000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshGameBar(); });
+// Cross-tab: if the game page clears the stamp, hide our pill immediately.
+window.addEventListener('storage', ev => { if (ev.key === 'wsActiveGame') refreshGameBar(); });
+
+// Snappy 3-2-1-Let's-go countdown when the user taps a game card.
+// Owner ask 1 Aug 2026: 'if someone starts a new game show a sweet
+// alert like 3, 2, 1 and let's go, make it fast'. Total ~1.7s, then
+// navigate. Falls through to a plain navigation if SweetAlert2 isn't
+// loaded yet.
+function wsPlayStart(anchor, ev){
+  const url = anchor && anchor.getAttribute('href');
+  if (!url) return true;
+  if (ev) ev.preventDefault();
+  const steps = ['3','2','1',"Let's go!"];
+  const useSwal = typeof window.Swal === 'object' && typeof window.Swal.fire === 'function';
+  let i = 0;
+  const tick = () => {
+    if (i >= steps.length) {
+      if (useSwal) { try { Swal.close(); } catch(e){} }
+      else { const el = document.getElementById('_wsCountdown'); if (el && el.parentNode) el.parentNode.removeChild(el); }
+      location.href = url;
+      return;
+    }
+    const text = steps[i++];
+    const isGo = text.indexOf('!') > -1;
+    if (useSwal) {
+      Swal.fire({
+        html: '<div style="font-family:Fredoka,Nunito,system-ui,sans-serif;font-weight:700;font-size:' + (isGo ? '48px' : '96px') + ';letter-spacing:-1.5px;color:#16181f;line-height:1;padding:22px 8px;animation:wsCdIn .28s cubic-bezier(.34,1.56,.64,1) both">' + text + '</div>',
+        showConfirmButton: false, timer: isGo ? 500 : 400, timerProgressBar: false,
+        allowOutsideClick: false, allowEscapeKey: false,
+        backdrop: 'rgba(255,255,255,.92)', width: 320
+      });
+    } else {
+      let el = document.getElementById('_wsCountdown');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = '_wsCountdown';
+        el.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.94);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Fredoka,Nunito,system-ui,sans-serif;font-weight:700;color:#16181f;letter-spacing:-1.5px;line-height:1';
+        document.body.appendChild(el);
+      }
+      el.style.fontSize = isGo ? '48px' : '96px';
+      el.textContent = text;
+      el.style.animation = 'none'; void el.offsetHeight;
+      el.style.animation = 'wsCdIn .28s cubic-bezier(.34,1.56,.64,1) both';
+    }
+    setTimeout(tick, isGo ? 500 : 400);
+  };
+  if (!document.getElementById('_wsCdCss')) {
+    const css = document.createElement('style');
+    css.id = '_wsCdCss';
+    css.textContent = '@keyframes wsCdIn{from{opacity:0;transform:scale(.5)}70%{transform:scale(1.15)}to{opacity:1;transform:scale(1)}}';
+    document.head.appendChild(css);
+  }
+  tick();
+  return false;
+}
 
 // ---------- In-app party host (iframe mini-player) ----------
 // The party runs inside an iframe mounted in /social. Because the iframe
