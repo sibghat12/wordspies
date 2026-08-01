@@ -259,7 +259,12 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 }
 
 /* wall */
-.filterrow{display:flex;gap:10px;align-items:center;margin:18px 20px 20px;padding-top:10px;flex-wrap:wrap}
+/* Owner ask 1 Aug 2026: 'the search and the other profile cards also
+   start from where the wordlogo starts itself — no padding'. Was
+   'margin:18px 20px 20px' which pushed the search bar 20px inward on
+   mobile, misaligning with the topnav logo. Now no horizontal
+   margin — the body's 3% gutter is the single source of edge inset. */
+.filterrow{display:flex;gap:10px;align-items:center;margin:18px 0 20px;padding-top:10px;flex-wrap:wrap}
 .search{background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 16px;display:flex;gap:10px;align-items:center;flex:1;min-width:170px}
 .search input{border:none;background:none;flex:1;padding:12px 0;font-size:13.5px;font-weight:500;min-width:0}
 .fchips{display:flex;gap:7px;flex-wrap:wrap}
@@ -269,7 +274,9 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    it reads as a round badge next to the worded chips rather than a gap. */
 .fchip.ico{padding:9px 12px}
 .fchip.ico .ktick{margin:0}
-.wall{display:grid;grid-template-columns:1fr;gap:12px;padding:6px 20px 30px}
+/* Same edge-alignment rule as .filterrow — no horizontal padding
+   on the mobile cards grid; body 3% gutter is the outer bound. */
+.wall{display:grid;grid-template-columns:1fr;gap:12px;padding:6px 0 30px}
 /* ═══ Speaky-style horizontal wall card ═══
    Photo on the left, name + quote + language flags on the right. Simple
    border, no shadow. 3-column grid on desktop (see breakpoints below). */
