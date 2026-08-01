@@ -1337,7 +1337,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="ordiv"><span></span>or<span></span></div>
     <div id="suName" class="field"><input id="fName" maxlength="15" placeholder="Your name (shown to everyone)"></div>
     <div class="field"><input id="fEmail" type="email" maxlength="100" placeholder="Email"></div>
-    <div id="suBirth" class="field"><input id="fSignupBirth" type="date" placeholder="Date of birth (optional)"></div>
+    <div id="suBirth" class="field">
+      <input id="fSignupBirth" type="date" required aria-label="Date of birth" placeholder="Date of birth">
+      <div style="font-size:11.5px;color:var(--muted);padding:6px 4px 0;line-height:1.4">WordSpies is 18+. We need your date of birth to confirm.</div>
+    </div>
     <div class="field"><input id="fPass" type="password" maxlength="100" placeholder="Password (6+ characters)"></div>
     <div id="resetFields" class="hidden">
       <div class="field"><input id="fCode" maxlength="6" inputmode="numeric" placeholder="6-digit code from your email"></div>
@@ -1349,7 +1352,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div id="suTerms" class="field" style="padding:6px 4px 0;font-size:12.5px;color:var(--muted);line-height:1.5">
       <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer">
         <input type="checkbox" id="fAcceptTerms" style="margin-top:3px;accent-color:var(--accent)">
-        <span>I confirm I am at least 13 years old and I agree to the
+        <span>I confirm I am at least 18 years old and I agree to the
           <a href="/terms" target="_blank" rel="noopener">Terms of Use</a> and
           <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span>
       </label>
@@ -1975,8 +1978,30 @@ function toast(m){ const t = $('toastEl'); t.textContent = m; t.classList.add('s
 async function api(p, opts){
   const r = await fetch('/api/social' + p, opts);
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.error || 'Something went wrong.');
+  if (!r.ok) {
+    // Preserve non-`error` fields (e.g. { needsDob:true } from /google
+    // when a new Google user must supply DOB before we'll create them).
+    const err = new Error(j.error || 'Something went wrong.');
+    err.status = r.status;
+    err.data = j;
+    throw err;
+  }
   return j;
+}
+
+// Whole-years age from a "YYYY-MM-DD" string. NaN if bad. Server has
+// an identical impl; client-side is friendly UX, server is truth.
+function ageFromISOClient(iso){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return NaN;
+  const y = +m[1], mo = +m[2] - 1, d = +m[3];
+  const dob = new Date(Date.UTC(y, mo, d));
+  if (isNaN(dob.getTime())) return NaN;
+  const now = new Date();
+  let age = now.getUTCFullYear() - y;
+  const passedBday = (now.getUTCMonth() > mo) || (now.getUTCMonth() === mo && now.getUTCDate() >= d);
+  if (!passedBday) age--;
+  return age;
 }
 
 // ---------- auth ----------
@@ -2025,6 +2050,24 @@ $('authGo').onclick = async () => {
         body.name = $('fName').value;
         body.birthdate = $('fSignupBirth').value || '';
         body.acceptedTerms = true;
+        // Client-side age gate — friendlier UX than a round-trip. The
+        // server re-verifies so a tampered form still can't slip through.
+        if (!body.birthdate) {
+          $('authErr').textContent = 'Please enter your date of birth.';
+          $('authGo').disabled = false;
+          return;
+        }
+        const clientAge = ageFromISOClient(body.birthdate);
+        if (!Number.isFinite(clientAge) || clientAge < 0 || clientAge > 120) {
+          $('authErr').textContent = 'Please enter a valid date of birth.';
+          $('authGo').disabled = false;
+          return;
+        }
+        if (clientAge < 18) {
+          $('authErr').textContent = 'Sorry, WordSpies is for people aged 18 and over.';
+          $('authGo').disabled = false;
+          return;
+        }
       }
       const j = await api(mode === 'signup' ? '/signup' : '/login', {
         method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
@@ -4579,7 +4622,44 @@ async function setupGoogle(){
           const j = await api('/google', { method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({ credential: resp.credential }) });
           ME = j.me; enterApp(true);
-        } catch(e){ $('authErr').textContent = e.message; }
+        } catch(e){
+          // First-time Google user: server needs DOB before creating
+          // the account. Show a lightweight DOB prompt via SweetAlert,
+          // then re-POST the SAME credential with birthdate. Same 18+
+          // hard block enforced on the server.
+          if (e.data && e.data.needsDob) {
+            try {
+              const r = await Swal.fire({
+                title: 'One more thing',
+                html: '<div style="text-align:left;color:#5f6675;font-size:14px;margin:-6px 0 12px">WordSpies is 18+. Please confirm your date of birth to finish creating your account.</div>' +
+                      '<input type="date" id="swalDob" class="swal2-input" style="width:100%;max-width:260px;margin:0 auto;display:block" />',
+                showCancelButton: true,
+                confirmButtonText: 'Continue',
+                cancelButtonText: 'Cancel',
+                focusConfirm: false,
+                preConfirm: () => {
+                  const v = (document.getElementById('swalDob') || {}).value || '';
+                  if (!v) { Swal.showValidationMessage('Please enter your date of birth.'); return false; }
+                  const age = ageFromISOClient(v);
+                  if (!Number.isFinite(age) || age < 0 || age > 120) { Swal.showValidationMessage('Please enter a valid date of birth.'); return false; }
+                  if (age < 18) { Swal.showValidationMessage('Sorry, WordSpies is for people aged 18 and over.'); return false; }
+                  return v;
+                }
+              });
+              if (r && r.isConfirmed && r.value) {
+                try {
+                  const j2 = await api('/google', { method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ credential: resp.credential, birthdate: r.value }) });
+                  ME = j2.me; enterApp(true);
+                  return;
+                } catch(e2) { $('authErr').textContent = e2.message; return; }
+              }
+              // User cancelled: no message, they can retry
+              return;
+            } catch(swalErr) { $('authErr').textContent = e.message; return; }
+          }
+          $('authErr').textContent = e.message;
+        }
       }
     });
     google.accounts.id.renderButton($('gBtn'), { theme:'outline', size:'large', shape:'pill', text:'continue_with', logo_alignment:'left', width: 320 });

@@ -240,6 +240,42 @@ function mount(app, redis) {
     res.json({ suggestion: geoLabel(g) });
   });
 
+  // ── age gate helpers ────────────────────────────────────────────────
+  // 18+ ONLY. Enforced on both /signup and /google (new-user path). Owner
+  // asked (2026-08-01) for a hard block: never create the account, never
+  // issue a session. We store a short-lived "age-fail" marker per email so
+  // someone can't just re-submit the same form with a plausible-looking
+  // DOB after being told 'you're under 18'.
+  const MIN_AGE = 18;
+  const AGE_FAIL_TTL = 60 * 60 * 24 * 30;   // 30 days
+  function ageFromISO(iso) {
+    // iso = "YYYY-MM-DD". Returns age in whole years today, or NaN if bad.
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+    if (!m) return NaN;
+    const y = +m[1], mo = +m[2] - 1, d = +m[3];
+    const dob = new Date(Date.UTC(y, mo, d));
+    if (isNaN(dob.getTime())) return NaN;
+    const now = new Date();
+    let age = now.getUTCFullYear() - y;
+    const passedBday = (now.getUTCMonth() > mo) ||
+      (now.getUTCMonth() === mo && now.getUTCDate() >= d);
+    if (!passedBday) age--;
+    return age;
+  }
+  function isPlausibleDob(iso) {
+    // Reject dates that are missing, in the future, or absurdly old (>120y).
+    const age = ageFromISO(iso);
+    return Number.isFinite(age) && age >= 0 && age <= 120;
+  }
+  async function markAgeFail(email) {
+    const key = 'soc:agefail:' + crypto.createHash('sha256').update(String(email || '')).digest('hex').slice(0, 24);
+    try { await db.set(key, '1', AGE_FAIL_TTL); } catch (e) {}
+  }
+  async function isRecentAgeFail(email) {
+    const key = 'soc:agefail:' + crypto.createHash('sha256').update(String(email || '')).digest('hex').slice(0, 24);
+    try { return !!(await db.get(key)); } catch (e) { return false; }
+  }
+
   // ---- auth ----
   api.post('/signup', async (req, res) => {
     try {
@@ -255,14 +291,27 @@ function mount(app, redis) {
       if (!/^[a-zA-Z0-9_ ]{3,15}$/.test(name)) return res.status(400).json({ error: 'Name: 3–15 letters, numbers or spaces.' });
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 100) return res.status(400).json({ error: 'That email doesn\'t look right.' });
       if (password.length < 6 || password.length > 100) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
-      if (birthdate && !/^\d{4}-\d{2}-\d{2}$/.test(birthdate)) return res.status(400).json({ error: 'Invalid birthdate format.' });
+      // ── Age gate (18+ hard block) ─────────────────────────────────
+      // DOB is REQUIRED at signup. Must parse, must be plausible, must
+      // resolve to age >= 18 today. We keep this on the server so a
+      // client-side hack (removing the DOB field, editing HTML) still
+      // can't create an under-18 account.
+      if (!birthdate) return res.status(400).json({ error: 'Please enter your date of birth.' });
+      if (!isPlausibleDob(birthdate)) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
+      if (await isRecentAgeFail(email)) return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
+      const age = ageFromISO(birthdate);
+      if (age < MIN_AGE) {
+        await markAgeFail(email);
+        return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
+      }
       if (await db.get('soc:email:' + email)) return res.status(409).json({ error: 'That email is already registered — try logging in.' });
       if (await db.get('soc:uname:' + name.toLowerCase())) return res.status(409).json({ error: 'That name is taken.' });
       const id = crypto.randomBytes(9).toString('hex');
       const geo = await geoFromIp(reqIp(req));
       const user = { id, name, email, passHash: bcrypt.hashSync(password, 10), bio: '', location: geoLabel(geo),
         country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
-        birthdate: birthdate || null,
+        birthdate,
+        ageVerifiedAt: Date.now(),      // date the DOB was self-declared
         games: 0, wins: 0, createdAt: Date.now(),
         termsAcceptedAt: Date.now() };
       await db.set('soc:user:' + id, JSON.stringify(user));
@@ -313,6 +362,25 @@ function mount(app, redis) {
       let uid = await db.get('soc:email:' + email);
       let user = uid ? JSON.parse(await db.get('soc:user:' + uid) || 'null') : null;
       if (!user) {
+        // ── Age gate for Google new-user path ──────────────────────
+        // Google's ID token doesn't include DOB, so on first Google
+        // signup we MUST have birthdate in the request body. The client
+        // shows a DOB modal after Google auth returns and re-POSTs the
+        // same credential + birthdate. Same 18+ hard block as /signup.
+        const birthdate = String((req.body || {}).birthdate || '').trim();
+        if (!birthdate) {
+          // Client contract: needsDob=true means "show DOB modal, then
+          // resubmit with {credential, birthdate}". No account created,
+          // no session issued.
+          return res.status(400).json({ error: 'DOB required.', needsDob: true });
+        }
+        if (!isPlausibleDob(birthdate)) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
+        if (await isRecentAgeFail(email)) return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
+        const age = ageFromISO(birthdate);
+        if (age < MIN_AGE) {
+          await markAgeFail(email);
+          return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
+        }
         // first visit: create a profile with a friendly unique name
         let base = String(g.given_name || g.name || email.split('@')[0])
           .replace(/[^a-zA-Z0-9_ ]/g, '').trim().slice(0, 15) || 'Spy';
@@ -323,7 +391,9 @@ function mount(app, redis) {
         const geo = await geoFromIp(reqIp(req));
         user = { id, name, email, passHash: null, googleId: g.sub, bio: '', location: geoLabel(geo),
           country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
-          birthdate: null,
+          birthdate,
+          ageVerifiedAt: Date.now(),
+          termsAcceptedAt: Date.now(),   // implicit-accept via the Google 'Continue' + our banner
           games: 0, wins: 0, createdAt: Date.now(), fresh: true };
         await db.set('soc:user:' + id, JSON.stringify(user));
         await db.set('soc:email:' + email, id);

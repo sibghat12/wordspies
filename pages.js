@@ -128,13 +128,13 @@ function aboutPage() {
 function privacyPage() {
   const body = `
 <h1>Privacy Policy</h1>
-<div class="updated">Last updated: 31 July 2026</div>
+<div class="updated">Last updated: 1 August 2026</div>
 <p>This Privacy Policy explains what WordSpies ("we", "us") collects, why, who processes it on our behalf, and the choices you have. We collect only what we need to run the service.</p>
 <h2>Who we are</h2>
 <p>WordSpies is a solo-developer project run from the United Kingdom. The data controller is Sibghatullah Khan. Contact: <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>
 <h2>What we collect</h2>
 <ul>
-<li><strong>Account information</strong> — display name, email address, an optional birthdate (used for the 13+ age check), and a bcrypt hash of your password. If you sign in with Google, we receive your Google name, email and profile photo.</li>
+<li><strong>Account information</strong> — display name, email address, date of birth (used for the 18+ age check — required, we store the date you gave), and a bcrypt hash of your password. If you sign in with Google, we receive your Google name, email and profile photo, and you provide your date of birth to us the first time you sign in.</li>
 <li><strong>Profile content</strong> — the profile photo, city, and short bio you choose to add.</li>
 <li><strong>Messages, voice messages and party audio</strong> — direct messages (text, GIF selections, voice notes) are stored on our servers to deliver them. Live party audio is relayed in real time and is not recorded by us.</li>
 <li><strong>Follows and social graph</strong> — who you follow and who follows you.</li>
@@ -163,7 +163,8 @@ function privacyPage() {
 <h2>Your rights (UK/EU GDPR)</h2>
 <p>You may access, correct, export or delete personal data we hold about you. Most is available inside the app; for anything else email <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a> and we will respond within 30 days. You may also complain to the UK Information Commissioner's Office at <a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a>.</p>
 <h2>Age</h2>
-<p>WordSpies is for users aged 13 and over. We do not knowingly collect personal information from children under 13. If you believe a child has an account, email us and we will remove it.</p>
+<p>WordSpies is <strong>strictly for users aged 18 and over</strong>. We ask for your date of birth at sign-up and refuse to create an account if you are under 18. We do not knowingly collect personal information from anyone under 18. If you believe a person under 18 has an account, email <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a> and we will investigate and, where appropriate, remove the account.</p>
+<p>To keep our community safe we may, in future, ask you to complete a one-time identity or age verification via a trusted third-party provider (for example a selfie-plus-ID-document check, or an email-verification step). We will not do this without notice, and we will not share any documents you provide with anyone other than the verification provider strictly to complete the check.</p>
 <h2>Changes</h2>
 <p>We may update this policy. Material changes will be reflected by the "Last updated" date above.</p>`;
   return layout('Privacy Policy — WordSpies', 'How WordSpies handles data: accounts, messages, party audio, and the third parties who process data on our behalf.', '/privacy', body);
@@ -172,10 +173,11 @@ function privacyPage() {
 function termsPage() {
   const body = `
 <h1>Terms of Use</h1>
-<div class="updated">Last updated: 31 July 2026</div>
+<div class="updated">Last updated: 1 August 2026</div>
 <p>By creating an account or otherwise using WordSpies ("we", "us", "the service") you agree to these Terms of Use. If you do not agree, do not use the service.</p>
 <h2>Who can use WordSpies</h2>
-<p>You must be at least 13 years old to create an account. You agree to provide accurate information about yourself and to keep it accurate.</p>
+<p>You must be <strong>at least 18 years old</strong> to create an account or use WordSpies. We ask for your date of birth at sign-up and refuse account creation if you are under 18. You agree to give accurate information about yourself, including your true date of birth, and to keep it accurate. Providing a false date of birth to circumvent the age gate is a breach of these Terms and will result in immediate account termination.</p>
+<p>We may, at our discretion and to protect the community, ask you to complete a one-time identity or age verification via a trusted third-party provider (for example, verified email, or a selfie-plus-ID-document check). Refusing to complete such a check when we reasonably request it may result in your account being suspended.</p>
 <h2>Acceptable use</h2>
 <p>You agree not to:</p>
 <ul>
@@ -217,14 +219,15 @@ function termsPage() {
 function childSafetyPage() {
   const body = `
 <h1>Child Safety Standards</h1>
-<div class="updated">Last updated: 31 July 2026</div>
+<div class="updated">Last updated: 1 August 2026</div>
 <p>WordSpies takes the safety of minors seriously. This page describes the standards we apply and how to reach us.</p>
 <h2>Our position</h2>
-<p>WordSpies is intended for users aged 13 and over. Creating an account requires that you are at least 13. We do not knowingly permit anyone under 13 to use the service, and we do not knowingly collect personal information from children under 13.</p>
+<p>WordSpies is <strong>strictly for users aged 18 and over</strong>. Creating an account requires you to enter your date of birth; if it shows you are under 18 we refuse to create the account, do not issue a session, and prevent re-attempts on that email for a period. We do not knowingly permit anyone under 18 to use the service, and we do not knowingly collect personal information from anyone under 18.</p>
 <p>Any content depicting, sexualising, grooming or endangering a minor is <strong>strictly and permanently prohibited</strong> and will result in immediate account termination and reporting to the appropriate authorities.</p>
 <h2>What we do</h2>
 <ul>
-<li>13+ age gate at account creation.</li>
+<li>18+ age gate at account creation — required date of birth, server-side re-verification, and a short-lived block on the email after any under-18 attempt.</li>
+<li>We may in future add third-party identity or age verification (for example a selfie-plus-ID check) if we detect elevated risk on the platform.</li>
 <li>A Report button on every message and every user profile.</li>
 <li>A Block button on every user profile that hides them in both directions.</li>
 <li>Server-side profanity and slur filtering on text messages.</li>
@@ -233,7 +236,7 @@ function childSafetyPage() {
 <li>Reporting of any suspected child sexual abuse material to the National Center for Missing &amp; Exploited Children (NCMEC) in the United States and the Internet Watch Foundation (IWF) in the United Kingdom.</li>
 </ul>
 <h2>Reporting child safety concerns</h2>
-<p>If you believe a user is under 13, or you become aware of content that endangers a minor, email <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a> immediately. Include as much detail as you safely can: the username in question, a link or screenshot if possible, and any context.</p>
+<p>If you believe a user is under 18, or you become aware of content that endangers a minor, email <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a> immediately. Include as much detail as you safely can: the username in question, a link or screenshot if possible, and any context.</p>
 <p>Suspected child sexual abuse material can also be reported directly to:</p>
 <ul>
 <li>United Kingdom: <a href="https://iwf.org.uk" rel="noopener" target="_blank">Internet Watch Foundation</a></li>
