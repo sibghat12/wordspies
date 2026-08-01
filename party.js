@@ -475,6 +475,14 @@ function mount(app, io, options = {}) {
         id: socket.id, on: true, pub: true,
         cfSession: me.cfSession, tracks: me.vTracks
       });
+      // ALSO broadcast the room state so every client's paint() re-runs
+      // memberCard() with the updated vTracks. Without this the OTHER
+      // clients only get the voice-presence event (handled by voice.js
+      // for subscribe/unsubscribe) — their party UI never learns the
+      // mic chip should flip on/off. Owner bug 2026-08-01: 'i speak
+      // open my mic but the other people cant see my mic open and
+      // close'.
+      broadcast(room);
     });
     socket.on('v-leave', () => {
       if (!room) return;

@@ -70,9 +70,16 @@ a{color:inherit;text-decoration:none}
 .phead-txt h1{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;color:var(--ink);letter-spacing:-.2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .phead-txt p{font-size:12.5px;color:var(--faint);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .phead-btns{display:flex;gap:8px;flex-shrink:0}
-.pheadLeave{background:#fff;color:var(--sub);border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background .12s,transform .1s}
-.pheadLeave:hover{background:var(--hover);color:var(--ink)}
+/* Leave button is the ESCAPE HATCH from the party — the way back to
+   Community. Owner reported (1 Aug 2026) the white/grey styling was
+   almost invisible against the white party page: 'the tab you make it
+   is white color it is confusing… people can easily move from the party
+   to the other tabs'. Now high-contrast dark pill with a back arrow so
+   it reads unambiguously as 'exit'. */
+.pheadLeave{background:var(--ink,#202124);color:#fff;border:0;border-radius:99px;padding:9px 16px 9px 12px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;transition:background .12s,transform .1s;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(20,23,42,.18)}
+.pheadLeave:hover{background:#000}
 .pheadLeave:active{transform:scale(.95)}
+.pheadLeave::before{content:'←';font-size:16px;line-height:1;font-weight:700}
 .pheadEnd{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background .12s,transform .1s}
 .pheadEnd:hover{background:#ffe4e4}
 .pheadEnd:active{transform:scale(.95)}
@@ -329,7 +336,7 @@ a{color:inherit;text-decoration:none}
       <p id="pSub"></p>
     </div>
     <div class="phead-btns">
-      <button class="pheadLeave" onclick="leaveAndGo()" title="Leave the party">Leave</button>
+      <button class="pheadLeave" onclick="leaveAndGo()" title="Leave the party and return to Community">Back to Community</button>
       <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
     </div>
   </header>
@@ -676,19 +683,52 @@ function sendPartyEmoji(e){
   if (myId) burstOnMember(myId, e);
 }
 
+// Active emoji bursts, keyed by member id. Every paint() wipes the
+// entire members panel via innerHTML rebuild — any .pav-emo we
+// appended gets destroyed mid-flight. So we (1) remember active
+// emojis here with an expiry timestamp, and (2) re-apply them after
+// every paint(). Owner bug 2026-08-01: 'the emoji is not showing for
+// all the speaker if i make an emoji it should be visible to all the
+// people'.
+const EMOJI_TTL_MS = 2200;   // slightly longer so it survives 1-2 paint churns
+const activeEmojis = new Map();   // memberId -> { emoji, expiresAt }
+
+function reapplyEmojis(){
+  const now = Date.now();
+  for (const [memberId, entry] of activeEmojis) {
+    if (entry.expiresAt <= now) { activeEmojis.delete(memberId); continue; }
+    const av = document.querySelector('.pav[data-id="' + CSS.escape(memberId) + '"]');
+    if (!av || av.querySelector('.pav-emo')) continue;
+    const el = document.createElement('div');
+    el.className = 'pav-emo';
+    el.textContent = String(entry.emoji);
+    av.appendChild(el);
+  }
+}
+
 // Show a single emoji centered on a member's avatar. Only ONE is visible
 // at a time per member — a new emoji replaces the old one.
 function burstOnMember(memberId, emoji){
   if (!memberId || !emoji) return;
+  activeEmojis.set(memberId, { emoji, expiresAt: Date.now() + EMOJI_TTL_MS });
   const av = document.querySelector('.pav[data-id="' + CSS.escape(memberId) + '"]');
-  if (!av) return;
-  const prev = av.querySelector('.pav-emo');
-  if (prev) prev.remove();
-  const el = document.createElement('div');
-  el.className = 'pav-emo';
-  el.textContent = String(emoji);
-  av.appendChild(el);
-  setTimeout(() => { if (el.parentNode) el.remove(); }, 900);
+  if (av) {
+    const prev = av.querySelector('.pav-emo');
+    if (prev) prev.remove();
+    const el = document.createElement('div');
+    el.className = 'pav-emo';
+    el.textContent = String(emoji);
+    av.appendChild(el);
+  }
+  setTimeout(() => {
+    const entry = activeEmojis.get(memberId);
+    if (entry && entry.emoji === emoji) activeEmojis.delete(memberId);
+    const av2 = document.querySelector('.pav[data-id="' + CSS.escape(memberId) + '"]');
+    if (av2) {
+      const cur = av2.querySelector('.pav-emo');
+      if (cur && cur.textContent === String(emoji)) cur.remove();
+    }
+  }, EMOJI_TTL_MS);
 }
 
 // Raise-hand for listeners.
@@ -886,6 +926,9 @@ function paint(){
   $('listenerCnt').textContent = listeners.length;
   $('speakers').innerHTML = speakers.map(m => memberCard(m, true, iAmHost, micOn)).join('');
   $('listeners').innerHTML = listeners.map(m => memberCard(m, false, iAmHost, micOn)).join('');
+  // Re-apply any in-flight emoji bursts — paint() just destroyed the
+  // .pav DOM elements that held them.
+  reapplyEmojis();
 
   // Chat rail: NEVER rebuild from state. Old code wiped the list on
    // every count change and it wrecked scroll + flashed messages away
