@@ -49,7 +49,7 @@ a{color:#1c1e21}
 footer.sitefoot{margin-top:56px;padding:32px 20px 40px;border-top:1px solid #e5e7eb;background:#fff;font-family:'Inter',sans-serif;color:#5f6675;font-size:13px;line-height:1.5}
 footer.sitefoot .fwrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center}
 footer.sitefoot .flinks{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 22px;font-weight:600}
-footer.sitefoot .flinks a{color:#1c1e21;text-decoration:none;padding:4px 2px}
+footer.sitefoot .flinks a{color:#1c1e21;text-decoration:none;padding:4px 2px;font-weight:600}
 footer.sitefoot .flinks a:hover{color:#5a7bff}
 /* App-store badges — CSS-drawn approximations of the Apple / Google
    marks. Real vector badges will drop in when the store URLs land. */
@@ -72,6 +72,9 @@ footer.sitefoot .fmeta{color:#8a8f99;font-size:12.5px;letter-spacing:.02em}
 <div class="top">
   <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
   <div class="navlinks">
+    <a href="/home" class="hideSm">Home</a>
+    <a href="/about" class="hideSm">About</a>
+    <a href="/blog" class="hideSm">Blog</a>
     <a class="open" href="/">Open app</a>
   </div>
 </div>
@@ -81,6 +84,9 @@ ${body}
 </div>
 <footer class="sitefoot"><div class="fwrap">
   <div class="flinks">
+    <a href="/home">Home</a>
+    <a href="/about">About</a>
+    <a href="/blog">Blog</a>
     <a href="/privacy">Privacy</a>
     <a href="/terms">Terms</a>
     <a href="/child-safety">Child safety</a>
