@@ -1583,6 +1583,53 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   }
   setTimeout(seedAIPersonas, 2500);
 
+  // Owner-refs seed (test data, 1 Aug 2026 request). Runs ONCE via a
+  // Redis flag so we never duplicate. Adds 3 references to the owner
+  // account from the 3 AI personas: two backdated (7d + 20d), one
+  // fresh (2h) so the wall card shows both the teal NEW badge AND
+  // the reference count in the corner. Skips silently if the flag
+  // is set OR the owner has no account yet OR the owner already has
+  // any references (never overwrite real data). Safe to leave in
+  // the codebase — will not re-fire on future boots.
+  async function seedOwnerRefsOnce() {
+    try {
+      if (await db.exists('soc:dev:seeded-owner-refs')) return;
+      const ownerUid = await db.get('soc:email:' + OWNER_EMAIL);
+      if (!ownerUid) return;   // owner account not created yet
+      const existing = await db.lrange('soc:refs:' + ownerUid, 0, -1);
+      if (existing && existing.length) {
+        // Owner already has real references — set the flag so we never
+        // even check again, and skip.
+        await db.set('soc:dev:seeded-owner-refs', '1');
+        return;
+      }
+      const now = Date.now();
+      const SAMPLES = [
+        { fromId: 'ai_amy',     text: 'Sibi is genuinely warm and easy to talk to. Every chat we\'ve had he asks great follow-up questions and remembers small details I mentioned weeks earlier. Highly recommend chatting with him if you want a real conversation, not small talk.', ageMs: 2 * 60 * 60 * 1000 },
+        { fromId: 'ai_matthew', text: 'Solid conversation partner. We\'ve chatted about films, cities and everyday life in the UK. Sibi picks up idioms quickly and doesn\'t mind being corrected, which is honestly refreshing. If you\'re learning English or just want a good chat, he\'s worth reaching out to.', ageMs: 7 * 24 * 60 * 60 * 1000 },
+        { fromId: 'ai_ashley',  text: 'Had a really lovely chat with Sibi about travelling and music. He\'s got that laid-back way of listening that puts you at ease straight away. Full of good recommendations for Manchester too. Chat with him!', ageMs: 20 * 24 * 60 * 60 * 1000 }
+      ];
+      for (const s of SAMPLES) {
+        const raw = await db.get('soc:user:' + s.fromId);
+        if (!raw) continue;   // AI persona missing — skip that one
+        let from;
+        try { from = JSON.parse(raw); } catch (e) { continue; }
+        const entry = {
+          id: crypto.randomBytes(6).toString('hex'),
+          fromId: from.id, fromName: from.name, fromPhoto: from.photo || null,
+          text: s.text,
+          createdAt: now - s.ageMs
+        };
+        await db.rpush('soc:refs:' + ownerUid, JSON.stringify(entry));
+        await db.set('soc:refwrote:' + from.id + ':' + ownerUid, '1');
+      }
+      await db.set('soc:dev:seeded-owner-refs', '1');
+      console.log('[dev] seeded 3 sample references on owner account');
+    } catch (e) { console.error('[dev] seedOwnerRefsOnce:', e.message); }
+  }
+  // Run after AI personas so the ai_amy/matthew/ashley user records exist.
+  setTimeout(seedOwnerRefsOnce, 5000);
+
   // Lazy Anthropic client. Null if SDK missing or key not set.
   let anthropicClient = null;
   function getAnthropic() {
