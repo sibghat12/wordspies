@@ -354,6 +354,9 @@ a{color:inherit;text-decoration:none}
 .ptoast{position:fixed;left:50%;transform:translateX(-50%);top:14px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;pointer-events:none;opacity:0;transition:.2s}
 .ptoast.show{opacity:1;top:24px}
 </style>
+<!-- SweetAlert2 for the 'End party' confirm — owner ask 1 Aug 2026:
+     'not a native alert, sweet alert when user tries to end the party'. -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -1160,14 +1163,33 @@ function denyHand(id){
   const m = room.members.find(x => x.id === id); if (m) m.handRaised = false;
   paint();
 }
-function endParty(){ if (confirm('End the party for everyone?')) socket && socket.emit('closeParty'); }
-// Owner ask 1 Aug 2026 v2: 'two options — Leave party OR End party
-// (if creator)'. Leave = you drop out but the party keeps running
-// for everyone else. End (host-only) = closes it for everyone.
-function confirmLeaveParty(){
-  if (!confirm('Leave the party? The room stays open for everyone else — you can rejoin any time.')) return;
-  leaveAndGoHard();
+// End party — owner ask 1 Aug 2026 v7: 'show sweet alert (not native)
+// when the user tries to end the party'. Uses SweetAlert2 loaded via
+// CDN in the <head>; falls back to a plain confirm() if the CDN
+// hasn't loaded yet (offline / slow network).
+function endParty(){
+  if (typeof window.Swal === 'object' && typeof window.Swal.fire === 'function') {
+    Swal.fire({
+      icon: 'warning',
+      title: 'End the party?',
+      text: 'This closes the room for everyone. This cannot be undone.',
+      showCancelButton: true,
+      confirmButtonText: 'End party',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#c8123b',
+      reverseButtons: true
+    }).then(res => {
+      if (res.isConfirmed && socket) socket.emit('closeParty');
+    });
+  } else {
+    if (confirm('End the party for everyone?')) socket && socket.emit('closeParty');
+  }
 }
+// Leave = you drop out but the party keeps running for everyone else.
+// Owner ask 1 Aug 2026 v7: 'don't show alert on Leave or the back-to-
+// community icon, just leave'. No confirm — the primary destructive
+// action is 'End' (host only) which does confirm.
+function confirmLeaveParty(){ leaveAndGoHard(); }
 
 // Owner ask 1 Aug 2026: 'Back to Community should NOT end the party
 // — I should go back to the home page but the party keeps going, I
