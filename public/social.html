@@ -280,7 +280,12 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* ═══ Speaky-style horizontal wall card ═══
    Photo on the left, name + quote + language flags on the right. Simple
    border, no shadow. 3-column grid on desktop (see breakpoints below). */
-.wcard{display:grid;grid-template-columns:130px 1fr;gap:16px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;cursor:pointer;color:inherit;text-decoration:none;transition:transform .1s;overflow:hidden;min-width:0}
+/* Owner ask 1 Aug 2026: 'the profile card has padding a lot as well
+   inside like the image and the card has more space, reduce it a bit
+   from the right side it fine'. Trimmed right padding from 16px to
+   10px so the text content extends closer to the card edge without
+   the image or top/bottom needing to move. */
+.wcard{display:grid;grid-template-columns:130px 1fr;gap:14px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 10px 16px 16px;cursor:pointer;color:inherit;text-decoration:none;transition:transform .1s;overflow:hidden;min-width:0}
 /* No border colour change on hover per owner ask — just a subtle lift. */
 .wcard:hover{transform:translateY(-1px)}
 .wcard:active{transform:translateY(0)}
