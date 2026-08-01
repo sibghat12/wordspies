@@ -402,8 +402,11 @@ a{color:inherit;text-decoration:none}
 <!-- Compact quick actions: mute + reactions. Small round buttons for
      users who don't want the big FAB in their face. Owner asked for
      "two small icons mute and reaction button that opens many reactions". -->
+<!-- Right-side floating quick-action strip. Owner ask 2 Aug 2026:
+     'remove the mic from the right floating'. Mic control moved to
+     the avatar tap-target — speakers tap their own circle to
+     mute/unmute. Reactions + Invite stay. -->
 <div class="quickact" id="pQuickAct">
-  <button class="qmute" id="qMuteBtn" onclick="toggleMyMic()" title="Mute / unmute (Speakers only)">🎤</button>
   <button class="qrx" id="qRxBtn" onclick="toggleReactionsMenu(event)" title="Send a reaction">🎉</button>
   <button class="qinv" id="pInviteBtn" onclick="copyInvite()" title="Copy invite link">🔗</button>
 </div>
@@ -439,9 +442,11 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
-<!-- Big always-visible action pills above the chat bar. Only one shows
-     at a time depending on my role. -->
-<button class="micfab" id="pMicFab" onclick="toggleMyMic()">
+<!-- 'Tap to talk' mic FAB retired 2 Aug 2026 per owner ask. Speakers
+     tap their own avatar circle to mute/unmute (existing .pav.tapMe
+     tap-target). Kept the button node hidden via CSS so paint() can
+     still write into it without a null-check regression. -->
+<button class="micfab hidden" id="pMicFab" onclick="toggleMyMic()" style="display:none">
   <span class="mfico">🎤</span>
   <span id="pMicFabLbl">Tap to talk</span>
 </button>
