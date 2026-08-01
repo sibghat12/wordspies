@@ -83,20 +83,32 @@ body.ob-open{overflow:hidden}
 .ob-step h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:24px;font-weight:700;letter-spacing:-.4px;line-height:1.2;color:var(--ink)}
 .ob-sub{color:var(--sub);font-size:14.5px;line-height:1.5}
 .ob-para{color:var(--ink);font-size:14.5px;line-height:1.65;margin:0}
-.ob-fields{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-.ob-input{width:100%;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-family:inherit;font-size:16px;background:#fff;color:var(--ink);outline:none;transition:border-color .12s,box-shadow .12s}
-.ob-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,80,107,.14)}
-textarea.ob-input{resize:none;line-height:1.45;min-height:80px}
-.ob-label{font-size:12.5px;font-weight:700;color:var(--sub);letter-spacing:.3px;text-transform:uppercase;margin-top:12px}
-.ob-err{color:var(--err);font-size:13px;font-weight:600;padding:4px 2px}
-.ob-row{display:flex;gap:10px;margin-top:auto;padding-top:16px}
-.ob-back{background:transparent;color:var(--sub);border:0;font-family:inherit;font-weight:700;font-size:15px;padding:14px 22px;border-radius:14px;cursor:pointer;flex-shrink:0}
+/* Fields — bigger, tighter, more premium. Owner ask 1 Aug 2026:
+   'small input boxes and the continue button is so big and messy'.
+   Inputs now full-width blocks with generous padding + a soft
+   background so they read as tap-targets, not text prompts. */
+.ob-fields{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.ob-input{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-family:inherit;font-size:15.5px;background:#f9fafc;color:var(--ink);outline:none;transition:border-color .12s,background .12s,box-shadow .12s;min-height:48px;box-sizing:border-box}
+.ob-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
+.ob-input[readonly]{background:#f2f3f6;color:var(--sub);cursor:default}
+textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
+.ob-label{font-size:11.5px;font-weight:700;color:var(--sub);letter-spacing:.4px;text-transform:uppercase;margin:14px 4px 2px}
+.ob-label:first-of-type{margin-top:6px}
+.ob-err{color:var(--err);font-size:13px;font-weight:600;padding:8px 2px 0}
+/* Buttons row — Back is a subtle link, Continue is a firm pill that
+   respects the content width instead of stretching the row. Owner
+   said Continue was 'so big and messy'. */
+.ob-row{display:flex;gap:10px;margin-top:18px;padding-top:0;align-items:center;justify-content:space-between}
+.ob-back{background:transparent;color:var(--sub);border:0;font-family:inherit;font-weight:600;font-size:14px;padding:10px 14px;border-radius:10px;cursor:pointer;flex-shrink:0}
 .ob-back:hover{color:var(--ink);background:var(--hover,#f4f5f7)}
-.ob-next{flex:1;background:var(--ink);color:#fff;border:0;border-radius:14px;padding:14px 22px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:transform .1s,background .12s}
+.ob-next{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 24px;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;transition:transform .1s,background .12s;min-height:44px;flex:0 1 auto}
+/* When Continue stands alone (no Back), let it stretch full-width so
+   the tap target is unmistakable. */
+.ob-step > .ob-next:only-of-type,
+.ob-step > .ob-next:last-child:not(.ob-row .ob-next){width:100%;margin-top:auto}
 .ob-next:hover{background:#000}
 .ob-next:active{transform:scale(.98)}
 .ob-next:disabled{opacity:.5;pointer-events:none}
-.primary-big{background:linear-gradient(135deg,var(--accent,#e8506b),var(--accent-d,#c33d55));padding:16px 22px;font-size:16px}
 /* Photo step */
 .ob-photo-examples{display:flex;gap:8px;margin:6px 0}
 .ob-photo-ex{flex:1;background:#f8f9fb;border:1px dashed var(--line);border-radius:12px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--sub)}
@@ -1529,50 +1541,30 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   <div class="ob-shell" id="obShell">
     <div class="ob-progress" id="obProgress"></div>
 
-    <!-- STEP 1 · Name (first + last) -->
+    <!-- STEP 1 · Name + DOB + Email (all on one page — owner ask
+         1 Aug 2026: pre-filled trio from Gmail + one confirm tap).
+         Was three separate screens; consolidated to reduce clicks
+         and match Tandem's real onboarding. Photo stays separate. -->
     <section class="ob-step" data-step="1">
       <div class="ob-emoji">👋</div>
-      <h2>What's your name?</h2>
-      <p class="ob-sub">This is what other spies will call you. Real names build trust.</p>
+      <h2>Let's set up your account</h2>
+      <p class="ob-sub">A few basics from us — pre-filled from your Gmail so you can tap through.</p>
       <div class="ob-fields">
+        <label class="ob-label">First name</label>
         <input class="ob-input" id="obFirstName" maxlength="20" placeholder="First name" autocomplete="given-name">
-        <input class="ob-input" id="obLastName" maxlength="20" placeholder="Last name (optional)" autocomplete="family-name">
+        <label class="ob-label">Last name (optional)</label>
+        <input class="ob-input" id="obLastName" maxlength="20" placeholder="Last name" autocomplete="family-name">
+        <label class="ob-label">Date of birth</label>
+        <input class="ob-input" id="obBirth" type="date" aria-label="Date of birth">
+        <label class="ob-label">Email</label>
+        <input class="ob-input" id="obEmail" type="email" readonly aria-label="Email">
       </div>
       <div class="ob-err hidden" id="obErr1"></div>
       <button class="ob-next" onclick="obNext(1)">Continue</button>
     </section>
 
-    <!-- STEP 2 · Date of birth -->
+    <!-- STEP 2 · Photo (with 3 reference examples) -->
     <section class="ob-step" data-step="2">
-      <div class="ob-emoji">🎂</div>
-      <h2>When's your birthday?</h2>
-      <p class="ob-sub">WordSpies is strictly 18+. We ask so we can keep the community safe.</p>
-      <div class="ob-fields">
-        <input class="ob-input" id="obBirth" type="date" aria-label="Date of birth">
-      </div>
-      <div class="ob-err hidden" id="obErr2"></div>
-      <div class="ob-row">
-        <button class="ob-back" onclick="obBack(2)">Back</button>
-        <button class="ob-next" onclick="obNext(2)">Continue</button>
-      </div>
-    </section>
-
-    <!-- STEP 3 · Email (confirm) -->
-    <section class="ob-step" data-step="3">
-      <div class="ob-emoji">✉️</div>
-      <h2>Your email</h2>
-      <p class="ob-sub">This is where we'll send you invites and let you reset your password.</p>
-      <div class="ob-fields">
-        <input class="ob-input" id="obEmail" type="email" readonly aria-label="Email">
-      </div>
-      <div class="ob-row">
-        <button class="ob-back" onclick="obBack(3)">Back</button>
-        <button class="ob-next" onclick="obNext(3)">Continue</button>
-      </div>
-    </section>
-
-    <!-- STEP 4 · Photo (with 3 reference examples) -->
-    <section class="ob-step" data-step="4">
       <div class="ob-emoji">📷</div>
       <h2>Add a clear face photo</h2>
       <p class="ob-sub">A real photo of your face helps others trust you're a real person.</p>
@@ -1588,13 +1580,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
       <div class="ob-err hidden" id="obErr4"></div>
       <div class="ob-row">
-        <button class="ob-back" onclick="obBack(4)">Back</button>
-        <button class="ob-next" onclick="obNext(4)">Continue</button>
+        <button class="ob-back" onclick="obBack(2)">Back</button>
+        <button class="ob-next" onclick="obNext(2)">Continue</button>
       </div>
     </section>
 
-    <!-- STEP 5 · Terms & Conditions -->
-    <section class="ob-step" data-step="5">
+    <!-- STEP 3 · Terms & Conditions -->
+    <section class="ob-step" data-step="3">
       <div class="ob-emoji">📜</div>
       <h2>Our house rules</h2>
       <p class="ob-para"><b>Be kind and real.</b> WordSpies is a community of language learners around the world. Treat everyone with respect. No harassment, hate speech, spam, or nudity.</p>
@@ -1602,13 +1594,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <p class="ob-para"><b>Report freely.</b> Every profile and every message has a Report and a Block button. We review reports within 24 hours and act firmly.</p>
       <p class="ob-sub" style="margin-top:16px;font-size:12.5px">Full <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy" target="_blank" rel="noopener">Privacy</a> · <a href="/child-safety" target="_blank" rel="noopener">Child safety</a></p>
       <div class="ob-row">
-        <button class="ob-back" onclick="obBack(5)">Back</button>
-        <button class="ob-next" onclick="obNext(5)">I agree</button>
+        <button class="ob-back" onclick="obBack(3)">Back</button>
+        <button class="ob-next" onclick="obNext(3)">I agree</button>
       </div>
     </section>
 
-    <!-- STEP 6 · Interests + goal -->
-    <section class="ob-step" data-step="6">
+    <!-- STEP 4 · Interests + goal -->
+    <section class="ob-step" data-step="4">
       <div class="ob-emoji">💬</div>
       <h2>Tell us a bit more</h2>
       <p class="ob-sub">This helps us match you with the right language partners.</p>
@@ -1624,26 +1616,26 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
       </div>
       <div class="ob-row">
-        <button class="ob-back" onclick="obBack(6)">Back</button>
-        <button class="ob-next" onclick="obNext(6)">Continue</button>
+        <button class="ob-back" onclick="obBack(4)">Back</button>
+        <button class="ob-next" onclick="obNext(4)">Continue</button>
       </div>
     </section>
 
-    <!-- STEP 7 · Verification pending -->
-    <section class="ob-step" data-step="7">
+    <!-- STEP 5 · Verification pending -->
+    <section class="ob-step" data-step="5">
       <div class="ob-emoji">🔒</div>
       <h2>Almost there</h2>
       <p class="ob-para">We review every new profile to keep the community safe. You can start exploring right now — reviewed accounts get a verified badge, usually within a day or two.</p>
       <p class="ob-sub" style="font-size:12.5px">If we spot anything unclear we'll email you.</p>
-      <button class="ob-next" onclick="obNext(7)">Got it</button>
+      <button class="ob-next" onclick="obNext(5)">Got it</button>
     </section>
 
-    <!-- STEP 8 · Welcome -->
-    <section class="ob-step" data-step="8">
+    <!-- STEP 6 · Welcome -->
+    <section class="ob-step" data-step="6">
       <div class="ob-welcome-logo">Word<em>Spies</em></div>
       <h2 style="font-size:26px">Welcome, <span id="obWelcomeName">friend</span> 👋</h2>
       <p class="ob-sub">Your profile is set up. Time to meet some people.</p>
-      <button class="ob-next primary-big" onclick="obFinish()">Enter WordSpies</button>
+      <button class="ob-next" onclick="obFinish()">Enter WordSpies</button>
     </section>
   </div>
 </div>
@@ -2604,7 +2596,7 @@ function enterApp(justJoined){
 // TOTAL_STEPS is kept in one place — bump progress dots + guards
 // automatically if we ever add or remove a step.
 // ═══════════════════════════════════════════════════════════════════
-const OB_TOTAL = 8;
+const OB_TOTAL = 6;
 let obGoal = '';
 let obNewPhotoUploaded = false;
 
@@ -2663,11 +2655,18 @@ async function obNext(step){
   clearErr();
 
   try {
-    // Per-step validate + save.
+    // Per-step validate + save. Owner consolidated steps 1-3
+    // (name + DOB + email) into a single step 1 on 1 Aug 2026.
     if (step === 1) {
       const first = $('obFirstName').value.trim();
       const last = $('obLastName').value.trim();
+      const bd = $('obBirth').value;
       if (!first || first.length < 2) return err('Please enter your first name.');
+      if (!bd) return err('Please enter your date of birth.');
+      const age = ageFromISOClient(bd);
+      if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date of birth.');
+      if (age < 18) return err('Sorry — WordSpies is for people aged 18 and over.');
+      // Save NAME if changed.
       const full = (last ? first + ' ' + last : first).replace(/[^a-zA-Z0-9_ ]/g, '').slice(0, 15);
       if (full !== ME.name) {
         try {
@@ -2679,45 +2678,31 @@ async function obNext(step){
           return err(e2.message);
         }
       }
-    }
-    if (step === 2) {
-      const bd = $('obBirth').value;
-      if (!bd) return err('Please enter your birthday.');
-      const age = ageFromISOClient(bd);
-      if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date.');
-      if (age < 18) return err('Sorry — WordSpies is for people aged 18 and over.');
+      // Save DOB if changed.
       if (bd !== ME.birthdate) {
         const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ birthdate: bd }) });
         ME = j.me;
       }
     }
-    // Step 3 (email): read-only, no action.
-    if (step === 4) {
+    if (step === 2) {
       if (!ME.photo) return err('Please upload a clear face photo.');
     }
-    if (step === 5) {
-      // T&C: acceptance recorded server-side already at signup — this
-      // is a re-confirmation gate before we let the account continue.
-      // Nothing extra to save.
-    }
-    if (step === 6) {
+    // Step 3 (T&C): re-confirmation gate, nothing to save.
+    if (step === 4) {
       const t = $('obTalkAbout').value.trim();
       if (!obGoal) return err('Please pick your main goal.');
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ talkAbout: t, goal: obGoal }) });
       ME = j.me;
-      // Now that the profile is meaningful, register the account with
-      // the moderation queue so the owner can review + verify.
-      try {
-        await api('/account/pending', { method:'POST' });
-      } catch (e2) { /* best-effort */ }
+      // Register with the moderation queue so the owner can verify.
+      try { await api('/account/pending', { method:'POST' }); } catch (e2) {}
     }
-    // Step 7 (verification wait): display-only.
+    // Step 5 (verification wait): display-only.
 
     if (step >= OB_TOTAL) { obFinish(); return; }
-    // Populate welcome name just before showing.
-    if (step + 1 === 8 && ME) {
+    // Populate welcome name just before showing step 6.
+    if (step + 1 === OB_TOTAL && ME) {
       $('obWelcomeName').textContent = String(ME.name || 'friend').split(' ')[0];
     }
     obShow(step + 1);
