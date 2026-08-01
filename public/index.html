@@ -53,6 +53,10 @@ html{scroll-behavior:auto}
 body{
   font-family:'Nunito',system-ui,sans-serif;color:var(--ink);min-height:100vh;
   background:var(--bg);position:relative;
+  padding-left:20px;padding-right:20px;
+}
+@media(min-width:769px){
+  body{padding-left:10%;padding-right:10%}
 }
 button{font-family:inherit;font-weight:400;cursor:pointer;border:none;color:inherit;background:none}
 input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:none}
@@ -617,8 +621,8 @@ b,strong{font-weight:600}
           <p class="siAlt hidden" id="siGuest"><a id="siGuestGo" role="button" tabindex="0">Not you? Join as a guest instead →</a></p>
         </div>
       </div>
-      <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="helpbtn" onclick="toggleHelp(true)">❓ How to play</button><a class="helpbtn" href="/social" style="text-decoration:none">👥 Community</a><a class="helpbtn" href="/games" style="text-decoration:none" title="Ludo, 8-ball pool, Connect 4 and Mind Meld — with friends or against the bot">🎮 More games</a><button class="helpbtn hidden" id="installBtn" title="Install WordSpies on your device">📲 Install app</button></div>
-      <p class="foot" style="font-size:11.3px;font-weight:400;color:var(--faint);line-height:1.6"><a href="/about" style="color:var(--muted);text-decoration:underline">About</a> · <a href="/privacy" style="color:var(--muted);text-decoration:underline">Privacy</a> · <a href="/terms" style="color:var(--muted);text-decoration:underline">Terms</a> · <a href="/blog" style="color:var(--muted);text-decoration:underline">Blog</a><br><span style="color:var(--ink)">© 2026 WordSpies. All rights reserved.</span></p>
+      <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="helpbtn" href="/social" style="text-decoration:none">👥 Community</a></div>
+      <p class="foot" style="font-size:11.3px;font-weight:400;color:var(--faint);line-height:1.6"><a href="/privacy" style="color:var(--muted);text-decoration:underline">Privacy</a> · <a href="/terms" style="color:var(--muted);text-decoration:underline">Terms</a> · <a href="/child-safety" style="color:var(--muted);text-decoration:underline">Child safety</a> · <a href="mailto:contact@wordspies.co.uk" style="color:var(--muted);text-decoration:underline">Contact</a><br><span style="color:var(--ink)">© 2026 WordSpies. All rights reserved.</span></p>
       <div class="ad-slot" id="ad-home"><!-- ad code goes here --></div>
     </div>
   </div>
@@ -630,7 +634,6 @@ b,strong{font-weight:600}
     <header>
       <div class="logo">🕵️ WordSpies</div>
       <div class="sp"></div>
-      <a class="tinylink" href="/games">🎮 All games</a>
     </header>
     <div class="top">
       <div class="codepill" id="codePill"><b id="codeText"></b><span class="cp" id="codePillLab">Copy invite link</span></div>
