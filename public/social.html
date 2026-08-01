@@ -602,6 +602,44 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-card h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:16px;color:var(--ink);margin-bottom:8px}
 .mp-card p{font-size:14.5px;color:var(--sub);line-height:1.6;word-break:break-word}
 .mp-card p.mp-empty{color:var(--faint);font-style:italic;font-size:13.5px}
+/* References — Tandem-style. Header row (title left, write button
+   right), then a stacked list of reference cards (author avatar +
+   name + body). Owner ask 1 Aug 2026. */
+.mp-refs-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.mp-refs-head h3{margin:0}
+.mp-refs-count{color:var(--faint);font-weight:600;font-size:14px;margin-left:4px}
+.mp-refs-write{background:var(--ink);color:#fff;border:0;border-radius:10px;padding:8px 14px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;flex-shrink:0}
+.mp-refs-write:hover{background:#000}
+.mp-refs-list{display:flex;flex-direction:column;gap:10px}
+.mp-ref{display:grid;grid-template-columns:38px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.mp-ref:first-child{border-top:0;padding-top:0}
+.mp-ref-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;overflow:hidden}
+.mp-ref-av img{width:100%;height:100%;object-fit:cover}
+.mp-ref-body{min-width:0}
+.mp-ref-name{font-weight:700;font-size:14.5px;color:var(--ink);display:flex;align-items:center;gap:6px}
+.mp-ref-when{color:var(--faint);font-size:11.5px;font-weight:600}
+.mp-ref-text{margin-top:4px;color:var(--ink);font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+/* Composer modal — matches the auth modal treatment: backdrop +
+   centered card + textarea + character counter. */
+.ref-modal{position:fixed;inset:0;z-index:220;background:rgba(15,17,25,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}
+.ref-modal.hidden{display:none}
+.ref-modal .ref-card{background:#fff;border-radius:20px;max-width:520px;width:100%;padding:24px 22px 20px;box-shadow:0 24px 70px rgba(0,0,0,.35);max-height:90vh;overflow-y:auto}
+.ref-card h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:20px;color:var(--ink);margin-bottom:6px}
+.ref-card .ref-sub{color:var(--sub);font-size:13.5px;line-height:1.5;margin-bottom:14px}
+.ref-card textarea{width:100%;min-height:180px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-family:inherit;font-size:14.5px;line-height:1.55;background:#f9fafc;color:var(--ink);outline:none;resize:vertical;box-sizing:border-box}
+.ref-card textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
+.ref-count{color:var(--faint);font-size:12px;font-weight:600;text-align:right;margin-top:6px}
+.ref-count.over{color:var(--err)}
+.ref-err{color:var(--err);font-size:13px;font-weight:600;padding:8px 0}
+.ref-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+.ref-btn-cancel{background:transparent;border:0;color:var(--sub);font-family:inherit;font-weight:600;font-size:14px;padding:10px 14px;cursor:pointer;border-radius:10px}
+.ref-btn-cancel:hover{color:var(--ink);background:var(--hover,#f4f5f7)}
+.ref-btn-save{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.ref-btn-save:hover{background:#000}
+.ref-btn-save:disabled{opacity:.5;pointer-events:none}
+/* NEW badge on wall cards when a member has a fresh reference. */
+.wcard-newref{position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.6px;padding:3px 8px;border-radius:99px;text-transform:uppercase;box-shadow:0 3px 8px rgba(232,80,107,.35)}
+.wcard{position:relative}
 .mp-2col{display:grid;gap:16px}
 @media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
 /* "Let's talk about" now fills the full column per owner ask —
@@ -1529,6 +1567,23 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   </div>
 </div>
 
+<!-- Reference composer — modal for writing a written testimonial about
+     another member. Opened from the member-profile 'Write a reference'
+     button; targets `curMember`. -->
+<div id="refModal" class="ref-modal hidden" onclick="if(event.target===this)closeRefComposer()">
+  <div class="ref-card">
+    <h3 id="refModalTitle">Write a reference</h3>
+    <p class="ref-sub" id="refModalSub">Share your honest experience of this person — how they chat, what they're good at, why others would enjoy meeting them. Around 200 words is ideal.</p>
+    <textarea id="refText" maxlength="1000" placeholder="They're always great to chat with because…"></textarea>
+    <div class="ref-count" id="refCount">0 / 1000</div>
+    <div class="ref-err hidden" id="refErr"></div>
+    <div class="ref-actions">
+      <button class="ref-btn-cancel" onclick="closeRefComposer()">Cancel</button>
+      <button class="ref-btn-save" id="refSaveBtn" onclick="submitReference()">Post reference</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ ONBOARDING WIZARD ============
      Multi-step signup flow modelled on Tandem's onboarding (owner
      research 1 Aug 2026). Shown ONCE per new account, after signup
@@ -1910,6 +1965,19 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
             <div class="mp-chips" id="mGoals"></div>
           </section>
         </div>
+
+        <!-- References — Tandem-style written testimonials from other
+             members. Anyone (except me) can write one; the recipient
+             can't edit or delete (that would defeat the trust signal).
+             Owner ask 1 Aug 2026. -->
+        <section class="mp-card" id="mRefsCard">
+          <div class="mp-refs-head">
+            <h3><span id="mRefsTitle">References</span> <span class="mp-refs-count" id="mRefsCount"></span></h3>
+            <button class="mp-refs-write" id="mRefsWriteBtn" onclick="openRefComposer()">✎ Write a reference</button>
+          </div>
+          <div class="mp-refs-list" id="mRefsList"></div>
+          <p class="mp-empty" id="mRefsEmpty" style="display:none">No references yet. Be the first to leave one.</p>
+        </section>
 
         <section class="mp-card">
           <h3>Recommendations</h3>
@@ -2499,6 +2567,101 @@ async function confirmDelete(){
 }
 
 // ---------- app ----------
+// ═══════════════════════════════════════════════════════════════════
+// References — Tandem-style written testimonials one member can leave
+// for another. Owner ask 1 Aug 2026.
+// ═══════════════════════════════════════════════════════════════════
+async function loadReferences(userId){
+  const list = document.getElementById('mRefsList');
+  const empty = document.getElementById('mRefsEmpty');
+  const countEl = document.getElementById('mRefsCount');
+  if (!list) return;
+  list.innerHTML = '';
+  try {
+    const j = await api('/references/' + encodeURIComponent(userId));
+    const refs = j.references || [];
+    if (countEl) countEl.textContent = refs.length ? '(' + refs.length + ')' : '';
+    if (!refs.length) {
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    list.innerHTML = refs.map(r => {
+      const av = r.fromPhoto
+        ? `<img src="${esc(r.fromPhoto)}" alt="">`
+        : esc((r.fromName || '?').charAt(0).toUpperCase());
+      return `<div class="mp-ref">
+        <div class="mp-ref-av">${av}</div>
+        <div class="mp-ref-body">
+          <div class="mp-ref-name">${esc(r.fromName || 'Someone')} <span class="mp-ref-when">· ${relTimeShort(r.createdAt)}</span></div>
+          <div class="mp-ref-text">${esc(r.text).replace(/\n/g,'<br>')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    if (empty) { empty.textContent = 'Could not load references.'; empty.style.display = ''; }
+  }
+}
+
+function openRefComposer(){
+  if (!curMember) return;
+  if (!ME) { requireLogin('Log in to leave a reference'); return; }
+  if (ME.id === curMember) { toast("You can't reference yourself."); return; }
+  const target = (MEMBERS || []).find(x => x.id === curMember);
+  const name = target ? target.name : 'them';
+  const titleEl = document.getElementById('refModalTitle');
+  if (titleEl) titleEl.textContent = 'Write a reference for ' + name;
+  const errEl = document.getElementById('refErr');
+  if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+  const ta = document.getElementById('refText');
+  if (ta) ta.value = '';
+  const cnt = document.getElementById('refCount');
+  if (cnt) { cnt.textContent = '0 / 1000'; cnt.classList.remove('over'); }
+  document.getElementById('refModal').classList.remove('hidden');
+  setTimeout(() => { try { ta && ta.focus({ preventScroll: true }); } catch(e){} }, 60);
+}
+function closeRefComposer(){
+  const m = document.getElementById('refModal');
+  if (m) m.classList.add('hidden');
+}
+async function submitReference(){
+  const ta = document.getElementById('refText');
+  const text = (ta && ta.value || '').trim();
+  const errEl = document.getElementById('refErr');
+  const saveBtn = document.getElementById('refSaveBtn');
+  const showErr = (msg) => { if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); } };
+  if (errEl) errEl.classList.add('hidden');
+  if (text.length < 20) return showErr('Please write at least a couple of sentences (20+ characters).');
+  if (text.length > 1000) return showErr('References are capped at 1000 characters.');
+  if (!curMember) return showErr('No member selected.');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Posting…'; }
+  try {
+    await api('/reference', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ targetId: curMember, text }) });
+    toast('Reference posted — thanks for the good word.');
+    closeRefComposer();
+    loadReferences(curMember);
+    // Refresh /members so the NEW badge shows up on that member's card.
+    if (typeof loadMembers === 'function') loadMembers();
+  } catch (e) {
+    showErr(e.message || 'Could not post reference.');
+  }
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Post reference'; }
+}
+
+// Live character count on the composer textarea.
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('refText');
+  const cnt = document.getElementById('refCount');
+  if (ta && cnt) {
+    ta.addEventListener('input', () => {
+      const n = ta.value.length;
+      cnt.textContent = n + ' / 1000';
+      cnt.classList.toggle('over', n > 1000);
+    });
+  }
+});
+
 // Humanised 'X ago' short form for the community-card presence line.
 // Kept intentionally terse: '2m', '5h', '3d', '2w' — reads at a glance.
 function relTimeShort(ts){
@@ -4910,8 +5073,14 @@ function renderWall(){
     // said was online recently or a day ago'.
     const seenTxt = m.online ? 'Online now'
       : (m.lastSeenAt ? 'Active ' + relTimeShort(m.lastSeenAt) : '');
+    // NEW-reference badge: any reference in the last 7 days flags
+    // the card so scanning the wall you can spot people who've just
+    // received fresh social proof. Owner ask 1 Aug 2026.
+    const REF_FRESH_MS = 7 * 24 * 3600 * 1000;
+    const hasNewRef = m.latestRefAt && (Date.now() - m.latestRefAt) < REF_FRESH_MS;
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
+      ${hasNewRef ? '<span class="wcard-newref" title="New reference this week">New ✨</span>' : ''}
       <div class="wcard-photo">${photo}</div>
       <div class="wcard-body">
         <div class="wcard-name">${esc(m.name)}${mark(m)}${m.online ? '<span class="wcard-dot" title="Online"></span>' : ''}</div>
@@ -5058,6 +5227,14 @@ function openMemberObj(m){
   // we didn't already surface as the About body (i.e. bio existed).
   const _showQuote = m.talkAbout && m.bio && m.talkAbout.trim() !== m.bio.trim();
   setCard('mQuoteCard', 'mQuote', _showQuote ? esc(m.talkAbout).replace(/\n/g,'<br>') : '', true);
+  // References — fresh fetch every profile open, personalise title
+  // ('References for Nina'), hide the 'write' button on your own
+  // profile.
+  const _refsTitleEl = document.getElementById('mRefsTitle');
+  if (_refsTitleEl) _refsTitleEl.textContent = 'References for ' + _firstName;
+  const _refsWriteBtn = document.getElementById('mRefsWriteBtn');
+  if (_refsWriteBtn) _refsWriteBtn.style.display = (ME && ME.id === m.id) ? 'none' : '';
+  loadReferences(m.id);
   // Interests + goals as chips.
   const chipsHTML = arr => arr.map(x => `<span class="mp-chip">${esc(x)}</span>`).join('');
   if (m.interests && m.interests.length) { $('mInterests').innerHTML = chipsHTML(m.interests); $('mInterestsBox').classList.remove('hidden'); }

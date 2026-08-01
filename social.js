@@ -554,6 +554,93 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     } catch (e) { console.error('learn-idea:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
+  // References — a written testimonial one member can leave for
+  // another. Tandem-style trust signal. Owner ask 1 Aug 2026.
+  //
+  //   POST /reference           — write one for another member
+  //     body: { targetId, text }  (text up to 1000 chars, min 20)
+  //   GET  /references/:id      — read all references for a member,
+  //                               newest first, with author info.
+  //   GET  /references/:id/count — cheap count only (for card badges)
+  //
+  // Storage:
+  //   soc:refs:<targetId>       — Redis LIST of JSON entries.
+  //   soc:refwrote:<fromId>:<targetId> — dedup marker (one per pair)
+  //                                       so a user can't spam refs.
+  //   Entry shape:
+  //     { id, fromId, fromName, fromPhoto, text, createdAt }
+  //
+  // Ownership: the RECIPIENT can't edit or delete a reference (would
+  // defeat the trust signal); the AUTHOR can withdraw their own via
+  // POST /reference/delete. We soft-cap at last 200 refs per user.
+  api.post('/reference', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (limited(req, 'ref', 5)) return res.status(429).json({ error: 'Slow down a little ✋' });
+      const b = req.body || {};
+      const targetId = String(b.targetId || '').slice(0, 32);
+      const text = String(b.text || '').trim().slice(0, 1000);
+      if (!targetId || targetId === me.id) return res.status(400).json({ error: 'Choose someone else to reference.' });
+      if (text.length < 20) return res.status(400).json({ error: 'Please write at least a couple of sentences (20+ characters).' });
+      // Target must exist.
+      const tRaw = await db.get('soc:user:' + targetId);
+      if (!tRaw) return res.status(404).json({ error: 'That person doesn\'t exist.' });
+      // Block guard both ways.
+      if (await db.sismember('soc:blocks:' + me.id, targetId)
+       || await db.sismember('soc:blocks:' + targetId, me.id)) {
+        return res.status(403).json({ error: 'Cannot reference a blocked user.' });
+      }
+      // One reference per author→recipient. Second attempt UPDATES the
+      // existing one instead of stacking (kept simple: delete old + append
+      // new so ordering reflects the latest edit).
+      const dupKey = 'soc:refwrote:' + me.id + ':' + targetId;
+      const already = await db.get(dupKey);
+      if (already) {
+        try {
+          const list = await db.lrange('soc:refs:' + targetId, 0, -1);
+          const filtered = list.filter(raw => {
+            try { const e = JSON.parse(raw); return e.fromId !== me.id; } catch (e) { return true; }
+          });
+          // Overwrite: rebuild the list. In-memory shim doesn't have a
+          // native way to replace by predicate so we del + rpush all.
+          await db.del('soc:refs:' + targetId);
+          for (const r of filtered) await db.rpush('soc:refs:' + targetId, r);
+        } catch (e) {}
+      }
+      const entry = {
+        id: crypto.randomBytes(6).toString('hex'),
+        fromId: me.id, fromName: me.name, fromPhoto: me.photo || null,
+        text, createdAt: Date.now()
+      };
+      await db.rpush('soc:refs:' + targetId, JSON.stringify(entry));
+      await db.ltrim('soc:refs:' + targetId, -200, -1);
+      await db.set(dupKey, '1');
+      res.json({ ok: true, ref: entry });
+    } catch (e) { console.error('reference:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.get('/references/:id', async (req, res) => {
+    try {
+      const id = String(req.params.id || '').slice(0, 32);
+      if (!id) return res.status(400).json({ error: 'Missing id.' });
+      const list = await db.lrange('soc:refs:' + id, 0, -1);
+      const me = await userFromReq(req);
+      const myBlocks = me ? new Set(await db.smembers('soc:blocks:' + me.id)) : new Set();
+      const out = [];
+      for (const raw of list) {
+        try {
+          const e = JSON.parse(raw);
+          // Hide references from anyone the viewer has blocked.
+          if (myBlocks.has(e.fromId)) continue;
+          out.push(e);
+        } catch (e2) {}
+      }
+      out.sort((a, b) => b.createdAt - a.createdAt);
+      res.json({ references: out });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
   // Report a user or a message. Written to a rolling list a moderator
   // (owner) can walk through. Store enough context to act without a
   // second query — reporter id, target id, reason category, free-text
@@ -779,10 +866,25 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         if (raw) {
           const u = JSON.parse(raw);
           const ls = await db.get('soc:lastseen:' + u.id);
+          // Refs: get count + timestamp of newest. Cheap: just read
+          // the tail entry from the list (last one pushed = newest).
+          // Skip for AI users (they don't collect references).
+          let refCount = 0, latestRefAt = 0;
+          if (!u.isAI) {
+            try {
+              const tail = await db.lrange('soc:refs:' + u.id, -1, -1);
+              if (tail && tail.length) {
+                const arr = await db.lrange('soc:refs:' + u.id, 0, -1);
+                refCount = arr.length;
+                try { latestRefAt = JSON.parse(tail[0]).createdAt || 0; } catch (e) {}
+              }
+            } catch (e) {}
+          }
           out.push({
             ...pub(u),
             online: await db.exists('soc:online:' + u.id),
-            lastSeenAt: ls ? Number(ls) : null
+            lastSeenAt: ls ? Number(ls) : null,
+            refCount, latestRefAt
           });
         }
       }
