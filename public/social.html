@@ -1409,6 +1409,13 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .mb.them .tick-lbl{color:#2563eb}
 /* a quiet date pill between days, like every chat app you've used */
 .daysep{align-self:center;background:#e9ebf0;color:var(--sub);font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:5px 13px;border-radius:99px;margin:10px 0 2px}
+/* System messages in the chat thread (block / unblock). Centred pill
+   like the daysep but larger + coloured to signal state change. Owner
+   ask 1 Aug 2026: 'if someone blocked someone it should show a
+   blocked message in both chats'. */
+.chatsys{align-self:center;max-width:82%;text-align:center;font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 14px;border-radius:14px;margin:14px 0 8px;letter-spacing:.1px;word-break:break-word}
+.chatsys-block{background:#fff2f3;color:#a4293a;border:1px solid #f2c8ce}
+.chatsys-unblock{background:#effaf3;color:#1f7a45;border:1px solid #c9ead6}
 /* messages from the same person in a row hug each other */
 .mb.cont{margin-top:-4px}
 .mb.me.cont{border-top-right-radius:7px}
@@ -3970,6 +3977,27 @@ async function refreshChat(first){
 
       let lastDay = '', prev = null;
       const bubbles = j.messages.map(m => {
+        // System messages (block / unblock) render as centred pills,
+        // not bubbles. Owner ask 1 Aug 2026: 'if someone blocked
+        // someone it should show a blocked message in both chats'.
+        if (m.f === 'system' && (m.k === 'sys-block' || m.k === 'sys-unblock')) {
+          const iBlocked = ME && m.by === ME.id;
+          const day = dayLabel(m.t);
+          const sep = day !== lastDay ? `<div class="daysep">${esc(day)}</div>` : '';
+          lastDay = day; prev = m;
+          const peerName = (j.user && j.user.name) || 'this person';
+          let label;
+          if (m.k === 'sys-block') {
+            label = iBlocked
+              ? `🚫 You blocked ${esc(peerName)}. Neither of you can message here until you unblock.`
+              : `🚫 ${esc(peerName)} has blocked this chat. Messages cannot be sent.`;
+          } else {
+            label = iBlocked
+              ? `✓ You unblocked ${esc(peerName)}. You can message again.`
+              : `✓ ${esc(peerName)} has unblocked this chat.`;
+          }
+          return sep + `<div class="chatsys ${m.k === 'sys-block' ? 'chatsys-block' : 'chatsys-unblock'}">${label}</div>`;
+        }
         const mine = m.f === ME.id;
         const tick = mine ? (m.t <= j.theirRead ? TICK_SEEN : TICK_SENT) : '';
         const day = dayLabel(m.t);

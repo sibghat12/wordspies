@@ -682,6 +682,24 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   });
 
   // Block a user — hides them everywhere, both directions.
+  // Push a system message into the chat thread between two users so
+  // BOTH sides see the block state, not just the person who blocked.
+  // Owner ask 1 Aug 2026. Both directions of the block (block/unblock)
+  // write their own marker; the message thread is shared between the
+  // pair (cid() sorts uids), so the same entry surfaces for both.
+  async function pushSysMsg(fromId, toId, kind, byId) {
+    const key = 'soc:msgs:' + cid(fromId, toId);
+    const entry = {
+      id: crypto.randomBytes(6).toString('base64url'),
+      f: 'system',           // client uses this to render as a centred pill
+      by: byId,              // which side triggered the state change
+      k: kind,               // 'sys-block' | 'sys-unblock'
+      t: Date.now()
+    };
+    await db.rpush(key, JSON.stringify(entry));
+    await db.ltrim(key, -500, -1);
+  }
+
   api.post('/block', async (req, res) => {
     try {
       const me = await userFromReq(req);
@@ -689,12 +707,16 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const targetId = String((req.body || {}).targetId || '').slice(0, 32);
       if (!targetId || targetId === me.id) return res.status(400).json({ error: 'Nothing to block.' });
       if (!(await db.get('soc:user:' + targetId))) return res.status(404).json({ error: 'That user is gone.' });
+      const already = await db.sismember('soc:blocks:' + me.id, targetId);
       await db.sadd('soc:blocks:' + me.id, targetId);
       // Unfollow both directions so the block also breaks the graph.
       await db.srem('soc:following:' + me.id, targetId);
       await db.srem('soc:followers:' + targetId, me.id);
       await db.srem('soc:following:' + targetId, me.id);
       await db.srem('soc:followers:' + me.id, targetId);
+      // Insert the sys marker only on a fresh block (repeat calls are
+      // idempotent, and duplicating pills in the thread would be noise).
+      if (!already) await pushSysMsg(me.id, targetId, 'sys-block', me.id);
       res.json({ ok: true });
     } catch (e) { console.error('social block:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -704,7 +726,9 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (!me) return res.status(401).json({ error: 'Please log in.' });
       const targetId = String((req.body || {}).targetId || '').slice(0, 32);
       if (!targetId) return res.status(400).json({ error: 'Nothing to unblock.' });
+      const was = await db.sismember('soc:blocks:' + me.id, targetId);
       await db.srem('soc:blocks:' + me.id, targetId);
+      if (was) await pushSysMsg(me.id, targetId, 'sys-unblock', me.id);
       res.json({ ok: true });
     } catch (e) { console.error('social unblock:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
