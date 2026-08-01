@@ -640,13 +640,13 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ref-btn-save{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
 .ref-btn-save:hover{background:#000}
 .ref-btn-save:disabled{opacity:.5;pointer-events:none}
-/* Wall-card corner badges — match Tandem's treatment:
-   - Fresh reference (< 7 days) → teal 'NEW' pill.
-   - Older references (any count) → count + speech-bubble icon
-     in the same corner slot, quiet grey.
-   Owner shared Tandem screenshot 1 Aug 2026. */
-.wcard-newref{position:absolute;top:10px;right:10px;background:#00c2a0;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18);z-index:2}
-.wcard-refct{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;color:#7b8595;font-size:12.5px;font-weight:700;z-index:2}
+/* Wall-card corner slot: stacked vertically so the NEW pill sits on
+   top of the reference count when both are present. Owner ask
+   1 Aug 2026: 'if i have references show that with the [count] and
+   quotes icon on the top right corner'. */
+.wcard-corner{position:absolute;top:10px;right:10px;z-index:2;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.wcard-newref{background:#00c2a0;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18)}
+.wcard-refct{display:inline-flex;align-items:center;gap:3px;color:#7b8595;font-size:12.5px;font-weight:700}
 .wcard-refct svg{width:14px;height:14px;fill:currentColor}
 .wcard{position:relative}
 .mp-2col{display:grid;gap:16px}
@@ -970,11 +970,14 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pt-mgo:disabled{opacity:.5;cursor:default;transform:none}
 .pt-err{color:var(--err);font-size:12.5px;font-weight:600;margin-top:10px}
 
-/* Voice-call button in the chat header. Matches the composer's send +
-   micrec buttons: 40px round pill, purple/blue gradient, same shadow.
-   Owner ask 1 Aug 2026: 'make the call icon same as the other send
-   and the mic icon'. */
-.chcall{background:linear-gradient(135deg,var(--cme-1,#5a7bff),var(--cme-2,#7c5cff));color:#fff;border:0;border-radius:50%;width:40px;height:40px;min-height:40px;padding:0;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(96,88,255,.22);margin-left:6px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+/* Voice-call button in the chat header. Clean dark round pill with
+   an inline SVG phone icon — owner ask 1 Aug 2026: 'remove color i
+   dont like this color and mic and the phone call and add a new mic
+   and the call icon please'. Same visual weight as the mic + send
+   buttons in the composer below (all three now use the same treatment). */
+.chcall{background:var(--ink,#16181f);color:#fff;border:0;border-radius:50%;width:40px;height:40px;min-height:40px;padding:0;cursor:pointer;box-shadow:none;margin-left:6px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;line-height:0;transition:background .12s}
+.chcall:hover{background:#000}
+.chcall svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 /* Overflow (⋯) menu on the chat header — report + block for the
    current chat peer. Same visual language as the profile page's
    .mp-more menu but scoped to .chmore so it doesn't collide. */
@@ -1333,7 +1336,11 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .acrow .ac:hover{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
 .acrow .ac.smart{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
 /* keep the composer / picker / send button in the new palette */
-.composer .cbtn.send{background:linear-gradient(135deg,var(--cme-1),var(--cme-2));box-shadow:var(--cme-shadow)}
+/* Composer send + mic buttons: solid dark pills with white SVG
+   glyphs. Owner ask 1 Aug 2026 — dropped the purple/blue gradient. */
+.composer .cbtn.send{background:var(--ink,#16181f);color:#fff;box-shadow:none}
+.composer .cbtn.send:hover{background:#000}
+.composer .cbtn.send svg{width:16px;height:16px;fill:currentColor}
 .composer input:focus{outline:none;border-color:var(--caccent);box-shadow:0 0 0 3px rgba(90,123,255,.12)}
 
 /* Hold-to-record mic button. ALWAYS visible next to the send button —
@@ -1342,7 +1349,9 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
    blue pill so the affordance is unmistakable, and it grows into a
    pulsing red when actively recording. Send stays in its own slot;
    whichever button you tap wins. */
-.composer .micrec{background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;border:0;font-size:18px;box-shadow:var(--cme-shadow);position:relative;user-select:none;-webkit-user-select:none;min-width:44px;width:44px;height:44px;flex-shrink:0}
+.composer .micrec{background:var(--ink,#16181f);color:#fff;border:0;box-shadow:none;position:relative;user-select:none;-webkit-user-select:none;min-width:44px;width:44px;height:44px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;line-height:0;transition:background .12s}
+.composer .micrec:hover{background:#000}
+.composer .micrec svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .composer .micrec.recording{background:linear-gradient(135deg,#ff3d5b,#c8123b);animation:micrecpulse 1.2s ease-in-out infinite;transform:scale(1.06)}
 @keyframes micrecpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,61,91,.55)}70%{box-shadow:0 0 0 10px rgba(255,61,91,0)}}
 /* On very tight screens, tuck the game-invite (🎮) button behind the picker
@@ -2062,7 +2071,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
            partners open too so users can read the persona bio. -->
       <span id="chAv" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"></span>
       <div class="chwho" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"><div class="chname" id="chName"></div><!-- state subtitle removed per owner ask: just the name in the chat header. Kept id in DOM as an empty hidden shell so any code still writing to chState doesn't crash. --><div class="chstate hidden" id="chState"></div></div>
-      <button class="chcall" id="chCall" onclick="ringCurrentChat()" title="Voice call">📞</button>
+      <button class="chcall" id="chCall" onclick="ringCurrentChat()" title="Voice call" aria-label="Voice call">
+        <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7 12.8 12.8 0 0 0 .7 2.8 2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5 12.8 12.8 0 0 0 2.8.7 2 2 0 0 1 1.8 2z"/></svg>
+      </button>
       <!-- Owner ask 1 Aug 2026: 'add the three ... in the chat of each
            so he can report or block'. Small overflow menu next to
            the call button — Report + Block for the current chat peer. -->
@@ -2108,8 +2119,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
       <!-- Smart action: shows the mic when the input is empty (hold to
            record voice), swaps to the send arrow when there's text. -->
-      <button class="cbtn micrec" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">🎤</button>
-      <button class="cbtn send hidden" id="sendBtn" onclick="sendMsg()">➤</button>
+      <button class="cbtn micrec" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
+        <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
+      </button>
+      <button class="cbtn send hidden" id="sendBtn" onclick="sendMsg()" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3l0 7 15 2-15 2z"/></svg>
+      </button>
     </div>
     <div class="picker hidden" id="emojiPick"></div>
     <div class="picker hidden" id="gamePick">
@@ -5085,16 +5100,27 @@ function renderWall(){
     // said was online recently or a day ago'.
     const seenTxt = m.online ? 'Online now'
       : (m.lastSeenAt ? 'Active ' + relTimeShort(m.lastSeenAt) : '');
-    // Corner badge — Tandem-style. Fresh reference (< 7 days) wins
-    // and shows a teal NEW pill; otherwise if there are any refs at
-    // all, show count + speech-bubble icon in quiet grey.
+    // Corner slot — owner ask 1 Aug 2026: 'if i have references show
+    // that with the 3 and quotes icon on the top right corner'. So
+    // the reference COUNT is now the primary indicator (shown any
+    // time refCount > 0), and the teal NEW pill stacks above it when
+    // any reference was posted in the last 7 days.
     const REF_FRESH_MS = 7 * 24 * 3600 * 1000;
     const hasNewRef = m.latestRefAt && (Date.now() - m.latestRefAt) < REF_FRESH_MS;
     const refCount = m.refCount || 0;
-    const REF_SPEECH_SVG = '<svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-9l-4 3v-3H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>';
-    const cornerBadge = hasNewRef
+    // Quote / speech-bubble icon (open double-quote glyph inside a
+    // speech-bubble outline). More 'testimonial' than a plain chat
+    // bubble.
+    const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3l3 3v-3h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-9.5 9-1.3-.4a1.5 1.5 0 0 1-1-1.4v-.9c0-.8.7-1.5 1.5-1.5H11V7H9.7c-1.8 0-3.3 1.5-3.3 3.3v.9c0 1.5 1 2.7 2.4 3.1l1.7.4zm5.9 0-1.3-.4a1.5 1.5 0 0 1-1-1.4v-.9c0-.8.7-1.5 1.5-1.5H17V7h-1.3c-1.8 0-3.3 1.5-3.3 3.3v.9c0 1.5 1 2.7 2.4 3.1l1.6.4z"/></svg>';
+    const countPill = refCount > 0
+      ? `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}">${refCount}${REF_QUOTE_SVG}</span>`
+      : '';
+    const newPill = hasNewRef
       ? '<span class="wcard-newref" title="New reference this week">NEW</span>'
-      : (refCount > 0 ? `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}">${refCount}${REF_SPEECH_SVG}</span>` : '');
+      : '';
+    const cornerBadge = (newPill || countPill)
+      ? `<div class="wcard-corner">${newPill}${countPill}</div>`
+      : '';
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
       ${cornerBadge}
