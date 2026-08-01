@@ -455,8 +455,11 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Presence line under the languages row. Muted grey when just a
    'X ago' timestamp; green when the user is genuinely online right
    now. Owner ask 1 Aug 2026. */
-.wcard-seen{font-size:11px;color:var(--faint);font-weight:600;margin-top:6px;letter-spacing:.1px}
-.wcard-seen.is-online{color:var(--green)}
+/* Owner ask 1 Aug 2026: 'don't show Online now — she already has the
+   status online' (the green .wcard-dot next to the name IS the online
+   indicator). Force-hide the redundant text line. Kept the CSS +
+   markup so we can revert with one line if the design changes. */
+.wcard-seen{display:none !important}
 
 /* ═══ AI persona badge (Speaky-style) ═══ */
 .ai-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(302deg,#0262FF,#e100ff);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:2px 7px 2px 5px;border-radius:99px;line-height:1.15;margin-left:6px;vertical-align:1px;position:relative}
