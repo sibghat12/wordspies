@@ -129,12 +129,18 @@ a{color:inherit;text-decoration:none}
 
 /* Emoji burst — small, sits inside the profile circle. One at a time
    per member; a new emoji replaces the old. */
-.pav .pav-emo{position:absolute;top:22px;left:50%;transform:translateX(-50%);width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:22px;pointer-events:none;animation:pavEmoPop 1.1s cubic-bezier(.34,1.56,.64,1) forwards;z-index:9;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+/* Emoji bursts live longer now — owner reported 2026-08-01 they
+   'disappear too fast'. Bumped animation from 1.1s to 4s: quick pop-in,
+   long plateau at full opacity so remote viewers actually catch it,
+   then a gentle fade at the end. JS TTL in reapplyEmojis() is aligned
+   to match. */
+.pav .pav-emo{position:absolute;top:22px;left:50%;transform:translateX(-50%);width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:26px;pointer-events:none;animation:pavEmoPop 4s cubic-bezier(.34,1.56,.64,1) forwards;z-index:9;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
 @keyframes pavEmoPop{
   0%{transform:translateX(-50%) scale(.2);opacity:0}
-  20%{transform:translateX(-50%) scale(1.25);opacity:1}
-  70%{transform:translateX(-50%) scale(1);opacity:1}
-  100%{transform:translateX(-50%) scale(1);opacity:0}
+  8%{transform:translateX(-50%) scale(1.3);opacity:1}
+  15%{transform:translateX(-50%) scale(1);opacity:1}
+  85%{transform:translateX(-50%) scale(1);opacity:1}
+  100%{transform:translateX(-50%) scale(.85);opacity:0}
 }
 .listeners .pav .pav-emo{font-size:16px;top:12px;width:22px;height:22px}
 
@@ -587,10 +593,10 @@ function conn(){
         }
       });
     }
-    // Party emoji — bursts over the sender's avatar, not flying across
-     // the screen. Register our own handler; skip wsEmojiFly.init() so it
-     // doesn't attach the default fly-across listener.
-     socket.on('emoji', d => { if (d && d.e) burstOnMember(d.from, d.e); });
+    // (Emoji socket handler moved OUT of this joined callback — see
+    // below. Registering it inside 'joined' meant every reconnect stacked
+    // another listener, doubling/tripling bursts, and any emoji arriving
+    // before 'joined' fired was silently dropped.)
     // Defensive: if the server seated me as a non-host but the room
     // was actually created by me, ask it to reclaim host. Server verifies
     // the uid so this can't be spoofed by anyone else. Slight delay so
@@ -603,6 +609,11 @@ function conn(){
     }, 800);
   });
   socket.on('chat', addMsg);
+  // Emoji socket handler — registered ONCE at socket-init time so it
+  // catches every emoji broadcast (server uses nsp.to(room.code) which
+  // includes the sender). Both remote and local emojis funnel through
+  // burstOnMember → activeEmojis Map → reapplyEmojis survives paints.
+  socket.on('emoji', d => { if (d && d.e && d.from) burstOnMember(d.from, d.e); });
   // Host demoted me back to listener — force the mic off immediately so
   // I can't keep speaking. Server also stripped my tracks server-side.
   socket.on('force-mute', () => {
@@ -690,7 +701,10 @@ function sendPartyEmoji(e){
 // every paint(). Owner bug 2026-08-01: 'the emoji is not showing for
 // all the speaker if i make an emoji it should be visible to all the
 // people'.
-const EMOJI_TTL_MS = 2200;   // slightly longer so it survives 1-2 paint churns
+// TTL matches the CSS animation duration (4s pop-in / plateau / fade).
+// Keep-alive Map lets the emoji survive multiple paint() DOM churns
+// caused by mic toggles, join/leave, and level events.
+const EMOJI_TTL_MS = 4000;
 const activeEmojis = new Map();   // memberId -> { emoji, expiresAt }
 
 function reapplyEmojis(){
@@ -698,7 +712,13 @@ function reapplyEmojis(){
   for (const [memberId, entry] of activeEmojis) {
     if (entry.expiresAt <= now) { activeEmojis.delete(memberId); continue; }
     const av = document.querySelector('.pav[data-id="' + CSS.escape(memberId) + '"]');
-    if (!av || av.querySelector('.pav-emo')) continue;
+    if (!av) continue;
+    // Always REPLACE any existing .pav-emo — the old one may have
+    // already animated to opacity:0 and be invisible. A fresh element
+    // re-triggers the CSS animation so the emoji is visibly present
+    // whenever the TTL says it should be.
+    const prev = av.querySelector('.pav-emo');
+    if (prev) prev.remove();
     const el = document.createElement('div');
     el.className = 'pav-emo';
     el.textContent = String(entry.emoji);
