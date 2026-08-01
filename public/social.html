@@ -1875,6 +1875,15 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
       <!-- RIGHT COLUMN: content cards -->
       <main class="mp-main">
+        <!-- Tandem-style 'About [Name]' intro card. Owner ask 1 Aug 2026
+             (they shared the exact HTML class-name from Tandem's page).
+             Title h3 is dynamic — 'About Nina' / 'About Sibi' etc. so
+             each profile feels personal, not template-y. Hidden when
+             there's no bio to show. -->
+        <section class="mp-card hidden" id="mAboutCard">
+          <h3 id="mAboutTitle">About</h3>
+          <p id="mAbout"></p>
+        </section>
         <section class="mp-card mp-narrow hidden" id="mQuoteCard">
           <h3>Let's talk about</h3>
           <p id="mQuote"></p>
@@ -5036,7 +5045,19 @@ function openMemberObj(m){
     if (val) { if (isHtml) el.innerHTML = val; else el.textContent = val; box.classList.remove('hidden'); }
     else box.classList.add('hidden');
   };
-  setCard('mQuoteCard', 'mQuote', m.talkAbout ? esc(m.talkAbout).replace(/\n/g,'<br>') : '', true);
+  // 'About [FirstName]' — bio card with personalised heading.
+  // Falls back to talkAbout if bio is empty so at least the intro
+  // reads as a proper 'About' rather than 'Let's talk about'.
+  const _firstName = String(m.name || 'them').split(' ')[0];
+  const _aboutTitle = document.getElementById('mAboutTitle');
+  if (_aboutTitle) _aboutTitle.textContent = 'About ' + _firstName;
+  const _aboutText = (m.bio && m.bio.trim()) ? m.bio.trim()
+    : (m.talkAbout && m.talkAbout.trim()) ? m.talkAbout.trim() : '';
+  setCard('mAboutCard', 'mAbout', _aboutText ? esc(_aboutText).replace(/\n/g,'<br>') : '', true);
+  // 'Let's talk about' only shows if we have a distinct talkAbout that
+  // we didn't already surface as the About body (i.e. bio existed).
+  const _showQuote = m.talkAbout && m.bio && m.talkAbout.trim() !== m.bio.trim();
+  setCard('mQuoteCard', 'mQuote', _showQuote ? esc(m.talkAbout).replace(/\n/g,'<br>') : '', true);
   // Interests + goals as chips.
   const chipsHTML = arr => arr.map(x => `<span class="mp-chip">${esc(x)}</span>`).join('');
   if (m.interests && m.interests.length) { $('mInterests').innerHTML = chipsHTML(m.interests); $('mInterestsBox').classList.remove('hidden'); }
