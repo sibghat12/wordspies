@@ -3137,12 +3137,11 @@ function paintTabs(){
   // safe if any old cached HTML still references the id.
   const dot = $('meDot');
   if (dot) dot.classList.add('hidden');
+  // Owner ask 1 Aug 2026: 'dont show the 1 2 count on the community
+  // tab please'. Was rendering the online-member count as a badge
+  // pill on the tab label — noisy. Force-hide and stop the count.
   const wb = $('wallBadge');
-  if (wb) {
-    const n = (MEMBERS || []).filter(m => m.online && (!ME || m.id !== ME.id)).length;
-    wb.textContent = n > 9 ? '9+' : n;
-    wb.classList.toggle('hidden', !n);
-  }
+  if (wb) { wb.textContent = ''; wb.classList.add('hidden'); }
 }
 let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0, lastTheirRead = 0, replyingTo = null, editingMsg = null;
 let liveTimer = null;
