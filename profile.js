@@ -60,7 +60,12 @@ function mount(api, ctx) {
         await db.set('soc:user:' + u.id, JSON.stringify(u));
       }
     }
-    res.json({ me: u ? pub(u) : null });
+    // /me is only ever the current signed-in user — safe to expose
+    // their own email here (pub() strips it because it's used for
+    // OTHER users too, where email must stay private). Owner ask
+    // 1 Aug 2026: 'why the email field are empty in the signup
+    // process' — the onboarding wizard needs ME.email pre-filled.
+    res.json({ me: u ? { ...pub(u), email: u.email || '' } : null });
   });
 
   // POST /profile — edit any subset of profile fields. Every field is

@@ -103,7 +103,11 @@ function mount(api, ctx) {
       const token = crypto.randomBytes(24).toString('hex');
       await db.set('soc:sess:' + token, id, SESS_TTL);
       setSess(res, token);
-      res.json({ me: pub(user) });
+      // pub() strips email (it's used to serialise OTHER users on
+      // the wall where email must stay private). Auth responses go
+      // ONLY to the account that just authenticated — safe to
+      // include their own email so the onboarding wizard pre-fills it.
+      res.json({ me: { ...pub(user), email: user.email || '' } });
     } catch (e) { console.error('social signup:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
@@ -125,7 +129,11 @@ function mount(api, ctx) {
       const token = crypto.randomBytes(24).toString('hex');
       await db.set('soc:sess:' + token, user.id, SESS_TTL);
       setSess(res, token);
-      res.json({ me: pub(user) });
+      // pub() strips email (it's used to serialise OTHER users on
+      // the wall where email must stay private). Auth responses go
+      // ONLY to the account that just authenticated — safe to
+      // include their own email so the onboarding wizard pre-fills it.
+      res.json({ me: { ...pub(user), email: user.email || '' } });
     } catch (e) { console.error('social login:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
@@ -210,7 +218,11 @@ function mount(api, ctx) {
       const token = crypto.randomBytes(24).toString('hex');
       await db.set('soc:sess:' + token, user.id, SESS_TTL);
       setSess(res, token);
-      res.json({ me: pub(user) });
+      // pub() strips email (it's used to serialise OTHER users on
+      // the wall where email must stay private). Auth responses go
+      // ONLY to the account that just authenticated — safe to
+      // include their own email so the onboarding wizard pre-fills it.
+      res.json({ me: { ...pub(user), email: user.email || '' } });
     } catch (e) { console.error('social google:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
@@ -262,7 +274,11 @@ function mount(api, ctx) {
       const token = crypto.randomBytes(24).toString('hex');
       await db.set('soc:sess:' + token, user.id, SESS_TTL);
       setSess(res, token);
-      res.json({ me: pub(user) });
+      // pub() strips email (it's used to serialise OTHER users on
+      // the wall where email must stay private). Auth responses go
+      // ONLY to the account that just authenticated — safe to
+      // include their own email so the onboarding wizard pre-fills it.
+      res.json({ me: { ...pub(user), email: user.email || '' } });
     } catch (e) { console.error('social reset:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 

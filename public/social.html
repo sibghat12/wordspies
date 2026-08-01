@@ -105,19 +105,11 @@ body.ob-open{overflow:hidden}
 .ob-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
 .ob-input[readonly]{background:#f2f3f6;color:var(--sub);cursor:default}
 textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
-/* 3-row spinner DOB picker. Each column shows prev / current /
-   next; tap prev or next to change, or use the ▲▼ buttons. Owner
-   ask 1 Aug 2026 (v2): 'make the date of birth picker easy — the
-   one where we up and down and select easily'. */
-.ob-spinner{display:grid;grid-template-columns:0.9fr 1.4fr 1fr;gap:10px;margin-top:8px;background:#f9fafc;border:1px solid var(--line);border-radius:14px;padding:10px}
-.ob-col{display:flex;flex-direction:column;align-items:stretch;gap:2px;user-select:none}
-.ob-col .ob-arrow{background:transparent;border:0;color:var(--sub);font-size:14px;font-weight:800;line-height:1;padding:6px 4px;cursor:pointer;border-radius:6px;transition:background .1s,color .1s}
-.ob-col .ob-arrow:hover{background:#eef0f4;color:var(--ink)}
-.ob-col .ob-arrow:active{background:#e2e5ec}
-.ob-col .ob-face{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:120px;font-family:inherit;color:var(--ink);position:relative}
-.ob-col .ob-prev,.ob-col .ob-next{font-size:15px;font-weight:500;color:#a4a8b1;line-height:32px;height:32px;cursor:pointer;transition:color .1s,transform .1s;width:100%}
-.ob-col .ob-prev:hover,.ob-col .ob-next:hover{color:var(--ink)}
-.ob-col .ob-now{font-size:22px;font-weight:800;color:var(--accent-d,#c33d55);line-height:56px;height:56px;padding:0 4px;background:#fff;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(232,80,107,.25);width:100%}
+/* Native date input in the onboarding — styled to match .ob-input
+   so it looks intentional (not a leftover browser widget). Owner
+   ask 1 Aug 2026 v3: 'use the modern date picker'. */
+.ob-dob{font-family:inherit;-webkit-appearance:none;appearance:none;color-scheme:light}
+.ob-dob::-webkit-calendar-picker-indicator{opacity:.55;cursor:pointer}
 .ob-label{font-size:11.5px;font-weight:700;color:var(--sub);letter-spacing:.4px;text-transform:uppercase;margin:14px 4px 2px}
 .ob-label:first-of-type{margin-top:6px}
 .ob-err{color:var(--err);font-size:13px;font-weight:600;padding:8px 2px 0}
@@ -1265,6 +1257,11 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
   .chwall::before{content:'👥';font-size:16px;line-height:1}
 }
 .splitview .chwall{display:none}
+/* Empty-state pill for the desktop split-view. Hidden by default so
+   it never renders on mobile (where #tabChat can be visible without
+   the .splitview class). Owner ask 1 Aug 2026 v2:
+   'remove that pick a conversation from the mobile'. */
+.chatempty{display:none}
 .chname{font-weight:800;font-size:19px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chstate{font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .msgs{padding:10px 14px 150px;display:flex;flex-direction:column;gap:4px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
@@ -1543,7 +1540,9 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
      fixed while the chat list scrolls as the user browses many chats. */
   .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;position:sticky;top:74px;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden}
   /* Empty-state card for the right pane on desktop when no chat is
-     picked. Owner ask 1 Aug 2026. Hidden on mobile (no split view). */
+     picked. Owner ask 1 Aug 2026 v2: 'remove pick a conversation
+     from the mobile — makes the chat look bad'. Hidden by default;
+     only shown when we're in desktop split-view + chatempty-mode. */
   .splitview .chatempty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:calc(100vh - 130px);background:#fff;border:1px solid var(--line);border-radius:16px;padding:40px 32px;color:var(--sub)}
   .splitview .chatempty-emoji{font-size:56px;line-height:1;margin-bottom:14px;opacity:.85}
   .splitview .chatempty h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:20px;color:var(--ink);letter-spacing:-.3px;margin-bottom:6px}
@@ -1689,43 +1688,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <label class="ob-label">Last name (optional)</label>
         <input class="ob-input" id="obLastName" maxlength="20" placeholder="Last name" autocomplete="family-name">
         <label class="ob-label">Date of birth</label>
-        <!-- Simple 3-row spinner (day / month / year). Owner ask
-             1 Aug 2026 (v2): 'make the date of birth picker easy —
-             the one where we up and down and select easily'. Each
-             column shows prev / current / next. Tap prev to go back,
-             tap next to go forward. Hold-to-repeat + explicit ▲▼
-             buttons for accessibility. Scroll-wheel + touch-swipe
-             also work. Writes YYYY-MM-DD to the hidden #obBirth. -->
-        <div class="ob-spinner" id="obSpinner">
-          <div class="ob-col" data-w="day">
-            <button type="button" class="ob-arrow up"  aria-label="Day up">▲</button>
-            <div class="ob-face">
-              <div class="ob-prev"></div>
-              <div class="ob-now"></div>
-              <div class="ob-next"></div>
-            </div>
-            <button type="button" class="ob-arrow down" aria-label="Day down">▼</button>
-          </div>
-          <div class="ob-col" data-w="month">
-            <button type="button" class="ob-arrow up"  aria-label="Month up">▲</button>
-            <div class="ob-face">
-              <div class="ob-prev"></div>
-              <div class="ob-now"></div>
-              <div class="ob-next"></div>
-            </div>
-            <button type="button" class="ob-arrow down" aria-label="Month down">▼</button>
-          </div>
-          <div class="ob-col" data-w="year">
-            <button type="button" class="ob-arrow up"  aria-label="Year up">▲</button>
-            <div class="ob-face">
-              <div class="ob-prev"></div>
-              <div class="ob-now"></div>
-              <div class="ob-next"></div>
-            </div>
-            <button type="button" class="ob-arrow down" aria-label="Year down">▼</button>
-          </div>
-        </div>
-        <input type="hidden" id="obBirth" aria-label="Date of birth">
+        <!-- Native date input — owner ask 1 Aug 2026 v3: 'for the
+             date of birth selection please use the modern date
+             picker'. On mobile this launches the OS's native picker
+             (iOS scroll wheel / Android calendar); on desktop it's
+             a proper calendar dropdown in every modern browser. min
+             / max clamp between 100 years ago and today so the
+             picker opens somewhere sensible. -->
+        <input class="ob-input ob-dob" id="obBirth" type="date" aria-label="Date of birth">
         <label class="ob-label">Email</label>
         <input class="ob-input" id="obEmail" type="email" readonly aria-label="Email">
       </div>
@@ -2823,11 +2793,15 @@ function enterApp(justJoined){
   const xc = $('authClose'); if (xc) xc.remove();
   $('vAuth').classList.add('hidden');
   // First-time signup? Show the onboarding wizard BEFORE the app.
-  // Owner asks for the wizard to land RELIABLY on every fresh signup
-  // (email or Google). The single 'onboardedAt' flag is the source
-  // of truth — set at obFinish(); if it's absent AND this is a
-  // justJoined session, launch.
-  if (justJoined && ME && !ME.onboardedAt) {
+  // Owner ask 1 Aug 2026 v3: 'if someone already has an account
+  // dont need to go that account setup'.
+  // Two guards: justJoined + no onboardedAt + createdAt within the
+  // last 10 min. The Google callback always passes justJoined=true
+  // (even for returning users) so we can't rely on that alone —
+  // createdAt is the honest 'brand-new account' signal.
+  const FRESH_ACCT_MS = 10 * 60 * 1000;
+  const isReallyNew = ME && ME.createdAt && (Date.now() - ME.createdAt) < FRESH_ACCT_MS;
+  if (justJoined && ME && !ME.onboardedAt && isReallyNew) {
     obStart();
     return;
   }
@@ -2946,103 +2920,19 @@ function obShow(step){
     setTimeout(() => sp.classList.remove('show'), 60);
   }, 280);
 }
-// Spinner DOB picker — simpler than the scroll wheel. Owner ask
-// 1 Aug 2026 (v2). Each column stores its items + a cursor index;
-// paint() writes prev/current/next into the .ob-face divs and the
-// hidden #obBirth field. Day list rebuilds when month/year change.
-const OB_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-function obDaysIn(month, year){ return new Date(year, month, 0).getDate(); }
-
-const obPicker = { day: null, month: null, year: null, dCur: 0, mCur: 0, yCur: 0 };
-
-function obPaintCol(w){
-  const col = document.querySelector('.ob-col[data-w="' + w + '"]');
-  if (!col) return;
-  const items = obPicker[w];
-  const cur = obPicker[w[0] + 'Cur'];
-  const len = items.length;
-  const prev = items[(cur - 1 + len) % len];
-  const now  = items[cur];
-  const next = items[(cur + 1) % len];
-  col.querySelector('.ob-prev').textContent = prev;
-  col.querySelector('.ob-now').textContent  = now;
-  col.querySelector('.ob-next').textContent = next;
-}
-function obCurrentDob(){
-  const day = obPicker.day[obPicker.dCur];
-  const month = obPicker.mCur + 1;
-  const year = obPicker.year[obPicker.yCur];
-  return year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
-}
-function obRebuildDays(){
-  const m = obPicker.mCur + 1;
-  const y = obPicker.year[obPicker.yCur];
-  const dim = obDaysIn(m, y);
-  const days = [];
-  for (let d = 1; d <= dim; d++) days.push(d);
-  obPicker.day = days;
-  if (obPicker.dCur >= dim) obPicker.dCur = dim - 1;
-  obPaintCol('day');
-}
-function obShift(w, delta){
-  const items = obPicker[w];
-  const curKey = w[0] + 'Cur';
-  const len = items.length;
-  obPicker[curKey] = (obPicker[curKey] + delta + len) % len;
-  obPaintCol(w);
-  if (w === 'month' || w === 'year') obRebuildDays();
-  $('obBirth').value = obCurrentDob();
-}
+// Native date input handling. Owner ask 1 Aug 2026 v3: 'use the
+// modern date picker' — iOS/Android native picker on mobile, proper
+// calendar dropdown on desktop. min/max clamped to a realistic range
+// so the picker opens somewhere sensible.
 function obInitDobWheels(iso){
-  const now = new Date();
-  const yrLo = now.getFullYear() - 100;
-  const years = [];
-  for (let y = yrLo; y <= now.getFullYear(); y++) years.push(y);
-  obPicker.year = years;
-  obPicker.month = OB_MONTHS.slice();
-  // Default cursor to 18y ago (minimum valid age).
-  let dY = years.length - 1 - 18;
-  let dM = 0, dD = 0;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) {
-    const [y,m,d] = iso.split('-').map(Number);
-    dY = Math.max(0, Math.min(years.length - 1, y - yrLo));
-    dM = Math.max(0, Math.min(11, m - 1));
-    dD = Math.max(0, d - 1);   // clamped after rebuildDays
-  }
-  obPicker.yCur = dY;
-  obPicker.mCur = dM;
-  obPicker.dCur = dD;
-  obPaintCol('year');
-  obPaintCol('month');
-  obRebuildDays();   // also paints day + clamps if needed
-  $('obBirth').value = obCurrentDob();
-
-  // Wire tap targets + ▲▼ buttons for each column. Once at init,
-  // idempotent because we clear listeners with cloneNode below.
-  ['day','month','year'].forEach(w => {
-    const col = document.querySelector('.ob-col[data-w="' + w + '"]');
-    if (!col || col.dataset.wired) return;
-    col.dataset.wired = '1';
-    col.querySelector('.ob-arrow.up').addEventListener('click', () => obShift(w, -1));
-    col.querySelector('.ob-arrow.down').addEventListener('click', () => obShift(w, +1));
-    col.querySelector('.ob-prev').addEventListener('click', () => obShift(w, -1));
-    col.querySelector('.ob-next').addEventListener('click', () => obShift(w, +1));
-    // Mouse-wheel + touch swipe on the face — up = back, down = forward.
-    col.querySelector('.ob-face').addEventListener('wheel', ev => {
-      ev.preventDefault();
-      obShift(w, ev.deltaY > 0 ? +1 : -1);
-    }, { passive: false });
-    let touchStartY = null;
-    col.querySelector('.ob-face').addEventListener('touchstart', ev => {
-      touchStartY = ev.touches[0].clientY;
-    }, { passive: true });
-    col.querySelector('.ob-face').addEventListener('touchend', ev => {
-      if (touchStartY == null) return;
-      const dy = ev.changedTouches[0].clientY - touchStartY;
-      if (Math.abs(dy) > 12) obShift(w, dy < 0 ? +1 : -1);
-      touchStartY = null;
-    });
-  });
+  const inp = document.getElementById('obBirth');
+  if (!inp) return;
+  const today = new Date();
+  const yrHi = today.toISOString().slice(0, 10);
+  const yrLo = (today.getFullYear() - 100) + '-01-01';
+  inp.max = yrHi;
+  inp.min = yrLo;
+  if (iso && /^\d{4}-\d{2}-\d{2}$/.test(String(iso))) inp.value = iso;
 }
 
 function obStart(){
