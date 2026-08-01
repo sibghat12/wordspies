@@ -277,69 +277,16 @@ function mount(app, redis) {
   }
 
   // ---- auth ----
-  api.post('/signup', async (req, res) => {
-    try {
-      if (limited(req, 'su', 5)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
-      let { name, email, password, birthdate, acceptedTerms } = req.body || {};
-      name = String(name || '').trim();
-      email = String(email || '').trim().toLowerCase();
-      password = String(password || '');
-      birthdate = String(birthdate || '').trim();
-      // Google Play requires terms acceptance before UGC creation. Refuse
-      // signup without the explicit box checked.
-      if (!acceptedTerms) return res.status(400).json({ error: 'Please accept the Terms and Privacy Policy to continue.' });
-      if (!/^[a-zA-Z0-9_ ]{3,15}$/.test(name)) return res.status(400).json({ error: 'Name: 3–15 letters, numbers or spaces.' });
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 100) return res.status(400).json({ error: 'That email doesn\'t look right.' });
-      if (password.length < 6 || password.length > 100) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
-      // ── Age gate (18+ hard block) ─────────────────────────────────
-      // DOB is REQUIRED at signup. Must parse, must be plausible, must
-      // resolve to age >= 18 today. We keep this on the server so a
-      // client-side hack (removing the DOB field, editing HTML) still
-      // can't create an under-18 account.
-      if (!birthdate) return res.status(400).json({ error: 'Please enter your date of birth.' });
-      if (!isPlausibleDob(birthdate)) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
-      if (await isRecentAgeFail(email)) return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
-      const age = ageFromISO(birthdate);
-      if (age < MIN_AGE) {
-        await markAgeFail(email);
-        return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
-      }
-      if (await db.get('soc:email:' + email)) return res.status(409).json({ error: 'That email is already registered — try logging in.' });
-      if (await db.get('soc:uname:' + name.toLowerCase())) return res.status(409).json({ error: 'That name is taken.' });
-      const id = crypto.randomBytes(9).toString('hex');
-      const geo = await geoFromIp(reqIp(req));
-      const user = { id, name, email, passHash: bcrypt.hashSync(password, 10), bio: '', location: geoLabel(geo),
-        country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
-        birthdate,
-        ageVerifiedAt: Date.now(),      // date the DOB was self-declared
-        games: 0, wins: 0, createdAt: Date.now(),
-        termsAcceptedAt: Date.now() };
-      await db.set('soc:user:' + id, JSON.stringify(user));
-      await db.set('soc:email:' + email, id);
-      await db.set('soc:uname:' + name.toLowerCase(), id);
-      await db.sadd('soc:members', id);
-      const token = crypto.randomBytes(24).toString('hex');
-      await db.set('soc:sess:' + token, id, SESS_TTL);
-      setSess(res, token);
-      res.json({ me: pub(user) });
-    } catch (e) { console.error('social signup:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
-  });
-
-  api.post('/login', async (req, res) => {
-    try {
-      if (limited(req, 'li', 8)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
-      const email = String((req.body || {}).email || '').trim().toLowerCase();
-      const password = String((req.body || {}).password || '');
-      const uid = await db.get('soc:email:' + email);
-      const raw = uid && await db.get('soc:user:' + uid);
-      const user = raw && JSON.parse(raw);
-      if (user && !user.passHash) return res.status(401).json({ error: 'This account uses Google — tap "Continue with Google".' });
-      if (!user || !bcrypt.compareSync(password, user.passHash)) return res.status(401).json({ error: 'Wrong email or password.' });
-      const token = crypto.randomBytes(24).toString('hex');
-      await db.set('soc:sess:' + token, user.id, SESS_TTL);
-      setSess(res, token);
-      res.json({ me: pub(user) });
-    } catch (e) { console.error('social login:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  // /signup + /login live in ./auth.js as the first slice of the
+  // modularisation push (owner ask 1 Aug 2026: 'make the code bit more
+  // maintianable so it work so better and no fix again and again').
+  // Same URL surface, same cookie, same Redis keys — pure refactor.
+  // Google + password-reset will move in the next slice; leaving them
+  // here keeps this commit small enough to verify by hand.
+  require('./auth').mount(api, {
+    db, SESS_TTL, limited, setSess,
+    reqIp, geoFromIp, geoLabel, pub,
+    MIN_AGE, ageFromISO, isPlausibleDob, markAgeFail, isRecentAgeFail
   });
 
   // "Continue with Google" — the browser sends Google's signed ID token; we
