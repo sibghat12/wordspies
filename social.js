@@ -759,7 +759,12 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         const raw = await db.get('soc:user:' + id);
         if (raw) {
           const u = JSON.parse(raw);
-          out.push({ ...pub(u), online: await db.exists('soc:online:' + u.id) });
+          const ls = await db.get('soc:lastseen:' + u.id);
+          out.push({
+            ...pub(u),
+            online: await db.exists('soc:online:' + u.id),
+            lastSeenAt: ls ? Number(ls) : null
+          });
         }
       }
       out.sort((a, b) => b.createdAt - a.createdAt);
@@ -773,6 +778,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const u = await userFromReq(req);
       if (!u) return res.status(401).json({ error: 'Please log in.' });
       await db.set('soc:online:' + u.id, '1', 60);
+      // Persistent 'last seen' timestamp — no TTL, so the wall can
+      // show 'active 3h ago' after their soc:online key has expired.
+      // Written on every ping (~25s interval) so accuracy is that
+      // window at worst. Owner ask 1 Aug 2026.
+      await db.set('soc:lastseen:' + u.id, String(Date.now()));
       // ...and, separately, whether *this* screen is the one being looked at.
       // Old clients send no body at all; they simply never claim a screen, so
       // they keep getting push, which is the safe way round to be wrong.

@@ -741,17 +741,10 @@ b,strong{font-weight:600}
   </div>
 </div>
 
-<!-- help overlay -->
-<!-- 📲 install instructions — iOS has no install API, so we just tell people how -->
-<div id="instOv" class="ov helpov hidden" onclick="if(event.target===this)this.classList.add('hidden')">
-  <div class="card">
-    <h2>📲 Install WordSpies</h2>
-    <div class="hline"><span class="n">1</span><span id="instStep1">Tap the <b>Share</b> button at the bottom of Safari.</span></div>
-    <div class="hline"><span class="n">2</span><span id="instStep2">Scroll down and tap <b>Add to Home Screen</b>.</span></div>
-    <div class="hline"><span class="n">3</span><span>Tap <b>Add</b> — WordSpies opens full-screen, like a real app.</span></div>
-    <div style="text-align:center;margin-top:20px"><button class="btn btn-dark" onclick="document.getElementById('instOv').classList.add('hidden')" style="min-width:160px">Got it!</button></div>
-  </div>
-</div>
+<!-- Install-instructions overlay retired 1 Aug 2026 per owner ask
+     ('remove the popup that said add to home screen'). Node removed
+     entirely so nothing can accidentally reveal it. -->
+<style>#instOv{display:none !important}</style>
 
 <div id="helpOv" class="ov helpov hidden" onclick="if(event.target===this)toggleHelp(false)">
   <div class="card">
@@ -2287,56 +2280,16 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 }
 
-let installPrompt = null;
-const installBtn = $('installBtn');
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
-  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS lies
-// Already installed? Then there is nothing to offer.
-const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-
-addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();          // we choose the moment, not the browser
-  installPrompt = e;
-  show(installBtn, true);
-});
-
-if (isIOS && !standalone) show(installBtn, true);
-
-addEventListener('appinstalled', () => {
-  installPrompt = null;
-  show(installBtn, false);
-  toast('Installed — WordSpies is on your home screen ✓', 'good');
-  track('installed', {});
-});
-
-if (installBtn) installBtn.onclick = async () => {
-  if (installPrompt) {
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice.catch(() => ({ outcome: 'dismissed' }));
-    if (outcome === 'accepted') show(installBtn, false);
-    installPrompt = null;      // a prompt event is single-use
-    return;
-  }
-  // No API available (iOS, or a browser that already dismissed us) — show steps.
-  // Which steps depends on the browser: Safari hides Add to Home Screen behind
-  // the ••• button, Chrome behind the Share icon. /a2hs.js knows the difference.
-  if (window.wsInstallSteps) {
-    const steps = window.wsInstallSteps();
-    $('instStep1').innerHTML = steps.one;
-    $('instStep2').innerHTML = steps.two;
-  } else if (!isIOS) {
-    $('instStep1').innerHTML = 'Open your browser’s <b>menu</b> (⋮ or ···).';
-    $('instStep2').innerHTML = 'Choose <b>Install app</b> or <b>Add to Home screen</b>.';
-  }
-  $('instOv').classList.remove('hidden');
-};
-
-/* Asking every phone visitor to keep WordSpies is now the job of the install
-   wall in /a2hs.js — one sheet, shared with the landing page and the social
-   app, that nobody gets past without answering. It runs itself; there is
-   nothing to call from here. All that's left in this file is the slim bar,
-   which still covers the case the wall deliberately skips: someone who has
-   already answered once and is now deep in a game. */
+/* Install prompts fully retired 1 Aug 2026 per owner ask
+   ('remove the popup that said add to home screen'). We still catch
+   beforeinstallprompt so the browser doesn't put its OWN banner in
+   the address bar, but we do NOTHING with it — no button, no toast,
+   no overlay. Any old #installBtn / #instOv nodes are hidden below. */
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); });
+const _instBtn = document.getElementById('installBtn');
+if (_instBtn) _instBtn.classList.add('hidden');
+const _instOv = document.getElementById('instOv');
+if (_instOv) _instOv.classList.add('hidden');
 
 </script>
 

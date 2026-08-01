@@ -9,8 +9,8 @@
 <!-- maximum-scale=1 is what stops iOS zooming the whole layout every time a
      search box or message field gets focus; pinch-zoom still works. -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>WordSpies Social — the community behind the game</title>
-<meta name="description" content="Meet the people you play WordSpies with. Create a profile, follow other spies, and chat between games.">
+<title>WordSpies — Practise languages with real people</title>
+<meta name="description" content="Meet real people to practise languages with. Create your profile, follow language partners, and chat any time — free and browser-based.">
 <meta name="theme-color" content="#fafafa">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -74,7 +74,10 @@ body.authmodal{overflow:hidden}
 .auth{padding:52px 28px 40px;display:flex;flex-direction:column;min-height:100vh;max-width:440px;margin:0 auto}
 .auth .logo{text-align:center;font-size:22px;margin-bottom:6px}
 .auth .tag{color:var(--faint);text-align:center;font-size:12px;font-weight:500;letter-spacing:.5px;margin-bottom:40px}
-.auth h1{font-size:27px;line-height:1.25;text-align:center;font-weight:800;letter-spacing:-.5px;margin-bottom:10px}
+/* Owner ask 1 Aug 2026: 'make the font smaller now so we have a bit
+   space' + 'text look so much edging'. Reduced from 27 → 24 so the
+   two-line headline breathes on 375-wide phones. */
+.auth h1{font-size:24px;line-height:1.25;text-align:center;font-weight:800;letter-spacing:-.5px;margin-bottom:10px}
 .auth h1 em{font-style:normal;color:var(--accent)}
 .auth .sub{color:var(--sub);text-align:center;font-size:14px;line-height:1.6;margin-bottom:34px}
 .auth .alt{text-align:center;color:var(--faint);font-size:13px;font-weight:500;margin-top:18px}
@@ -182,8 +185,12 @@ body.authmodal{overflow:hidden}
     /* padding: extra horizontal room so the active-tab pill
        background doesn't touch 'Community' (the longest label) on
        either side. Owner ask 1 Aug 2026. */
-    padding:9px 12px;
-    font-size:14px;
+    padding:9px 14px;
+    /* Owner ask 1 Aug 2026: 'text look so much edging' — reduced from
+       14 → 13 so labels sit comfortably inside the active-pill without
+       pressing on its rounded corners. Padding bumped 12→14 for the
+       same breathing-room reason. */
+    font-size:13px;
     font-weight:600;
     justify-content:center;
     line-height:1.2;
@@ -330,6 +337,11 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-lang .cflag{width:22px;height:22px}
 .chip .cflag,.chiprow .cflag{width:14px;height:14px}
 .wcard-langs .wf-more{font-size:11.5px;color:var(--sub);font-weight:700}
+/* Presence line under the languages row. Muted grey when just a
+   'X ago' timestamp; green when the user is genuinely online right
+   now. Owner ask 1 Aug 2026. */
+.wcard-seen{font-size:11px;color:var(--faint);font-weight:600;margin-top:6px;letter-spacing:.1px}
+.wcard-seen.is-online{color:var(--green)}
 
 /* ═══ AI persona badge (Speaky-style) ═══ */
 .ai-badge{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(302deg,#0262FF,#e100ff);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:2px 7px 2px 5px;border-radius:99px;line-height:1.15;margin-left:6px;vertical-align:1px;position:relative}
@@ -1389,8 +1401,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 <div id="vAuth" class="auth hidden">
   <div class="logo">WordSpies <em>Social</em></div>
   <div class="tag">THE COMMUNITY BEHIND THE GAME</div>
-  <h1 id="authTitle">Meet the people<br>you <em>play with</em></h1>
-  <p class="sub" id="authSub">Create your profile, follow other spies,<br>and chat between games.</p>
+  <h1 id="authTitle">Practise languages<br>with <em>real people</em></h1>
+  <p class="sub" id="authSub">Create your profile, follow language partners,<br>and chat any time.</p>
   <div id="chooser" class="hidden">
     <div class="authcol">
       <div id="gBtn"></div>
@@ -2039,6 +2051,16 @@ function requireLogin(msg){
   }
   document.body.classList.add('authmodal');
   $('vAuth').classList.remove('hidden');
+  // Owner ask 1 Aug 2026: 'we already in the login popup it should
+  // said signup rather login'. Force the popup into SIGNUP mode and
+  // show the two-button chooser (Google + Email) as the first thing
+  // the user sees. If they choose Email, the emailForm handler flips
+  // to the inputs; if they already have an account they tap 'Log in'.
+  try { if (typeof setMode === 'function') setMode('signup'); } catch(e){}
+  const chooserEl = $('chooser'), emailFormEl = $('emailForm'), backEl = $('backChoice');
+  if (chooserEl) chooserEl.classList.remove('hidden');
+  if (emailFormEl) emailFormEl.classList.add('hidden');
+  if (backEl) backEl.classList.remove('hidden');
   window.scrollTo(0,0);
   // Google's SDK renderButton() targets a hidden container on first
   // mount. When the auth modal opens, re-render so the button shows
@@ -2138,8 +2160,8 @@ function setMode(m){
   $('fPass').parentElement.classList.toggle('hidden', m === 'forgot');
   $('resetFields').classList.toggle('hidden', m !== 'forgot');
   $('forgotLink').classList.toggle('hidden', m !== 'login');
-  $('authTitle').innerHTML = m === 'login' ? 'Welcome <em>back</em>' : m === 'forgot' ? 'Reset your <em>password</em>' : 'Meet the people<br>you <em>play with</em>';
-  $('authSub').innerHTML = m === 'login' ? 'Log in to your community profile.' : m === 'forgot' ? 'We\'ll email you a 6-digit code.' : 'Create your profile, follow other spies,<br>and chat between games.';
+  $('authTitle').innerHTML = m === 'login' ? 'Welcome <em>back</em>' : m === 'forgot' ? 'Reset your <em>password</em>' : 'Practise languages<br>with <em>real people</em>';
+  $('authSub').innerHTML = m === 'login' ? 'Log in to your language-exchange profile.' : m === 'forgot' ? 'We\'ll email you a 6-digit code.' : 'Create your profile, follow language partners,<br>and chat any time.';
   $('authGo').textContent = m === 'login' ? 'Log in' : m === 'forgot' ? 'Send me the code' : 'Create my profile';
   $('authSwap').innerHTML = m === 'signup' ? 'Already a member? <a>Log in</a>' : 'New here? <a>Create a profile</a>';
   $('authErr').textContent = '';
@@ -2257,6 +2279,18 @@ async function confirmDelete(){
 }
 
 // ---------- app ----------
+// Humanised 'X ago' short form for the community-card presence line.
+// Kept intentionally terse: '2m', '5h', '3d', '2w' — reads at a glance.
+function relTimeShort(ts){
+  if (!ts) return '';
+  const d = Date.now() - Number(ts);
+  if (d < 60_000) return 'just now';
+  if (d < 60 * 60_000) return Math.floor(d / 60_000) + 'm ago';
+  if (d < 24 * 60 * 60_000) return Math.floor(d / (60 * 60_000)) + 'h ago';
+  if (d < 7 * 24 * 60 * 60_000) return Math.floor(d / (24 * 60 * 60_000)) + 'd ago';
+  return Math.floor(d / (7 * 24 * 60 * 60_000)) + 'w ago';
+}
+
 const avatarHtml = (u, size, cls) => u.photo
   ? `<img class="av ${cls||''}" style="width:${size}px;height:${size}px" src="${esc(u.photo)}">`
   : `<span class="avph ${cls||''}" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px">${esc((u.name||'?')[0].toUpperCase())}</span>`;
@@ -4397,6 +4431,13 @@ function renderWall(){
              ${flagRow('Learns', m.learns)}
            </div>`
         : '';
+    // 'Last seen' tag — either the online dot's word ('Online now')
+    // or a humanised delta like '3m ago' / '2h ago' / '5d ago' from
+    // the server's soc:lastseen:<id> key. Owner ask 1 Aug 2026:
+    // 'show in the card of each profile in small text somewhere it
+    // said was online recently or a day ago'.
+    const seenTxt = m.online ? 'Online now'
+      : (m.lastSeenAt ? 'Active ' + relTimeShort(m.lastSeenAt) : '');
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
       <div class="wcard-photo">${photo}</div>
@@ -4404,6 +4445,7 @@ function renderWall(){
         <div class="wcard-name">${esc(m.name)}${mark(m)}${m.online ? '<span class="wcard-dot" title="Online"></span>' : ''}</div>
         ${talkSnip ? `<p class="wcard-talk">${talkSnip}</p>` : `<p class="wcard-talk wcard-empty">Hello 👋</p>`}
         ${langsRow}
+        ${seenTxt ? `<div class="wcard-seen ${m.online ? 'is-online' : ''}">${seenTxt}</div>` : ''}
       </div>
     </a>`;
   };
