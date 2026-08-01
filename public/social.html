@@ -259,12 +259,12 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 }
 
 /* wall */
-/* Owner ask 1 Aug 2026: 'the search and the other profile cards also
-   start from where the wordlogo starts itself — no padding'. Was
-   'margin:18px 20px 20px' which pushed the search bar 20px inward on
-   mobile, misaligning with the topnav logo. Now no horizontal
-   margin — the body's 3% gutter is the single source of edge inset. */
-.filterrow{display:flex;gap:10px;align-items:center;margin:18px 0 20px;padding-top:10px;flex-wrap:wrap}
+/* Edge-aligned with the topnav (no horizontal margin — body 3% gutter
+   is the outer bound). Top space tightened 1 Aug 2026 per owner
+   'search top space less as well, has a lot of space' — was 18px
+   margin + 10px padding (28px total). Now 6px margin + 0 padding so
+   the search sits close under the tab strip. */
+.filterrow{display:flex;gap:10px;align-items:center;margin:6px 0 14px;padding-top:0;flex-wrap:wrap}
 .search{background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 16px;display:flex;gap:10px;align-items:center;flex:1;min-width:170px}
 .search input{border:none;background:none;flex:1;padding:12px 0;font-size:13.5px;font-weight:500;min-width:0}
 .fchips{display:flex;gap:7px;flex-wrap:wrap}
