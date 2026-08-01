@@ -707,8 +707,8 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (!idea) return res.status(400).json({ error: 'Please tell us what would help.' });
       const me = await userFromReq(req).catch(() => null);
       const entry = { t: Date.now(), uid: (me && me.id) || null, name: (me && me.name) || null, idea };
-      await db.lpush('soc:learn-ideas', JSON.stringify(entry));
-      await db.ltrim('soc:learn-ideas', 0, 999);   // cap at last 1000
+      await db.rpush('soc:learn-ideas', JSON.stringify(entry));
+      await db.ltrim('soc:learn-ideas', -1000, -1);   // cap at last 1000
       res.json({ ok: true });
     } catch (e) { console.error('learn-idea:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
