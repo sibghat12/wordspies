@@ -642,10 +642,10 @@ b,strong{font-weight:600}
       <div style="display:flex;gap:8px;align-items:center">
         <button class="helpbtn" id="newGameBtn" title="Start a fresh game">➕ New game</button>
         <button class="helpbtn" id="leaveBtn" title="Exit this game">🚪 Exit game</button>
-        <!-- 'Community' link retired 1 Aug 2026 per owner ask — the
-             persistent .gamebar pill on /social handles resume, so the
-             game page doesn't need an outbound Community link. -->
-        <button class="helpbtn" onclick="toggleHelp(true)">❓</button>
+        <!-- Help '?' button retired 1 Aug 2026 per owner ask 'remove
+             the help ok' — rules live on the marketing How-to-play page
+             and in the blog now. toggleHelp() still exists in JS for
+             any legacy caller. -->
         <div class="scorepill"><span class="r" id="scoreRed">0</span> — <span class="b" id="scoreBlue">0</span></div>
       </div>
     </div>
