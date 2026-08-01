@@ -277,104 +277,17 @@ function mount(app, redis) {
   }
 
   // ---- auth ----
-  // /signup + /login live in ./auth.js as the first slice of the
-  // modularisation push (owner ask 1 Aug 2026: 'make the code bit more
-  // maintianable so it work so better and no fix again and again').
-  // Same URL surface, same cookie, same Redis keys — pure refactor.
-  // Google + password-reset will move in the next slice; leaving them
-  // here keeps this commit small enough to verify by hand.
-  require('./auth').mount(api, {
-    db, SESS_TTL, limited, setSess,
-    reqIp, geoFromIp, geoLabel, pub,
-    MIN_AGE, ageFromISO, isPlausibleDob, markAgeFail, isRecentAgeFail
-  });
-
-  // "Continue with Google" — the browser sends Google's signed ID token; we
-  // verify it with Google, then log the person in (creating their profile on
-  // first visit). Same email = same account, so Google + email users never split.
-  api.post('/google', async (req, res) => {
-    try {
-      if (!GOOGLE_CLIENT_ID) return res.status(400).json({ error: 'Google sign-in is not enabled yet.' });
-      if (limited(req, 'gg', 10)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
-      const credential = String((req.body || {}).credential || '');
-      if (!credential || credential.length > 4096) return res.status(400).json({ error: 'Bad Google response.' });
-      const gr = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(credential));
-      if (!gr.ok) return res.status(401).json({ error: 'Google sign-in failed — try again.' });
-      const g = await gr.json();
-      if (g.aud !== GOOGLE_CLIENT_ID || g.email_verified !== 'true' || !g.email ||
-          (g.exp && Date.now() / 1000 > Number(g.exp) + 60)) {
-        return res.status(401).json({ error: 'Google sign-in failed — try again.' });
-      }
-      const email = String(g.email).toLowerCase();
-      let uid = await db.get('soc:email:' + email);
-      let user = uid ? JSON.parse(await db.get('soc:user:' + uid) || 'null') : null;
-      if (!user) {
-        // ── Age gate for Google new-user path ──────────────────────
-        // Google's ID token doesn't include DOB, so on first Google
-        // signup we MUST have birthdate in the request body. The client
-        // shows a DOB modal after Google auth returns and re-POSTs the
-        // same credential + birthdate. Same 18+ hard block as /signup.
-        const birthdate = String((req.body || {}).birthdate || '').trim();
-        if (!birthdate) {
-          // Client contract: needsDob=true means "show DOB modal, then
-          // resubmit with {credential, birthdate}". No account created,
-          // no session issued.
-          return res.status(400).json({ error: 'DOB required.', needsDob: true });
-        }
-        if (!isPlausibleDob(birthdate)) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
-        if (await isRecentAgeFail(email)) return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
-        const age = ageFromISO(birthdate);
-        if (age < MIN_AGE) {
-          await markAgeFail(email);
-          return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
-        }
-        // first visit: create a profile with a friendly unique name
-        let base = String(g.given_name || g.name || email.split('@')[0])
-          .replace(/[^a-zA-Z0-9_ ]/g, '').trim().slice(0, 15) || 'Spy';
-        if (base.length < 3) base = 'Spy ' + base;
-        let name = base, n = 1;
-        while (await db.get('soc:uname:' + name.toLowerCase())) { n++; name = (base.slice(0, 12) + ' ' + n).trim(); }
-        const id = crypto.randomBytes(9).toString('hex');
-        const geo = await geoFromIp(reqIp(req));
-        user = { id, name, email, passHash: null, googleId: g.sub, bio: '', location: geoLabel(geo),
-          country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
-          birthdate,
-          ageVerifiedAt: Date.now(),
-          termsAcceptedAt: Date.now(),   // implicit-accept via the Google 'Continue' + our banner
-          games: 0, wins: 0, createdAt: Date.now(), fresh: true };
-        await db.set('soc:user:' + id, JSON.stringify(user));
-        await db.set('soc:email:' + email, id);
-        await db.set('soc:uname:' + name.toLowerCase(), id);
-        await db.sadd('soc:members', id);
-      } else if (!user.googleId) {
-        user.googleId = g.sub; // link Google to the existing email account
-        await db.set('soc:user:' + user.id, JSON.stringify(user));
-      }
-      // no photo yet? import their Google profile picture automatically
-      if (!user.photo && g.picture) {
-        try {
-          const pu = String(g.picture).replace(/=s\d+(-c)?$/, '=s400-c');
-          const pr = await fetch(pu);
-          if (pr.ok) {
-            const buf = Buffer.from(await pr.arrayBuffer());
-            if (buf.length > 100 && buf.length < 3 * 1024 * 1024) {
-              const ct = pr.headers.get('content-type') || '';
-              const ext = ct.includes('png') ? 'png' : 'jpg';
-              for (const old of fs.readdirSync(PHOTO_DIR)) if (old.startsWith(user.id + '.')) fs.unlinkSync(path.join(PHOTO_DIR, old));
-              const fname = `${user.id}.${Date.now().toString(36)}.${ext}`;
-              fs.writeFileSync(path.join(PHOTO_DIR, fname), buf);
-              user.photo = '/social-photos/' + fname;
-              await db.set('soc:user:' + user.id, JSON.stringify(user));
-            }
-          }
-        } catch (e) { /* profile photo import is best-effort */ }
-      }
-      const token = crypto.randomBytes(24).toString('hex');
-      await db.set('soc:sess:' + token, user.id, SESS_TTL);
-      setSess(res, token);
-      res.json({ me: pub(user) });
-    } catch (e) { console.error('social google:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
-  });
+  // ALL account-lifecycle endpoints live in ./auth.js:
+  //   /signup /login /google /forgot /reset /logout
+  // social.js still owns the shared helpers (db, session cookie writer,
+  // rate limiter, geo, pub, age gate, email dispatch) and passes them
+  // as ctx. This split is the first stage of the wider modularisation
+  // push (owner ask 1 Aug 2026: 'make the code bit more maintainable so
+  // it work so better and no fix again and again'). Same URL surface,
+  // same cookie, same Redis keys — pure refactor.
+  // NOTE: the auth.mount() call below is placed AFTER sendMail +
+  // mailHtml are defined; do not move it above them or /forgot will
+  // resolve to undefined and reset emails silently die.
 
   // ---- email via Brevo (BREVO_API_KEY env) with Resend as a fallback ----
   const BREVO_KEY = process.env.BREVO_API_KEY || null;
@@ -557,56 +470,18 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       res.json({ n: raw ? JSON.parse(raw) : null });
     } catch (e) { res.json({ n: null }); }
   });
-  api.post('/forgot', async (req, res) => {
-    try {
-      if (limited(req, 'fp', 4)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
-      const email = String((req.body || {}).email || '').trim().toLowerCase();
-      const uid = await db.get('soc:email:' + email);
-      if (!uid) return res.json({ ok: true }); // don't reveal which emails exist
-      if (!BREVO_KEY && !RESEND_KEY) return res.status(503).json({ error: 'Password reset email isn\'t set up yet — if you signed up with this email on Google, use "Sign in with Google", or contact contact@wordspies.co.uk.' });
-      const code = String(Math.floor(100000 + Math.random() * 900000));
-      await db.set('soc:reset:' + email, bcrypt.hashSync(code, 8), 900); // 15 min
-      const ok = await sendMail(email, code + ' is your WordSpies code',
-        `Your WordSpies password reset code is ${code}.\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— WordSpies`,
-        mailHtml({
-          peek: 'Expires in 15 minutes.',
-          heading: 'Your reset code',
-          line: 'Type this into WordSpies to set a new password.',
-          code,
-          note: 'Expires in 15 minutes. If you didn\'t ask for this, ignore this email — nothing has changed.'
-        }));
-      if (!ok) return res.status(502).json({ error: 'Could not send the email — try again shortly.' });
-      res.json({ ok: true });
-    } catch (e) { console.error('social forgot:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
-  });
-
-  api.post('/reset', async (req, res) => {
-    try {
-      if (limited(req, 'rs', 6)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
-      const email = String((req.body || {}).email || '').trim().toLowerCase();
-      const code = String((req.body || {}).code || '').trim();
-      const password = String((req.body || {}).password || '');
-      if (password.length < 6 || password.length > 100) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
-      const hash = await db.get('soc:reset:' + email);
-      if (!hash || !/^\d{6}$/.test(code) || !bcrypt.compareSync(code, hash)) return res.status(401).json({ error: 'Wrong or expired code.' });
-      const uid = await db.get('soc:email:' + email);
-      const user = uid && JSON.parse(await db.get('soc:user:' + uid) || 'null');
-      if (!user) return res.status(401).json({ error: 'Wrong or expired code.' });
-      user.passHash = bcrypt.hashSync(password, 10);
-      await db.set('soc:user:' + user.id, JSON.stringify(user));
-      await db.del('soc:reset:' + email);
-      const token = crypto.randomBytes(24).toString('hex');
-      await db.set('soc:sess:' + token, user.id, SESS_TTL);
-      setSess(res, token);
-      res.json({ me: pub(user) });
-    } catch (e) { console.error('social reset:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
-  });
-
-  api.post('/logout', async (req, res) => {
-    const t = cookies(req).soc_sess;
-    if (t) await db.del('soc:sess:' + t);
-    clearSess(res);
-    res.json({ ok: true });
+  // Mount auth here — AFTER sendMail + mailHtml + BREVO_KEY / RESEND_KEY
+  // are all defined, since auth.js needs them for /forgot. Same
+  // Router (`api`), so the URL surface is unchanged.
+  require('./auth').mount(api, {
+    db, SESS_TTL,
+    limited, setSess, cookies, clearSess,
+    reqIp, geoFromIp, geoLabel, pub,
+    MIN_AGE, ageFromISO, isPlausibleDob, markAgeFail, isRecentAgeFail,
+    GOOGLE_CLIENT_ID,
+    PHOTO_DIR,
+    BREVO_KEY, RESEND_KEY,
+    sendMail, mailHtml
   });
 
   // ─── SAFETY / MODERATION ──────────────────────────────────────────────

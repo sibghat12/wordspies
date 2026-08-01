@@ -17,32 +17,43 @@
 //     and lets us extract the next module (community.js, profile.js,
 //     etc.) using the exact same pattern.
 //
-// PILOT SCOPE (this commit): /signup + /login only. Google + password
-// reset stay in social.js for the next slice — they pull in Brevo,
-// Resend, and Google's tokeninfo endpoint which need extra ctx wiring
-// (BREVO_KEY, RESEND_KEY, GOOGLE_CLIENT_ID, fetch). Doing those in a
-// second commit means each slice is small enough to verify by hand.
+// SCOPE (this file): all account-lifecycle endpoints.
+//   POST /signup   — email + password + 18+ DOB gate
+//   POST /login    — email + password
+//   POST /google   — Google Sign-In (with DOB round-trip for new users)
+//   POST /forgot   — request a password-reset code by email
+//   POST /reset    — redeem the code + set a new password
+//   POST /logout   — clear the session cookie
+//
+// social.js still owns:
+//   - the db shim (Redis / in-memory)
+//   - session cookie writer (setSess) + reader (cookies) + clearer (clearSess)
+//   - rate limiter, geo, pub(), age-gate helpers
+//   - email dispatch (sendMail + mailHtml) — those are shared with
+//     several NON-auth endpoints (invite emails, follower alerts) so
+//     they stay in social.js and get passed as ctx.
+// Ownership of shared state lives in ONE place; auth.js just uses it.
 
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * @param {import('express').Router} api - the /api/social Express router
- * @param {object} ctx - shared helpers from social.js:
- *   - db: the redis / in-memory store abstraction
- *   - SESS_TTL: session lifetime in seconds
- *   - limited: (req, bucket, max) => boolean rate limiter
- *   - setSess: (res, token) => sets the soc_sess cookie
- *   - reqIp, geoFromIp, geoLabel: IP → geo helpers
- *   - pub: (user) => public user shape returned in JSON
- *   - MIN_AGE, ageFromISO, isPlausibleDob, markAgeFail, isRecentAgeFail
- *     — the 18+ age gate helpers used at signup
+ * @param {object} ctx - shared helpers from social.js. Full list below;
+ *   the constructor destructure serves as the up-to-date spec.
  */
 function mount(api, ctx) {
   const {
-    db, SESS_TTL, limited, setSess,
+    db, SESS_TTL,
+    limited, setSess, cookies, clearSess,
     reqIp, geoFromIp, geoLabel, pub,
-    MIN_AGE, ageFromISO, isPlausibleDob, markAgeFail, isRecentAgeFail
+    MIN_AGE, ageFromISO, isPlausibleDob, markAgeFail, isRecentAgeFail,
+    GOOGLE_CLIENT_ID,
+    PHOTO_DIR,
+    BREVO_KEY, RESEND_KEY,
+    sendMail, mailHtml
   } = ctx;
 
   // POST /signup — create an email/password account.
@@ -116,6 +127,153 @@ function mount(api, ctx) {
       setSess(res, token);
       res.json({ me: pub(user) });
     } catch (e) { console.error('social login:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // POST /google — Google Sign-In. On FIRST-visit for a Google account
+  // we require DOB in the request body (Google's ID token doesn't
+  // include it). Same 18+ hard block as /signup. Existing users log in
+  // straight through. If they had no photo we import their Google
+  // avatar as a one-off best-effort.
+  api.post('/google', async (req, res) => {
+    try {
+      if (!GOOGLE_CLIENT_ID) return res.status(400).json({ error: 'Google sign-in is not enabled yet.' });
+      if (limited(req, 'gg', 10)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
+      const credential = String((req.body || {}).credential || '');
+      if (!credential || credential.length > 4096) return res.status(400).json({ error: 'Bad Google response.' });
+      const gr = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(credential));
+      if (!gr.ok) return res.status(401).json({ error: 'Google sign-in failed — try again.' });
+      const g = await gr.json();
+      if (g.aud !== GOOGLE_CLIENT_ID || g.email_verified !== 'true' || !g.email ||
+          (g.exp && Date.now() / 1000 > Number(g.exp) + 60)) {
+        return res.status(401).json({ error: 'Google sign-in failed — try again.' });
+      }
+      const email = String(g.email).toLowerCase();
+      let uid = await db.get('soc:email:' + email);
+      let user = uid ? JSON.parse(await db.get('soc:user:' + uid) || 'null') : null;
+      if (!user) {
+        // Client contract: on first Google visit, we return needsDob=true
+        // if birthdate is missing. The client shows a DOB modal and
+        // resubmits with {credential, birthdate}. No account created,
+        // no session issued until the DOB check passes.
+        const birthdate = String((req.body || {}).birthdate || '').trim();
+        if (!birthdate) return res.status(400).json({ error: 'DOB required.', needsDob: true });
+        if (!isPlausibleDob(birthdate)) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
+        if (await isRecentAgeFail(email)) return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
+        const age = ageFromISO(birthdate);
+        if (age < MIN_AGE) {
+          await markAgeFail(email);
+          return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
+        }
+        let base = String(g.given_name || g.name || email.split('@')[0])
+          .replace(/[^a-zA-Z0-9_ ]/g, '').trim().slice(0, 15) || 'Spy';
+        if (base.length < 3) base = 'Spy ' + base;
+        let name = base, n = 1;
+        while (await db.get('soc:uname:' + name.toLowerCase())) { n++; name = (base.slice(0, 12) + ' ' + n).trim(); }
+        const id = crypto.randomBytes(9).toString('hex');
+        const geo = await geoFromIp(reqIp(req));
+        user = {
+          id, name, email, passHash: null, googleId: g.sub,
+          bio: '', location: geoLabel(geo),
+          country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
+          birthdate, ageVerifiedAt: Date.now(), termsAcceptedAt: Date.now(),
+          games: 0, wins: 0, createdAt: Date.now(), fresh: true
+        };
+        await db.set('soc:user:' + id, JSON.stringify(user));
+        await db.set('soc:email:' + email, id);
+        await db.set('soc:uname:' + name.toLowerCase(), id);
+        await db.sadd('soc:members', id);
+      } else if (!user.googleId) {
+        user.googleId = g.sub;   // link Google to the existing email account
+        await db.set('soc:user:' + user.id, JSON.stringify(user));
+      }
+      // Best-effort import of the Google avatar on first Google sign-in
+      // if we have no photo for the user yet. Guarded by !user.photo so
+      // an existing custom photo is NEVER overwritten.
+      if (!user.photo && g.picture) {
+        try {
+          const pu = String(g.picture).replace(/=s\d+(-c)?$/, '=s400-c');
+          const pr = await fetch(pu);
+          if (pr.ok) {
+            const buf = Buffer.from(await pr.arrayBuffer());
+            if (buf.length > 100 && buf.length < 3 * 1024 * 1024) {
+              const ct = pr.headers.get('content-type') || '';
+              const ext = ct.includes('png') ? 'png' : 'jpg';
+              for (const old of fs.readdirSync(PHOTO_DIR)) if (old.startsWith(user.id + '.')) fs.unlinkSync(path.join(PHOTO_DIR, old));
+              const fname = `${user.id}.${Date.now().toString(36)}.${ext}`;
+              fs.writeFileSync(path.join(PHOTO_DIR, fname), buf);
+              user.photo = '/social-photos/' + fname;
+              await db.set('soc:user:' + user.id, JSON.stringify(user));
+            }
+          }
+        } catch (e) { /* profile photo import is best-effort */ }
+      }
+      const token = crypto.randomBytes(24).toString('hex');
+      await db.set('soc:sess:' + token, user.id, SESS_TTL);
+      setSess(res, token);
+      res.json({ me: pub(user) });
+    } catch (e) { console.error('social google:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // POST /forgot — request a 6-digit password-reset code by email.
+  // Silent about whether the email exists (returns { ok: true } either
+  // way) so the endpoint can't be used to enumerate accounts.
+  api.post('/forgot', async (req, res) => {
+    try {
+      if (limited(req, 'fp', 4)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
+      const email = String((req.body || {}).email || '').trim().toLowerCase();
+      const uid = await db.get('soc:email:' + email);
+      if (!uid) return res.json({ ok: true });
+      if (!BREVO_KEY && !RESEND_KEY) return res.status(503).json({ error: 'Password reset email isn\'t set up yet — if you signed up with this email on Google, use "Sign in with Google", or contact contact@wordspies.co.uk.' });
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      await db.set('soc:reset:' + email, bcrypt.hashSync(code, 8), 900);   // 15 min
+      const ok = await sendMail(email, code + ' is your WordSpies code',
+        `Your WordSpies password reset code is ${code}.\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— WordSpies`,
+        mailHtml({
+          peek: 'Expires in 15 minutes.',
+          heading: 'Your reset code',
+          line: 'Type this into WordSpies to set a new password.',
+          code,
+          note: 'Expires in 15 minutes. If you didn\'t ask for this, ignore this email — nothing has changed.'
+        }));
+      if (!ok) return res.status(502).json({ error: 'Could not send the email — try again shortly.' });
+      res.json({ ok: true });
+    } catch (e) { console.error('social forgot:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // POST /reset — redeem the 6-digit code + set a new password. On
+  // success we ALSO log the user straight in (session cookie set) so
+  // they don't have to go back to the login screen just to type the
+  // password they literally just set.
+  api.post('/reset', async (req, res) => {
+    try {
+      if (limited(req, 'rs', 6)) return res.status(429).json({ error: 'Too many tries — wait a minute.' });
+      const email = String((req.body || {}).email || '').trim().toLowerCase();
+      const code = String((req.body || {}).code || '').trim();
+      const password = String((req.body || {}).password || '');
+      if (password.length < 6 || password.length > 100) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+      const hash = await db.get('soc:reset:' + email);
+      if (!hash || !/^\d{6}$/.test(code) || !bcrypt.compareSync(code, hash)) return res.status(401).json({ error: 'Wrong or expired code.' });
+      const uid = await db.get('soc:email:' + email);
+      const user = uid && JSON.parse(await db.get('soc:user:' + uid) || 'null');
+      if (!user) return res.status(401).json({ error: 'Wrong or expired code.' });
+      user.passHash = bcrypt.hashSync(password, 10);
+      await db.set('soc:user:' + user.id, JSON.stringify(user));
+      await db.del('soc:reset:' + email);
+      const token = crypto.randomBytes(24).toString('hex');
+      await db.set('soc:sess:' + token, user.id, SESS_TTL);
+      setSess(res, token);
+      res.json({ me: pub(user) });
+    } catch (e) { console.error('social reset:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // POST /logout — clear the session cookie AND the Redis session
+  // token. Never returns an error — even if there was no session,
+  // the client just moves on.
+  api.post('/logout', async (req, res) => {
+    const t = cookies(req).soc_sess;
+    if (t) await db.del('soc:sess:' + t);
+    clearSess(res);
+    res.json({ ok: true });
   });
 }
 
