@@ -2796,7 +2796,11 @@ function mark(u){
   // is called — wall card, profile, chat header, chats list.
   if (u.isAI) return '<span class="ai-badge" title="AI conversation partner"><span class="ai-spark">✦</span>AI</span>';
   if (u.king) return KING_SVG;
-  return u.verified ? '<span class="vtick" title="Founding member">✓</span>' : '';
+  // Blue 'Founding member' tick retired 1 Aug 2026 per owner ask
+  // ('remove the blue tick'). Kept the .vtick CSS + the mark()
+  // signature intact so any cached HTML doesn't break; we just
+  // never emit the badge anymore. Kings still get their crown.
+  return '';
 }
 function paintMe(){
   const tick = mark(ME);
