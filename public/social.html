@@ -139,7 +139,7 @@ body.authmodal{overflow:hidden}
     grid-template-areas:
       'logo right'
       'tabs tabs';
-    padding:calc(8px + env(safe-area-inset-top)) 14px 6px;   /* just clear the notch — no big void above nav */
+    padding:calc(8px + env(safe-area-inset-top)) 0 6px;   /* clear the notch; zero horizontal so nav aligns with body-edge cards (owner ask 1 Aug 2026) */
     gap:8px 10px;
     min-height:0;
     align-items:center;
@@ -154,7 +154,7 @@ body.authmodal{overflow:hidden}
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
-    margin:2px -14px 0;   /* bleed edges so scroll feels edge-to-edge */
+    margin:2px 0 0;       /* nav is already flush to body-edge, no bleed needed */
     padding:0 0 4px;       /* zero left/right padding per owner ask */
   }
   .topnav .tntabs::-webkit-scrollbar{display:none}
@@ -172,8 +172,16 @@ body.authmodal{overflow:hidden}
   }
   .topnav .tntabs .tnt .ico{font-size:14px;line-height:1}
   .topnav .tntabs .tnt .badge{position:static;transform:none;font-size:9.5px;padding:1px 5px;min-width:14px;margin-left:2px}
-  .topnav .mechip{padding:3px 8px 3px 3px;border:1px solid var(--line);border-radius:99px}
+  /* Owner ask 2026-08-01: 'the user profile on the top left corner i
+     see the border away from the image as the image is big'. Root
+     cause: mobile hid the name label but kept the 3px padding + 1px
+     border + white background, so what remained visually was a pill
+     with a small photo sitting inside it. Now on mobile the chip is
+     just the avatar itself — no padding, no background, no visible
+     border — so what you see is the photo, full stop. */
+  .topnav .mechip{padding:0;border:0;background:transparent;border-radius:99px;overflow:hidden;line-height:0}
   .topnav .mechip .mename{display:none}
+  .topnav .mechip img,.topnav .mechip .av{display:block;border-radius:50%}
 }
 @media(max-width:380px){
   /* Extra tight — hide the icon inside each tab, keep the label. */
@@ -829,7 +837,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Live parties strip on the Community wall — clean white cards that
    surface currently-live parties so a fresh visitor can see the action
    without hunting the Parties tab. */
-.wpstrip{margin:12px 20px 6px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px}
+.wpstrip{margin:12px 0 6px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px}
 .wpshdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .wpshdr>span{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-.1px}
 .wpshdr .wpsall{font-size:12px;font-weight:700;color:var(--caccent,#5a7bff);text-decoration:none}
@@ -1399,8 +1407,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   <nav class="topnav">
     <a class="tnlogo" href="/" aria-label="WordSpies home">WordSpies <em>Social</em></a>
     <div class="tntabs" role="tablist">
-      <button id="tbChats" class="tnt" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
-      <button id="tbWall" class="tnt on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge hidden" id="wallBadge"></span></button>
+      <button id="tbChats" class="tnt" onclick="showTab('chats')"><span class="ico">💌</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
+      <button id="tbWall" class="tnt on" onclick="showTab('wall')"><span class="ico">🌈</span>Community<span class="badge hidden" id="wallBadge"></span></button>
       <button id="tbParties" class="tnt" onclick="showTab('parties')"><span class="ico">🎉</span>Parties<span class="badge hidden" id="partyBadge"></span></button>
       <button id="tbLearn" class="tnt" onclick="showTab('learn')"><span class="ico">📚</span>Learn</button>
       <!-- Games tab retired from the top nav post-pivot (LingoLand-style
@@ -1417,7 +1425,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <!-- Blog + How-to-play were living here as top-nav chrome. Moved to
            the marketing footer per owner ask; kept out of the app to
            reduce clutter. -->
-      <button id="pwaRefresh" class="pwaref hidden" onclick="pwaRefresh()">↻ Refresh</button>
+      <button id="pwaRefresh" class="pwaref hidden" onclick="pwaRefresh()" title="Refresh — new version available" aria-label="Refresh">↻</button>
       <div class="mechip" id="tbMe" onclick="showTab('me')">
         <span class="mename" id="meName"></span>
         <span id="meAvSmall"></span>
@@ -2018,7 +2026,7 @@ if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
 }
 function pwaRefresh(){
   $('pwaRefresh').classList.add('spin');
-  $('pwaRefresh').textContent = '↻ …';
+  $('pwaRefresh').textContent = '↻';
   location.reload();
 }
 // Coming back to the installed app after it sat in the background: pull fresh
