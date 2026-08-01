@@ -694,6 +694,25 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     return false;
   }
 
+  // Learn-tab interest capture (v1). The Learn shelf is a coming-soon
+  // placeholder; this endpoint just appends whatever the user typed to a
+  // Redis list so the owner can read the most-requested things while the
+  // real Learn surface gets built. Rate-limited per session so nobody can
+  // fill the list up with a script. Anonymous-tolerant: no login required
+  // (encourages more input in the earliest days).
+  api.post('/learn-idea', async (req, res) => {
+    try {
+      if (limited(req, 'learn-idea', 6)) return res.status(429).json({ error: 'Thanks — one at a time please.' });
+      const idea = String((req.body || {}).idea || '').trim().slice(0, 400);
+      if (!idea) return res.status(400).json({ error: 'Please tell us what would help.' });
+      const me = await userFromReq(req).catch(() => null);
+      const entry = { t: Date.now(), uid: (me && me.id) || null, name: (me && me.name) || null, idea };
+      await db.lpush('soc:learn-ideas', JSON.stringify(entry));
+      await db.ltrim('soc:learn-ideas', 0, 999);   // cap at last 1000
+      res.json({ ok: true });
+    } catch (e) { console.error('learn-idea:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
   // Report a user or a message. Written to a rolling list a moderator
   // (owner) can walk through. Store enough context to act without a
   // second query — reporter id, target id, reason category, free-text
