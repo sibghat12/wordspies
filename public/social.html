@@ -1179,6 +1179,14 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .partybar .pbdot{width:8px;height:8px;border-radius:50%;background:#22c07a;flex-shrink:0;box-shadow:0 0 0 3px rgba(34,192,122,.22);animation:gcpulse 1.6s ease-in-out infinite}
 .partybar #pbTitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .partybar .pbarrow{width:26px;height:26px;border-radius:50%;background:#000;color:#fff;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+/* Small speaker avatar stack. Owner ask 2 Aug 2026: 'show some
+   people as speakers small images'. Overlapped 22px circles with
+   dark rings so they read as one group on the black pill. */
+.partybar .pbspeakers{display:inline-flex;align-items:center;gap:0;flex-shrink:0;margin-right:2px}
+.partybar .pbspeakers:empty{display:none}
+.partybar .pbav{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;overflow:hidden;background:#2b2e36;color:#fff;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:10px;box-shadow:0 0 0 2px #16181f;flex-shrink:0}
+.partybar .pbav+.pbav{margin-left:-6px}
+.partybar .pbav img{width:100%;height:100%;object-fit:cover;display:block}
 @media(max-width:480px){ .partybar{padding:8px 14px} .partybar .pbtxt small{display:none} }
 /* Persistent game-session pill — same visual language as .partybar
    but yellow-dot to distinguish. Nudged UP by 74px when both are
@@ -2540,6 +2548,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 <a class="partybar hidden" id="partyBar" href="#" onclick="rejoinParty(event)">
   <span class="pbdot"></span>
   <b id="pbTitle">IN A PARTY</b>
+  <span class="pbspeakers" id="pbSpeakers" aria-hidden="true"></span>
   <span class="pbarrow" aria-hidden="true">→</span>
 </a>
 
@@ -3683,11 +3692,27 @@ async function refreshPartyBar(){
   // Stale-guard: entries older than 6 hours are ignored (party server has
   // a 7-day empty-room TTL so 6h is very safe).
   if (Date.now() - (s.at || 0) > 6 * 60 * 60 * 1000) { localStorage.removeItem('wsActiveParty'); return bar.classList.add('hidden'); }
+  // Verify the party still exists on the server + fetch fresh speaker
+  // avatars. Owner ask 2 Aug 2026: 'if the party not available don't
+  // show, and show some people as speakers small images'.
+  let room = null;
   try {
     const r = await fetch('/api/parties/' + encodeURIComponent(s.code));
     if (!r.ok) { localStorage.removeItem('wsActiveParty'); return bar.classList.add('hidden'); }
+    const j = await r.json();
+    room = j && j.room;
   } catch(e){ return; }
-  document.getElementById('pbTitle').textContent = s.title + (s.role === 'host' ? ' · you host' : s.role === 'speaker' ? ' · you speak' : ' · listener');
+  if (!room) return bar.classList.add('hidden');
+  // Populate the pill: uppercase party name + up to 3 speaker photos.
+  document.getElementById('pbTitle').textContent = (room.title || s.title || 'PARTY').toUpperCase();
+  const speakers = (room.members || []).filter(m => m.role === 'host' || m.role === 'speaker').slice(0, 3);
+  const spEl = document.getElementById('pbSpeakers');
+  if (spEl) {
+    spEl.innerHTML = speakers.map(m => {
+      if (m.photo) return `<span class="pbav"><img src="${esc(m.photo)}" alt=""></span>`;
+      return `<span class="pbav pbav-init">${esc((m.name || '?').charAt(0).toUpperCase())}</span>`;
+    }).join('');
+  }
   bar.href = '/party?room=' + encodeURIComponent(s.code);
   bar.classList.remove('hidden');
 }
