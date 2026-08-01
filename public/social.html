@@ -894,6 +894,47 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .gp-head{padding:8px 22px 0}
 .gp-head h2{font-size:22px;font-weight:800;letter-spacing:-.6px}
 .gp-head p{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.55}
+
+/* Premium 3-card Play shelf. Owner ask 1 Aug 2026: 'a very nice
+   layout so real users love it'. Each card has a coloured art
+   panel on top (small illustration) + a white body with badge /
+   title / desc / CTA. */
+.playhead{padding:8px 0 4px}
+.playhead h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--ink)}
+.playhead p{font-size:14px;color:var(--sub);margin-top:6px;line-height:1.55;max-width:520px}
+.playgrid{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 0 30px}
+@media(min-width:760px){.playgrid{grid-template-columns:repeat(3,1fr);gap:18px}}
+.playcard{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;text-decoration:none;color:var(--ink);transition:transform .12s ease,box-shadow .18s ease,border-color .18s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.playcard:hover{transform:translateY(-3px);box-shadow:0 12px 34px rgba(20,25,45,.08);border-color:transparent}
+.playcard:active{transform:translateY(-1px)}
+.playcard-art{position:relative;height:140px;overflow:hidden}
+.playcard-body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
+.playcard-badge{display:inline-block;align-self:flex-start;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;background:#f2f4f7;color:var(--sub);padding:4px 10px;border-radius:99px}
+.playcard-body h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:22px;font-weight:700;letter-spacing:-.5px;color:var(--ink);line-height:1.15;margin-top:2px}
+.playcard-body p{font-size:13.5px;color:var(--sub);line-height:1.55;margin:0;flex:1}
+.playcard-cta{font-weight:800;font-size:13px;letter-spacing:.2px;padding:2px 0;color:var(--ink);margin-top:6px;transition:transform .12s}
+.playcard:hover .playcard-cta{transform:translateX(4px)}
+
+/* Per-card art panels — small illustration in each. */
+/* WordSpies: word-tile grid on red/blue backdrop */
+.playcard-spies .playcard-art{background:linear-gradient(135deg,#ff6f8a,#d94a67);padding:18px 22px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:center}
+.pc-tile{background:#fff;color:#2b2e36;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:12px;text-align:center;padding:10px 6px;border-radius:8px;letter-spacing:.4px;box-shadow:0 3px 8px rgba(0,0,0,.14);text-transform:uppercase}
+.pc-tile.pc-r{background:#ff5a72;color:#fff}
+.pc-tile.pc-b{background:#3d7bff;color:#fff}
+.pc-tile.pc-x{background:#1c1e21;color:#fff;font-size:16px}
+
+/* Who is the Spy?: faces + one mask */
+.playcard-imp .playcard-art{background:linear-gradient(135deg,#7c5cff,#5237c9);position:relative}
+.pc-face{position:absolute;font-size:24px;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.24))}
+.pc-face-x{font-size:32px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+
+/* 8-Ball Pool: green felt with balls */
+.playcard-pool .playcard-art{background:radial-gradient(ellipse at center,#1e8f56 0%,#0d5c34 100%);position:relative}
+.pc-ball{position:absolute;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:12px;box-shadow:inset 0 -3px 6px rgba(0,0,0,.35),inset 0 3px 6px rgba(255,255,255,.15),0 4px 8px rgba(0,0,0,.28)}
+.pc-ball-8{background:#1c1e21;color:#fff}
+.pc-ball-r{background:#e0324f;color:#fff}
+.pc-ball-y{background:#f0b62b;color:#fff}
+.pc-ball-cue{background:#fff}
 .ggrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:16px 20px 26px}
 .ggrid .gcard{width:auto}
 .ggrid .g-spy{grid-column:1/-1}
@@ -1831,10 +1872,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </button>
       <button id="tbParties" class="tnt" onclick="showTab('parties')"><span class="ico">🎉</span>Parties<span class="badge hidden" id="partyBadge"></span></button>
       <button id="tbLearn" class="tnt" onclick="showTab('learn')"><span class="ico">📚</span>Learn</button>
-      <!-- Games tab retired from the top nav post-pivot (LingoLand-style
-           language-exchange focus). Tab content still exists behind
-           showTab('games') for direct-URL / deep-link use, but there's
-           no user-facing entry point anymore. -->
+      <!-- 'Play' tab restored 1 Aug 2026 per owner ask 'bring the
+           games back — Codenames and the Imposter and 8-ball pool
+           in a very nice layout'. Shows a curated 3-card shelf
+           instead of the old 5-way list. -->
+      <button id="tbGames" class="tnt" onclick="showTab('games')"><span class="ico">🕹️</span>Play</button>
     </div>
     <div class="tnright">
       <!-- LIVE chip: pulsing red pill in the corner, only when there's a
@@ -1960,10 +2002,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
   </div>
 
-  <!-- ═══ GAMES — the whole shelf, one tap from anywhere ═══ -->
+  <!-- ═══ PLAY — a curated 3-card shelf. Owner ask 1 Aug 2026:
+       'bring the games back — Codenames, the Imposter and 8-ball
+       pool, very nice layout so real users love it'. Three big
+       gradient cards, one gameplay illustration each, clear CTA. -->
   <div id="tabGames" class="hidden">
-    <!-- "My open games" strip: the rooms YOU created that are still live.
-         Only appears when you're signed in and have at least one open. -->
     <div class="myrooms hidden" id="myRooms">
       <div class="myrooms-h">
         <span>🎮 My open games</span>
@@ -1971,29 +2014,59 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
       <div class="myrooms-list" id="myRoomsList"></div>
     </div>
-    <div class="gp-head">
-      <h2>Practice</h2>
-      <p>Play together, talk together — these games are the fun way to practise vocabulary and conversation. Live parties are on the Parties tab.</p>
+    <div class="playhead">
+      <h2>Play together</h2>
+      <p>Break the ice with a quick game — invite anyone from your chats and jump in.</p>
     </div>
-    <div class="ggrid ggrid-v2">
-      <a class="gcard2 g-spy" href="/codenames?from=social">
-        <span class="gicon">🕵️</span>
-        <span class="gtitle">WordSpies</span>
-        <span class="gtag">The main event · 4+ players</span>
-        <span class="gplayers"><span class="dot"></span><span id="cntWordspies">Open a room</span></span>
-        <span class="gcta">Join the room →</span>
+    <div class="playgrid">
+      <!-- 1 · WordSpies (Codenames-style) -->
+      <a class="playcard playcard-spies" href="/codenames?from=social">
+        <div class="playcard-art">
+          <div class="pc-tile pc-r">RED</div>
+          <div class="pc-tile pc-b">BLUE</div>
+          <div class="pc-tile pc-n">NUT</div>
+          <div class="pc-tile pc-r">MOON</div>
+          <div class="pc-tile pc-b">BANK</div>
+          <div class="pc-tile pc-x">💀</div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Team · 4–10 players</div>
+          <h3>WordSpies</h3>
+          <p>Two teams, one hidden word list, and a spy who ends everything. The classic clue-giving party game.</p>
+          <span class="playcard-cta">Start a room →</span>
+        </div>
       </a>
-      <!-- Ludo / Connect 4 / Mind Meld hidden while the site pivots to
-           a language-learning focus. Code + server routes kept intact so
-           we can easily bring them back. Any old direct link still opens
-           the game — we just don't advertise them here. -->
-      <a class="gcard2 g-imp" href="/spy">
-        <span class="gicon">🎭</span>
-        <span class="gtitle">Who is the Spy?</span>
-        <span class="gtag">Vote out the impostor · 4–10 players</span>
-        <span class="gplayers"><span class="dot"></span><span id="cntSpy">Open a room</span></span>
-        <span class="gcta">Join the room →</span>
-        <span class="ginvite" onclick="event.preventDefault();openChallenge('spy','🎭 Who is the Spy?')" title="Challenge a friend">⚔️</span>
+      <!-- 2 · Who is the Spy? (the Imposter) -->
+      <a class="playcard playcard-imp" href="/spy">
+        <div class="playcard-art">
+          <div class="pc-face" style="left:14%;top:22%">🙂</div>
+          <div class="pc-face" style="left:50%;top:12%;transform:translateX(-50%)">🙂</div>
+          <div class="pc-face" style="right:14%;top:22%">🙂</div>
+          <div class="pc-face pc-face-x" style="left:50%;top:56%;transform:translateX(-50%)">🎭</div>
+          <div class="pc-face" style="left:24%;top:66%">🙂</div>
+          <div class="pc-face" style="right:24%;top:66%">🙂</div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Party · 4–10 players</div>
+          <h3>Who is the Spy?</h3>
+          <p>Everyone gets a word — except the spy. Discuss, deceive, and vote out who doesn't belong.</p>
+          <span class="playcard-cta">Start a room →</span>
+        </div>
+      </a>
+      <!-- 3 · 8-Ball Pool -->
+      <a class="playcard playcard-pool" href="/pool?from=social">
+        <div class="playcard-art">
+          <div class="pc-ball pc-ball-8" style="left:60%;top:44%">8</div>
+          <div class="pc-ball pc-ball-r" style="left:26%;top:34%">3</div>
+          <div class="pc-ball pc-ball-y" style="right:22%;top:60%">1</div>
+          <div class="pc-ball pc-ball-cue" style="left:14%;top:66%"></div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">1v1 · Head-to-head</div>
+          <h3>8-Ball Pool</h3>
+          <p>Real physics, one shared table. Pot your colour, then the black — and don't sink the cue.</p>
+          <span class="playcard-cta">Rack 'em →</span>
+        </div>
       </a>
     </div>
   </div>
