@@ -55,11 +55,14 @@ footer.sitefoot .fmenu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)
 footer.sitefoot .fcol h4{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:15px;color:#fff;letter-spacing:-.1px;margin:0 0 14px}
 footer.sitefoot .fcol a{display:block;color:#c9ccd4;text-decoration:none;font-size:13.5px;font-weight:500;padding:6px 0;transition:color .12s}
 footer.sitefoot .fcol a:hover{color:#fff}
-/* Social icons — dark grey circles with white glyphs. */
-footer.sitefoot .fsocial-grid{display:grid;grid-template-columns:repeat(3,36px);gap:12px;margin-top:2px}
-footer.sitefoot .fsocial-grid a{padding:0;width:36px;height:36px;border-radius:50%;background:#2b2e36;color:#fff;display:inline-flex;align-items:center;justify-content:center;transition:background .12s}
+/* Social icons — dark grey circles with white glyphs, flex-wrap so
+   the row breaks cleanly when the column narrows. Owner ask
+   1 Aug 2026 (v2): 'social media still stuck please fix that'.
+   Flex is more forgiving than grid for varying icon counts. */
+footer.sitefoot .fsocial-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px;max-width:220px}
+footer.sitefoot .fsocial-grid a{padding:0;width:36px;height:36px;border-radius:50%;background:#2b2e36;color:#fff;display:inline-flex;align-items:center;justify-content:center;transition:background .12s;flex:none}
 footer.sitefoot .fsocial-grid a:hover{background:#3b3f4a}
-footer.sitefoot .fsocial-grid svg{width:16px;height:16px;fill:currentColor}
+footer.sitefoot .fsocial-grid svg{width:16px;height:16px;fill:currentColor;display:block}
 /* Store badges — real Apple/Play visual language (black bg pill). */
 footer.sitefoot .fstores{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
 footer.sitefoot .stbadge{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;text-decoration:none;padding:9px 14px;border-radius:10px;font-weight:600;font-size:13px;border:1px solid #3b3f4a;transition:border-color .12s}
@@ -115,13 +118,29 @@ ${body}
     <!-- Column 3 · Social -->
     <div class="fcol">
       <h4>Social Media</h4>
+      <!-- Social icons — cleaner monochrome brand marks, matched
+           weight, all correctly viewbox-centred so no glyph looks
+           bigger/smaller than the others. Owner ask 1 Aug 2026:
+           'fix the social media icons in the footer'. -->
       <div class="fsocial-grid">
-        <a href="https://instagram.com/wordspies" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.64.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.64-.07-4.85s.01-3.58.07-4.85C2.38 3.92 3.9 2.38 7.15 2.23 8.42 2.17 8.8 2.16 12 2.16zM12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95C.27 21.31 2.69 23.73 7.05 23.93c1.28.06 1.69.07 4.95.07s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95C23.73 2.69 21.31.27 16.95.07 15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 100 12.32 6.16 6.16 0 000-12.32zm0 10.16a4 4 0 110-8 4 4 0 010 8zm6.4-11.85a1.44 1.44 0 100 2.88 1.44 1.44 0 000-2.88z"/></svg></a>
-        <a href="https://x.com/wordspies" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-        <a href="https://tiktok.com/@wordspies" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M19.32 6.68a5.34 5.34 0 01-3.13-1.01 5.4 5.4 0 01-2.13-3.14V2.5h-3.3v11.68a3 3 0 11-2.05-2.83V8.02a6.3 6.3 0 105.35 6.24V8.83a8.6 8.6 0 005.26 1.78z"/></svg></a>
-        <a href="https://facebook.com/wordspies" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.56 9.87v-6.98H7.9V12h2.54V9.8c0-2.5 1.5-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.77l-.44 2.89h-2.33v6.98A10 10 0 0022 12z"/></svg></a>
-        <a href="https://youtube.com/@wordspies" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.19a3 3 0 00-2.11-2.11C19.51 3.6 12 3.6 12 3.6s-7.51 0-9.39.48A3 3 0 00.5 6.19 31.6 31.6 0 000 12a31.6 31.6 0 00.5 5.81 3 3 0 002.11 2.11c1.88.48 9.39.48 9.39.48s7.51 0 9.39-.48a3 3 0 002.11-2.11A31.6 31.6 0 0024 12a31.6 31.6 0 00-.5-5.81zM9.6 15.6V8.4l6.24 3.6z"/></svg></a>
-        <a href="mailto:contact@wordspies.co.uk" aria-label="Email"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+        <a href="https://instagram.com/wordspies" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><path d="M12 2.2c2.7 0 3 0 4 .1 1 0 1.5.2 1.9.4a3.4 3.4 0 0 1 1.9 1.9c.2.4.3.9.4 1.9 0 1.1.1 1.4.1 4s0 3-.1 4c0 1-.2 1.5-.4 1.9a3.4 3.4 0 0 1-1.9 1.9c-.4.2-.9.3-1.9.4-1 0-1.3.1-4 .1s-3 0-4-.1c-1 0-1.5-.2-1.9-.4a3.4 3.4 0 0 1-1.9-1.9c-.2-.4-.3-.9-.4-1.9C2.2 15 2.2 14.7 2.2 12s0-3 .1-4c0-1 .2-1.5.4-1.9A3.4 3.4 0 0 1 4.6 4.2c.4-.2.9-.3 1.9-.4C7.4 3.7 7.7 3.7 12 3.7zm0-1.5c-2.7 0-3.1 0-4.1.1-1.1 0-1.9.2-2.5.5A4.9 4.9 0 0 0 3.3 5.4c-.3.6-.4 1.4-.5 2.5-.1 1-.1 1.4-.1 4.1s0 3.1.1 4.1c0 1.1.2 1.9.5 2.5a4.9 4.9 0 0 0 2.7 2.7c.6.3 1.4.4 2.5.5 1 .1 1.4.1 4.1.1s3.1 0 4.1-.1c1.1 0 1.9-.2 2.5-.5a4.9 4.9 0 0 0 2.7-2.7c.3-.6.4-1.4.5-2.5.1-1 .1-1.4.1-4.1s0-3.1-.1-4.1c0-1.1-.2-1.9-.5-2.5a4.9 4.9 0 0 0-2.7-2.7c-.6-.3-1.4-.4-2.5-.5-1-.1-1.4-.1-4.1-.1zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.3a3.3 3.3 0 1 1 0-6.6 3.3 3.3 0 0 1 0 6.6zM18.4 5.4a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>
+        </a>
+        <a href="https://x.com/wordspies" target="_blank" rel="noopener" aria-label="X">
+          <svg viewBox="0 0 24 24"><path d="M18.9 3H22l-7.1 8.1L23 21h-6.6l-5.2-6.6L5 21H2l7.5-8.6L1.6 3h6.7l4.7 6zm-1.2 16.1h1.7L7 4.8H5.1z"/></svg>
+        </a>
+        <a href="https://tiktok.com/@wordspies" target="_blank" rel="noopener" aria-label="TikTok">
+          <svg viewBox="0 0 24 24"><path d="M17.4 3.4c-1.5 0-2.7-1.2-2.7-2.7v-.7h-3.3v14.6a2.7 2.7 0 1 1-2.7-2.7c.3 0 .5 0 .8.1V8.6h-.8a6 6 0 1 0 6 6V8.9a6 6 0 0 0 3.8 1.3V7c-.4 0-.7-.1-1.1-.2-.4-.1-.8-.2-1.1-.4a5.4 5.4 0 0 1-2.7-3z"/></svg>
+        </a>
+        <a href="https://facebook.com/wordspies" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H8V12h2.4V9.9c0-2.4 1.4-3.7 3.6-3.7 1 0 2.1.2 2.1.2v2.4h-1.2c-1.2 0-1.5.7-1.5 1.5V12h2.6l-.4 2.9h-2.2v7A10 10 0 0 0 22 12z"/></svg>
+        </a>
+        <a href="https://youtube.com/@wordspies" target="_blank" rel="noopener" aria-label="YouTube">
+          <svg viewBox="0 0 24 24"><path d="M23.5 6.5a3 3 0 0 0-2.1-2.1C19.6 4 12 4 12 4s-7.6 0-9.4.4A3 3 0 0 0 .5 6.5C0 8.4 0 12 0 12s0 3.6.5 5.5a3 3 0 0 0 2.1 2.1C4.4 20 12 20 12 20s7.6 0 9.4-.4a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.5.5-5.5s0-3.6-.5-5.5zM9.6 15.6V8.4l6.4 3.6z"/></svg>
+        </a>
+        <a href="mailto:contact@wordspies.co.uk" aria-label="Email">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/></svg>
+        </a>
       </div>
     </div>
     <!-- Column 4 · Store badges + language -->
