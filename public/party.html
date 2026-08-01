@@ -76,10 +76,20 @@ a{color:inherit;text-decoration:none}
    is white color it is confusing… people can easily move from the party
    to the other tabs'. Now high-contrast dark pill with a back arrow so
    it reads unambiguously as 'exit'. */
-.pheadLeave{background:var(--ink,#202124);color:#fff;border:0;border-radius:99px;padding:9px 16px 9px 12px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;transition:background .12s,transform .1s;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(20,23,42,.18)}
-.pheadLeave:hover{background:#000}
-.pheadLeave:active{transform:scale(.95)}
-.pheadLeave::before{content:'←';font-size:16px;line-height:1;font-weight:700}
+/* Whole-strip clickable header. Owner ask 1 Aug 2026 — one obvious
+   tap target across the top, no separate buttons to hunt. Black
+   background so it reads as the persistent 'you're in a party' bar
+   the user recognises from the /social pill. */
+.phead-strip{position:sticky;top:0;z-index:30;background:var(--ink,#16181f);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:background .12s;text-align:center}
+.phead-strip:hover{background:#000}
+.phead-strip:active{opacity:.9}
+.phead-back{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14px;letter-spacing:.1px}
+.phead-end{background:#c8123b;color:#fff;border:0;border-radius:99px;padding:6px 12px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0;margin-left:auto}
+.phead-end:hover{background:#a30f31}
+.phead-end.hidden{display:none}
+.phead-sub{padding:14px 20px 6px;text-align:left}
+.phead-sub h1{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;color:var(--ink);letter-spacing:-.2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
+.phead-sub p{font-size:12.5px;color:var(--faint);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pheadEnd{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background .12s,transform .1s}
 .pheadEnd:hover{background:#ffe4e4}
 .pheadEnd:active{transform:scale(.95)}
@@ -336,16 +346,24 @@ a{color:inherit;text-decoration:none}
        the right. Section labels/counts stay stripped — the avatar
        grids speak for themselves. Counts kept as hidden shells so
        paint() can still write into them. -->
-  <header class="phead" id="pHead">
-    <div class="phead-txt">
-      <h1 id="pTitle"></h1>
-      <p id="pSub"></p>
-    </div>
-    <div class="phead-btns">
-      <button class="pheadLeave" onclick="leaveAndGo()" title="Leave the party and return to Community">Back to Community</button>
-      <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
-    </div>
+  <!-- Owner ask 1 Aug 2026: 'remove the Back to Community button —
+       make the top stripe black and make the whole stripe clickable
+       and remove the tap ^ and x, no need. Just show in the middle
+       "Back to Community" and keep the party playing in background
+       as it is, but black.' Whole strip is now one click target.
+       Host-only 'End' button sits pinned on the right so it's still
+       reachable without swallowing the primary tap. -->
+  <header class="phead-strip" id="pHead" onclick="leaveAndGo()" title="Return to Community — the party keeps going, tap the black pill to come back">
+    <span class="phead-back">← Back to Community</span>
+    <button class="phead-end hidden" id="pEndBtn" onclick="event.stopPropagation();endParty()" title="End party for everyone">End 🎉</button>
   </header>
+  <!-- Title + subtitle demoted to a quiet sub-header below the strip
+       so they still read as context but don't crowd the primary
+       action. -->
+  <div class="phead-sub">
+    <h1 id="pTitle"></h1>
+    <p id="pSub"></p>
+  </div>
 
   <main id="pMain">
     <!-- Raise-hand queue — only rendered for hosts. -->
@@ -486,7 +504,9 @@ if (EMBED) {
     // Parent listens for a leave request from inside.
     window.addEventListener('message', (ev) => {
       if (ev.origin !== location.origin) return;
-      if (ev.data && ev.data.type === 'party:leave') leaveAndGo();
+      // Parent explicitly wants us to LEAVE (not just hide) — e.g. the
+      // user tapped 'End party' from the /social pill's overflow menu.
+      if (ev.data && ev.data.type === 'party:leave') leaveAndGoHard();
     });
   });
 }
@@ -1126,7 +1146,33 @@ function denyHand(id){
 }
 function endParty(){ if (confirm('End the party for everyone?')) socket && socket.emit('closeParty'); }
 
+// Owner ask 1 Aug 2026: 'Back to Community should NOT end the party
+// — I should go back to the home page but the party keeps going, I
+// can join it back from the black stripe with everything in the same
+// state (mic open if it was open)'.
+//
+// So this is now a MINIMISE, not a LEAVE. We don't emit 'leave' and
+// don't clear the party session marker — that keeps the .partybar
+// pill visible on /social so the user can tap back in.
+//
+// EMBED mode (running inside the /social iframe host): postMessage
+// 'party:hide' so the parent tucks the iframe away without unmounting
+// it — the socket, WebRTC PC and audio stream all stay alive, so
+// coming back keeps the mic exactly where the user left it.
+//
+// Non-EMBED (direct /party URL in a tab): we navigate to /social; the
+// browser tears the socket down, but the server has a 5-min grace
+// window (party.js disconnect handler) that keeps the seat until the
+// user comes back via the pill. Mic won't auto-resume in this path —
+// they tap Speak once. The iframe path is the smooth one.
 function leaveAndGo(){
+  if (EMBED) { postToParent({ type: 'party:hide' }); return; }
+  location.href = '/social';
+}
+// Preserved: the explicit 'Leave' semantic — called from external
+// triggers (parent 'party:leave' postMessage, host closing party, etc.)
+// where we actually DO want the socket to disconnect + clear the pill.
+function leaveAndGoHard(){
   try { socket && socket.emit('leave'); } catch(e){}
   clearPartySession();
   if (EMBED) { postToParent({ type: 'party:left' }); return; }

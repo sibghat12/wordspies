@@ -1131,10 +1131,19 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    live through tab switches inside /social. Two modes:
    .phost.fs  → fullscreen overlay (in-party view)
    .phost.mini → bar at bottom of screen (browsing other tabs)      */
-.phost{position:fixed;z-index:170;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.18);overflow:hidden;transition:all .22s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column}
-.phost.mini{bottom:calc(14px + env(safe-area-inset-bottom));left:14px;right:14px;height:64px;max-width:520px;margin:0 auto;border-radius:16px}
+.phost{position:fixed;z-index:170;background:#16181f;color:#fff;border:0;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.22);overflow:hidden;transition:all .22s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column;cursor:pointer}
+/* Mini state: slim black pill anchored top of the viewport so it
+   doesn't cover the chat composer / voice mic at the bottom. Owner
+   ask 1 Aug 2026 (with screenshot): 'should not be blocking the
+   chat please'. */
+.phost.mini{top:calc(10px + env(safe-area-inset-top));bottom:auto;left:14px;right:14px;height:48px;max-width:520px;margin:0 auto;border-radius:99px}
 .phost.mini .phost-frame{display:none}
-.phost.mini .phost-bar{padding:10px 14px;display:flex;align-items:center;gap:12px}
+.phost.mini .phost-bar{padding:9px 18px;display:flex;align-items:center;gap:10px;height:100%}
+.phost.mini .phost-text{color:#fff;flex:1;min-width:0;line-height:1.15;display:flex;flex-direction:column}
+.phost.mini .phost-text b{font-weight:700;font-size:13px;color:#fff;letter-spacing:.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phost.mini .phost-text small{font-size:11px;font-weight:500;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phost.mini .phost-dot{width:8px;height:8px;border-radius:50%;background:#22c07a;flex-shrink:0;box-shadow:0 0 0 3px rgba(34,192,122,.22);animation:phostDot 1.6s ease-in-out infinite}
+@keyframes phostDot{0%,100%{opacity:1}50%{opacity:.55}}
 /* Fullscreen mode owns the whole viewport on mobile and a generous
    panel on desktop — no borders/inset, no shadow, just the party. */
 .phost.fs{inset:0;border-radius:0;border:0;box-shadow:none}
@@ -2553,14 +2562,17 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
      Community/Games/Chats tabs. Two states: fullscreen (in-party view)
      and mini (bar at bottom of the screen). -->
 <div id="partyHost" class="phost hidden">
-  <div class="phost-bar" id="phostBar">
+  <!-- Owner ask 1 Aug 2026: 'remove the ▲ and ✕ — no need. Just show
+       "back to party" in the middle, make the whole strip clickable
+       to expand, keep it playing in background as it is but black.'
+       Whole bar is a single click target now; the leave button was
+       redundant with the party page's own Back-to-Community strip. -->
+  <div class="phost-bar" id="phostBar" onclick="togglePartyExpand()" title="Tap to open the party">
     <span class="phost-dot"></span>
     <div class="phost-text">
       <b id="phostTitle">Party</b>
-      <small id="phostSub">Tap to expand</small>
+      <small id="phostSub">Playing in background — tap to open</small>
     </div>
-    <button class="phost-btn expand" id="phostExpand" title="Open party">▲</button>
-    <button class="phost-btn leave" id="phostLeave" title="Leave party">✕</button>
   </div>
   <div class="phost-frame" id="phostFrameWrap"><iframe id="phostFrame" allow="microphone; autoplay" title="Party"></iframe></div>
 </div>
@@ -3817,7 +3829,7 @@ function minimizePartyInApp(){
   host.classList.remove('fs');
   host.classList.add('mini');
   document.body.classList.remove('in-party');    // mini = community app owns the chrome again
-  $('phostSub').textContent = 'Playing in background — tap ▲ to expand';
+  $('phostSub').textContent = 'Playing in background — tap to open';
 }
 function togglePartyExpand(){
   const host = $('partyHost'); if (!host || host.classList.contains('hidden')) return;
@@ -3863,6 +3875,12 @@ window.addEventListener('message', (ev) => {
   const d = ev.data || {};
   if (d.type === 'party:closed' || d.type === 'party:left' || d.type === 'party:kicked') {
     closePartyInApp(true);
+  } else if (d.type === 'party:hide') {
+    // Owner ask 1 Aug 2026: 'Back to Community' should minimise, not
+    // end. Keep the iframe mounted (socket + WebRTC + audio all stay
+    // alive) and just show the mini-bar so the user can jump back
+    // with the same mic state intact.
+    minimizePartyInApp();
   } else if (d.type === 'party:title' && PHOST_CODE) {
     $('phostTitle').textContent = d.title || 'Party';
   } else if (d.type === 'party:minimize') {
