@@ -1767,13 +1767,22 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
 
       // Rate limits. Free users get 5 messages/day per AI (owner ask —
        // was 20). Override via BOT_DAILY_LIMIT env if a paid tier lands.
+       //
+       // AI_UNLIMITED_NAMES: hard-coded list of user-name allow-list
+       // that bypasses the per-user cap. Case-insensitive match on the
+       // stored display name. Kept small; when we ship the paid tier
+       // proper this list retires. Owner ask 1 Aug 2026: 'give
+       // unlimited messages access with ai experts for ayoub'.
+      const AI_UNLIMITED_NAMES = new Set(['sibi', 'ayoub']);
+      const isUnlimited = AI_UNLIMITED_NAMES.has(String(me.name || '').trim().toLowerCase())
+        || me.aiUnlimited === true;
       const DAILY_LIMIT = parseInt(process.env.BOT_DAILY_LIMIT || '5', 10);
       const GLOBAL_LIMIT = parseInt(process.env.BOT_GLOBAL_DAILY_LIMIT || '5000', 10);
       const day = new Date().toISOString().slice(0, 10);
       const userKey = 'soc:ai-limit:' + me.id + ':' + to + ':' + day;
       const globalKey = 'soc:ai-global:' + day;
       const userN = parseInt((await db.get(userKey)) || '0', 10);
-      if (userN >= DAILY_LIMIT) {
+      if (!isUnlimited && userN >= DAILY_LIMIT) {
         return res.status(429).json({ error: `Daily limit reached — you've used your ${DAILY_LIMIT} messages with ${bot.name} today. Back tomorrow!` });
       }
       const globalN = parseInt((await db.get(globalKey)) || '0', 10);
