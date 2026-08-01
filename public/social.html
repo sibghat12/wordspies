@@ -50,11 +50,15 @@ body.authmodal::before{content:'';position:fixed;inset:0;z-index:79;background:r
    52px 28px 40px) that were forcing the modal card to be full-height
    and pushing content oddly. Higher specificity + !important on
    min-height so nothing wins. */
-body.authmodal #vAuth{position:fixed !important;top:50% !important;left:50% !important;transform:translate(-50%,-50%) !important;z-index:80;background:#fff !important;max-width:440px !important;width:calc(100% - 32px) !important;min-height:0 !important;max-height:90vh;overflow-y:auto;border-radius:24px !important;padding:36px 28px 28px !important;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;animation:crfade .2s ease-out;margin:0 !important;display:block !important}
+body.authmodal #vAuth{position:fixed !important;top:50% !important;left:50% !important;transform:translate(-50%,-50%) !important;z-index:80;background:#fff !important;max-width:420px !important;width:calc(100% - 24px) !important;min-height:0 !important;max-height:90vh;overflow-y:auto;border-radius:22px !important;padding:32px 22px 24px !important;box-shadow:0 24px 70px rgba(0,0,0,.32);text-align:center;animation:crfade .2s ease-out;margin:0 !important;display:block !important}
 body.authmodal #vAuth .logo,body.authmodal #vAuth h1,body.authmodal #vAuth .sub,body.authmodal #vAuth .tag{text-align:center}
 body.authmodal #vAuth #chooser,body.authmodal #vAuth #emailForm{display:flex;flex-direction:column;align-items:center}
 body.authmodal #vAuth .authcol{width:100%}
-#authClose{position:fixed;top:14px;right:14px;z-index:81;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+/* Close button attached to the TOP-RIGHT of the modal itself so it
+   reads as part of the card, not a floating viewport control. Owner
+   ask 1 Aug 2026 as part of a wider 'align the design' polish. */
+body.authmodal #authClose{position:absolute;top:10px;right:10px;left:auto;z-index:81;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:800;line-height:1;cursor:pointer;color:var(--sub);transition:background .12s,color .12s;padding:0;display:inline-flex;align-items:center;justify-content:center}
+body.authmodal #authClose:hover{background:var(--hover,#f1f3f4);color:var(--ink)}
 body.authmodal{overflow:hidden}
 .wrap{max-width:520px;margin:0 auto;min-height:100%;position:relative;padding-bottom:86px;overflow-x:clip}
 .logo{font-family:'Fredoka';font-weight:600;font-size:19px}
@@ -852,6 +856,15 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Voice-call button in the chat header — small green pill next to the
    Community button. Only shows when we have a real chat open. */
 .chcall{background:#22c07a;color:#fff;border:0;border-radius:99px;font-size:16px;font-weight:800;padding:8px 14px;min-height:36px;cursor:pointer;box-shadow:0 3px 10px rgba(34,192,122,.28);margin-left:6px;flex-shrink:0}
+/* Overflow (⋯) menu on the chat header — report + block for the
+   current chat peer. Same visual language as the profile page's
+   .mp-more menu but scoped to .chmore so it doesn't collide. */
+.chmore-wrap{position:relative;flex-shrink:0}
+.chmore{background:#f4f5f7;color:var(--ink);border:0;border-radius:50%;width:36px;height:36px;font-size:18px;font-weight:800;line-height:1;cursor:pointer;padding:0;margin-left:4px;display:inline-flex;align-items:center;justify-content:center}
+.chmore:hover{background:#e6e9ee}
+.chmore-menu{position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.12);min-width:160px;padding:6px;z-index:40;display:flex;flex-direction:column;gap:2px}
+.chmore-menu button{background:transparent;border:0;text-align:left;padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;white-space:nowrap}
+.chmore-menu button:hover{background:var(--hover,#f1f3f4)}
 .chcall:hover{filter:brightness(1.05)}
 @media(max-width:520px){ .chcall{padding:8px 10px;font-size:15px} }
 
@@ -1773,6 +1786,16 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <span id="chAv" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"></span>
       <div class="chwho" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"><div class="chname" id="chName"></div><!-- state subtitle removed per owner ask: just the name in the chat header. Kept id in DOM as an empty hidden shell so any code still writing to chState doesn't crash. --><div class="chstate hidden" id="chState"></div></div>
       <button class="chcall" id="chCall" onclick="ringCurrentChat()" title="Voice call">📞</button>
+      <!-- Owner ask 1 Aug 2026: 'add the three ... in the chat of each
+           so he can report or block'. Small overflow menu next to
+           the call button — Report + Block for the current chat peer. -->
+      <div class="chmore-wrap">
+        <button class="chmore" id="chMore" onclick="toggleChatMore(event)" title="More" aria-label="More options">⋯</button>
+        <div class="chmore-menu hidden" id="chMoreMenu">
+          <button onclick="reportChatPeer();closeChatMore()">🚩 Report</button>
+          <button id="chBlockBtn" onclick="toggleChatBlock();closeChatMore()">🚫 Block</button>
+        </div>
+      </div>
     </div>
     <div class="msgs" id="msgs"></div>
     <button class="jumpnew" id="jumpNew" onclick="toBottom($('msgs'))">↓ New messages</button>
@@ -4184,6 +4207,61 @@ async function refreshBlocks(){
     MY_BLOCKS = new Set((j.blocked || []).map(b => b.id));
     paintBlockBtn();
   } catch(e){ /* not logged in — silent */ }
+}
+
+// Chat-header ⋯ menu: report + block for the currently open chat peer.
+// Owner ask 1 Aug 2026 — same primitives as reportUser/toggleBlock but
+// keyed off curChat (the peer id) rather than curMember.
+function toggleChatMore(ev){
+  ev && ev.stopPropagation && ev.stopPropagation();
+  const m = document.getElementById('chMoreMenu');
+  if (!m) return;
+  m.classList.toggle('hidden');
+  paintChatBlockBtn();
+  if (!m.classList.contains('hidden')) {
+    // one-shot outside-click closer
+    setTimeout(() => { document.addEventListener('click', _chMoreOutside, { once: true }); }, 0);
+  }
+}
+function _chMoreOutside(){ closeChatMore(); }
+function closeChatMore(){
+  const m = document.getElementById('chMoreMenu');
+  if (m) m.classList.add('hidden');
+  document.removeEventListener('click', _chMoreOutside);
+}
+async function reportChatPeer(){
+  if (!curChat) return;
+  const reason = prompt('What\'s wrong with this person?\n(e.g. spam, harassment, unsafe, other)');
+  if (reason === null) return;
+  try {
+    await api('/report', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ kind:'user', targetId: curChat, reason: (reason||'other').slice(0,40) })
+    });
+    toast('Thanks — we\'ll review this within 24 hours.');
+  } catch(e){ toast(e.message); }
+}
+async function toggleChatBlock(){
+  if (!curChat) return;
+  const blocked = MY_BLOCKS.has(curChat);
+  if (!blocked && !confirm('Block this person? They won\'t be able to see or message you, and you won\'t see them.')) return;
+  try {
+    await api(blocked ? '/unblock' : '/block', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ targetId: curChat })
+    });
+    if (blocked) MY_BLOCKS.delete(curChat); else MY_BLOCKS.add(curChat);
+    paintChatBlockBtn();
+    toast(blocked ? 'Unblocked.' : 'Blocked. You won\'t see them anywhere in the app.');
+    if (!blocked) {
+      // Bounce them out of the chat since they're now blocked.
+      showTab('chats');
+      if (typeof loadMembers === 'function') loadMembers();
+    }
+  } catch(e){ toast(e.message); }
+}
+function paintChatBlockBtn(){
+  const btn = document.getElementById('chBlockBtn');
+  if (!btn || !curChat) return;
+  btn.textContent = MY_BLOCKS.has(curChat) ? '✓ Unblock' : '🚫 Block';
 }
 
 // Blocked-users manager modal.
