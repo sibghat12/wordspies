@@ -1132,16 +1132,14 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    .phost.fs  → fullscreen overlay (in-party view)
    .phost.mini → bar at bottom of screen (browsing other tabs)      */
 .phost{position:fixed;z-index:170;background:#16181f;color:#fff;border:0;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.22);overflow:hidden;transition:all .22s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column;cursor:pointer}
-/* Mini state: slim black pill anchored top of the viewport so it
-   doesn't cover the chat composer / voice mic at the bottom. Owner
-   ask 1 Aug 2026 (with screenshot): 'should not be blocking the
-   chat please'. */
-.phost.mini{top:calc(10px + env(safe-area-inset-top));bottom:auto;left:14px;right:14px;height:48px;max-width:520px;margin:0 auto;border-radius:99px}
+/* Mini state — black rounded pill anchored to the BOTTOM of the
+   viewport (owner ask 1 Aug 2026 v6). Just the green live-dot +
+   PARTY NAME (uppercase) + a black-on-dark arrow. No extra copy. */
+.phost.mini{bottom:calc(14px + env(safe-area-inset-bottom));top:auto;left:14px;right:14px;height:48px;max-width:520px;margin:0 auto;border-radius:99px}
 .phost.mini .phost-frame{display:none}
 .phost.mini .phost-bar{padding:9px 18px;display:flex;align-items:center;gap:10px;height:100%}
-.phost.mini .phost-text{color:#fff;flex:1;min-width:0;line-height:1.15;display:flex;flex-direction:column}
-.phost.mini .phost-text b{font-weight:700;font-size:13px;color:#fff;letter-spacing:.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.phost.mini .phost-text small{font-size:11px;font-weight:500;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phost.mini #phostTitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.phost.mini .phost-arrow{width:26px;height:26px;border-radius:50%;background:#000;color:#fff;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .phost.mini .phost-dot{width:8px;height:8px;border-radius:50%;background:#22c07a;flex-shrink:0;box-shadow:0 0 0 3px rgba(34,192,122,.22);animation:phostDot 1.6s ease-in-out infinite}
 @keyframes phostDot{0%,100%{opacity:1}50%{opacity:.55}}
 /* Fullscreen mode owns the whole viewport on mobile and a generous
@@ -2562,17 +2560,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
      Community/Games/Chats tabs. Two states: fullscreen (in-party view)
      and mini (bar at bottom of the screen). -->
 <div id="partyHost" class="phost hidden">
-  <!-- Owner ask 1 Aug 2026: 'remove the ▲ and ✕ — no need. Just show
-       "back to party" in the middle, make the whole strip clickable
-       to expand, keep it playing in background as it is but black.'
-       Whole bar is a single click target now; the leave button was
-       redundant with the party page's own Back-to-Community strip. -->
+  <!-- Community-page party pill. Owner ask 1 Aug 2026 v6: 'just show
+       the green LIVE icon and the party name in CAPITAL and thats it
+       and black arrow please at the bottom, remove the tap-to-expand
+       text ASAP'. -->
   <div class="phost-bar" id="phostBar" onclick="togglePartyExpand()" title="Tap to open the party">
     <span class="phost-dot"></span>
-    <div class="phost-text">
-      <b id="phostTitle">Party</b>
-      <small id="phostSub">Playing in background — tap to open</small>
-    </div>
+    <b id="phostTitle">PARTY</b>
+    <span class="phost-arrow" aria-hidden="true">→</span>
   </div>
   <div class="phost-frame" id="phostFrameWrap"><iframe id="phostFrame" allow="microphone; autoplay" title="Party"></iframe></div>
 </div>
@@ -3829,7 +3824,9 @@ function minimizePartyInApp(){
   host.classList.remove('fs');
   host.classList.add('mini');
   document.body.classList.remove('in-party');    // mini = community app owns the chrome again
-  $('phostSub').textContent = 'Playing in background — tap to open';
+  // phostSub retired 1 Aug 2026 v6 — pill now shows only party
+  // name + live-dot + arrow. Left the DOM lookup out; null-guard
+  // any downstream writers.
 }
 function togglePartyExpand(){
   const host = $('partyHost'); if (!host || host.classList.contains('hidden')) return;
