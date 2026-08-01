@@ -105,11 +105,26 @@ body.ob-open{overflow:hidden}
 .ob-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
 .ob-input[readonly]{background:#f2f3f6;color:var(--sub);cursor:default}
 textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
-/* Native date input in the onboarding — styled to match .ob-input
-   so it looks intentional (not a leftover browser widget). Owner
-   ask 1 Aug 2026 v3: 'use the modern date picker'. */
+/* Native date input in the onboarding — inherits type styling from
+   whichever container it's in. Owner ask 1 Aug 2026 v3+. */
 .ob-dob{font-family:inherit;-webkit-appearance:none;appearance:none;color-scheme:light}
 .ob-dob::-webkit-calendar-picker-indicator{opacity:.55;cursor:pointer}
+
+/* Minimalist underline-style form (step 1). Small font, thin bottom
+   border, no boxes — reads as a proper app onboarding form rather
+   than a signup wall. Owner ask 1 Aug 2026: 'make it simpler and
+   simpler, three small input boxes like one border bottom thin
+   small font, professional like a real app'. */
+.ob-lite{display:flex;flex-direction:column;gap:20px;margin-top:20px}
+.ob-lite-row{display:flex;flex-direction:column;gap:6px}
+.ob-lite-label{font-size:11px;font-weight:600;color:var(--sub);letter-spacing:.6px;text-transform:uppercase;line-height:1.2}
+.ob-lite-input{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:8px 0 10px;font-family:inherit;font-size:16px;font-weight:500;color:var(--ink);outline:none;transition:border-color .15s}
+.ob-lite-input::placeholder{color:#c4c8d0;font-weight:400}
+.ob-lite-input:focus{border-bottom-color:var(--accent,#e8506b)}
+.ob-lite-input[readonly]{color:var(--sub);cursor:default}
+.ob-lite-input[readonly]:focus{border-bottom-color:var(--line)}
+.ob-lite-input[type=date]{color:var(--ink)}
+.ob-lite-input.ob-dob::-webkit-calendar-picker-indicator{opacity:.55;cursor:pointer;margin-left:0}
 .ob-label{font-size:11.5px;font-weight:700;color:var(--sub);letter-spacing:.4px;text-transform:uppercase;margin:14px 4px 2px}
 .ob-label:first-of-type{margin-top:6px}
 .ob-err{color:var(--err);font-size:13px;font-weight:600;padding:8px 2px 0}
@@ -668,7 +683,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
        has zero references.
      - Reference count + quote icon (quiet grey) if refCount > 0.
    Owner clarified 1 Aug 2026. */
-.wcard-newref{position:absolute;top:10px;right:10px;z-index:2;background:#00c2a0;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18)}
+.wcard-newref{position:absolute;top:10px;right:10px;z-index:2;background:#00c2a0;color:#fff;font-size:8.5px;font-weight:800;letter-spacing:.7px;padding:2.5px 8px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18)}
 .wcard-refct{position:absolute;top:10px;right:10px;z-index:2;display:inline-flex;align-items:center;gap:3px;color:#7b8595;font-size:12.5px;font-weight:700}
 .wcard-refct svg{width:14px;height:14px;fill:currentColor}
 .wcard{position:relative}
@@ -1674,30 +1689,33 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <div class="ob-progress" id="obProgress"></div>
 
-    <!-- STEP 1 · Name + DOB + Email (all on one page — owner ask
-         1 Aug 2026: pre-filled trio from Gmail + one confirm tap).
-         Was three separate screens; consolidated to reduce clicks
-         and match Tandem's real onboarding. Photo stays separate. -->
+    <!-- STEP 1 · Minimalist Tandem-style triple. Owner ask 1 Aug 2026:
+         'make it simpler and simpler, three small input boxes like
+         one border bottom thin small font, show name, email and DOB
+         from Gmail if not ask user, make it professional like a real
+         app'. Full name (first+last one field), email, DOB. Under-
+         line-only inputs, no boxes. Values pre-filled from ME. -->
     <section class="ob-step" data-step="1">
       <div class="ob-emoji">👋</div>
-      <h2>Let's set up your account</h2>
-      <p class="ob-sub">A few basics from us — pre-filled from your Gmail so you can tap through.</p>
-      <div class="ob-fields">
-        <label class="ob-label">First name</label>
-        <input class="ob-input" id="obFirstName" maxlength="20" placeholder="First name" autocomplete="given-name">
-        <label class="ob-label">Last name (optional)</label>
-        <input class="ob-input" id="obLastName" maxlength="20" placeholder="Last name" autocomplete="family-name">
-        <label class="ob-label">Date of birth</label>
-        <!-- Native date input — owner ask 1 Aug 2026 v3: 'for the
-             date of birth selection please use the modern date
-             picker'. On mobile this launches the OS's native picker
-             (iOS scroll wheel / Android calendar); on desktop it's
-             a proper calendar dropdown in every modern browser. min
-             / max clamp between 100 years ago and today so the
-             picker opens somewhere sensible. -->
-        <input class="ob-input ob-dob" id="obBirth" type="date" aria-label="Date of birth">
-        <label class="ob-label">Email</label>
-        <input class="ob-input" id="obEmail" type="email" readonly aria-label="Email">
+      <h2>Let's get you set up</h2>
+      <p class="ob-sub">A few basics. We've pre-filled what we could from your sign-in.</p>
+      <div class="ob-lite">
+        <div class="ob-lite-row">
+          <label class="ob-lite-label" for="obFirstName">Full name</label>
+          <input class="ob-lite-input" id="obFirstName" maxlength="30" placeholder="First Last" autocomplete="name">
+          <!-- Hidden field kept so the existing obNext(1) logic (which
+               reads first+last separately) still works. Populated from
+               the visible input at submit time. -->
+          <input type="hidden" id="obLastName">
+        </div>
+        <div class="ob-lite-row">
+          <label class="ob-lite-label" for="obEmail">Email</label>
+          <input class="ob-lite-input" id="obEmail" type="email" readonly placeholder="you@example.com">
+        </div>
+        <div class="ob-lite-row">
+          <label class="ob-lite-label" for="obBirth">Date of birth</label>
+          <input class="ob-lite-input ob-dob" id="obBirth" type="date">
+        </div>
       </div>
       <div class="ob-err hidden" id="obErr1"></div>
       <button class="ob-next" onclick="obNext(1)">Continue</button>
@@ -1802,7 +1820,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
            Order: Community · Chats · Parties · Learn. -->
       <button id="tbWall" class="tnt on" onclick="showTab('wall')">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a13.5 13.5 0 0 1 0 18"/><path d="M12 3a13.5 13.5 0 0 0 0 18"/></svg></span>
-        Community<span class="badge hidden" id="wallBadge"></span>
+        Social<span class="badge hidden" id="wallBadge"></span>
       </button>
       <button id="tbChats" class="tnt" onclick="showTab('chats')">
         <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><circle cx="9" cy="11" r=".7" fill="currentColor" stroke="none"/><circle cx="12" cy="11" r=".7" fill="currentColor" stroke="none"/><circle cx="15" cy="11" r=".7" fill="currentColor" stroke="none"/></svg></span>
@@ -2973,10 +2991,14 @@ async function obNext(step){
     // Per-step validate + save. Owner consolidated steps 1-3
     // (name + DOB + email) into a single step 1 on 1 Aug 2026.
     if (step === 1) {
-      const first = $('obFirstName').value.trim();
-      const last = $('obLastName').value.trim();
+      // Step 1 has a single 'Full name' visible input; split on the
+      // first space for the server (which expects a display name).
+      const raw = $('obFirstName').value.trim();
+      const parts = raw.split(/\s+/);
+      const first = parts[0] || '';
+      const last = parts.slice(1).join(' ');
       const bd = $('obBirth').value;
-      if (!first || first.length < 2) return err('Please enter your first name.');
+      if (!first || first.length < 2) return err('Please enter your name.');
       if (!bd) return err('Please enter your date of birth.');
       const age = ageFromISOClient(bd);
       if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date of birth.');
