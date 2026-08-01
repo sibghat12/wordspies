@@ -386,7 +386,10 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .wcard-photo img{width:100%;height:100%;object-fit:cover;display:block}
 .wcard-photo .pcircph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:48px;font-family:'Fredoka','Nunito',system-ui,sans-serif}
 .wcard-body{display:flex;flex-direction:column;justify-content:flex-start;min-width:0;gap:8px}
-.wcard-name{font-size:17px;font-weight:700;color:var(--accent);line-height:1.15;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px}
+/* gap:3px (was 6px) so the crown/tick sits right next to the name.
+   Owner ask 1 Aug 2026: 'make the crown icon and the name distance
+   little less it so much distance right'. */
+.wcard-name{font-size:17px;font-weight:700;color:var(--accent);line-height:1.15;display:flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px}
 .wcard-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0}
 /* Talk-about text sits right under the name (owner ask: on top, not
    floating in the middle). Colour bumped to black-ink + weight 500
@@ -637,8 +640,14 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ref-btn-save{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer}
 .ref-btn-save:hover{background:#000}
 .ref-btn-save:disabled{opacity:.5;pointer-events:none}
-/* NEW badge on wall cards when a member has a fresh reference. */
-.wcard-newref{position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.6px;padding:3px 8px;border-radius:99px;text-transform:uppercase;box-shadow:0 3px 8px rgba(232,80,107,.35)}
+/* Wall-card corner badges — match Tandem's treatment:
+   - Fresh reference (< 7 days) → teal 'NEW' pill.
+   - Older references (any count) → count + speech-bubble icon
+     in the same corner slot, quiet grey.
+   Owner shared Tandem screenshot 1 Aug 2026. */
+.wcard-newref{position:absolute;top:10px;right:10px;background:#00c2a0;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.6px;padding:3px 9px;border-radius:99px;text-transform:uppercase;box-shadow:0 3px 8px rgba(0,194,160,.35);z-index:2}
+.wcard-refct{position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;color:#7b8595;font-size:12.5px;font-weight:700;z-index:2}
+.wcard-refct svg{width:14px;height:14px;fill:currentColor}
 .wcard{position:relative}
 .mp-2col{display:grid;gap:16px}
 @media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
@@ -1181,7 +1190,11 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
    disc — the disc made it look like a sticker pinned on the name, and emoji come
    out different on every phone. This is one shape, filled with the gold above, and
    it sits straight on the background so the name still reads as a name. */
-.ktick{display:inline-block;width:15px;height:13px;margin-left:5px;vertical-align:-1px;fill:url(#kgold);flex:none}
+/* .ktick's default margin-left:5px was compounding with .wcard-name
+   flex gap — trimmed to 2px so the crown hugs the name inside a
+   flex row. Non-flex containers (blog / marketing) still get a bit
+   of breathing room. Owner ask 1 Aug 2026. */
+.ktick{display:inline-block;width:15px;height:13px;margin-left:2px;vertical-align:-1px;fill:url(#kgold);flex:none}
 .prof h2 .ktick{width:19px;height:16.5px;vertical-align:-1.5px;margin-left:7px}
 .citem{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--line);background:#fff}
 .citem:hover{background:#fbfbfc}
@@ -5073,14 +5086,19 @@ function renderWall(){
     // said was online recently or a day ago'.
     const seenTxt = m.online ? 'Online now'
       : (m.lastSeenAt ? 'Active ' + relTimeShort(m.lastSeenAt) : '');
-    // NEW-reference badge: any reference in the last 7 days flags
-    // the card so scanning the wall you can spot people who've just
-    // received fresh social proof. Owner ask 1 Aug 2026.
+    // Corner badge — Tandem-style. Fresh reference (< 7 days) wins
+    // and shows a teal NEW pill; otherwise if there are any refs at
+    // all, show count + speech-bubble icon in quiet grey.
     const REF_FRESH_MS = 7 * 24 * 3600 * 1000;
     const hasNewRef = m.latestRefAt && (Date.now() - m.latestRefAt) < REF_FRESH_MS;
+    const refCount = m.refCount || 0;
+    const REF_SPEECH_SVG = '<svg viewBox="0 0 24 24"><path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-9l-4 3v-3H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>';
+    const cornerBadge = hasNewRef
+      ? '<span class="wcard-newref" title="New reference this week">NEW</span>'
+      : (refCount > 0 ? `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}">${refCount}${REF_SPEECH_SVG}</span>` : '');
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
-      ${hasNewRef ? '<span class="wcard-newref" title="New reference this week">New ✨</span>' : ''}
+      ${cornerBadge}
       <div class="wcard-photo">${photo}</div>
       <div class="wcard-body">
         <div class="wcard-name">${esc(m.name)}${mark(m)}${m.online ? '<span class="wcard-dot" title="Online"></span>' : ''}</div>
