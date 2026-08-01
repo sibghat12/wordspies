@@ -157,7 +157,7 @@
           </div>
         </div>
         <div class="wsfoot-bar">
-          <div>© ${y} WordSpies. Free forever. Not affiliated with Codenames or Czech Games Edition.</div>
+          <div>© ${y} WordSpies. All rights reserved.</div>
           <div class="wsfoot-brand">Word<em>Spies</em></div>
         </div>
       </div>
