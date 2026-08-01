@@ -92,6 +92,16 @@ body.ob-open{overflow:hidden}
 .ob-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
 .ob-input[readonly]{background:#f2f3f6;color:var(--sub);cursor:default}
 textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
+/* iOS-style 3-wheel date-of-birth picker. Each column is a
+   scrollable list of 40px items; the centre 40px band is the
+   selected value (highlighted via .ob-wheels-band). Scroll
+   snapping + a scroll listener commits the value on rest. */
+.ob-wheels{position:relative;display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px;height:180px;margin-top:8px;background:#f9fafc;border:1px solid var(--line);border-radius:14px;padding:6px 8px;overflow:hidden}
+.ob-wheel{overflow-y:scroll;scroll-snap-type:y mandatory;padding:70px 0;font-family:inherit;font-size:16px;font-weight:600;color:var(--ink);scrollbar-width:none;-webkit-overflow-scrolling:touch;text-align:center;position:relative;z-index:2}
+.ob-wheel::-webkit-scrollbar{display:none}
+.ob-wheel > div{height:40px;line-height:40px;scroll-snap-align:center;transition:opacity .1s,transform .1s;opacity:.35}
+.ob-wheel > div.on{opacity:1;font-weight:800}
+.ob-wheels-band{position:absolute;left:6px;right:6px;top:70px;height:40px;pointer-events:none;background:rgba(232,80,107,.06);border-top:1px solid rgba(232,80,107,.25);border-bottom:1px solid rgba(232,80,107,.25);z-index:1}
 .ob-label{font-size:11.5px;font-weight:700;color:var(--sub);letter-spacing:.4px;text-transform:uppercase;margin:14px 4px 2px}
 .ob-label:first-of-type{margin-top:6px}
 .ob-err{color:var(--err);font-size:13px;font-weight:600;padding:8px 2px 0}
@@ -137,9 +147,14 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 .btn-dark{background:var(--ink);color:#fff}
 .btn-accent{background:var(--accent);color:#fff}
 .btn-line{background:#fff;border:1px solid var(--line);color:var(--ink)}
-.field{margin-bottom:12px}
-.field input,.field textarea{width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 16px;font-size:14px;font-weight:500}
-.field input:focus,.field textarea:focus{border-color:var(--ink)}
+/* Auth form fields — consistent 48px tap targets, softer bg on
+   focus. Owner ask 1 Aug 2026: 'the form for the login is not
+   aligned it is messed, not all input same sizes'. */
+.field{margin-bottom:10px}
+.field input,.field textarea{width:100%;background:#f9fafc;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:15px;font-weight:500;line-height:1.2;box-sizing:border-box;min-height:48px;font-family:inherit;color:var(--ink);outline:none;transition:border-color .12s,background .12s,box-shadow .12s}
+.field input:focus,.field textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
+.field input[type=date]{-webkit-appearance:none;appearance:none}
+body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:700;border-radius:12px}
 .err{color:var(--err);font-size:13px;font-weight:600;text-align:center;margin:10px 0;min-height:16px}
 .av{border-radius:50%;object-fit:cover;background:#eceef2;display:block}
 .avph{border-radius:50%;background:#eceef2;color:var(--faint);display:flex;align-items:center;justify-content:center;font-weight:800}
@@ -1639,7 +1654,19 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <label class="ob-label">Last name (optional)</label>
         <input class="ob-input" id="obLastName" maxlength="20" placeholder="Last name" autocomplete="family-name">
         <label class="ob-label">Date of birth</label>
-        <input class="ob-input" id="obBirth" type="date" aria-label="Date of birth">
+        <!-- iOS-style scroll-wheel picker (day / month / year). Owner ask
+             1 Aug 2026: 'date of birth so so hard to choose, add the one
+             where user scrolls up and down to select year and date'.
+             Each column is a scrollable list snapped to 40px items; the
+             centre highlight band shows the selected value. Hidden
+             #obBirth still holds the ISO date for submit. -->
+        <div class="ob-wheels" id="obWheels">
+          <div class="ob-wheel" data-w="day"></div>
+          <div class="ob-wheel" data-w="month"></div>
+          <div class="ob-wheel" data-w="year"></div>
+          <div class="ob-wheels-band" aria-hidden="true"></div>
+        </div>
+        <input type="hidden" id="obBirth" aria-label="Date of birth">
         <label class="ob-label">Email</label>
         <input class="ob-input" id="obEmail" type="email" readonly aria-label="Email">
       </div>
@@ -2828,6 +2855,89 @@ function obShow(step){
     if (inp) try { inp.focus({ preventScroll: true }); } catch(e){}
   }, 300);
 }
+// Wheel-picker state + helpers. Each wheel is a scroll container with
+// fixed 40px item rows and a centre snap band. The selected value is
+// whichever child sits at scrollTop / 40. Owner ask 1 Aug 2026.
+const OB_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function obDaysIn(month, year){
+  return new Date(year, month, 0).getDate();   // month is 1-12
+}
+function obBuildWheel(el, items, selectedIdx){
+  el.innerHTML = items.map((v,i) => `<div data-i="${i}"${i === selectedIdx ? ' class="on"' : ''}>${v}</div>`).join('');
+  // scrollTop 0 shows item at index (padding-70)/40. Since padding is
+  // 70px, snapping to centre means item at index i → scrollTop = i*40.
+  requestAnimationFrame(() => { el.scrollTop = selectedIdx * 40; });
+}
+function obWheelSelectedIdx(el){
+  return Math.round(el.scrollTop / 40);
+}
+function obWheelHighlight(el){
+  const idx = obWheelSelectedIdx(el);
+  el.querySelectorAll('div').forEach(d => d.classList.toggle('on', +d.dataset.i === idx));
+  return idx;
+}
+function obCurrentDob(){
+  const wD = document.querySelector('.ob-wheel[data-w="day"]');
+  const wM = document.querySelector('.ob-wheel[data-w="month"]');
+  const wY = document.querySelector('.ob-wheel[data-w="year"]');
+  if (!wD || !wM || !wY) return '';
+  const day   = obWheelSelectedIdx(wD) + 1;
+  const month = obWheelSelectedIdx(wM) + 1;
+  const yrLo  = new Date().getFullYear() - 100;
+  const year  = yrLo + obWheelSelectedIdx(wY);
+  const clampedDay = Math.min(day, obDaysIn(month, year));
+  return year + '-' + String(month).padStart(2, '0') + '-' + String(clampedDay).padStart(2, '0');
+}
+function obInitDobWheels(iso){
+  const now = new Date();
+  const yrLo = now.getFullYear() - 100;
+  const yrHi = now.getFullYear() - 18;   // default cursor to 18y ago (min age)
+  const years = [];
+  for (let y = yrLo; y <= now.getFullYear(); y++) years.push(y);
+  let dY = 0, dM = 0, dD = 0;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) {
+    const [y,m,d] = iso.split('-').map(Number);
+    dY = Math.max(0, Math.min(years.length - 1, y - yrLo));
+    dM = Math.max(0, Math.min(11, m - 1));
+    dD = Math.max(0, Math.min(30, d - 1));
+  } else {
+    dY = yrHi - yrLo;   // default 18y ago
+    dM = 0;
+    dD = 0;
+  }
+  const wD = document.querySelector('.ob-wheel[data-w="day"]');
+  const wM = document.querySelector('.ob-wheel[data-w="month"]');
+  const wY = document.querySelector('.ob-wheel[data-w="year"]');
+  obBuildWheel(wY, years, dY);
+  obBuildWheel(wM, OB_MONTHS, dM);
+  const rebuildDays = () => {
+    const m = obWheelSelectedIdx(wM) + 1;
+    const y = yrLo + obWheelSelectedIdx(wY);
+    const days = [];
+    const dim = obDaysIn(m, y);
+    for (let d = 1; d <= dim; d++) days.push(d);
+    const keep = Math.min(obWheelSelectedIdx(wD), dim - 1);
+    obBuildWheel(wD, days, Math.max(0, keep));
+  };
+  rebuildDays();
+  // Commit on scroll rest — debounce via setTimeout because scrollend
+  // isn't supported everywhere. Also snap corrections happen naturally
+  // via CSS scroll-snap.
+  [wD, wM, wY].forEach(w => {
+    let t = null;
+    w.addEventListener('scroll', () => {
+      obWheelHighlight(w);
+      clearTimeout(t);
+      t = setTimeout(() => {
+        obWheelHighlight(w);
+        if (w !== wD) rebuildDays();
+        $('obBirth').value = obCurrentDob();
+      }, 120);
+    });
+  });
+  $('obBirth').value = obCurrentDob();
+}
+
 function obStart(){
   document.body.classList.add('ob-open');
   $('obWizard').classList.remove('hidden');
@@ -2839,7 +2949,6 @@ function obStart(){
     const parts = String(ME.name || '').trim().split(/\s+/);
     $('obFirstName').value = parts[0] || '';
     $('obLastName').value = parts.slice(1).join(' ') || '';
-    $('obBirth').value = ME.birthdate || '';
     $('obEmail').value = ME.email || '';
     $('obTalkAbout').value = ME.talkAbout || '';
     if (ME.photo) {
@@ -2850,6 +2959,9 @@ function obStart(){
       obNewPhotoUploaded = true;
     }
   }
+  // Build the DOB wheels — needs to happen after obWizard is un-hidden
+  // so the child scroll containers have real dimensions to snap to.
+  obInitDobWheels(ME && ME.birthdate);
   obShow(1);
 }
 async function obNext(step){
