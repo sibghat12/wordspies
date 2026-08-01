@@ -30,7 +30,12 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow-x:clip;max-width:100%}
-body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:pan-y}
+body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:pan-y;padding-left:20px;padding-right:20px}
+/* Responsive body gutters — matches marketing pages. 10% on tablet-and-
+   up so the community/chat/party UI doesn't stretch to the browser
+   edges on wide monitors; 20px flat on phones so we don't lose usable
+   width to percentage gutters. */
+@media(min-width:769px){body{padding-left:10%;padding-right:10%}}
 button{font-family:inherit;cursor:pointer}
 input,textarea{font-family:inherit;outline:none}
 .hidden{display:none !important}
@@ -1377,7 +1382,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button id="tbChats" class="tnt" onclick="showTab('chats')"><span class="ico">💬</span>Chats<span class="badge hidden" id="chatBadge"></span></button>
       <button id="tbWall" class="tnt on" onclick="showTab('wall')"><span class="ico">👥</span>Community<span class="badge hidden" id="wallBadge"></span></button>
       <button id="tbParties" class="tnt" onclick="showTab('parties')"><span class="ico">🎉</span>Parties<span class="badge hidden" id="partyBadge"></span></button>
-      <button id="tbGames" class="tnt" onclick="showTab('games')"><span class="ico">🎮</span>Games</button>
+      <!-- Games tab retired from the top nav post-pivot (LingoLand-style
+           language-exchange focus). Tab content still exists behind
+           showTab('games') for direct-URL / deep-link use, but there's
+           no user-facing entry point anymore. -->
     </div>
     <div class="tnright">
       <!-- LIVE chip: pulsing red pill in the corner, only when there's a
