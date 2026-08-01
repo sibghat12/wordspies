@@ -164,7 +164,11 @@ body.authmodal{overflow:hidden}
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
     margin:2px 0 0;
-    padding:0 0 4px;
+    /* Owner ask 1 Aug 2026: 'give the community or all tabs little
+       space from left and right so it not look so edges'. 8px inset
+       on each side pulls the first + last tabs off the nav edge
+       without breaking the equal 1/4-width distribution. */
+    padding:0 8px 4px;
   }
   .topnav .tntabs::-webkit-scrollbar{display:none}
   .topnav .tntabs .tnt{
