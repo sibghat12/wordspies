@@ -163,14 +163,14 @@ body.authmodal{overflow:hidden}
   }
   .topnav .tntabs::-webkit-scrollbar{display:none}
   .topnav .tntabs .tnt{
-    /* Auto-width, not stretched: tabs hug their content so there's
-       no wasted gap between Parties and Learn. If the row can't fit
-       all four, horizontal scroll kicks in on the parent. */
-    flex:0 0 auto;
+    /* Owner ask 1 Aug 2026: 'divide the space in 4 and start from the
+       start' — each tab takes an equal 1/4 of the row starting at the
+       left edge. flex:1 1 0 = equal share. */
+    flex:1 1 0;
     min-width:0;
     flex-direction:row;
     gap:5px;
-    padding:8px 12px;
+    padding:8px 8px;
     font-size:12.5px;
     font-weight:600;
     justify-content:center;
