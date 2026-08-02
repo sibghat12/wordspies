@@ -6129,19 +6129,36 @@ function renderWall(){
   if (wallFilter !== 'ai') list = list.filter(m => !m.isAI);
   // "Online now" is about who else is around — your own card there is just
   // noise, and it made the count read "1 here" when nobody else was on.
-  if (wallFilter === 'online') list = list.filter(m => m.online && !(ME && m.id === ME.id));
+  if (wallFilter === 'online')      list = list.filter(m => m.online && !(ME && m.id === ME.id));
   else if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
-  else if (wallFilter === 'new') list = list.filter(m => Date.now() - m.createdAt < WEEK7);
-  else if (wallFilter === 'kings') list = list.filter(m => m.king);
-  else if (wallFilter === 'ai') list = list.filter(m => m.isAI);
-  // Sort by win rate (best players first), then by games played
+  else if (wallFilter === 'ai')     list = list.filter(m => m.isAI);
+  // (Retired: 'new' + 'kings' filter branches — their chips were
+  // removed in 7865fce + earlier. Dead branches deleted 2 Aug 2026 v8.)
+  // Sort: win-rate first (for the codenames era), then games, then
+  // createdAt DESC as a real tiebreak. Post-pivot most members have
+  // 0 games — without the createdAt fallback the sort would collapse
+  // to insertion order and never surface newer people (audit finding).
   list.sort((a, b) => {
     const aRate = a.games ? (a.wins / a.games) : 0;
     const bRate = b.games ? (b.wins / b.games) : 0;
-    if (aRate !== bRate) return bRate - aRate; // Higher win rate first
-    return b.games - a.games; // More games second
+    if (aRate !== bRate) return bRate - aRate;
+    if (b.games !== a.games) return b.games - a.games;
+    return (b.createdAt || 0) - (a.createdAt || 0);
   });
   $('wallEmpty').classList.toggle('hidden', list.length > 0);
+  // Empty-state copy: distinguish "no matches" (search / filter) from
+  // "no members yet" so returning users don't see the invite-first
+  // pitch when their search just missed. Audit follow-up.
+  if (list.length === 0) {
+    const ee = $('wallEmpty');
+    if (ee) {
+      if (q) ee.textContent = `No spies match "${q}".`;
+      else if (wallFilter === 'online')  ee.textContent = 'No one else is online right now.';
+      else if (wallFilter === 'nearby')  ee.textContent = 'No spies in your country yet.';
+      else if (wallFilter === 'ai')      ee.textContent = 'No AI experts are seeded here yet.';
+      else ee.textContent = "You're one of the first — invite your friends to fill the wall.";
+    }
+  }
   // Cap for the 'Show more' pagination — remember the pre-cap total
   // so we can render the "N left" button below.
   const _wallTotal = list.length;
@@ -6220,10 +6237,13 @@ function renderWall(){
   const grid = idx => idx.length ? `<div class="wall">${idx.map(card).join('')}</div>` : '';
   const head = (t, n) => `<div class="sect"><h3>${t}</h3><span class="cnt">${n}</span><span class="ln"></span></div>`;
 
-  // With no filter and enough people, break the wall into a few honest groups
-  // so a wide screen reads as a room rather than one long anonymous grid.
+  // Section split (Online / New / Everyone) only when we have the
+  // FULL list rendered — under pagination the truncated group counts
+  // are misleading and the 'Show more' button lands under the wrong
+  // section (audit fix, 2 Aug 2026 v8).
   const idx = list.map((m, i) => i);
-  if (wallFilter === 'all' && !q && list.length >= 6) {
+  const showSections = wallFilter === 'all' && !q && list.length >= 6 && _wallTotal <= wallPageLimit;
+  if (showSections) {
     const on  = idx.filter(i => list[i].online);
     const nw  = idx.filter(i => !list[i].online && Date.now() - list[i].createdAt < WEEK7);
     const rest = idx.filter(i => !on.includes(i) && !nw.includes(i));
@@ -6248,10 +6268,8 @@ function renderWall(){
 // actually winning. Hidden entirely on phones by CSS.
 function renderSide(){
   const side = $('wallSide'); if (!side) return;
-  const WEEK7 = 7 * 24 * 3600 * 1000;
   const all = MEMBERS.filter(m => m.photo);
   const online = all.filter(m => m.online).length;
-  const fresh = all.filter(m => Date.now() - m.createdAt < WEEK7).length;
 
   const meCard = (ME && !GUEST) ? `
     <div class="sbcard sbme">
@@ -6277,7 +6295,6 @@ function renderSide(){
     <div class="sblive">
       <div><b>${all.length}</b><span>Spies</span></div>
       <div class="lv"><b>${online}</b><span>Online</span></div>
-      <div><b>${fresh}</b><span>New</span></div>
     </div>
     ${top.length ? `<div class="sbcard">
       <div class="sbh">Top spies</div>
