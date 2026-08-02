@@ -109,7 +109,10 @@ function mount(api, ctx) {
         // endlessly (audit gap, 2 Aug 2026).
         if (bd && ctx.ageFromISO && ctx.MIN_AGE) {
           const emailForCooldown = String(u.email || '').toLowerCase();
-          if (emailForCooldown && ctx.isRecentAgeFail && await ctx.isRecentAgeFail(emailForCooldown)) {
+          // Already-verified users may correct a DOB typo without hitting
+          // the cooldown that was earned pre-verification (audit follow-up).
+          if (emailForCooldown && !u.ageVerifiedAt && ctx.isRecentAgeFail
+              && await ctx.isRecentAgeFail(emailForCooldown)) {
             return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
           }
           const age = ctx.ageFromISO(bd);
