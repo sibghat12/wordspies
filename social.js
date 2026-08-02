@@ -1007,6 +1007,12 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // ---- presence: the app pings while open; a user is online while the key lives ----
   api.post('/ping', async (req, res) => {
     try {
+      // Client pings ~ every 25s while a tab is open — 12/min is a
+      // generous ceiling that catches abuse (a bad script hammering
+      // to keep a user "online") without touching legit tabs.
+      // Owner audit 2 Aug 2026 v8. Bucket is per-ip so multi-tab
+      // legit users still share the ceiling harmlessly.
+      if (limited(req, 'ping', 12)) return res.status(429).json({ ok: false });
       const u = await userFromReq(req);
       if (!u) return res.status(401).json({ error: 'Please log in.' });
       await db.set('soc:online:' + u.id, '1', 60);
@@ -1046,6 +1052,12 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (!isOnboarded(u) && (!me || me.id !== u.id)) {
         return res.status(404).json({ error: 'Not found.' });
       }
+      // Block-aware: either side blocking the other hides the profile.
+      // Owner audit 2 Aug 2026 v8 — /user/:id previously leaked the
+      // full record + follow counts across a block.
+      if (me && me.id !== u.id && await isBlocked(me.id, u.id)) {
+        return res.status(404).json({ error: 'Not found.' });
+      }
       res.json({
         user: pub(u),
         online: await db.exists('soc:online:' + u.id),
@@ -1062,6 +1074,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (!me) return res.status(401).json({ error: 'Please log in.' });
       const id = String((req.body || {}).id || '');
       if (id === me.id || !(await db.get('soc:user:' + id))) return res.status(400).json({ error: 'Bad user.' });
+      // Block-aware: neither side may follow the other across a
+      // block. Owner audit 2 Aug 2026 v8 — /block only cleared
+      // existing edges; without this check the target (or the
+      // blocker) could re-follow moments later.
+      if (await isBlocked(me.id, id)) return res.status(403).json({ error: 'Not allowed.' });
       const already = await db.sismember('soc:followers:' + id, me.id);
       await db.sadd('soc:following:' + me.id, id);
       await db.sadd('soc:followers:' + id, me.id);
@@ -1104,6 +1121,16 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     for (const key of ['soc:following:', 'soc:followers:', 'soc:convos:']) {
       for (const id of await db.smembers(key + meId)) if (id !== meId) ids.add(id);
     }
+    // Never surface a blocked-in-either-direction user as invitable.
+    // Owner audit 2 Aug 2026 v8 — /invite could spam a user who
+    // blocked the sender.
+    const iBlocked = new Set(await db.smembers('soc:blocks:' + meId));
+    for (const id of iBlocked) ids.delete(id);
+    // Fan-out: drop anyone who blocked me back. Iterate a copy so
+    // deletions during iteration are safe.
+    for (const id of [...ids]) {
+      if (await db.sismember('soc:blocks:' + id, meId)) ids.delete(id);
+    }
     return ids;
   }
 
@@ -1117,10 +1144,16 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         db.smembers('soc:convos:' + me.id)
       ]);
       const fset = new Set(following), rset = new Set(followers), cset = new Set(convos);
-      const ids = [...new Set([...following, ...followers, ...convos])].filter(id => id !== me.id);
+      // Prefetch my block set once, then filter blocked ids up-front.
+      // Owner audit 2 Aug 2026 v8 — /people previously showed blocked
+      // users in the chat rail because it never consulted blocks.
+      const iBlocked = new Set(await db.smembers('soc:blocks:' + me.id));
+      let ids = [...new Set([...following, ...followers, ...convos])].filter(id => id !== me.id && !iBlocked.has(id));
 
       const out = [];
       for (const id of ids.slice(0, 300)) {
+        // Also drop anyone who blocked me back.
+        if (await db.sismember('soc:blocks:' + id, me.id)) continue;
         const raw = await db.get('soc:user:' + id);
         if (!raw) continue;                       // deleted account — skip quietly
         const u = JSON.parse(raw);
