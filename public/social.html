@@ -2550,15 +2550,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   </div>
 </div>
 
-<!-- Persistent rejoin pill (fallback for cross-page navigation).
-     Owner ask 1 Aug 2026 v8: 'remove the "playing in the background"
-     text, keep the bottom "in a party" open like that'. Minimal
-     design matches #partyHost mini-bar. -->
+<!-- Persistent rejoin pill (fallback for cross-page navigation). -->
 <a class="partybar hidden" id="partyBar" href="#" onclick="rejoinParty(event)">
   <span class="pbdot"></span>
-  <b id="pbTitle">IN A PARTY</b>
-  <span class="pbspeakers" id="pbSpeakers" aria-hidden="true"></span>
-  <span class="pbarrow" aria-hidden="true">→</span>
+  <span class="pbtxt">
+    <b>🎤 In a party</b>
+    <small id="pbTitle">Tap to rejoin</small>
+  </span>
+  <span class="pbgo">Open →</span>
 </a>
 
 <!-- Persistent game-session pill. Owner ask 1 Aug 2026: 'if he left
@@ -2580,14 +2579,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
      Community/Games/Chats tabs. Two states: fullscreen (in-party view)
      and mini (bar at bottom of the screen). -->
 <div id="partyHost" class="phost hidden">
-  <!-- Community-page party pill. Owner ask 1 Aug 2026 v6: 'just show
-       the green LIVE icon and the party name in CAPITAL and thats it
-       and black arrow please at the bottom, remove the tap-to-expand
-       text ASAP'. -->
-  <div class="phost-bar" id="phostBar" onclick="togglePartyExpand()" title="Tap to open the party">
+  <div class="phost-bar" id="phostBar">
     <span class="phost-dot"></span>
-    <b id="phostTitle">PARTY</b>
-    <span class="phost-arrow" aria-hidden="true">→</span>
+    <div class="phost-text">
+      <b id="phostTitle">Party</b>
+      <small id="phostSub">Tap to expand</small>
+    </div>
+    <button class="phost-btn expand" id="phostExpand" title="Open party">▲</button>
+    <button class="phost-btn leave" id="phostLeave" title="Leave party">✕</button>
   </div>
   <div class="phost-frame" id="phostFrameWrap"><iframe id="phostFrame" allow="microphone; autoplay" title="Party"></iframe></div>
 </div>

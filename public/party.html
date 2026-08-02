@@ -76,36 +76,10 @@ a{color:inherit;text-decoration:none}
    is white color it is confusing… people can easily move from the party
    to the other tabs'. Now high-contrast dark pill with a back arrow so
    it reads unambiguously as 'exit'. */
-/* Party page top header — title + subtitle on the left, tiny action
-   buttons (Leave / End) on the right. Owner ask 1 Aug 2026 v5.
-   The FAB below handles going back to Community. */
-.phead-full{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:calc(20px + env(safe-area-inset-top)) 20px 12px}
-.phead-full-txt{min-width:0;flex:1}
-.phead-full-txt h1{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:22px;color:var(--ink);letter-spacing:-.3px;line-height:1.15;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.phead-full-txt p{font-size:13px;color:var(--sub);font-weight:500;margin-top:4px;line-height:1.45}
-.phead-full-actions{display:flex;gap:6px;flex-shrink:0;padding-top:2px}
-.phead-mini-btn{background:#f2f4f7;color:var(--sub);border:0;border-radius:99px;padding:6px 12px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap}
-.phead-mini-btn:hover{background:#e6e9ee;color:var(--ink)}
-.phead-mini-btn.danger{background:#fff2f3;color:var(--err,#d93025)}
-.phead-mini-btn.danger:hover{background:#ffe3e5;color:#a30f31}
-.phead-mini-btn.hidden{display:none}
-/* Floating back button — 44px round black FAB anchored bottom-left,
-   above the safe-area inset. Tap = minimise (party keeps running). */
-.phead-fab-back{position:fixed;left:14px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:120;width:48px;height:48px;border-radius:50%;background:var(--ink,#16181f);color:#fff;border:0;font-size:22px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;transition:transform .12s,background .12s}
-.phead-fab-back:hover{background:#000;transform:scale(1.05)}
-.phead-fab-back:active{transform:scale(.94)}
-@media(min-width:1000px){
-  .phead-fab-back{left:24px;bottom:24px;width:52px;height:52px;font-size:24px}
-}
-.phead-actions{display:flex;gap:6px;flex-shrink:0}
-.phead-leave{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:99px;padding:6px 12px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;transition:background .12s}
-.phead-leave:hover{background:rgba(255,255,255,.28)}
-.phead-end{background:#c8123b;color:#fff;border:0;border-radius:99px;padding:6px 12px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0}
-.phead-end:hover{background:#a30f31}
-.phead-end.hidden{display:none}
-.phead-sub{padding:14px 20px 6px;text-align:left}
-.phead-sub h1{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:19px;color:var(--ink);letter-spacing:-.2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
-.phead-sub p{font-size:12.5px;color:var(--faint);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pheadLeave{background:var(--ink,#202124);color:#fff;border:0;border-radius:99px;padding:9px 16px 9px 12px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;transition:background .12s,transform .1s;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(20,23,42,.18)}
+.pheadLeave:hover{background:#000}
+.pheadLeave:active{transform:scale(.95)}
+.pheadLeave::before{content:'←';font-size:16px;line-height:1;font-weight:700}
 .pheadEnd{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background .12s,transform .1s}
 .pheadEnd:hover{background:#ffe4e4}
 .pheadEnd:active{transform:scale(.95)}
@@ -354,9 +328,6 @@ a{color:inherit;text-decoration:none}
 .ptoast{position:fixed;left:50%;transform:translateX(-50%);top:14px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;pointer-events:none;opacity:0;transition:.2s}
 .ptoast.show{opacity:1;top:24px}
 </style>
-<!-- SweetAlert2 for the 'End party' confirm — owner ask 1 Aug 2026:
-     'not a native alert, sweet alert when user tries to end the party'. -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -365,24 +336,16 @@ a{color:inherit;text-decoration:none}
        the right. Section labels/counts stay stripped — the avatar
        grids speak for themselves. Counts kept as hidden shells so
        paint() can still write into them. -->
-  <!-- Owner ask 1 Aug 2026 v5: 'show party title + subtitle +
-       Speakers + Listeners, put Leave + End as small buttons top-
-       right, and a floating ← back icon on the side so a speaker
-       can go back to where they came from'. -->
-  <header class="phead-full" id="pHead">
-    <div class="phead-full-txt">
+  <header class="phead" id="pHead">
+    <div class="phead-txt">
       <h1 id="pTitle"></h1>
       <p id="pSub"></p>
     </div>
-    <div class="phead-full-actions">
-      <button class="phead-mini-btn" onclick="confirmLeaveParty()" title="Leave the party">Leave</button>
-      <button class="phead-mini-btn danger hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End</button>
+    <div class="phead-btns">
+      <button class="pheadLeave" onclick="leaveAndGo()" title="Leave the party and return to Community">Back to Community</button>
+      <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
     </div>
   </header>
-  <!-- Floating back button — one-tap minimise back to Community. Keeps
-       the party running (socket + audio stay alive), user comes back
-       via the /social mini-pill. -->
-  <button class="phead-fab-back" onclick="leaveAndGo()" title="Back to Community — party keeps going" aria-label="Back to Community">←</button>
 
   <main id="pMain">
     <!-- Raise-hand queue — only rendered for hosts. -->
@@ -402,11 +365,8 @@ a{color:inherit;text-decoration:none}
 <!-- Compact quick actions: mute + reactions. Small round buttons for
      users who don't want the big FAB in their face. Owner asked for
      "two small icons mute and reaction button that opens many reactions". -->
-<!-- Right-side floating quick-action strip. Owner ask 2 Aug 2026:
-     'remove the mic from the right floating'. Mic control moved to
-     the avatar tap-target — speakers tap their own circle to
-     mute/unmute. Reactions + Invite stay. -->
 <div class="quickact" id="pQuickAct">
+  <button class="qmute" id="qMuteBtn" onclick="toggleMyMic()" title="Mute / unmute (Speakers only)">🎤</button>
   <button class="qrx" id="qRxBtn" onclick="toggleReactionsMenu(event)" title="Send a reaction">🎉</button>
   <button class="qinv" id="pInviteBtn" onclick="copyInvite()" title="Copy invite link">🔗</button>
 </div>
@@ -442,11 +402,9 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
-<!-- 'Tap to talk' mic FAB retired 2 Aug 2026 per owner ask. Speakers
-     tap their own avatar circle to mute/unmute (existing .pav.tapMe
-     tap-target). Kept the button node hidden via CSS so paint() can
-     still write into it without a null-check regression. -->
-<button class="micfab hidden" id="pMicFab" onclick="toggleMyMic()" style="display:none">
+<!-- Big always-visible action pills above the chat bar. Only one shows
+     at a time depending on my role. -->
+<button class="micfab" id="pMicFab" onclick="toggleMyMic()">
   <span class="mfico">🎤</span>
   <span id="pMicFabLbl">Tap to talk</span>
 </button>
@@ -528,9 +486,7 @@ if (EMBED) {
     // Parent listens for a leave request from inside.
     window.addEventListener('message', (ev) => {
       if (ev.origin !== location.origin) return;
-      // Parent explicitly wants us to LEAVE (not just hide) — e.g. the
-      // user tapped 'End party' from the /social pill's overflow menu.
-      if (ev.data && ev.data.type === 'party:leave') leaveAndGoHard();
+      if (ev.data && ev.data.type === 'party:leave') leaveAndGo();
     });
   });
 }
@@ -1168,61 +1124,9 @@ function denyHand(id){
   const m = room.members.find(x => x.id === id); if (m) m.handRaised = false;
   paint();
 }
-// End party — owner ask 1 Aug 2026 v7: 'show sweet alert (not native)
-// when the user tries to end the party'. Uses SweetAlert2 loaded via
-// CDN in the <head>; falls back to a plain confirm() if the CDN
-// hasn't loaded yet (offline / slow network).
-function endParty(){
-  if (typeof window.Swal === 'object' && typeof window.Swal.fire === 'function') {
-    Swal.fire({
-      icon: 'warning',
-      title: 'End the party?',
-      text: 'This closes the room for everyone. This cannot be undone.',
-      showCancelButton: true,
-      confirmButtonText: 'End party',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#c8123b',
-      reverseButtons: true
-    }).then(res => {
-      if (res.isConfirmed && socket) socket.emit('closeParty');
-    });
-  } else {
-    if (confirm('End the party for everyone?')) socket && socket.emit('closeParty');
-  }
-}
-// Leave = you drop out but the party keeps running for everyone else.
-// Owner ask 1 Aug 2026 v7: 'don't show alert on Leave or the back-to-
-// community icon, just leave'. No confirm — the primary destructive
-// action is 'End' (host only) which does confirm.
-function confirmLeaveParty(){ leaveAndGoHard(); }
+function endParty(){ if (confirm('End the party for everyone?')) socket && socket.emit('closeParty'); }
 
-// Owner ask 1 Aug 2026: 'Back to Community should NOT end the party
-// — I should go back to the home page but the party keeps going, I
-// can join it back from the black stripe with everything in the same
-// state (mic open if it was open)'.
-//
-// So this is now a MINIMISE, not a LEAVE. We don't emit 'leave' and
-// don't clear the party session marker — that keeps the .partybar
-// pill visible on /social so the user can tap back in.
-//
-// EMBED mode (running inside the /social iframe host): postMessage
-// 'party:hide' so the parent tucks the iframe away without unmounting
-// it — the socket, WebRTC PC and audio stream all stay alive, so
-// coming back keeps the mic exactly where the user left it.
-//
-// Non-EMBED (direct /party URL in a tab): we navigate to /social; the
-// browser tears the socket down, but the server has a 5-min grace
-// window (party.js disconnect handler) that keeps the seat until the
-// user comes back via the pill. Mic won't auto-resume in this path —
-// they tap Speak once. The iframe path is the smooth one.
 function leaveAndGo(){
-  if (EMBED) { postToParent({ type: 'party:hide' }); return; }
-  location.href = '/social';
-}
-// Preserved: the explicit 'Leave' semantic — called from external
-// triggers (parent 'party:leave' postMessage, host closing party, etc.)
-// where we actually DO want the socket to disconnect + clear the pill.
-function leaveAndGoHard(){
   try { socket && socket.emit('leave'); } catch(e){}
   clearPartySession();
   if (EMBED) { postToParent({ type: 'party:left' }); return; }
