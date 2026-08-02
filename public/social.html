@@ -2113,7 +2113,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <a class="avitem" role="menuitem" onclick="avGo('settings')"><span class="avic">⚙️</span>Settings</a>
         <a class="avitem" role="menuitem" onclick="avGo('blocked')"><span class="avic">🚫</span>Blocked users</a>
         <div class="avdiv"></div>
-        <a class="avitem" role="menuitem" href="/" target="_blank" rel="noopener"><span class="avic">ℹ️</span>About WordSpies</a>
+        <a class="avitem" role="menuitem" href="/home" target="_blank" rel="noopener"><span class="avic">ℹ️</span>About WordSpies</a>
         <a class="avitem" role="menuitem" onclick="avGo('support')"><span class="avic">💬</span>Support &amp; contact</a>
         <div class="avdiv"></div>
         <a class="avitem" role="menuitem" onclick="avGo('logout')"><span class="avic">🚪</span>Log out</a>
@@ -3182,7 +3182,10 @@ function enterApp(justJoined){
   const chip = document.querySelector('.mechip');
   if (chip && guestChipHtml !== null) {
     chip.innerHTML = guestChipHtml;
-    chip.onclick = () => showTab('me');
+    // Preserve the inline dropdown handler — earlier this was
+    // `() => showTab('me')` which killed the avatar menu right after
+    // signup and enterApp (audit fix, 2 Aug 2026 v8).
+    chip.onclick = (ev) => toggleAvatarMenu(ev);
     guestChipHtml = null;
   }
 
@@ -5821,6 +5824,7 @@ async function msReport(){
 // short reason. Reports go into the same moderation queue as messages.
 async function reportUser(){
   if (!curMember) return;
+  if (GUEST) { requireLogin('👋 Log in to report a profile'); return; }
   const reason = prompt('What\'s wrong with this profile?\n(e.g. fake photo, spam, harassment, unsafe, other)');
   if (reason === null) return;
   try {
@@ -5836,6 +5840,7 @@ async function reportUser(){
 let MY_BLOCKS = new Set();
 async function toggleBlock(){
   if (!curMember) return;
+  if (GUEST) { requireLogin('👋 Log in to block a profile'); return; }
   const blocked = MY_BLOCKS.has(curMember);
   if (!blocked && !confirm('Block this person? They won\'t be able to see or message you, and you won\'t see them.')) return;
   try {
@@ -6088,7 +6093,7 @@ async function toggleFollow(){
     const on = $('followBtn').dataset.f;
     const j = await api(on ? '/unfollow' : '/follow', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: curMember }) });
     $('followBtn').dataset.f = on ? '' : '1';
-    $('followBtn').textContent = on ? 'Follow' : 'Following ✓';
+    $('followBtn').textContent = on ? '＋ Follow' : '✓ Following';
     $('mFollowers').textContent = j.followers;
     toast(on ? 'Unfollowed' : '⭐ Following!');
   } catch(e){ toast(e.message); }
@@ -6342,10 +6347,12 @@ function openMemberById(id){
   const m = MEMBERS.find(x => x.id === id);
   if (m) { openMemberObj(m); return; }
   // Cache miss — deep-links (owner v8 share-a-friend flow) hit this
-  // before /members has loaded. Fetch the profile directly.
+  // before /members has loaded. Fetch the profile directly. Show a
+  // toast on 404 so the shared-link recipient knows why nothing
+  // opened (dormant / deleted account).
   api('/user/' + encodeURIComponent(id))
-    .then(j => { if (j && j.user) openMemberObj(j.user); })
-    .catch(() => {});
+    .then(j => { if (j && j.user) openMemberObj(j.user); else toast("That profile isn't available."); })
+    .catch(e => { toast(/404|Not found/i.test(e.message) ? "That profile isn't available." : e.message); });
 }
 function openMemberObj(m){
   if (!m) return;
