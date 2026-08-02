@@ -244,14 +244,14 @@ function mount(app, redis) {
   }
   // Every required wizard field must have landed before a user is
   // allowed to flip onboardedAt on themselves — see profile.js.
+  // Owner ask 2 Aug 2026 v5 pared step 4 back to just talkAbout,
+  // so goal + speaks + learns are no longer required to activate.
   function wizardFieldsComplete(u) {
     if (!u) return false;
     if (!u.name || u.name.length < 3) return false;
     if (!u.birthdate) return false;
     if (!u.photo) return false;
-    if (!u.goal) return false;
-    if (!Array.isArray(u.speaks) || u.speaks.length === 0) return false;
-    if (!Array.isArray(u.learns) || u.learns.length === 0) return false;
+    if (!u.talkAbout || u.talkAbout.length < 4) return false;
     return true;
   }
   const OB_ALLOW = new Set([

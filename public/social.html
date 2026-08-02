@@ -1973,39 +1973,18 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
     </section>
 
-    <!-- STEP 4 · Goal + languages + intro. Owner ask 2 Aug 2026 v3:
-         'goals and other languages he is learning and native on it
-         should be amazing popups so user can select … text based
-         input fields'. Each field is a tappable row that opens the
-         shared ob-pop bottom-sheet; the row itself displays the
-         selection(s) as pills so the wizard still reads at a glance. -->
+    <!-- STEP 4 · One question. Owner ask 2 Aug 2026 v5: 'images
+         look good but the others options are messed up … just ask
+         a question about what you talk about'. Retired the goal
+         picker + language pickers here — kept the underlying JS +
+         markup for Popup for possible reuse on the profile page. -->
     <section class="ob-step" data-step="4">
       <div class="ob-emoji">💬</div>
-      <h2>What brings you here?</h2>
-      <p class="ob-sub">A few quick picks so we can match you with the right people.</p>
+      <h2>Say hello</h2>
+      <p class="ob-sub">One line about you — this helps people say hi first.</p>
       <div class="ob-fields">
-
-        <label class="ob-label">Your main goal here</label>
-        <div class="ob-picker-row" id="obGoalRow" tabindex="0" role="button" onclick="obOpenPop('goal')">
-          <span class="ob-picker-placeholder" id="obGoalPlaceholder">Tap to choose your goal</span>
-          <span class="ob-picker-caret">▾</span>
-        </div>
-
-        <label class="ob-label" style="margin-top:18px">Languages you speak</label>
-        <div class="ob-picker-row" id="obSpeaksRow" tabindex="0" role="button" onclick="obOpenPop('speaks')">
-          <span class="ob-picker-placeholder" id="obSpeaksPlaceholder">Tap to add your native + fluent languages</span>
-          <span class="ob-picker-caret">▾</span>
-        </div>
-
-        <label class="ob-label" style="margin-top:18px">Languages you want to learn</label>
-        <div class="ob-picker-row" id="obLearnsRow" tabindex="0" role="button" onclick="obOpenPop('learns')">
-          <span class="ob-picker-placeholder" id="obLearnsPlaceholder">Tap to add languages you're learning</span>
-          <span class="ob-picker-caret">▾</span>
-        </div>
-
-        <label class="ob-label" style="margin-top:18px">Say hello — what do you like to talk about?</label>
-        <textarea class="ob-input" id="obTalkAbout" maxlength="200" rows="3" placeholder="e.g. films, football, cooking, travel…"></textarea>
-
+        <label class="ob-label">What do you like to talk about?</label>
+        <textarea class="ob-input" id="obTalkAbout" maxlength="200" rows="4" placeholder="e.g. films, football, cooking, travel, languages I'm learning…"></textarea>
       </div>
       <div class="ob-err hidden" id="obErr4"></div>
       <div class="ob-row">
@@ -3512,14 +3491,6 @@ function obStart(){
     $('obLastName').value = parts.slice(1).join(' ') || '';
     $('obEmail').value = ME.email || '';
     $('obTalkAbout').value = ME.talkAbout || '';
-    // Prefill goal + language picker rows from any existing profile
-    // data (users who half-completed the wizard previously).
-    obGoal   = String(ME.goal || '');
-    obSpeaks = Array.isArray(ME.speaks) ? ME.speaks.slice(0, 5) : [];
-    obLearns = Array.isArray(ME.learns) ? ME.learns.slice(0, 5) : [];
-    obPaintGoalRow();
-    obPaintLangRow('speaks');
-    obPaintLangRow('learns');
     if (ME.photo) {
       const prev = $('obPhotoPreview');
       prev.innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
@@ -3592,11 +3563,9 @@ async function obNext(step){
     // Step 3 (T&C): re-confirmation gate, nothing to save.
     if (step === 4) {
       const t = $('obTalkAbout').value.trim();
-      if (!obGoal) return err('Please pick your main goal.');
-      if (!obSpeaks.length) return err('Please add at least one language you speak.');
-      if (!obLearns.length) return err("Please add at least one language you're learning.");
+      if (!t || t.length < 4) return err('A quick line about you — just a few words works.');
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ talkAbout: t, goal: obGoal, speaks: obSpeaks, learns: obLearns }) });
+        body: JSON.stringify({ talkAbout: t }) });
       ME = j.me;
       // Register with the moderation queue so the owner can verify.
       try { await api('/account/pending', { method:'POST' }); } catch (e2) {}
