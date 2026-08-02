@@ -72,6 +72,11 @@ function mount(app, redis) {
       const to = b < 0 ? l.length + b : b;
       return l.slice(from, to + 1);
     },
+    async llen(k) {
+      if (redis) return redis.llen(k);
+      const l = mem.get(k);
+      return Array.isArray(l) ? l.length : 0;
+    },
     async lset(k, i, v) {
       if (redis) return redis.lset(k, i, v);
       const l = mem.get(k); if (Array.isArray(l) && i >= 0 && i < l.length) l[i] = v;
@@ -264,7 +269,10 @@ function mount(app, redis) {
   const OB_ALLOW = new Set([
     '/profile', '/photo', '/account/pending',
     '/push/subscribe', '/push/unsubscribe',
-    '/deleteAccount', '/me'
+    '/deleteAccount', '/me',
+    // Un-onboarded users must still be able to report abuse — a
+    // victim mid-signup should not be gagged. Audit fix 2 Aug v8.
+    '/report'
   ]);
   api.use(async (req, res, next) => {
     try {
@@ -599,11 +607,21 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // dedupe on read in the admin surface.
   api.post('/account/pending', async (req, res) => {
     try {
+      // Cap at 3/min per IP so a bad script can't ltrim-flush the
+      // 2000-slot queue and evict real pending accounts. Audit fix
+      // 2 Aug v8. Wizard finish only fires this once per session, so
+      // legit users never hit the ceiling.
+      if (limited(req, 'pend', 3)) return res.status(429).json({ ok: false });
       const u = await userFromReq(req);
       if (!u) return res.status(401).json({ error: 'Please log in.' });
+      // Per-user dedup with a 24h TTL — a signup only needs to appear
+      // in the queue once. Re-calls (wizard resume, retry) short-circuit.
+      const dedup = 'soc:pending-mark:' + u.id;
+      if (await db.exists(dedup)) return res.json({ ok: true, deduped: true });
       const entry = JSON.stringify({ t: Date.now(), uid: u.id, name: u.name, email: u.email });
       await db.rpush('soc:new-accounts', entry);
       await db.ltrim('soc:new-accounts', -2000, -1);
+      await db.set(dedup, '1', 24 * 60 * 60);
       res.json({ ok: true });
     } catch (e) { console.error('account/pending:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -634,7 +652,6 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   //     body: { targetId, text }  (text up to 1000 chars, min 20)
   //   GET  /references/:id      — read all references for a member,
   //                               newest first, with author info.
-  //   GET  /references/:id/count — cheap count only (for card badges)
   //
   // Storage:
   //   soc:refs:<targetId>       — Redis LIST of JSON entries.
@@ -644,8 +661,10 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   //     { id, fromId, fromName, fromPhoto, text, createdAt }
   //
   // Ownership: the RECIPIENT can't edit or delete a reference (would
-  // defeat the trust signal); the AUTHOR can withdraw their own via
-  // POST /reference/delete. We soft-cap at last 200 refs per user.
+  // defeat the trust signal). Author-withdraw (/reference/delete) and
+  // a cheap /count endpoint were originally planned but never
+  // implemented — /members reads via LLEN now (audit 2 Aug v8). We
+  // soft-cap at last 200 refs per user.
   api.post('/reference', async (req, res) => {
     try {
       const me = await userFromReq(req);
@@ -689,6 +708,20 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       await db.rpush('soc:refs:' + targetId, JSON.stringify(entry));
       await db.ltrim('soc:refs:' + targetId, -200, -1);
       await db.set(dupKey, '1');
+      // Notify the recipient — audit follow-up 2 Aug v8. Refs are a
+      // headline trust signal; a silent write was surprising.
+      try {
+        notifyUser(targetId, 'ref', me.name + ' left you a reference',
+          `${me.name} wrote a reference for you on WordSpies. See it on your profile.`,
+          true, mailHtml({
+            peek: 'One more voice for your wall.',
+            heading: 'New reference',
+            line: '<b style="color:#16181f">' + esc(me.name) + '</b> left you a reference on WordSpies.',
+            btn: 'See it', btnUrl: SITE + '/social',
+            note: 'We only send these when you\'re not already in the app.'
+          }));
+        sendPush(targetId, 'ref', '✍️ New reference', me.name + ' wrote a reference for you', '/social');
+      } catch (e) { /* notify never blocks the write */ }
       res.json({ ok: true, ref: entry });
     } catch (e) { console.error('reference:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -701,13 +734,31 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const me = await userFromReq(req);
       const myBlocks = me ? new Set(await db.smembers('soc:blocks:' + me.id)) : new Set();
       const out = [];
+      // Prefetch the authors we haven't seen so we can skip dormant
+      // ones without an N+1. Owner audit 2 Aug v8.
+      const parsed = [];
+      const authorIds = new Set();
       for (const raw of list) {
         try {
           const e = JSON.parse(raw);
-          // Hide references from anyone the viewer has blocked.
           if (myBlocks.has(e.fromId)) continue;
-          out.push(e);
+          parsed.push(e);
+          authorIds.add(e.fromId);
         } catch (e2) {}
+      }
+      const dormant = new Set();
+      for (const aid of authorIds) {
+        const uraw = await db.get('soc:user:' + aid);
+        if (uraw) {
+          try { if (!isOnboarded(JSON.parse(uraw))) dormant.add(aid); }
+          catch (e3) {}
+        } else {
+          dormant.add(aid);   // author deleted → hide their ref
+        }
+      }
+      for (const e of parsed) {
+        if (dormant.has(e.fromId)) continue;
+        out.push(e);
       }
       out.sort((a, b) => b.createdAt - a.createdAt);
       res.json({ references: out });
@@ -729,6 +780,13 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const reason = String(body.reason || '').slice(0, 40) || 'other';
       const note = String(body.note || '').trim().slice(0, 500);
       if (!targetId || targetId === me.id) return res.status(400).json({ error: 'Nothing to report.' });
+      // Dedup: one active report per (reporter, target, kind, msgId?).
+      // 24h TTL — after that, a genuinely new incident can be reported
+      // again. Prevents spam-report abuse against a single victim.
+      // Audit fix 2 Aug v8.
+      const dupKey = 'soc:reported:' + me.id + ':' + kind + ':' + targetId
+                   + (body.msgId ? ':' + String(body.msgId).slice(0, 24) : '');
+      if (await db.exists(dupKey)) return res.json({ ok: true, deduped: true });
       let snapshot = null;
       if (kind === 'message') {
         const msgId = String(body.msgId || '').slice(0, 24);
@@ -749,6 +807,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const entry = { id: crypto.randomBytes(6).toString('base64url'), by: me.id, target: targetId, kind, reason, note, snapshot, at: Date.now() };
       await db.rpush('soc:reports', JSON.stringify(entry));
       await db.ltrim('soc:reports', -1000, -1);
+      await db.set(dupKey, '1', 24 * 60 * 60);
       console.log('[report]', me.id.slice(0, 6), '→', targetId.slice(0, 6), kind, reason);
       res.json({ ok: true });
     } catch (e) { console.error('social report:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
@@ -977,17 +1036,19 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
           // ask 2 Aug 2026 v5.
           if (!isOnboarded(u)) continue;
           const ls = await db.get('soc:lastseen:' + u.id);
-          // Refs: get count + timestamp of newest. Cheap: just read
-          // the tail entry from the list (last one pushed = newest).
-          // Skip for AI users (they don't collect references).
+          // Refs: LLEN for count + LRANGE(-1,-1) for the newest.
+          // Was previously reading the entire list just for its
+          // length — O(N) parse per user per /members call (audit
+          // fix 2 Aug v8). Skip AI users (no refs).
           let refCount = 0, latestRefAt = 0;
           if (!u.isAI) {
             try {
-              const tail = await db.lrange('soc:refs:' + u.id, -1, -1);
-              if (tail && tail.length) {
-                const arr = await db.lrange('soc:refs:' + u.id, 0, -1);
-                refCount = arr.length;
-                try { latestRefAt = JSON.parse(tail[0]).createdAt || 0; } catch (e) {}
+              refCount = await db.llen('soc:refs:' + u.id);
+              if (refCount > 0) {
+                const tail = await db.lrange('soc:refs:' + u.id, -1, -1);
+                if (tail && tail.length) {
+                  try { latestRefAt = JSON.parse(tail[0]).createdAt || 0; } catch (e) {}
+                }
               }
             } catch (e) {}
           }
