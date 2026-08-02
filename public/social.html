@@ -3085,15 +3085,19 @@ function enterApp(justJoined){
   const xc = $('authClose'); if (xc) xc.remove();
   $('vAuth').classList.add('hidden');
   // First-time signup? Show the onboarding wizard BEFORE the app.
-  // Owner ask 1 Aug 2026 v3: 'if someone already has an account
-  // dont need to go that account setup'.
-  // Two guards: justJoined + no onboardedAt + createdAt within the
-  // last 10 min. The Google callback always passes justJoined=true
-  // (even for returning users) so we can't rely on that alone —
-  // createdAt is the honest 'brand-new account' signal.
-  const FRESH_ACCT_MS = 10 * 60 * 1000;
-  const isReallyNew = ME && ME.createdAt && (Date.now() - ME.createdAt) < FRESH_ACCT_MS;
-  if (justJoined && ME && !ME.onboardedAt && isReallyNew) {
+  // Owner ask 2 Aug 2026 v4: 'if I refresh the page it make me
+  // logged in already; keep my state and bring me to the same
+  // place where I was … he cant login until all his steps are
+  // complete'. So the wizard is forced open until onboardedAt is
+  // set, regardless of justJoined — refresh mid-wizard resumes
+  // at the persisted step (see obStart -> ME.obStep).
+  //
+  // GRANDFATHER: accounts created before 2026-08-02 predate this
+  // gate, so we don't retro-force the wizard on them. New accounts
+  // from today onwards must finish it.
+  const WIZARD_CUTOFF = Date.parse('2026-08-02T00:00:00Z');
+  const needsWizard = ME && !ME.onboardedAt && ME.createdAt && ME.createdAt >= WIZARD_CUTOFF;
+  if (needsWizard) {
     obStart();
     return;
   }
@@ -3468,7 +3472,17 @@ function obStart(){
   // Build the DOB wheels — needs to happen after obWizard is un-hidden
   // so the child scroll containers have real dimensions to snap to.
   obInitDobWheels(ME && ME.birthdate);
-  obShow(1);
+  // Resume at the step after the last one they completed. Owner ask
+  // 2 Aug 2026 v4: refresh must keep state and put them where they
+  // left off. Server-side obStep is the source of truth; clamp so a
+  // future schema change can't send us past the last real step.
+  const savedStep = Number(ME && ME.obStep) || 0;
+  const startAt = Math.min(Math.max(1, savedStep + 1), OB_TOTAL);
+  // Populate welcome name if we're jumping straight to the final step.
+  if (startAt === OB_TOTAL && ME) {
+    $('obWelcomeName').textContent = String(ME.name || 'friend').split(' ')[0];
+  }
+  obShow(startAt);
 }
 async function obNext(step){
   const err = (msg) => {
@@ -3531,6 +3545,13 @@ async function obNext(step){
     // Step 5 IS the welcome now (retired the separate verification-
     // pending step). Owner ask 2 Aug 2026 v10 — no dead tap-through
     // screens. The welcome button calls obFinish() directly.
+
+    // Persist the completed step so a refresh resumes here (not step 1).
+    // Fire-and-forget — profile.js clamps + never moves obStep backwards,
+    // so a slow response can't clobber later saves.
+    api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ obStep: step }) }).catch(() => {});
+    if (ME) ME.obStep = Math.max(Number(ME.obStep) || 0, step);
 
     if (step >= OB_TOTAL) { obFinish(); return; }
     // Populate welcome name just before showing the final step.

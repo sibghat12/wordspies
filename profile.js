@@ -138,6 +138,18 @@ function mount(api, ctx) {
         const n = Number(b.onboardedAt);
         if (Number.isFinite(n) && n > 0) u.onboardedAt = n;
       }
+      // obStep — client tells us which wizard step it just completed.
+      // Owner ask 2 Aug 2026: 'if I refresh the page … keep my state
+      // and bring me to the same place'. Clamped to a safe range;
+      // never moves backwards on write so a slow late request from
+      // step 2 can't clobber a step-4 save that already landed.
+      if (b.obStep !== undefined) {
+        const s = Number(b.obStep);
+        if (Number.isFinite(s) && s >= 0 && s <= 10) {
+          const prev = Number.isFinite(u.obStep) ? u.obStep : 0;
+          if (s > prev) u.obStep = s;
+        }
+      }
 
       await db.set('soc:user:' + u.id, JSON.stringify(u));
       res.json({ me: pub(u) });

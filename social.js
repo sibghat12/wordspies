@@ -166,6 +166,13 @@ function mount(app, redis) {
     recs: u.recs || '',
     goal: u.goal || '',
     onboardedAt: u.onboardedAt || null,
+    // Wizard resume marker. Owner ask 2 Aug 2026: 'if I refresh the
+    // page it makes me logged in already; should keep my state and
+    // bring me to the same place'. obStep = the last completed step
+    // (0 = nothing yet, 5 = ready for welcome). Persisted server-side
+    // so refresh / new device continues the wizard where the user
+    // left off. `onboardedAt` is still the source-of-truth 'fully done'.
+    obStep: Number.isFinite(u.obStep) ? u.obStep : 0,
     isAI: !!u.isAI,
     ...marks(u) });
 
