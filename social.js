@@ -217,6 +217,44 @@ function mount(app, redis) {
     next();
   });
 
+  // ─── Onboarding gate ──────────────────────────────────────────────
+  // Owner ask 2 Aug 2026 v4: 'he cant login until all his steps are
+  // complete'. Block state-changing endpoints for signed-in users who
+  // haven't finished the wizard yet. The wizard's own endpoints
+  // (/profile, /photo, /account/pending) are whitelisted so users
+  // can actually progress. Also lets /deleteAccount through so a
+  // user can bail out mid-wizard rather than being trapped.
+  //
+  // GET/HEAD/OPTIONS pass unconditionally — reads leak no state that
+  // isn't already public, and the wizard needs GET /me to hydrate.
+  //
+  // GRANDFATHER: only enforced for accounts created on/after
+  // 2026-08-02 (when the wizard shipped). Older accounts had no
+  // wizard to complete — retro-forcing them into it would strand
+  // returning users with no way through.
+  const OB_CUTOFF = Date.parse('2026-08-02T00:00:00Z');
+  const OB_ALLOW = new Set([
+    '/profile', '/photo', '/account/pending',
+    '/push/subscribe', '/push/unsubscribe',
+    '/deleteAccount', '/me'
+  ]);
+  api.use(async (req, res, next) => {
+    try {
+      const m = req.method;
+      if (m === 'GET' || m === 'HEAD' || m === 'OPTIONS') return next();
+      if (OB_ALLOW.has(req.path)) return next();
+      const u = await userFromReq(req);
+      if (!u) return next();                   // anonymous → let auth routes handle
+      if (u.onboardedAt) return next();        // already finished
+      if (!(u.createdAt && u.createdAt >= OB_CUTOFF)) return next();  // grandfathered
+      return res.status(403).json({
+        error: 'Please finish setting up your account first.',
+        needsOnboarding: true,
+        obStep: Number.isFinite(u.obStep) ? u.obStep : 0
+      });
+    } catch (e) { next(); }   // fail-open on our own errors, never wedge signups
+  });
+
   // Cache the developer's UID once we can look it up. OWNER_EMAIL env
   // (or a hard fallback for the current owner) points at the account
   // that gets the "Chat with developer" button on every user's Me tab.
