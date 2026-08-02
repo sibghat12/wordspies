@@ -233,6 +233,27 @@ function mount(app, redis) {
   // wizard to complete — retro-forcing them into it would strand
   // returning users with no way through.
   const OB_CUTOFF = Date.parse('2026-08-02T00:00:00Z');
+  // A user's account is 'active' (visible + interactive) once they've
+  // finished the wizard. Grandfathered accounts (createdAt < cutoff)
+  // are always active. Owner ask 2 Aug 2026 v5: 'account active or
+  // display or login only if he succeeded to all steps'.
+  function isOnboarded(u) {
+    if (!u) return false;
+    if (u.createdAt && u.createdAt < OB_CUTOFF) return true;
+    return !!u.onboardedAt;
+  }
+  // Every required wizard field must have landed before a user is
+  // allowed to flip onboardedAt on themselves — see profile.js.
+  function wizardFieldsComplete(u) {
+    if (!u) return false;
+    if (!u.name || u.name.length < 3) return false;
+    if (!u.birthdate) return false;
+    if (!u.photo) return false;
+    if (!u.goal) return false;
+    if (!Array.isArray(u.speaks) || u.speaks.length === 0) return false;
+    if (!Array.isArray(u.learns) || u.learns.length === 0) return false;
+    return true;
+  }
   const OB_ALLOW = new Set([
     '/profile', '/photo', '/account/pending',
     '/push/subscribe', '/push/unsubscribe',
@@ -857,7 +878,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     // Age-gate helpers so /profile's DOB write can enforce 18+ for
     // Gmail signups that deferred DOB (owner ask 2 Aug 2026 —
     // 'remove that popup entirely, DOB goes in the wizard').
-    MIN_AGE, ageFromISO
+    MIN_AGE, ageFromISO,
+    // Wizard completion gate — profile.js rejects onboardedAt writes
+    // that don't correspond to a fully-populated profile so a
+    // tampered client can't self-activate.
+    wizardFieldsComplete
   });
   // Voice messages in DMs. Client records a short opus/webm blob (60 s max),
   // POSTs it here as multipart form-data, we save under /social-voice with a
@@ -938,6 +963,10 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         const raw = await db.get('soc:user:' + id);
         if (raw) {
           const u = JSON.parse(raw);
+          // Skip accounts that haven't completed the wizard —
+          // dormant profiles must not appear in Community. Owner
+          // ask 2 Aug 2026 v5.
+          if (!isOnboarded(u)) continue;
           const ls = await db.get('soc:lastseen:' + u.id);
           // Refs: get count + timestamp of newest. Cheap: just read
           // the tail entry from the list (last one pushed = newest).
@@ -1001,6 +1030,13 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const raw = await db.get('soc:user:' + String(req.params.id));
       if (!raw) return res.status(404).json({ error: 'Not found.' });
       const u = JSON.parse(raw);
+      // Dormant profiles (wizard not finished) shouldn't be viewable
+      // by other users — return 404 to match the "doesn't exist" shape.
+      // The user is still allowed to look at their own record so
+      // /me + settings keep working. Owner ask 2 Aug 2026 v5.
+      if (!isOnboarded(u) && (!me || me.id !== u.id)) {
+        return res.status(404).json({ error: 'Not found.' });
+      }
       res.json({
         user: pub(u),
         online: await db.exists('soc:online:' + u.id),
@@ -1079,6 +1115,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         const raw = await db.get('soc:user:' + id);
         if (!raw) continue;                       // deleted account — skip quietly
         const u = JSON.parse(raw);
+        if (!isOnboarded(u)) continue;            // dormant accounts hidden
         // When we last spoke, so recent chats float to the top of the list
         let lastAt = 0;
         if (cset.has(id)) {

@@ -136,7 +136,16 @@ function mount(api, ctx) {
       }
       if (b.onboardedAt !== undefined) {
         const n = Number(b.onboardedAt);
-        if (Number.isFinite(n) && n > 0) u.onboardedAt = n;
+        if (Number.isFinite(n) && n > 0) {
+          // Owner ask 2 Aug 2026 v5: 'account active or display or
+          // login only if he succeeded to all steps'. A tampered
+          // client can't self-activate by POSTing { onboardedAt } —
+          // every required wizard field has to have landed already.
+          if (ctx.wizardFieldsComplete && !ctx.wizardFieldsComplete(u)) {
+            return res.status(400).json({ error: 'Please finish every step before completing setup.' });
+          }
+          u.onboardedAt = n;
+        }
       }
       // obStep — client tells us which wizard step it just completed.
       // Owner ask 2 Aug 2026: 'if I refresh the page … keep my state
