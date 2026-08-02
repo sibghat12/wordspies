@@ -191,6 +191,43 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 .flatpickr-calendar{border-radius:14px;box-shadow:0 12px 40px rgba(16,24,40,.14);border:1px solid var(--line);font-family:inherit}
 .flatpickr-day.selected,.flatpickr-day.selected:hover{background:var(--accent,#e8506b);border-color:var(--accent,#e8506b)}
 .flatpickr-day.today{border-color:var(--accent,#e8506b)}
+
+/* Chip-based picker inputs (native languages, learning languages).
+   Owner ask 2 Aug 2026 v3: 'text-based input fields' with 'amazing
+   popups' for selection. Tapping the row opens ob-pop with a filter
+   input + tappable options; selections show as pills inside the row. */
+.ob-picker-row{width:100%;min-height:52px;border:1px solid var(--line);border-radius:12px;background:#f9fafc;padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:pointer;transition:border-color .12s,background .12s;font-family:inherit}
+.ob-picker-row:hover{border-color:#c3c8d2}
+.ob-picker-row:focus,.ob-picker-row.on{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
+.ob-picker-placeholder{color:#98a0ac;font-size:14.5px;font-weight:500}
+.ob-chip{display:inline-flex;align-items:center;gap:6px;background:#fff3f5;border:1px solid rgba(232,80,107,.35);color:var(--accent-d,#c33d55);border-radius:999px;padding:5px 10px 5px 12px;font-size:13.5px;font-weight:600;line-height:1}
+.ob-chip-x{cursor:pointer;font-size:15px;line-height:1;opacity:.75;padding:0 2px;user-select:none}
+.ob-chip-x:hover{opacity:1}
+.ob-picker-caret{margin-left:auto;color:var(--faint);font-size:14px;flex-shrink:0}
+
+/* Full-screen bottom-sheet popup shared by the goal picker and the
+   language pickers. Slides up from the bottom on mobile; centred on
+   desktop. Absolutely positioned inside #obWizard so it stacks above
+   the wizard steps without leaking into the rest of the page. */
+.ob-pop-backdrop{position:fixed;inset:0;background:rgba(15,20,32,.44);z-index:1000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s}
+.ob-pop-backdrop.on{opacity:1;pointer-events:auto}
+.ob-pop{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:82vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .22s cubic-bezier(.2,.9,.3,1);box-shadow:0 -8px 40px rgba(15,20,32,.18)}
+.ob-pop-backdrop.on .ob-pop{transform:translateY(0)}
+@media(min-width:640px){.ob-pop-backdrop{align-items:center}.ob-pop{border-radius:20px;max-height:76vh}}
+.ob-pop-head{padding:16px 18px 8px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.ob-pop-title{flex:1;font-weight:700;font-size:17px;color:var(--ink)}
+.ob-pop-done{background:var(--accent);color:#fff;border:0;border-radius:999px;padding:8px 16px;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer}
+.ob-pop-close{width:32px;height:32px;border-radius:50%;background:#f4f5f7;border:0;font-size:18px;color:var(--sub);cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+.ob-pop-search{margin:10px 18px 0;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px;font-family:inherit;background:#f9fafc;outline:none}
+.ob-pop-search:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
+.ob-pop-list{overflow-y:auto;padding:8px 12px 20px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:6px}
+.ob-pop-opt{width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color .1s,background .1s}
+.ob-pop-opt:hover{background:#fafbfc;border-color:#c3c8d2}
+.ob-pop-opt.on{border-color:var(--accent);background:#fff3f5;color:var(--accent-d,#c33d55);font-weight:600}
+.ob-pop-opt-ic{font-size:20px;line-height:1;width:26px;text-align:center}
+.ob-pop-empty{color:var(--faint);text-align:center;padding:20px 10px;font-size:13.5px}
+.ob-pop-hint{padding:6px 18px 0;color:var(--faint);font-size:12px}
+
 /* Welcome logo */
 .ob-welcome-logo{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.6px;color:var(--ink);margin-bottom:10px;animation:obWelcomeIn .5s ease-out}
 .ob-welcome-logo em{font-style:normal;color:var(--accent,#e8506b)}
@@ -1899,24 +1936,41 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
     </section>
 
-    <!-- STEP 4 · Interests + goal. Card-based goal picker for better tap
-         targets + micro-copy that makes it feel worth doing. -->
+    <!-- STEP 4 · Goal + languages + intro. Owner ask 2 Aug 2026 v3:
+         'goals and other languages he is learning and native on it
+         should be amazing popups so user can select … text based
+         input fields'. Each field is a tappable row that opens the
+         shared ob-pop bottom-sheet; the row itself displays the
+         selection(s) as pills so the wizard still reads at a glance. -->
     <section class="ob-step" data-step="4">
       <div class="ob-emoji">💬</div>
       <h2>What brings you here?</h2>
-      <p class="ob-sub">Two questions so we can match you with the right people.</p>
+      <p class="ob-sub">A few quick picks so we can match you with the right people.</p>
       <div class="ob-fields">
-        <label class="ob-label">Say hello — what do you like to talk about?</label>
-        <textarea class="ob-input" id="obTalkAbout" maxlength="200" rows="3" placeholder="e.g. films, football, cooking, travel…"></textarea>
-        <label class="ob-label" style="margin-top:18px">Your main goal here</label>
-        <div class="ob-goal-picker" id="obGoalPicker">
-          <button type="button" class="ob-goal" data-goal="learn"><span class="ob-goal-ic">🎓</span><span class="ob-goal-txt"><b>Learn a language</b><small>Practice with real speakers</small></span></button>
-          <button type="button" class="ob-goal" data-goal="practise"><span class="ob-goal-ic">💬</span><span class="ob-goal-txt"><b>Practise conversation</b><small>Improve fluency in chat</small></span></button>
-          <button type="button" class="ob-goal" data-goal="friends"><span class="ob-goal-ic">👥</span><span class="ob-goal-txt"><b>Make friends</b><small>Meet people from around the world</small></span></button>
-          <button type="button" class="ob-goal" data-goal="travel"><span class="ob-goal-ic">✈️</span><span class="ob-goal-txt"><b>Travel</b><small>Prep for a trip abroad</small></span></button>
-          <button type="button" class="ob-goal" data-goal="other"><span class="ob-goal-ic">🌱</span><span class="ob-goal-txt"><b>Something else</b><small>Just seeing what's here</small></span></button>
+
+        <label class="ob-label">Your main goal here</label>
+        <div class="ob-picker-row" id="obGoalRow" tabindex="0" role="button" onclick="obOpenPop('goal')">
+          <span class="ob-picker-placeholder" id="obGoalPlaceholder">Tap to choose your goal</span>
+          <span class="ob-picker-caret">▾</span>
         </div>
+
+        <label class="ob-label" style="margin-top:18px">Languages you speak</label>
+        <div class="ob-picker-row" id="obSpeaksRow" tabindex="0" role="button" onclick="obOpenPop('speaks')">
+          <span class="ob-picker-placeholder" id="obSpeaksPlaceholder">Tap to add your native + fluent languages</span>
+          <span class="ob-picker-caret">▾</span>
+        </div>
+
+        <label class="ob-label" style="margin-top:18px">Languages you want to learn</label>
+        <div class="ob-picker-row" id="obLearnsRow" tabindex="0" role="button" onclick="obOpenPop('learns')">
+          <span class="ob-picker-placeholder" id="obLearnsPlaceholder">Tap to add languages you're learning</span>
+          <span class="ob-picker-caret">▾</span>
+        </div>
+
+        <label class="ob-label" style="margin-top:18px">Say hello — what do you like to talk about?</label>
+        <textarea class="ob-input" id="obTalkAbout" maxlength="200" rows="3" placeholder="e.g. films, football, cooking, travel…"></textarea>
+
       </div>
+      <div class="ob-err hidden" id="obErr4"></div>
       <div class="ob-row">
         <button class="ob-back" onclick="obBack(4)">Back</button>
         <button class="ob-next" onclick="obNext(4)">Almost done</button>
@@ -1933,6 +1987,22 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <p class="ob-sub" style="text-align:center;font-size:12.5px;color:var(--faint);margin-top:8px">We review every new profile — most get verified within a day.</p>
       <button class="ob-next primary-big" onclick="obFinish()">Enter WordSpies</button>
     </section>
+  </div>
+
+  <!-- Shared bottom-sheet popup for goal + language pickers on step 4.
+       Owner ask 2 Aug 2026 v3: 'amazing popups so user can select'.
+       Body content is rebuilt each open by obOpenPop(). -->
+  <div class="ob-pop-backdrop" id="obPopBack" onclick="obPopMaybeClose(event)" aria-hidden="true">
+    <div class="ob-pop" role="dialog" aria-modal="true" aria-labelledby="obPopTitle">
+      <div class="ob-pop-head">
+        <button class="ob-pop-close" onclick="obClosePop()" aria-label="Close">✕</button>
+        <div class="ob-pop-title" id="obPopTitle">Choose</div>
+        <button class="ob-pop-done" id="obPopDone" onclick="obClosePop()">Done</button>
+      </div>
+      <input class="ob-pop-search" id="obPopSearch" type="text" placeholder="Type to search or add…" autocomplete="off">
+      <div class="ob-pop-hint" id="obPopHint"></div>
+      <div class="ob-pop-list" id="obPopList"></div>
+    </div>
   </div>
 </div>
 
@@ -3096,7 +3166,167 @@ function enterApp(justJoined){
 // ═══════════════════════════════════════════════════════════════════
 const OB_TOTAL = 5;
 let obGoal = '';
+let obSpeaks = [];   // languages the user speaks (native + fluent)
+let obLearns = [];   // languages they want to learn
 let obNewPhotoUploaded = false;
+
+// Popup data. Goal options are single-select (only one is stored);
+// language pickers are multi-select. GOAL_OPTS mirror the old
+// .ob-goal buttons so the emoji + copy stays consistent.
+const OB_GOAL_OPTS = [
+  { id: 'learn',    ic: '🎓', b: 'Learn a language',      s: 'Practise with real speakers' },
+  { id: 'practise', ic: '💬', b: 'Practise conversation', s: 'Improve fluency in chat' },
+  { id: 'friends',  ic: '👥', b: 'Make friends',          s: 'Meet people from around the world' },
+  { id: 'travel',   ic: '✈️', b: 'Travel',                s: 'Prep for a trip abroad' },
+  { id: 'other',    ic: '🌱', b: 'Something else',        s: "Just seeing what's here" }
+];
+// Popular languages first so the tap-to-add flow is quick for most
+// people. The picker also accepts free text (Enter to add a custom
+// value), so this list doesn't have to be exhaustive.
+const OB_LANG_OPTS = [
+  'English','Spanish','French','German','Italian','Portuguese','Dutch',
+  'Russian','Ukrainian','Polish','Czech','Turkish','Greek',
+  'Arabic','Hebrew','Persian','Urdu','Hindi','Bengali','Punjabi','Tamil',
+  'Mandarin','Cantonese','Japanese','Korean','Thai','Vietnamese','Indonesian','Malay','Filipino',
+  'Swahili','Amharic','Yoruba','Hausa','Zulu','Afrikaans',
+  'Swedish','Norwegian','Danish','Finnish','Icelandic',
+  'Romanian','Hungarian','Bulgarian','Serbian','Croatian','Slovak','Slovenian'
+];
+
+let _obPopKind = null;   // 'goal' | 'speaks' | 'learns'
+function obOpenPop(kind){
+  _obPopKind = kind;
+  const back = document.getElementById('obPopBack');
+  const title = document.getElementById('obPopTitle');
+  const search = document.getElementById('obPopSearch');
+  const hint = document.getElementById('obPopHint');
+  const done = document.getElementById('obPopDone');
+  if (!back) return;
+  if (kind === 'goal') {
+    title.textContent = 'Your main goal here';
+    search.placeholder = 'Search…';
+    hint.textContent = '';
+    done.textContent = 'Done';
+  } else if (kind === 'speaks') {
+    title.textContent = 'Languages you speak';
+    search.placeholder = 'Type a language, press Enter to add';
+    hint.textContent = 'Tap to add. Press Enter to add a custom one.';
+    done.textContent = 'Done';
+  } else if (kind === 'learns') {
+    title.textContent = 'Languages you want to learn';
+    search.placeholder = 'Type a language, press Enter to add';
+    hint.textContent = 'Tap to add. Press Enter to add a custom one.';
+    done.textContent = 'Done';
+  }
+  search.value = '';
+  obRenderPopList('');
+  back.classList.add('on');
+  back.setAttribute('aria-hidden', 'false');
+  // Focus the search field after the sheet's slide-in animation,
+  // otherwise iOS scrolls the wizard behind while opening.
+  setTimeout(() => { try { search.focus(); } catch(e){} }, 240);
+}
+function obPopMaybeClose(ev){
+  // Backdrop click = close. Don't close if the click was inside the sheet.
+  if (ev.target && ev.target.id === 'obPopBack') obClosePop();
+}
+function obClosePop(){
+  const back = document.getElementById('obPopBack');
+  if (!back) return;
+  back.classList.remove('on');
+  back.setAttribute('aria-hidden', 'true');
+  _obPopKind = null;
+}
+function obRenderPopList(filter){
+  const list = document.getElementById('obPopList');
+  if (!list) return;
+  const q = String(filter || '').trim().toLowerCase();
+  let html = '';
+  if (_obPopKind === 'goal') {
+    OB_GOAL_OPTS.forEach(o => {
+      if (q && !(o.b.toLowerCase().includes(q) || o.s.toLowerCase().includes(q))) return;
+      const on = (o.id === obGoal) ? ' on' : '';
+      html += `<button type="button" class="ob-pop-opt${on}" data-goal="${esc(o.id)}">`
+           +  `<span class="ob-pop-opt-ic">${o.ic}</span><span><b>${esc(o.b)}</b><br><small style="color:var(--sub);font-weight:500">${esc(o.s)}</small></span>`
+           +  `</button>`;
+    });
+  } else if (_obPopKind === 'speaks' || _obPopKind === 'learns') {
+    const chosen = (_obPopKind === 'speaks') ? obSpeaks : obLearns;
+    const seen = new Set();
+    // Selected first, so the user sees their picks; then remaining
+    // suggestions filtered by the query.
+    chosen.forEach(v => {
+      if (q && !v.toLowerCase().includes(q)) return;
+      seen.add(v.toLowerCase());
+      html += `<button type="button" class="ob-pop-opt on" data-lang="${esc(v)}">`
+           +  `<span class="ob-pop-opt-ic">✓</span><span>${esc(v)}</span></button>`;
+    });
+    OB_LANG_OPTS.forEach(v => {
+      if (seen.has(v.toLowerCase())) return;
+      if (q && !v.toLowerCase().includes(q)) return;
+      html += `<button type="button" class="ob-pop-opt" data-lang="${esc(v)}">`
+           +  `<span class="ob-pop-opt-ic">＋</span><span>${esc(v)}</span></button>`;
+    });
+    if (!html && q) {
+      html = `<div class="ob-pop-empty">No matches. Press Enter to add "<b>${esc(q)}</b>".</div>`;
+    }
+  }
+  list.innerHTML = html || '<div class="ob-pop-empty">No options.</div>';
+}
+function obPickGoal(id){
+  obGoal = id;
+  obPaintGoalRow();
+  obClosePop();
+}
+function obToggleLang(kind, raw){
+  const v = String(raw || '').trim();
+  if (!v || v.length > 30) return;
+  const arr = (kind === 'speaks') ? obSpeaks : obLearns;
+  const ixLower = arr.findIndex(x => x.toLowerCase() === v.toLowerCase());
+  if (ixLower >= 0) arr.splice(ixLower, 1);
+  else if (arr.length < 5) arr.push(v);   // profile.js caps at 5
+  obPaintLangRow(kind);
+  const search = document.getElementById('obPopSearch');
+  obRenderPopList(search ? search.value : '');
+}
+function obPaintGoalRow(){
+  const row = document.getElementById('obGoalRow');
+  if (!row) return;
+  const opt = OB_GOAL_OPTS.find(o => o.id === obGoal);
+  const caret = '<span class="ob-picker-caret">▾</span>';
+  if (!opt) {
+    row.innerHTML = '<span class="ob-picker-placeholder" id="obGoalPlaceholder">Tap to choose your goal</span>' + caret;
+  } else {
+    row.innerHTML = `<span class="ob-chip"><span>${opt.ic} ${esc(opt.b)}</span></span>` + caret;
+  }
+}
+function obPaintLangRow(kind){
+  const rowId = (kind === 'speaks') ? 'obSpeaksRow' : 'obLearnsRow';
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  const arr = (kind === 'speaks') ? obSpeaks : obLearns;
+  const caret = '<span class="ob-picker-caret">▾</span>';
+  if (!arr.length) {
+    const ph = (kind === 'speaks')
+      ? 'Tap to add your native + fluent languages'
+      : "Tap to add languages you're learning";
+    row.innerHTML = `<span class="ob-picker-placeholder">${ph}</span>` + caret;
+    return;
+  }
+  const chips = arr.map((v, i) =>
+    `<span class="ob-chip"><span>${esc(v)}</span><span class="ob-chip-x" data-kind="${kind}" data-ix="${i}">✕</span></span>`
+  ).join('');
+  row.innerHTML = chips + caret;
+}
+function obDropLang(kind, ix){
+  const arr = (kind === 'speaks') ? obSpeaks : obLearns;
+  arr.splice(ix, 1);
+  obPaintLangRow(kind);
+  if (_obPopKind === kind) {
+    const search = document.getElementById('obPopSearch');
+    obRenderPopList(search ? search.value : '');
+  }
+}
 
 function obPaintProgress(current){
   const bar = $('obProgress');
@@ -3219,6 +3449,14 @@ function obStart(){
     $('obLastName').value = parts.slice(1).join(' ') || '';
     $('obEmail').value = ME.email || '';
     $('obTalkAbout').value = ME.talkAbout || '';
+    // Prefill goal + language picker rows from any existing profile
+    // data (users who half-completed the wizard previously).
+    obGoal   = String(ME.goal || '');
+    obSpeaks = Array.isArray(ME.speaks) ? ME.speaks.slice(0, 5) : [];
+    obLearns = Array.isArray(ME.learns) ? ME.learns.slice(0, 5) : [];
+    obPaintGoalRow();
+    obPaintLangRow('speaks');
+    obPaintLangRow('learns');
     if (ME.photo) {
       const prev = $('obPhotoPreview');
       prev.innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
@@ -3282,8 +3520,10 @@ async function obNext(step){
     if (step === 4) {
       const t = $('obTalkAbout').value.trim();
       if (!obGoal) return err('Please pick your main goal.');
+      if (!obSpeaks.length) return err('Please add at least one language you speak.');
+      if (!obLearns.length) return err("Please add at least one language you're learning.");
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ talkAbout: t, goal: obGoal }) });
+        body: JSON.stringify({ talkAbout: t, goal: obGoal, speaks: obSpeaks, learns: obLearns }) });
       ME = j.me;
       // Register with the moderation queue so the owner can verify.
       try { await api('/account/pending', { method:'POST' }); } catch (e2) {}
@@ -3431,11 +3671,52 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // DOB picker wiring lives in obInitDobWheels() (called from obStart)
   // so it only runs when the wizard opens with the input visible.
-  // Goal picker — single-select buttons.
-  document.querySelectorAll('#obGoalPicker .ob-goal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      obGoal = btn.getAttribute('data-goal') || '';
-      document.querySelectorAll('#obGoalPicker .ob-goal').forEach(b => b.classList.toggle('on', b === btn));
+
+  // Popup search: live-filter as the user types; Enter adds the raw
+  // query as a custom language chip for the multi-select pickers.
+  const popSearch = document.getElementById('obPopSearch');
+  if (popSearch) {
+    popSearch.addEventListener('input', () => obRenderPopList(popSearch.value));
+    popSearch.addEventListener('keydown', ev => {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      const v = popSearch.value.trim();
+      if (!v) return;
+      if (_obPopKind === 'speaks' || _obPopKind === 'learns') {
+        obToggleLang(_obPopKind, v);
+        popSearch.value = '';
+        obRenderPopList('');
+      }
+    });
+  }
+  // Esc closes the popup from anywhere.
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape' && _obPopKind) obClosePop();
+  });
+  // Popup list — delegate clicks so option values (which may contain
+  // apostrophes etc.) never need to be encoded into an onclick attr.
+  const popList = document.getElementById('obPopList');
+  if (popList) {
+    popList.addEventListener('click', ev => {
+      const opt = ev.target.closest && ev.target.closest('.ob-pop-opt');
+      if (!opt) return;
+      const g = opt.getAttribute('data-goal');
+      const l = opt.getAttribute('data-lang');
+      if (g) obPickGoal(g);
+      else if (l && (_obPopKind === 'speaks' || _obPopKind === 'learns')) obToggleLang(_obPopKind, l);
+    });
+  }
+  // Language-chip ✕ — delegate on both picker rows.
+  ['obSpeaksRow','obLearnsRow'].forEach(id => {
+    const row = document.getElementById(id);
+    if (!row) return;
+    row.addEventListener('click', ev => {
+      const x = ev.target.closest && ev.target.closest('.ob-chip-x');
+      if (!x) return;
+      ev.stopPropagation();
+      const kind = x.getAttribute('data-kind');
+      const ix = parseInt(x.getAttribute('data-ix'), 10);
+      if (kind && Number.isInteger(ix)) obDropLang(kind, ix);
     });
   });
 });
