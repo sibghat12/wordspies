@@ -808,7 +808,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     db, userFromReq, pub,
     reqIp, geoFromIp, geoLabel,
     limited,
-    PHOTO_DIR
+    PHOTO_DIR,
+    // Age-gate helpers so /profile's DOB write can enforce 18+ for
+    // Gmail signups that deferred DOB (owner ask 2 Aug 2026 —
+    // 'remove that popup entirely, DOB goes in the wizard').
+    MIN_AGE, ageFromISO
   });
   // Voice messages in DMs. Client records a short opus/webm blob (60 s max),
   // POSTs it here as multipart form-data, we save under /social-voice with a

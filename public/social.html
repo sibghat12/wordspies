@@ -6213,45 +6213,18 @@ async function setupGoogle(){
       client_id: cfg.google,
       callback: async resp => {
         try {
+          // Send a special placeholder ('pending') so the /google
+          // handler knows the client will collect DOB in the wizard
+          // instead of the popup. Server accepts, creates the account
+          // with birthdate:null + ageGatePending:true. Wizard step 1
+          // (iOS wheel picker) sets the real DOB via /profile with the
+          // 18+ hard block. Owner ask 2 Aug 2026: 'remove that popup
+          // entirely, make her directly to the next form and she can
+          // enter DOB there along with name + email'.
           const j = await api('/google', { method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ credential: resp.credential }) });
+            body: JSON.stringify({ credential: resp.credential, birthdate: 'pending' }) });
           ME = j.me; enterApp(true);
         } catch(e){
-          // First-time Google user: server needs DOB before creating
-          // the account. Show a lightweight DOB prompt via SweetAlert,
-          // then re-POST the SAME credential with birthdate. Same 18+
-          // hard block enforced on the server.
-          if (e.data && e.data.needsDob) {
-            try {
-              const r = await Swal.fire({
-                title: 'One more thing',
-                html: '<div style="text-align:left;color:#5f6675;font-size:14px;margin:-6px 0 12px">WordSpies is 18+. Please confirm your date of birth to finish creating your account.</div>' +
-                      '<input type="date" id="swalDob" class="swal2-input" style="width:100%;max-width:260px;margin:0 auto;display:block" />',
-                showCancelButton: true,
-                confirmButtonText: 'Continue',
-                cancelButtonText: 'Cancel',
-                focusConfirm: false,
-                preConfirm: () => {
-                  const v = (document.getElementById('swalDob') || {}).value || '';
-                  if (!v) { Swal.showValidationMessage('Please enter your date of birth.'); return false; }
-                  const age = ageFromISOClient(v);
-                  if (!Number.isFinite(age) || age < 0 || age > 120) { Swal.showValidationMessage('Please enter a valid date of birth.'); return false; }
-                  if (age < 18) { Swal.showValidationMessage('Sorry, WordSpies is for people aged 18 and over.'); return false; }
-                  return v;
-                }
-              });
-              if (r && r.isConfirmed && r.value) {
-                try {
-                  const j2 = await api('/google', { method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({ credential: resp.credential, birthdate: r.value }) });
-                  ME = j2.me; enterApp(true);
-                  return;
-                } catch(e2) { $('authErr').textContent = e2.message; return; }
-              }
-              // User cancelled: no message, they can retry
-              return;
-            } catch(swalErr) { $('authErr').textContent = e.message; return; }
-          }
           $('authErr').textContent = e.message;
         }
       }

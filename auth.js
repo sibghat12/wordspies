@@ -159,18 +159,32 @@ function mount(api, ctx) {
       let uid = await db.get('soc:email:' + email);
       let user = uid ? JSON.parse(await db.get('soc:user:' + uid) || 'null') : null;
       if (!user) {
-        // Client contract: on first Google visit, we return needsDob=true
-        // if birthdate is missing. The client shows a DOB modal and
-        // resubmits with {credential, birthdate}. No account created,
-        // no session issued until the DOB check passes.
+        // Owner ask 2 Aug 2026: 'remove the DOB popup, make her go
+        // directly to the next form (wizard) and enter DOB there
+        // along with name and email'. So we no longer refuse the
+        // /google call for missing DOB. Two shapes accepted:
+        //
+        //   1. birthdate = 'pending'  → new client (post-2 Aug).
+        //      Create the account with birthdate:null +
+        //      ageGatePending:true; the wizard collects the real
+        //      DOB via /profile with the 18+ hard block still
+        //      enforced on that write.
+        //   2. birthdate = 'YYYY-MM-DD' → legacy client (pre-2 Aug)
+        //      or a client that already has DOB → age-gate here,
+        //      same behaviour as before.
+        //   3. birthdate missing entirely → still return needsDob
+        //      for backward-compat, but no current client uses this.
         const birthdate = String((req.body || {}).birthdate || '').trim();
         if (!birthdate) return res.status(400).json({ error: 'DOB required.', needsDob: true });
-        if (!isPlausibleDob(birthdate)) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
-        if (await isRecentAgeFail(email)) return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
-        const age = ageFromISO(birthdate);
-        if (age < MIN_AGE) {
-          await markAgeFail(email);
-          return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
+        const isPending = birthdate === 'pending';
+        if (!isPending) {
+          if (!isPlausibleDob(birthdate)) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
+          if (await isRecentAgeFail(email)) return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
+          const age = ageFromISO(birthdate);
+          if (age < MIN_AGE) {
+            await markAgeFail(email);
+            return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
+          }
         }
         let base = String(g.given_name || g.name || email.split('@')[0])
           .replace(/[^a-zA-Z0-9_ ]/g, '').trim().slice(0, 15) || 'Spy';
@@ -183,7 +197,10 @@ function mount(api, ctx) {
           id, name, email, passHash: null, googleId: g.sub,
           bio: '', location: geoLabel(geo),
           country: geo ? geo.country : '', cc: geo ? geo.cc : '', photo: null,
-          birthdate, ageVerifiedAt: Date.now(), termsAcceptedAt: Date.now(),
+          birthdate: isPending ? null : birthdate,
+          ageVerifiedAt: isPending ? null : Date.now(),
+          ageGatePending: isPending ? true : false,
+          termsAcceptedAt: Date.now(),
           games: 0, wins: 0, createdAt: Date.now(), fresh: true
         };
         await db.set('soc:user:' + id, JSON.stringify(user));
