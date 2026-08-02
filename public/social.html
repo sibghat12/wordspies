@@ -22,6 +22,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<!-- flatpickr — used for the DOB picker in the wizard. Owner ask
+     2 Aug 2026: 'date picker so ugly, use some JS library please'. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 <style>
 :root{
   --edge:#e6e6ef; --accent-d:#c33d55;
@@ -181,18 +185,12 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 .ob-age-live.bad{color:var(--err)}
 .ob-lite-help{font-size:11.5px;color:var(--faint);margin-top:4px;line-height:1.4}
 
-/* iOS-style wheel picker for date of birth. Three scroll-snap
-   columns; the centred item in each is the 'selected' one, marked by
-   the horizontal band across the middle. Pure CSS scroll-snap does
-   the snap animation — no JS needed for that. Owner ask 2 Aug 2026
-   ('DOB picker like the modern mobile apps like Apple one'). */
-.ob-wheel{position:relative;display:grid;grid-template-columns:0.9fr 1.4fr 1fr;gap:0;background:#f5f6f8;border-radius:14px;overflow:hidden;height:180px;margin-top:6px;box-shadow:inset 0 0 0 1px var(--line)}
-.ob-wheel-band{position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%);pointer-events:none;background:rgba(232,80,107,.06);border-top:1px solid rgba(232,80,107,.28);border-bottom:1px solid rgba(232,80,107,.28);z-index:1}
-.ob-wheel-col{list-style:none;margin:0;padding:68px 0;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;z-index:2}
-.ob-wheel-col::-webkit-scrollbar{display:none}
-.ob-wheel-col li{height:44px;line-height:44px;text-align:center;font-family:inherit;font-size:17px;font-weight:600;color:var(--sub);scroll-snap-align:center;user-select:none;-webkit-user-select:none;cursor:pointer;transition:color .08s}
-.ob-wheel-col li.on{color:var(--ink);font-weight:700}
-.ob-wheel-col li:hover{color:var(--ink)}
+/* flatpickr calendar — small skin so it matches the wizard's warm
+   card look (rounded, subtle shadow, accent-coloured selected day).
+   Owner ask 2 Aug 2026 v2: 'use some JS library please'. */
+.flatpickr-calendar{border-radius:14px;box-shadow:0 12px 40px rgba(16,24,40,.14);border:1px solid var(--line);font-family:inherit}
+.flatpickr-day.selected,.flatpickr-day.selected:hover{background:var(--accent,#e8506b);border-color:var(--accent,#e8506b)}
+.flatpickr-day.today{border-color:var(--accent,#e8506b)}
 /* Welcome logo */
 .ob-welcome-logo{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.6px;color:var(--ink);margin-bottom:10px;animation:obWelcomeIn .5s ease-out}
 .ob-welcome-logo em{font-style:normal;color:var(--accent,#e8506b)}
@@ -1836,18 +1834,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <input class="ob-lite-input" id="obEmail" type="email" readonly placeholder="you@example.com">
         </div>
         <div class="ob-lite-row">
-          <label class="ob-lite-label">Date of birth <span class="ob-age-live" id="obAgeLive"></span></label>
-          <!-- iOS-style wheel picker. Three scroll-snap columns; the
-               centred value in each column is the selected day/month/
-               year. Owner ask 2 Aug 2026: 'DOB picker like the modern
-               mobile apps like Apple one'. -->
-          <div class="ob-wheel" id="obDobWheel">
-            <div class="ob-wheel-band" aria-hidden="true"></div>
-            <ul class="ob-wheel-col" id="obWheelDay"   role="listbox" aria-label="Day"></ul>
-            <ul class="ob-wheel-col" id="obWheelMonth" role="listbox" aria-label="Month"></ul>
-            <ul class="ob-wheel-col" id="obWheelYear"  role="listbox" aria-label="Year"></ul>
-          </div>
-          <input type="hidden" id="obBirth">
+          <label class="ob-lite-label" for="obBirth">Date of birth <span class="ob-age-live" id="obAgeLive"></span></label>
+          <!-- flatpickr-powered date input. Owner ask 2 Aug 2026:
+               'date picker so ugly, use a JS library please'. Loaded
+               from cdnjs; obInitDobWheels() (below) initialises it
+               with 18-years-ago max + 100-years-ago min. Falls back
+               to native <input type=date> if the CDN can't reach. -->
+          <input class="ob-lite-input ob-dob" id="obBirth" type="text" placeholder="Tap to pick" readonly>
           <div class="ob-lite-help">You must be 18+ to join.</div>
         </div>
       </div>
@@ -3149,19 +3142,68 @@ function obShow(step){
     setTimeout(() => sp.classList.remove('show'), 60);
   }, 280);
 }
-// Native date input handling. Owner ask 1 Aug 2026 v3: 'use the
-// modern date picker' — iOS/Android native picker on mobile, proper
-// calendar dropdown on desktop. min/max clamped to a realistic range
-// so the picker opens somewhere sensible.
+// flatpickr DOB picker. Owner ask 2 Aug 2026 v2: 'date picker so
+// ugly, use some JS library please'. Retired the custom scroll-
+// wheel. flatpickr is loaded from cdnjs (~20KB) and gives a beautiful
+// calendar on desktop + native OS picker on iOS. 18-years-ago is the
+// maxDate so under-18s literally can't pick a valid date.
+//
+// Called from obStart() so we know the input is visible before init.
+// Reuses an existing instance if the wizard is re-opened (which
+// shouldn't happen in prod but the guard is cheap).
+let _obDobFp = null;
+function _obPaintObAge(iso){
+  const ageEl = document.getElementById('obAgeLive');
+  if (!ageEl) return;
+  if (!iso) { ageEl.textContent = ''; ageEl.className = 'ob-age-live'; return; }
+  const age = ageFromISOClient(iso);
+  if (!Number.isFinite(age) || age < 0 || age > 120) {
+    ageEl.textContent = 'invalid'; ageEl.className = 'ob-age-live bad'; return;
+  }
+  ageEl.textContent = '· ' + age + ' years';
+  ageEl.className = 'ob-age-live ' + (age >= 18 ? 'ok' : 'bad');
+}
 function obInitDobWheels(iso){
   const inp = document.getElementById('obBirth');
   if (!inp) return;
   const today = new Date();
-  const yrHi = today.toISOString().slice(0, 10);
-  const yrLo = (today.getFullYear() - 100) + '-01-01';
-  inp.max = yrHi;
-  inp.min = yrLo;
-  if (iso && /^\d{4}-\d{2}-\d{2}$/.test(String(iso))) inp.value = iso;
+  const maxD = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  const minD = new Date(today.getFullYear() - 100, 0, 1);
+  const seedD = (iso && /^\d{4}-\d{2}-\d{2}$/.test(String(iso)))
+    ? iso
+    : new Date(today.getFullYear() - 25, 0, 1);
+  if (typeof window.flatpickr === 'function') {
+    if (_obDobFp) { try { _obDobFp.destroy(); } catch(e){} _obDobFp = null; }
+    _obDobFp = window.flatpickr(inp, {
+      dateFormat: 'Y-m-d',
+      altInput: true,
+      altFormat: 'd F Y',
+      minDate: minD,
+      maxDate: maxD,
+      defaultDate: seedD,
+      allowInput: false,
+      disableMobile: false,
+      onChange: (_d, s) => _obPaintObAge(s),
+      onReady:  (_d, s) => _obPaintObAge(s)
+    });
+    // The alt-input flatpickr renders inherits basic styles from
+    // .ob-lite-input via the same class list on the original input.
+    // Nudge the alt input to look the same as its siblings.
+    if (_obDobFp.altInput) {
+      _obDobFp.altInput.className = inp.className;
+      _obDobFp.altInput.placeholder = 'Tap to pick';
+    }
+    // Seed value so obNext(1) sees a date without the user tapping.
+    if (iso && /^\d{4}-\d{2}-\d{2}$/.test(String(iso))) _obDobFp.setDate(iso, true);
+  } else {
+    // Fallback: native <input type=date> if flatpickr CDN blocked.
+    inp.type = 'date';
+    inp.max = maxD.toISOString().slice(0, 10);
+    inp.min = minD.toISOString().slice(0, 10);
+    if (iso && /^\d{4}-\d{2}-\d{2}$/.test(String(iso))) inp.value = iso;
+    inp.addEventListener('change', () => _obPaintObAge(inp.value));
+    _obPaintObAge(inp.value);
+  }
 }
 
 function obStart(){
@@ -3281,19 +3323,49 @@ function obFinish(){
   showTab('wall');
 }
 
-// Face-detection soft-check. Uses the browser's native FaceDetector
-// API where available (Chrome/Edge/Android). Safari + Firefox don't
-// ship it → we silently accept (a full face-api.js polyfill is 2MB
-// and not worth the payload for a soft-warn). Owner ask 2 Aug 2026:
-// 'check his picture if that picture has no face or not human'.
-// Returns { ok: true } to proceed, { ok: false, msg } to warn.
+// Face-detection HARD-check via face-api.js. Owner ask 2 Aug 2026 v3:
+// 'the image still bad it let me upload anything even a tree image
+// use some thirdparty'. The browser's native FaceDetector was
+// unreliable (missing entirely on Safari + Firefox; on Chrome/Android
+// it happily accepted a tree photo). We swap it for face-api.js
+// (tinyFaceDetector, ~200KB weights) lazy-loaded from a CDN the
+// first time the user tries to upload. If the CDN can't reach OR
+// the model loading throws, we fall back to server-side accept
+// (rather than block signups on our own infra failure).
+let _faceApiLoadP = null;
+function _loadFaceApi(){
+  if (_faceApiLoadP) return _faceApiLoadP;
+  _faceApiLoadP = new Promise((resolve, reject) => {
+    if (window.faceapi) return resolve(window.faceapi);
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/dist/face-api.min.js';
+    s.onload  = () => resolve(window.faceapi);
+    s.onerror = () => reject(new Error('face-api CDN blocked'));
+    document.head.appendChild(s);
+  }).then(async faceapi => {
+    // tinyFaceDetector weights (~200KB) — smaller than SSD MobilenetV1
+    // (~5MB), plenty accurate for 'is there a face at all'.
+    const MODEL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.13/model';
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL);
+    return faceapi;
+  });
+  return _faceApiLoadP;
+}
 async function _obCheckFace(file){
-  if (!('FaceDetector' in window)) return { ok: true };   // API unsupported → proceed
   try {
+    const faceapi = await _loadFaceApi();
+    // Draw the file into a canvas so face-api can read it.
     const bitmap = await createImageBitmap(file);
-    const det = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 5 });
-    const faces = await det.detect(bitmap);
+    const canvas = document.createElement('canvas');
+    canvas.width  = Math.min(bitmap.width, 640);
+    canvas.height = Math.round(bitmap.height * (canvas.width / bitmap.width));
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     try { bitmap.close && bitmap.close(); } catch(e){}
+    // scoreThreshold 0.5 is face-api's default — high enough that
+    // trees / landscapes / cars don't sneak through, low enough that
+    // real-world selfies in imperfect light still pass.
+    const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
+    const faces = await faceapi.detectAllFaces(canvas, opts);
     if (!faces || faces.length === 0) {
       return { ok: false, msg: "We can't see a clear face in that photo. Try one with your face facing the camera and good light." };
     }
@@ -3302,7 +3374,11 @@ async function _obCheckFace(file){
     }
     return { ok: true };
   } catch (e) {
-    return { ok: true };   // detector threw → don't block on our own bug
+    // CDN blocked, model load failed, or decoder threw — don't block
+    // signups on our own infra failure; server-side moderation still
+    // catches non-faces via the pending-account queue.
+    console.warn('face-check unavailable:', e && e.message);
+    return { ok: true };
   }
 }
 
@@ -3353,102 +3429,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (f) _obDoPhotoUpload(f);
     });
   }
-  // ═══════════════════════════════════════════════════════════════
-  // iOS-style wheel DOB picker. Owner ask 2 Aug 2026. Three snap-
-  // scrolling columns. Center-detection uses scrollTop / ROW_H;
-  // Center = the item currently in the middle band. Writes ISO date
-  // to hidden #obBirth for the existing obNext(1) validation.
-  // ═══════════════════════════════════════════════════════════════
-  const bd = document.getElementById('obBirth');
-  const ageEl = document.getElementById('obAgeLive');
-  const wDay = document.getElementById('obWheelDay');
-  const wMonth = document.getElementById('obWheelMonth');
-  const wYear = document.getElementById('obWheelYear');
-  const ROW_H = 44;
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  function _obBuildColumn(el, items, initialIdx){
-    el.innerHTML = items.map((v, i) => `<li data-i="${i}">${v}</li>`).join('');
-    // Wait a frame so the browser has laid the list out before we snap.
-    requestAnimationFrame(() => { el.scrollTop = initialIdx * ROW_H; _obPaintOn(el); });
-  }
-  function _obPaintOn(el){
-    const idx = Math.round(el.scrollTop / ROW_H);
-    Array.from(el.children).forEach((li, i) => li.classList.toggle('on', i === idx));
-    return idx;
-  }
-  function _obDaysIn(month, year){
-    // month 1-12, year 4-digit. Uses Date rollover trick.
-    return new Date(year, month, 0).getDate();
-  }
-  function _obYearFor(idx){
-    const now = new Date();
-    // Year list: 100 years back → current year (idx 0 = 100y ago).
-    return (now.getFullYear() - 100) + idx;
-  }
-  function _obCurrentDob(){
-    if (!wDay || !wMonth || !wYear) return '';
-    const day = Math.round(wDay.scrollTop / ROW_H) + 1;
-    const month = Math.round(wMonth.scrollTop / ROW_H) + 1;
-    const year = _obYearFor(Math.round(wYear.scrollTop / ROW_H));
-    if (!year || !month || !day) return '';
-    return year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
-  }
-  function _obPaintAge(){
-    if (!ageEl) return;
-    const iso = _obCurrentDob();
-    if (!iso) { ageEl.textContent = ''; ageEl.className = 'ob-age-live'; return; }
-    const age = ageFromISOClient(iso);
-    if (!Number.isFinite(age) || age < 0 || age > 120) {
-      ageEl.textContent = 'invalid'; ageEl.className = 'ob-age-live bad'; return;
-    }
-    ageEl.textContent = '· ' + age + ' years';
-    ageEl.className = 'ob-age-live ' + (age >= 18 ? 'ok' : 'bad');
-  }
-  function _obRebuildDaysIfNeeded(){
-    if (!wDay || !wMonth || !wYear) return;
-    const monthIdx = Math.round(wMonth.scrollTop / ROW_H);
-    const year = _obYearFor(Math.round(wYear.scrollTop / ROW_H));
-    const dim = _obDaysIn(monthIdx + 1, year);
-    if (wDay.children.length !== dim) {
-      const days = Array.from({length: dim}, (_, i) => String(i + 1).padStart(2, '0'));
-      const keep = Math.min(Math.round(wDay.scrollTop / ROW_H), dim - 1);
-      _obBuildColumn(wDay, days, Math.max(0, keep));
-    }
-  }
-  function _obCommitDob(){
-    _obPaintOn(wDay); _obPaintOn(wMonth); _obPaintOn(wYear);
-    if (bd) bd.value = _obCurrentDob();
-    _obPaintAge();
-  }
-  function _obWireColumn(col, onCommit){
-    let t = null;
-    col.addEventListener('scroll', () => {
-      _obPaintOn(col);
-      clearTimeout(t); t = setTimeout(onCommit, 90);
-    });
-    // Tap an item to snap to it (accessibility + desktop convenience).
-    col.addEventListener('click', ev => {
-      const li = ev.target.closest && ev.target.closest('li');
-      if (!li) return;
-      col.scrollTo({ top: (+li.dataset.i) * ROW_H, behavior: 'smooth' });
-      setTimeout(onCommit, 320);
-    });
-  }
-  if (wDay && wMonth && wYear && bd) {
-    const now = new Date();
-    const yrLo = now.getFullYear() - 100;
-    const years = Array.from({length: 101}, (_, i) => String(yrLo + i));
-    // Default cursor: 25 years ago (comfortable adult default), Jan 1.
-    const defaultYearIdx = 100 - 25;
-    _obBuildColumn(wDay, Array.from({length: 31}, (_, i) => String(i + 1).padStart(2, '0')), 0);
-    _obBuildColumn(wMonth, MONTHS, 0);
-    _obBuildColumn(wYear, years, defaultYearIdx);
-    _obWireColumn(wDay, () => { _obCommitDob(); });
-    _obWireColumn(wMonth, () => { _obRebuildDaysIfNeeded(); _obCommitDob(); });
-    _obWireColumn(wYear, () => { _obRebuildDaysIfNeeded(); _obCommitDob(); });
-    // Prime the hidden field + age readout after the initial render.
-    setTimeout(_obCommitDob, 60);
-  }
+  // DOB picker wiring lives in obInitDobWheels() (called from obStart)
+  // so it only runs when the wizard opens with the input visible.
   // Goal picker — single-select buttons.
   document.querySelectorAll('#obGoalPicker .ob-goal').forEach(btn => {
     btn.addEventListener('click', () => {
