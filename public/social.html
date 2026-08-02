@@ -2583,7 +2583,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <span class="phost-dot"></span>
     <div class="phost-text">
       <b id="phostTitle">Party</b>
-      <small id="phostSub">Tap to expand</small>
+      <!-- 'Tap to expand' subline retired 2 Aug 2026 per owner ask
+           ('remove it as the back-to-community button is working').
+           Kept the DOM node so any legacy writer doesn't null-ref;
+           just hidden via .hidden class. -->
+      <small id="phostSub" class="hidden"></small>
     </div>
     <button class="phost-btn expand" id="phostExpand" title="Open party">▲</button>
     <button class="phost-btn leave" id="phostLeave" title="Leave party">✕</button>
