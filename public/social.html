@@ -149,16 +149,32 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 .ob-photo-ex.ok span{color:#22c07a}
 .ob-photo-ex.bad span{color:var(--err)}
 .ob-photo-upload{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;border:2px dashed var(--line);border-radius:16px;cursor:pointer;transition:border-color .12s,background .12s;margin-top:6px}
-.ob-photo-upload:hover{border-color:var(--accent);background:#fafbff}
+.ob-photo-upload:hover,.ob-photo-upload.drop-active{border-color:var(--accent);background:#fafbff}
+.ob-photo-upload.drop-active{border-style:solid;box-shadow:0 0 0 4px rgba(232,80,107,.12)}
 .ob-photo-plus{width:80px;height:80px;border-radius:50%;background:#f4f5f7;display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--sub);font-weight:400}
 .ob-photo-upload.has-photo .ob-photo-plus{background:transparent}
 .ob-photo-upload.has-photo .ob-photo-plus img{width:80px;height:80px;border-radius:50%;object-fit:cover}
 .ob-photo-hint{color:var(--sub);font-size:13px;font-weight:600}
 /* Goal picker */
+/* Card-style goal picker (v2 wizard polish, 2 Aug 2026). Bigger tap
+   targets with icon + title + subtitle so each option feels intentional
+   rather than a flat pill row. */
 .ob-goal-picker{display:flex;flex-direction:column;gap:8px;margin-top:2px}
-.ob-goal{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .12s,background .12s}
-.ob-goal:hover{border-color:var(--sub)}
-.ob-goal.on{border-color:var(--accent);background:#fff3f5;color:var(--accent-d)}
+.ob-goal{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .12s,background .12s,transform .08s;display:flex;align-items:center;gap:12px;width:100%}
+.ob-goal:hover{border-color:#c3c8d2;background:#fafbfc}
+.ob-goal:active{transform:scale(.99)}
+.ob-goal.on{border-color:var(--accent);background:#fff3f5}
+.ob-goal-ic{font-size:26px;line-height:1;width:38px;text-align:center;flex-shrink:0}
+.ob-goal-txt{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.ob-goal-txt b{font-weight:700;font-size:15px;color:var(--ink)}
+.ob-goal.on .ob-goal-txt b{color:var(--accent-d,#c33d55)}
+.ob-goal-txt small{font-size:12px;color:var(--sub);font-weight:500;margin-top:2px}
+
+/* Live-age preview + inline help text for step 1. */
+.ob-age-live{font-size:11px;font-weight:600;color:var(--faint);margin-left:6px;letter-spacing:.2px}
+.ob-age-live.ok{color:#22c07a}
+.ob-age-live.bad{color:var(--err)}
+.ob-lite-help{font-size:11.5px;color:var(--faint);margin-top:4px;line-height:1.4}
 /* Welcome logo */
 .ob-welcome-logo{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.6px;color:var(--ink);margin-bottom:10px;animation:obWelcomeIn .5s ease-out}
 .ob-welcome-logo em{font-style:normal;color:var(--accent,#e8506b)}
@@ -1782,23 +1798,17 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <div class="ob-progress" id="obProgress"></div>
 
-    <!-- STEP 1 · Minimalist Tandem-style triple. Owner ask 1 Aug 2026:
-         'make it simpler and simpler, three small input boxes like
-         one border bottom thin small font, show name, email and DOB
-         from Gmail if not ask user, make it professional like a real
-         app'. Full name (first+last one field), email, DOB. Under-
-         line-only inputs, no boxes. Values pre-filled from ME. -->
+    <!-- STEP 1 · The basics. Owner ask 2 Aug 2026 (v2 wizard polish):
+         'make it amazing so people can easily make their account'.
+         Three underline inputs, live age preview, one primary CTA. -->
     <section class="ob-step" data-step="1">
       <div class="ob-emoji">👋</div>
-      <h2>Let's get you set up</h2>
-      <p class="ob-sub">A few basics. We've pre-filled what we could from your sign-in.</p>
+      <h2>Let's set up your profile</h2>
+      <p class="ob-sub">Takes about a minute. We've pre-filled what we could.</p>
       <div class="ob-lite">
         <div class="ob-lite-row">
-          <label class="ob-lite-label" for="obFirstName">Full name</label>
+          <label class="ob-lite-label" for="obFirstName">Your name</label>
           <input class="ob-lite-input" id="obFirstName" maxlength="30" placeholder="First Last" autocomplete="name">
-          <!-- Hidden field kept so the existing obNext(1) logic (which
-               reads first+last separately) still works. Populated from
-               the visible input at submit time. -->
           <input type="hidden" id="obLastName">
         </div>
         <div class="ob-lite-row">
@@ -1806,19 +1816,20 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <input class="ob-lite-input" id="obEmail" type="email" readonly placeholder="you@example.com">
         </div>
         <div class="ob-lite-row">
-          <label class="ob-lite-label" for="obBirth">Date of birth</label>
+          <label class="ob-lite-label" for="obBirth">Date of birth <span class="ob-age-live" id="obAgeLive"></span></label>
           <input class="ob-lite-input ob-dob" id="obBirth" type="date">
+          <div class="ob-lite-help">You must be 18+ to join.</div>
         </div>
       </div>
       <div class="ob-err hidden" id="obErr1"></div>
-      <button class="ob-next" onclick="obNext(1)">Continue</button>
+      <button class="ob-next" onclick="obNext(1)">That's me — continue</button>
     </section>
 
-    <!-- STEP 2 · Photo (with 3 reference examples) -->
+    <!-- STEP 2 · Photo. Bigger drop zone, drag-and-drop, better states. -->
     <section class="ob-step" data-step="2">
       <div class="ob-emoji">📷</div>
-      <h2>Add a clear face photo</h2>
-      <p class="ob-sub">A real photo of your face helps others trust you're a real person.</p>
+      <h2>Add your photo</h2>
+      <p class="ob-sub">A clear face photo helps others trust you're real.</p>
       <div class="ob-photo-examples" aria-hidden="true">
         <div class="ob-photo-ex ok"><span>✓</span><small>Clear face</small></div>
         <div class="ob-photo-ex ok"><span>✓</span><small>Good light</small></div>
@@ -1827,12 +1838,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="ob-photo-upload" id="obPhotoUpload">
         <span id="obPhotoPreview" class="ob-photo-plus">+</span>
         <input type="file" id="obPhotoIn" accept="image/jpeg,image/png,image/webp" capture="user" hidden>
-        <span class="ob-photo-hint" id="obPhotoHint">Tap to upload</span>
+        <span class="ob-photo-hint" id="obPhotoHint">Tap to upload — or drag a photo here</span>
       </div>
       <div class="ob-err hidden" id="obErr4"></div>
       <div class="ob-row">
         <button class="ob-back" onclick="obBack(2)">Back</button>
-        <button class="ob-next" onclick="obNext(2)">Continue</button>
+        <button class="ob-next" onclick="obNext(2)">Looks good</button>
       </div>
     </section>
 
@@ -1846,47 +1857,43 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <p class="ob-sub" style="margin-top:16px;font-size:12.5px">Full <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy" target="_blank" rel="noopener">Privacy</a> · <a href="/child-safety" target="_blank" rel="noopener">Child safety</a></p>
       <div class="ob-row">
         <button class="ob-back" onclick="obBack(3)">Back</button>
-        <button class="ob-next" onclick="obNext(3)">I agree</button>
+        <button class="ob-next" onclick="obNext(3)">I agree — continue</button>
       </div>
     </section>
 
-    <!-- STEP 4 · Interests + goal -->
+    <!-- STEP 4 · Interests + goal. Card-based goal picker for better tap
+         targets + micro-copy that makes it feel worth doing. -->
     <section class="ob-step" data-step="4">
       <div class="ob-emoji">💬</div>
-      <h2>Tell us a bit more</h2>
-      <p class="ob-sub">This helps us match you with the right language partners.</p>
+      <h2>What brings you here?</h2>
+      <p class="ob-sub">Two questions so we can match you with the right people.</p>
       <div class="ob-fields">
-        <textarea class="ob-input" id="obTalkAbout" maxlength="200" rows="3" placeholder="What do you like to talk about? (food, films, travel…)"></textarea>
-        <label class="ob-label">Your main goal</label>
+        <label class="ob-label">Say hello — what do you like to talk about?</label>
+        <textarea class="ob-input" id="obTalkAbout" maxlength="200" rows="3" placeholder="e.g. films, football, cooking, travel…"></textarea>
+        <label class="ob-label" style="margin-top:18px">Your main goal here</label>
         <div class="ob-goal-picker" id="obGoalPicker">
-          <button type="button" class="ob-goal" data-goal="learn">🎓 Learn a language</button>
-          <button type="button" class="ob-goal" data-goal="practise">💬 Practise conversation</button>
-          <button type="button" class="ob-goal" data-goal="friends">👥 Make friends</button>
-          <button type="button" class="ob-goal" data-goal="travel">✈️ Travel</button>
-          <button type="button" class="ob-goal" data-goal="other">🌱 Something else</button>
+          <button type="button" class="ob-goal" data-goal="learn"><span class="ob-goal-ic">🎓</span><span class="ob-goal-txt"><b>Learn a language</b><small>Practice with real speakers</small></span></button>
+          <button type="button" class="ob-goal" data-goal="practise"><span class="ob-goal-ic">💬</span><span class="ob-goal-txt"><b>Practise conversation</b><small>Improve fluency in chat</small></span></button>
+          <button type="button" class="ob-goal" data-goal="friends"><span class="ob-goal-ic">👥</span><span class="ob-goal-txt"><b>Make friends</b><small>Meet people from around the world</small></span></button>
+          <button type="button" class="ob-goal" data-goal="travel"><span class="ob-goal-ic">✈️</span><span class="ob-goal-txt"><b>Travel</b><small>Prep for a trip abroad</small></span></button>
+          <button type="button" class="ob-goal" data-goal="other"><span class="ob-goal-ic">🌱</span><span class="ob-goal-txt"><b>Something else</b><small>Just seeing what's here</small></span></button>
         </div>
       </div>
       <div class="ob-row">
         <button class="ob-back" onclick="obBack(4)">Back</button>
-        <button class="ob-next" onclick="obNext(4)">Continue</button>
+        <button class="ob-next" onclick="obNext(4)">Almost done</button>
       </div>
     </section>
 
-    <!-- STEP 5 · Verification pending -->
+    <!-- STEP 5 · Welcome (retired the separate verification-pending step —
+         the ask 'we review profiles' is now the note below the CTA so
+         users don't tap through a dead screen). Owner ask 2 Aug 2026. -->
     <section class="ob-step" data-step="5">
-      <div class="ob-emoji">🔒</div>
-      <h2>Almost there</h2>
-      <p class="ob-para">We review every new profile to keep the community safe. You can start exploring right now — reviewed accounts get a verified badge, usually within a day or two.</p>
-      <p class="ob-sub" style="font-size:12.5px">If we spot anything unclear we'll email you.</p>
-      <button class="ob-next" onclick="obNext(5)">Got it</button>
-    </section>
-
-    <!-- STEP 6 · Welcome -->
-    <section class="ob-step" data-step="6">
       <div class="ob-welcome-logo">Word<em>Spies</em></div>
-      <h2 style="font-size:26px">Welcome, <span id="obWelcomeName">friend</span> 👋</h2>
-      <p class="ob-sub">Your profile is set up. Time to meet some people.</p>
-      <button class="ob-next" onclick="obFinish()">Enter WordSpies</button>
+      <h2 style="font-size:28px;text-align:center">You're all set, <span id="obWelcomeName">friend</span> 🎉</h2>
+      <p class="ob-sub" style="text-align:center">Your profile is live. Time to meet some people.</p>
+      <p class="ob-sub" style="text-align:center;font-size:12.5px;color:var(--faint);margin-top:8px">We review every new profile — most get verified within a day.</p>
+      <button class="ob-next primary-big" onclick="obFinish()">Enter WordSpies</button>
     </section>
   </div>
 </div>
@@ -3049,7 +3056,7 @@ function enterApp(justJoined){
 // TOTAL_STEPS is kept in one place — bump progress dots + guards
 // automatically if we ever add or remove a step.
 // ═══════════════════════════════════════════════════════════════════
-const OB_TOTAL = 6;
+const OB_TOTAL = 5;
 let obGoal = '';
 let obNewPhotoUploaded = false;
 
@@ -3194,10 +3201,12 @@ async function obNext(step){
       // Register with the moderation queue so the owner can verify.
       try { await api('/account/pending', { method:'POST' }); } catch (e2) {}
     }
-    // Step 5 (verification wait): display-only.
+    // Step 5 IS the welcome now (retired the separate verification-
+    // pending step). Owner ask 2 Aug 2026 v10 — no dead tap-through
+    // screens. The welcome button calls obFinish() directly.
 
     if (step >= OB_TOTAL) { obFinish(); return; }
-    // Populate welcome name just before showing step 6.
+    // Populate welcome name just before showing the final step.
     if (step + 1 === OB_TOTAL && ME) {
       $('obWelcomeName').textContent = String(ME.name || 'friend').split(' ')[0];
     }
@@ -3227,31 +3236,61 @@ function obFinish(){
   showTab('wall');
 }
 
-// Photo-step wiring — reuse the existing /photo upload endpoint.
+// Shared photo-upload handler used by both tap AND drag-and-drop.
+// Owner ask 2 Aug 2026: 'make the signup wizard amazing'. Bigger
+// affordance + drop-zone.
+async function _obDoPhotoUpload(file){
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('photo', file);
+  const hint = $('obPhotoHint');
+  if (hint) hint.textContent = 'Uploading…';
+  try {
+    const r = await fetch('/api/social/photo', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Upload failed');
+    ME = j.me;
+    $('obPhotoPreview').innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
+    $('obPhotoUpload').classList.add('has-photo');
+    if (hint) hint.textContent = 'Looks great — tap to change';
+    obNewPhotoUploaded = true;
+  } catch (e) {
+    if (hint) hint.textContent = 'Upload failed — tap to retry';
+  }
+}
 document.addEventListener('DOMContentLoaded', () => {
   const up = document.getElementById('obPhotoUpload');
   const inp = document.getElementById('obPhotoIn');
   if (up && inp) {
     up.addEventListener('click', () => inp.click());
-    inp.addEventListener('change', async (ev) => {
-      const f = ev.target.files && ev.target.files[0];
-      if (!f) return;
-      const fd = new FormData();
-      fd.append('photo', f);
-      $('obPhotoHint').textContent = 'Uploading…';
-      try {
-        const r = await fetch('/api/social/photo', { method: 'POST', body: fd });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j.error || 'Upload failed');
-        ME = j.me;
-        $('obPhotoPreview').innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
-        up.classList.add('has-photo');
-        $('obPhotoHint').textContent = 'Tap to change';
-        obNewPhotoUploaded = true;
-      } catch (e) {
-        $('obPhotoHint').textContent = 'Upload failed — tap to retry';
-      }
+    inp.addEventListener('change', ev => _obDoPhotoUpload(ev.target.files && ev.target.files[0]));
+    // Drag-and-drop: highlight zone on dragenter/over, upload on drop.
+    ['dragenter','dragover'].forEach(t => up.addEventListener(t, ev => {
+      ev.preventDefault(); ev.stopPropagation(); up.classList.add('drop-active');
+    }));
+    ['dragleave','dragend','drop'].forEach(t => up.addEventListener(t, ev => {
+      ev.preventDefault(); ev.stopPropagation(); up.classList.remove('drop-active');
+    }));
+    up.addEventListener('drop', ev => {
+      const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+      if (f) _obDoPhotoUpload(f);
     });
+  }
+  // Live-age preview on step 1 DOB field. Owner ask 2 Aug 2026.
+  const bd = document.getElementById('obBirth');
+  const ageEl = document.getElementById('obAgeLive');
+  if (bd && ageEl) {
+    const paint = () => {
+      const v = bd.value;
+      if (!v) { ageEl.textContent = ''; ageEl.className = 'ob-age-live'; return; }
+      const age = ageFromISOClient(v);
+      if (!Number.isFinite(age) || age < 0 || age > 120) {
+        ageEl.textContent = 'invalid'; ageEl.className = 'ob-age-live bad'; return;
+      }
+      ageEl.textContent = '· ' + age + ' years';
+      ageEl.className = 'ob-age-live ' + (age >= 18 ? 'ok' : 'bad');
+    };
+    bd.addEventListener('input', paint); bd.addEventListener('change', paint);
   }
   // Goal picker — single-select buttons.
   document.querySelectorAll('#obGoalPicker .ob-goal').forEach(btn => {
