@@ -1005,8 +1005,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    panel on top (small illustration) + a white body with badge /
    title / desc / CTA. */
 .playhead{padding:8px 0 4px}
-.playhead h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--ink)}
-.playhead p{font-size:14px;color:var(--sub);margin-top:6px;line-height:1.55;max-width:520px}
+.playhead h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:20px;font-weight:500;letter-spacing:-.3px;color:var(--ink)}
 .playgrid{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 0 30px}
 @media(min-width:640px){.playgrid{grid-template-columns:repeat(2,1fr);gap:18px}}
 @media(min-width:1080px){.playgrid{grid-template-columns:repeat(4,1fr)}}
@@ -2101,6 +2100,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
       <div class="avmenu" id="avMenu" role="menu" aria-hidden="true">
         <a class="avitem" role="menuitem" onclick="avGo('profile')"><span class="avic">👤</span>My profile</a>
+        <a class="avitem" role="menuitem" onclick="avGo('share')"><span class="avic">🔗</span>Share my profile</a>
         <a class="avitem" role="menuitem" onclick="avGo('langs')"><span class="avic">🌐</span>My languages</a>
         <a class="avitem" role="menuitem" onclick="avGo('community')"><span class="avic">🏘️</span>Community</a>
         <div class="avdiv"></div>
@@ -2231,7 +2231,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <div class="playhead">
       <h2>Play together</h2>
-      <p>Break the ice with a quick game — invite anyone from your chats and jump in.</p>
     </div>
     <div class="playgrid">
       <!-- 1 · WordSpies (Codenames-style) -->
@@ -3209,6 +3208,17 @@ function enterApp(justJoined){
     // keeps the page anchored at the top where showTab put it.
     setTimeout(() => { try { $('fBio').focus({ preventScroll: true }); } catch(e){ /* older browsers: skip focus rather than scroll */ } }, 100);
   } else showTab('wall');
+  // Deep-link: /social?u=<userId> jumps straight to a member profile
+  // (owner ask 2 Aug 2026 v8 — 'easy for friends to follow and share
+  // link'). Runs after showTab settles so it overrides the default
+  // landing. loadMembers may not be done yet → openMemberById will
+  // fetch /user/:id if the cache miss.
+  try {
+    const uid = new URLSearchParams(location.search).get('u');
+    if (uid && ME && uid !== ME.id) {
+      setTimeout(() => { try { openMemberById(uid); } catch(e){} }, 250);
+    }
+  } catch (e) {}
   // Belt-and-braces scroll-pin AFTER enterApp — image loads (avatar,
   // hero, cards) can cause layout shifts that push the page down
   // AFTER showTab's initial scrollTo fired. Same pattern as
@@ -6276,7 +6286,13 @@ function openMember(i){
 }
 // Sidebar rows aren't in __wallList order, so they open profiles by id.
 function openMemberById(id){
-  const m = MEMBERS.find(x => x.id === id); if (m) openMemberObj(m);
+  const m = MEMBERS.find(x => x.id === id);
+  if (m) { openMemberObj(m); return; }
+  // Cache miss — deep-links (owner v8 share-a-friend flow) hit this
+  // before /members has loaded. Fetch the profile directly.
+  api('/user/' + encodeURIComponent(id))
+    .then(j => { if (j && j.user) openMemberObj(j.user); })
+    .catch(() => {});
 }
 function openMemberObj(m){
   if (!m) return;
@@ -6383,6 +6399,33 @@ function toggleMoreMenu(ev){ if (ev) ev.stopPropagation(); document.getElementBy
 function closeMoreMenu(){ const m = document.getElementById('moreMenu'); if (m) m.classList.add('hidden'); }
 document.addEventListener('click', ev => { if (!ev.target.closest('#moreBtn') && !ev.target.closest('#moreMenu')) closeMoreMenu(); });
 
+// Share-my-profile — Web Share API on mobile, clipboard fallback on
+// desktop. Owner ask 2 Aug 2026 v8: 'make it easy for friends to
+// follow and share link with the friends'. The URL uses ?u=<id>
+// which enterApp() picks up post-login and jumps straight to the
+// member view — friends can Follow with one tap.
+async function shareMyProfile(){
+  if (!ME || !ME.id) { toast('Log in first, then share your profile.'); return; }
+  const url = location.origin + '/social?u=' + encodeURIComponent(ME.id);
+  const shareData = {
+    title: ME.name ? ME.name + ' on WordSpies' : 'WordSpies',
+    text: 'Come chat with me on WordSpies!',
+    url
+  };
+  try {
+    if (navigator.share) { await navigator.share(shareData); return; }
+  } catch (e) { /* user cancelled — silent */ }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(url);
+      toast('🔗 Link copied — paste it anywhere');
+      return;
+    }
+  } catch (e) {}
+  // Very old browsers: last-ditch prompt so the user can copy by hand.
+  try { window.prompt('Copy your profile link:', url); } catch (e) {}
+}
+
 // Avatar dropdown — top-right nav. Owner ask 2 Aug 2026 v7.
 function toggleAvatarMenu(ev){
   if (ev) ev.stopPropagation();
@@ -6411,6 +6454,7 @@ function avGo(kind){
   };
   switch (kind) {
     case 'profile':   showTab('me'); break;
+    case 'share':     shareMyProfile(); break;
     case 'langs':     showTab('me'); scrollTo('pfLangSection'); break;
     case 'settings':  showTab('me'); scrollTo('pfSettingsSection'); break;
     case 'support':   showTab('me'); scrollTo('pfSettingsSection'); break;
