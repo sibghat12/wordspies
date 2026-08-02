@@ -119,9 +119,23 @@ function mount(api, ctx) {
       // interests, goals, recommendations. All caps + light shape checks.
       const cleanArr = (v, cap, max) =>
         (Array.isArray(v) ? v : []).map(x => String(x || '').trim().slice(0, cap)).filter(Boolean).slice(0, max);
+      // Languages now carry a proficiency level. Owner ask 2 Aug
+      // 2026 v6. Accept both legacy string codes (['en','es']) and
+      // the new object shape ([{c:'en',lvl:5},{c:'es',lvl:2}]);
+      // normalise to objects on write so downstream renderers only
+      // have one shape to handle. lvl clamped 0..5; 0 = 'not set'.
+      const cleanLangArr = (v, max) =>
+        (Array.isArray(v) ? v : [])
+          .map(x => {
+            if (typeof x === 'string') return { c: x.trim().slice(0, 4), lvl: 0 };
+            if (x && typeof x === 'object') return { c: String(x.c || '').trim().slice(0, 4), lvl: Math.max(0, Math.min(5, Number(x.lvl) || 0)) };
+            return null;
+          })
+          .filter(o => o && o.c)
+          .slice(0, max);
       if (b.talkAbout !== undefined) u.talkAbout = String(b.talkAbout || '').slice(0, 500);
-      if (b.speaks    !== undefined) u.speaks    = cleanArr(b.speaks,    6,  5);
-      if (b.learns    !== undefined) u.learns    = cleanArr(b.learns,    6,  5);
+      if (b.speaks    !== undefined) u.speaks    = cleanLangArr(b.speaks, 5);
+      if (b.learns    !== undefined) u.learns    = cleanLangArr(b.learns, 5);
       if (b.interests !== undefined) u.interests = cleanArr(b.interests, 30, 12);
       if (b.goals     !== undefined) u.goals     = cleanArr(b.goals,     30, 6);
       if (b.recs      !== undefined) u.recs      = String(b.recs || '').slice(0, 500);

@@ -644,6 +644,27 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pklist button{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:99px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .12s,border-color .12s}
 .pklist button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 .pkclose{align-self:center;background:transparent;border:0;font-family:inherit;color:var(--sub);font-weight:600;font-size:13px;cursor:pointer;padding:6px}
+/* Language chip — richer than the generic .chip since the flag +
+   name + level need room. Tandem-style row with the level pill on
+   the right. Owner ask 2 Aug 2026 v6. */
+.chip.chip-lang{background:#fff;border:1px solid var(--line);color:var(--ink);padding:6px 6px 6px 10px;gap:8px;font-size:13px;font-weight:600}
+.chip.chip-lang .cflag{width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.chip.chip-lang .chip-nm{color:var(--ink)}
+.chip-lvl{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;background:#f0f2f5;color:var(--sub);font-size:11px;font-weight:600;cursor:pointer;transition:background .1s,color .1s;user-select:none;letter-spacing:.5px}
+.chip-lvl:hover{background:#e5e8ed}
+.chip-lvl.on{background:#fff3f5;color:var(--accent-d,#c33d55);border:1px solid rgba(232,80,107,.25)}
+.chip-lvl.zero{background:transparent;border:1px dashed var(--line);color:var(--faint)}
+.chip-lvl-dots{font-size:9px;letter-spacing:1px;line-height:1}
+/* Level picker modal — reuses .pkmod backdrop, wider cards for the
+   five options with dots + label side-by-side. */
+.lvlcard{max-width:min(360px,92vw)}
+.lvl-opts{display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.lvl-opt{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 16px;font-family:inherit;cursor:pointer;text-align:left;transition:border-color .12s,background .12s,transform .08s}
+.lvl-opt:hover{border-color:#c3c8d2;background:#fafbfc}
+.lvl-opt:active{transform:scale(.99)}
+.lvl-opt.on{border-color:var(--accent,#e8506b);background:#fff3f5}
+.lvl-opt .lvl-dots{font-size:14px;letter-spacing:2px;color:var(--accent,#e8506b);line-height:1;flex-shrink:0;min-width:70px}
+.lvl-opt .lvl-nm{font-weight:600;color:var(--ink);font-size:14.5px}
 
 /* Profile display of the new fields — quote block, language rows, goal
    chips, recommendations. Reused across Me + Member views. */
@@ -2580,7 +2601,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <section class="mp-card">
           <h3>Speaks</h3>
           <div class="chiprow" id="fSpeaksChips"></div>
-          <button type="button" class="chipadd" onclick="openLangPicker('speaks')">+ Add native language</button>
+          <button type="button" class="chipadd" onclick="openLangPicker('speaks')">+ Add a language you speak</button>
         </section>
 
         <section class="mp-card">
@@ -6218,7 +6239,7 @@ function renderWall(){
       if (!arr || !arr.length) return '';
       const first = arr[0];
       const more = arr.length > 1 ? `<span class="wf-more">+${arr.length - 1}</span>` : '';
-      return `<div class="wf-col"><span class="wf-lbl">${label}</span><span class="wf-row"><span class="wf-flag">${langFlag(first)}</span>${more}</span></div>`;
+      return `<div class="wf-col"><span class="wf-lbl">${label}</span><span class="wf-row"><span class="wf-flag">${langFlag(langCode(first))}</span>${more}</span></div>`;
     };
     const langsRow =
       (m.speaks && m.speaks.length) || (m.learns && m.learns.length)
@@ -6416,15 +6437,22 @@ function openMemberObj(m){
   else $('mInterestsBox').classList.add('hidden');
   if (m.goals && m.goals.length) { $('mGoals').innerHTML = chipsHTML(m.goals); $('mGoalsBox').classList.remove('hidden'); }
   else $('mGoalsBox').classList.add('hidden');
-  // Languages — one row per language: flag + name + level.
-  const langRow = (code, lvl) =>
-    `<div class="mp-lang"><span class="mp-lang-flag">${langFlag(code)}</span><span class="mp-lang-name">${esc(langName(code))}</span><span class="mp-lang-lvl">${esc(lvl)}</span></div>`;
+  // Languages — one row per language: flag + name + level. If the
+  // stored level > 0 use it (Beginner / … / Native); fall back to
+  // the section fallback ('Native' / 'Learning') for legacy string
+  // records where no proficiency has been set yet.
+  const langRow = (v, fallback) => {
+    const c = langCode(v);
+    const lv = langLvl(v);
+    const lbl = lv > 0 ? levelLabel(lv) : fallback;
+    return `<div class="mp-lang"><span class="mp-lang-flag">${langFlag(c)}</span><span class="mp-lang-name">${esc(langName(c))}</span><span class="mp-lang-lvl">${esc(lbl)}</span></div>`;
+  };
   if (m.speaks && m.speaks.length) {
-    $('mSpeaks').innerHTML = m.speaks.map(c => langRow(c, 'Native')).join('');
+    $('mSpeaks').innerHTML = m.speaks.map(v => langRow(v, 'Native')).join('');
     $('mSpeaksBox').classList.remove('hidden');
   } else $('mSpeaksBox').classList.add('hidden');
   if (m.learns && m.learns.length) {
-    $('mLearns').innerHTML = m.learns.map(c => langRow(c, 'Learning')).join('');
+    $('mLearns').innerHTML = m.learns.map(v => langRow(v, 'Learning')).join('');
     $('mLearnsBox').classList.remove('hidden');
   } else $('mLearnsBox').classList.add('hidden');
   // Recommendations: text if present, otherwise the friendly placeholder.
@@ -6537,6 +6565,25 @@ const langFlag = c => {
 };
 const langName = c => (langByCode(c) || {}).n || c;
 
+// Proficiency scale — Tandem-style. Owner ask 2 Aug 2026 v6:
+// 'show the country flag and name properly and by default all
+// zero'. lvl=0 means 'not set yet'; user picks a level from the
+// scale in the level picker after choosing a language.
+const LEVELS = [
+  { k: 1, l: 'Beginner',     dots: '●○○○○' },
+  { k: 2, l: 'Elementary',   dots: '●●○○○' },
+  { k: 3, l: 'Intermediate', dots: '●●●○○' },
+  { k: 4, l: 'Advanced',     dots: '●●●●○' },
+  { k: 5, l: 'Native',       dots: '●●●●●' }
+];
+// Storage moved from string codes (['en','es']) to { c, lvl } objects
+// ([{c:'en',lvl:5},{c:'es',lvl:2}]). Old records with plain strings
+// still work — treated as level 0 until the user sets one.
+const langCode = v => typeof v === 'string' ? v : (v && v.c) || '';
+const langLvl  = v => (v && typeof v === 'object' && Number(v.lvl)) || 0;
+const levelLabel = lv => (lv > 0 && LEVELS[lv - 1]) ? LEVELS[lv - 1].l : '';
+const levelDots  = lv => (lv > 0 && LEVELS[lv - 1]) ? LEVELS[lv - 1].dots : '○○○○○';
+
 // Suggested interests + goals. Full Speaky-style set — user picks any.
 const INTERESTS = ['Art','Books','Business','Cooking','Culture','Economics','Fashion','Fitness',
   'Food','Gaming','Gardening','History','Languages','Meditation','Movies','Music','Nature',
@@ -6552,16 +6599,29 @@ function renderChips(hostId, arr, kind){
   if (!host) return;
   const isLang = (kind === 'speaks' || kind === 'learns');
   host.innerHTML = arr.map((v, i) => {
-    // Lang chips contain trusted HTML (our own flag <img>), everything
-    // else is plain user text and must be escaped. Bug fix: was
-    // esc()-wrapping the whole label including the img tag, which
-    // rendered as literal '&lt;img …&gt;' text next to the name.
-    const label = isLang
-      ? `${langFlag(v)} <span class="chip-nm">${esc(langName(v))}</span>`
-      : esc(v);
-    return `<span class="chip">${label}<button type="button" class="chipx" onclick="removeChip('${kind}',${i})" aria-label="Remove">×</button></span>`;
+    if (isLang) {
+      const c  = langCode(v);
+      const lv = langLvl(v);
+      const lvlCls  = lv > 0 ? 'chip-lvl on' : 'chip-lvl zero';
+      const lvlHtml = `<span class="${lvlCls}" data-kind="${kind}" data-ix="${i}" role="button" tabindex="0">`
+                    + `<span class="chip-lvl-dots">${levelDots(lv)}</span>`
+                    + `<span>${lv > 0 ? esc(levelLabel(lv)) : 'Set level'}</span></span>`;
+      return `<span class="chip chip-lang">${langFlag(c)} <span class="chip-nm">${esc(langName(c))}</span>${lvlHtml}`
+           + `<button type="button" class="chipx" onclick="removeChip('${kind}',${i})" aria-label="Remove">×</button></span>`;
+    }
+    // Non-language chips: plain text label, escape everything.
+    return `<span class="chip">${esc(v)}<button type="button" class="chipx" onclick="removeChip('${kind}',${i})" aria-label="Remove">×</button></span>`;
   }).join('');
 }
+// Delegated click on chip-lvl pills — opens the level picker for the
+// underlying chip. Owner ask 2 Aug 2026 v6.
+document.addEventListener('click', ev => {
+  const el = ev.target && ev.target.closest && ev.target.closest('.chip-lvl');
+  if (!el) return;
+  const kind = el.getAttribute('data-kind');
+  const ix = parseInt(el.getAttribute('data-ix'), 10);
+  if (kind && Number.isInteger(ix)) editChipLevel(kind, ix);
+});
 function removeChip(kind, i){
   const map = { speaks:EDIT_SPEAKS, learns:EDIT_LEARNS, interests:EDIT_INTERESTS, goals:EDIT_GOALS };
   const arr = map[kind]; if (!arr) return;
@@ -6614,11 +6674,64 @@ function openPicker(title, items, filterHint, onPick){
 }
 function closePicker(){ const o = document.getElementById('genPicker'); if (o) o.classList.remove('show'); }
 function openLangPicker(kind){
-  openPicker(kind === 'speaks' ? 'Add a native language' : 'Add a language you\'re learning',
+  openPicker(kind === 'speaks' ? 'Add a language you speak' : "Add a language you're learning",
     LANGS.map(l => ({ value:l.c, label: l.f + ' ' + l.n })),
     'Search language…',
-    v => addChip(kind, v));
+    code => {
+      // Language chosen → immediately ask for proficiency. Default
+      // highlight = level 1 (Beginner) so a quick double-tap works,
+      // but nothing is saved until they pick. Owner ask v6:
+      // 'by default all zero'.
+      openLevelPicker(0, lvl => addLangWithLevel(kind, code, lvl));
+    });
 }
+function addLangWithLevel(kind, code, lvl){
+  const arr = kind === 'speaks' ? EDIT_SPEAKS : EDIT_LEARNS;
+  const cap = 5;
+  const ix = arr.findIndex(o => langCode(o) === code);
+  if (ix >= 0) {
+    arr[ix] = { c: code, lvl };
+  } else {
+    if (arr.length >= cap) { toast('Max ' + cap + ' — remove one first.'); return; }
+    arr.push({ c: code, lvl });
+  }
+  renderChips('f' + kind[0].toUpperCase() + kind.slice(1) + 'Chips', arr, kind);
+}
+function editChipLevel(kind, ix){
+  const arr = kind === 'speaks' ? EDIT_SPEAKS : EDIT_LEARNS;
+  if (!arr) return;
+  const cur = arr[ix]; if (!cur) return;
+  openLevelPicker(langLvl(cur), lvl => {
+    arr[ix] = { c: langCode(cur), lvl };
+    renderChips('f' + kind[0].toUpperCase() + kind.slice(1) + 'Chips', arr, kind);
+  });
+}
+// Level picker modal — five rows, dots + label, single tap to pick.
+function openLevelPicker(currentLvl, onPick){
+  let overlay = document.getElementById('lvlPicker');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'lvlPicker';
+    overlay.className = 'pkmod';
+    overlay.innerHTML = `<div class="pkcard lvlcard">
+      <h3>How well do you know it?</h3>
+      <div class="lvl-opts" id="lvlOpts"></div>
+      <button class="pkclose" onclick="closeLevelPicker()">Cancel</button>
+    </div>`;
+    overlay.addEventListener('click', ev => { if (ev.target === overlay) closeLevelPicker(); });
+    document.body.appendChild(overlay);
+  }
+  const opts = document.getElementById('lvlOpts');
+  opts.innerHTML = LEVELS.map(L =>
+    `<button type="button" class="lvl-opt${L.k === currentLvl ? ' on' : ''}" data-k="${L.k}">`
+    + `<span class="lvl-dots">${L.dots}</span><span class="lvl-nm">${L.l}</span></button>`
+  ).join('');
+  opts.querySelectorAll('.lvl-opt').forEach(b =>
+    b.onclick = () => { onPick(parseInt(b.dataset.k, 10)); closeLevelPicker(); }
+  );
+  overlay.classList.add('show');
+}
+function closeLevelPicker(){ const o = document.getElementById('lvlPicker'); if (o) o.classList.remove('show'); }
 function openInterestPicker(){
   openPicker('Add an interest', INTERESTS.map(x => ({ value:x, label:x })), 'Search or type an interest…',
     v => addChip('interests', v));
