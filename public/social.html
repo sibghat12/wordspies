@@ -1308,6 +1308,8 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .gamebar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111318;color:#fff;border-radius:99px;padding:10px 16px;display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Nunito',system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,23,42,.28);z-index:149;transition:transform .12s}
 .gamebar:hover{transform:translateX(-50%) translateY(-2px)}
 .gamebar .pbgo{background:linear-gradient(135deg,#ffb84d,#ff8f2c);color:#fff;font-weight:700;font-size:12px;padding:5px 12px;border-radius:99px}
+.gamebar .pbclose{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;margin-left:2px;cursor:pointer;flex-shrink:0}
+.gamebar .pbclose:hover{background:rgba(255,255,255,.24)}
 body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset-bottom))}
 @media(max-width:480px){ .gamebar{padding:8px 14px} .gamebar .pbtxt small{display:none} }
 .gamebar.hidden{display:none}
@@ -2750,6 +2752,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <small id="gbSub">Tap to continue</small>
   </span>
   <span class="pbgo">Resume →</span>
+  <span class="pbclose" role="button" aria-label="Dismiss" title="Dismiss" onclick="dismissGameBar(event)">✕</span>
 </a>
 
 <!-- In-app party overlay: an iframe of /party?room=X&embed=1 that lives
@@ -4371,7 +4374,16 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) refr
 // resumes the game with one tap when the user returns to /social.
 // Stale entries auto-clear after 6 hours.
 // ═══════════════════════════════════════════════════════════════════
-const GAME_STALE_MS = 6 * 60 * 60 * 1000;
+// Owner ask 2 Aug 2026 v8: 'stay here until user delete or end
+// that game'. Was 6 hours; now a month so the pill only disappears
+// when the user taps × or the game page fires wsClearGameSession().
+const GAME_STALE_MS = 30 * 24 * 60 * 60 * 1000;
+function dismissGameBar(ev){
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  try { localStorage.removeItem('wsActiveGame'); } catch(e){}
+  const bar = $('gameBar'); if (bar) bar.classList.add('hidden');
+}
+window.dismissGameBar = dismissGameBar;
 function refreshGameBar(){
   const bar = $('gameBar');
   if (!bar) return;

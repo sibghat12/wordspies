@@ -21,7 +21,10 @@ const MAX_PLAYERS = 10;
 const MAX_NAME = 18;
 const MAX_CLUE = 24;
 const ROOM_TTL = 1000 * 60 * 90;
-const OWNER_ROOM_TTL = 1000 * 60 * 60 * 24;   // signed-in creators keep their rooms for a day
+// Signed-in creators keep their rooms alive for a week. Owner ask
+// 2 Aug 2026 v8: 'stay here until user delete or end that game'.
+// Explicit `closeMyRoom` still tears it down immediately.
+const OWNER_ROOM_TTL = 1000 * 60 * 60 * 24 * 7;
 const DROP_GRACE = 120000;
 
 // Pairs of related-but-different words. The whole game turns on how close but
@@ -396,6 +399,14 @@ function mount(app, io, opts) {
     socket.on('create', async (data, ack) => {
       await socket.ready;
       if (room) return;
+      // Owner ask 2 Aug 2026 v8: 'only login user can join this
+      // game as it should be different name email or users'.
+      // Anonymous joiners were creating duplicate seats with the
+      // same typed name; sessioned users are dedup'd by uid.
+      if (!socket.profile || !socket.profile.uid) {
+        if (typeof ack === 'function') ack({ error: 'login_required' });
+        return;
+      }
       const code = newCode();
       const r = newRoom(); r.code = code;
       const prof = socket.profile;
@@ -420,6 +431,10 @@ function mount(app, io, opts) {
     socket.on('join', async (data, ack) => {
       await socket.ready;
       if (room) return;
+      if (!socket.profile || !socket.profile.uid) {
+        if (typeof ack === 'function') ack({ error: 'login_required' });
+        return;
+      }
       const code = String((data && data.code) || '').trim().toUpperCase();
       const r = rooms.get(code);
       if (!r) {

@@ -407,8 +407,35 @@ let S = null;                 // current game state
 let MY_ID = null;             // socketId once seated
 let LAST_ROLE_SHOWN = null;   // remember what round we've already revealed for
 
-// remembered name — same key as the arcade so users don't retype it
-try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(e){}
+// Owner ask 2 Aug 2026 v8: 'only login user can join this game
+// as it should be different name email or users'. Fetch the
+// signed-in profile and lock the name field to it; anonymous
+// visitors get bounced to the login screen with a return path.
+let __wsSpyMe = null;
+(async () => {
+  try {
+    const r = await fetch('/api/social/me');
+    const j = await r.json();
+    if (!j || !j.me) {
+      const room = new URL(location.href).searchParams.get('room') || '';
+      const next = '/spy' + (room ? '?room=' + encodeURIComponent(room) : '');
+      location.replace('/social?next=' + encodeURIComponent(next));
+      return;
+    }
+    __wsSpyMe = j.me;
+    const inp = $('nameIn');
+    if (inp) {
+      inp.value = j.me.name || '';
+      inp.readOnly = true;
+      inp.title = 'Locked to your WordSpies name — change it from your profile.';
+    }
+    try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
+  } catch (e) {
+    // Network hiccup — fall back to the old anonymous flow so a
+    // temporary /me outage doesn't lock everyone out of the game.
+    try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
+  }
+})();
 
 function view(id){
   ['viewHome','viewLobby','viewSecret','viewRound','viewVote','viewReveal','viewEnded','viewWatch']
@@ -437,13 +464,27 @@ function saveName(){
   if (n) try { localStorage.setItem(NAME_KEY, n); } catch(e){}
   return n;
 }
+function _handleAck(r){
+  if (!r || !r.error) return false;
+  if (r.error === 'login_required') {
+    const room = new URL(location.href).searchParams.get('room') || $('codeIn').value.trim();
+    const next = '/spy' + (room ? '?room=' + encodeURIComponent(room) : '');
+    location.replace('/social?next=' + encodeURIComponent(next));
+    return true;
+  }
+  const map = {
+    gone:    'No game with that code — it may have finished.',
+    full:    'That room is full.',
+    started: 'That game has already started.'
+  };
+  showErr('homeErr', map[r.error] || r.error);
+  return true;
+}
 $('createBtn').onclick = () => {
   const n = saveName();
   if (!n) return showErr('homeErr', 'Type your name first.');
   showErr('homeErr', '');
-  socket.emit('create', { name: n }, (r) => {
-    if (r && r.error) showErr('homeErr', r.error);
-  });
+  socket.emit('create', { name: n }, _handleAck);
 };
 $('joinBtn').onclick = () => {
   const n = saveName();
@@ -451,11 +492,7 @@ $('joinBtn').onclick = () => {
   const c = $('codeIn').value.trim().toUpperCase();
   if (!c || c.length < 3) return showErr('homeErr', 'Enter the 4-letter room code.');
   showErr('homeErr', '');
-  socket.emit('join', { name: n, code: c }, (r) => {
-    if (r && r.error === 'gone') showErr('homeErr', 'No game with that code — it may have finished.');
-    else if (r && r.error === 'full') showErr('homeErr', 'That room is full.');
-    else if (r && r.error === 'started') showErr('homeErr', 'That game has already started.');
-  });
+  socket.emit('join', { name: n, code: c }, _handleAck);
 };
 $('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
 
