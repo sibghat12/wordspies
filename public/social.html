@@ -313,6 +313,17 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
 /* header + tabs */
 .head{display:flex;align-items:center;justify-content:space-between;padding:22px 20px 12px}
 .mechip{position:relative;display:flex;align-items:center;gap:10px;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 6px 5px 14px}
+/* Avatar dropdown menu. Owner ask 2 Aug 2026 v7 — Tandem-style
+   quick nav + settings hanging off the top-right avatar chip. */
+.avmenu{position:absolute;top:60px;right:14px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px rgba(15,20,32,.14);min-width:238px;padding:8px;display:none;flex-direction:column;z-index:100;font-size:14px}
+.avmenu.on{display:flex}
+.avitem{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:var(--ink);text-decoration:none;cursor:pointer;font-weight:600;font-family:inherit;line-height:1;transition:background .1s,color .1s}
+.avitem:hover{background:#f4f5f7}
+.avitem.danger{color:var(--err)}
+.avitem.danger:hover{background:#fef2f2}
+.avic{font-size:17px;line-height:1;width:22px;text-align:center;flex-shrink:0}
+.avdiv{height:1px;background:var(--line);margin:6px 4px}
+@media(max-width:520px){.avmenu{right:10px;min-width:220px}}
 .mechip .mename{font-weight:700;font-size:13.5px;letter-spacing:-.1px}
 /* Top navigation bar: logo + primary tabs on the left, secondary links +
    your profile chip on the right. Persistent across every tab so the site
@@ -2111,14 +2122,28 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
            the marketing footer per owner ask; kept out of the app to
            reduce clutter. -->
       <button id="pwaRefresh" class="pwaref hidden" onclick="pwaRefresh()" title="Refresh — new version available" aria-label="Refresh">↻</button>
-      <div class="mechip" id="tbMe" onclick="showTab('me')">
+      <!-- Avatar chip in the top-right now opens a dropdown menu with
+           quick-nav + settings, rather than jumping straight to the Me
+           tab. Owner ask 2 Aug 2026 v7: 'move the settings dropdown
+           for the users in his profile picture on the top corner like
+           settings, my languages, my profile, about us, support …'. -->
+      <div class="mechip" id="tbMe" onclick="toggleAvatarMenu(event)">
         <span class="mename" id="meName"></span>
         <span id="meAvSmall"></span>
-        <!-- Owner ask 1 Aug 2026: 'remove that online or offline option
-             or stuff'. The old .tdot span was a profile-completion
-             prompt (photo/bio/location missing) rendered as an accent
-             dot on the corner of the avatar — visually reads as an
-             online-status indicator and adds noise. Removed. -->
+      </div>
+      <div class="avmenu" id="avMenu" role="menu" aria-hidden="true">
+        <a class="avitem" role="menuitem" onclick="avGo('profile')"><span class="avic">👤</span>My profile</a>
+        <a class="avitem" role="menuitem" onclick="avGo('langs')"><span class="avic">🌐</span>My languages</a>
+        <a class="avitem" role="menuitem" onclick="avGo('community')"><span class="avic">🏘️</span>Community</a>
+        <div class="avdiv"></div>
+        <a class="avitem" role="menuitem" onclick="avGo('settings')"><span class="avic">⚙️</span>Settings</a>
+        <a class="avitem" role="menuitem" onclick="avGo('blocked')"><span class="avic">🚫</span>Blocked users</a>
+        <div class="avdiv"></div>
+        <a class="avitem" role="menuitem" href="/" target="_blank" rel="noopener"><span class="avic">ℹ️</span>About WordSpies</a>
+        <a class="avitem" role="menuitem" onclick="avGo('support')"><span class="avic">💬</span>Support &amp; contact</a>
+        <div class="avdiv"></div>
+        <a class="avitem" role="menuitem" onclick="avGo('logout')"><span class="avic">🚪</span>Log out</a>
+        <a class="avitem danger" role="menuitem" onclick="avGo('delete')"><span class="avic">🗑️</span>Delete account</a>
       </div>
     </div>
   </nav>
@@ -2619,7 +2644,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <textarea class="me-input me-area" id="fPartner" maxlength="500" rows="2" placeholder="e.g. Someone patient who's also learning, happy to switch languages half-half."></textarea>
         </section>
 
-        <div class="mp-2col">
+        <div class="mp-2col" id="pfLangSection">
           <section class="mp-card">
             <h3>Languages you speak</h3>
             <div class="chiprow" id="fSpeaksChips"></div>
@@ -2646,7 +2671,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <!-- Settings sections. Match mp-grid's max-width + padding so the
          Notifications / Support / Delete-account cards sit under the
          same left/right edge as the profile cards above them. -->
-    <div class="me-settings-wrap">
+    <div class="me-settings-wrap" id="pfSettingsSection">
     <!-- 🔔 how you'd like to hear about messages and follows -->
     <div class="setbox">
       <div class="seth">Notifications</div>
@@ -6503,6 +6528,44 @@ function openMemberObj(m){
 function toggleMoreMenu(ev){ if (ev) ev.stopPropagation(); document.getElementById('moreMenu').classList.toggle('hidden'); }
 function closeMoreMenu(){ const m = document.getElementById('moreMenu'); if (m) m.classList.add('hidden'); }
 document.addEventListener('click', ev => { if (!ev.target.closest('#moreBtn') && !ev.target.closest('#moreMenu')) closeMoreMenu(); });
+
+// Avatar dropdown — top-right nav. Owner ask 2 Aug 2026 v7.
+function toggleAvatarMenu(ev){
+  if (ev) ev.stopPropagation();
+  const m = document.getElementById('avMenu');
+  if (!m) return;
+  const wasOpen = m.classList.contains('on');
+  m.classList.toggle('on', !wasOpen);
+  m.setAttribute('aria-hidden', wasOpen ? 'true' : 'false');
+}
+function closeAvatarMenu(){
+  const m = document.getElementById('avMenu');
+  if (m) { m.classList.remove('on'); m.setAttribute('aria-hidden', 'true'); }
+}
+document.addEventListener('click', ev => {
+  if (!ev.target.closest('#tbMe') && !ev.target.closest('#avMenu')) closeAvatarMenu();
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeAvatarMenu(); });
+// Route avatar-menu actions. Sections that live on the Me tab
+// (languages, settings, support) get scrolled into view after
+// switching tabs so the user lands on the right block, not the top.
+function avGo(kind){
+  closeAvatarMenu();
+  const scrollTo = id => {
+    const el = document.getElementById(id);
+    if (el) setTimeout(() => el.scrollIntoView({ behavior:'smooth', block:'start' }), 60);
+  };
+  switch (kind) {
+    case 'profile':   showTab('me'); break;
+    case 'langs':     showTab('me'); scrollTo('pfLangSection'); break;
+    case 'settings':  showTab('me'); scrollTo('pfSettingsSection'); break;
+    case 'support':   showTab('me'); scrollTo('pfSettingsSection'); break;
+    case 'community': showTab('wall'); break;
+    case 'blocked':   showBlocked(); break;
+    case 'logout':    logout(); break;
+    case 'delete':    confirmDelete(); break;
+  }
+}
 
 async function saveProfile(){
   try {
