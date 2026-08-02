@@ -26,6 +26,12 @@
      2 Aug 2026: 'date picker so ugly, use some JS library please'. -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<!-- Cropper.js — used to crop the signup photo before face-check
+     and upload. Owner ask 2 Aug 2026: 'add the option to crop the
+     images best way and than when he upload the image you can
+     check if its good than we click the button approved'. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <style>
 :root{
   --edge:#e6e6ef; --accent-d:#c33d55;
@@ -227,6 +233,37 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 .ob-pop-opt-ic{font-size:20px;line-height:1;width:26px;text-align:center}
 .ob-pop-empty{color:var(--faint);text-align:center;padding:20px 10px;font-size:13.5px}
 .ob-pop-hint{padding:6px 18px 0;color:var(--faint);font-size:12px}
+
+/* Photo crop modal (Cropper.js). Full-screen overlay so the crop
+   area has room to breathe; the ▼ hint + preview + action buttons
+   sit below the cropper canvas. Owner ask 2 Aug 2026 v4: 'add the
+   option to crop the images best way'. */
+.ob-crop-modal{position:fixed;inset:0;background:rgba(15,20,32,.86);z-index:1100;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:0}
+.ob-crop-modal.on{display:flex}
+.ob-crop-inner{width:100%;max-width:560px;height:100%;background:#0f1420;display:flex;flex-direction:column;color:#fff}
+.ob-crop-head{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.ob-crop-head .ob-pop-close{background:rgba(255,255,255,.1);color:#fff}
+.ob-crop-head .ob-pop-title{color:#fff}
+.ob-crop-hint{padding:10px 16px;font-size:13px;color:rgba(255,255,255,.72);text-align:center;line-height:1.4;min-height:20px}
+.ob-crop-hint.ok{color:#4ade80}
+.ob-crop-hint.bad{color:#fca5a5}
+.ob-crop-area{flex:1;min-height:0;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+.ob-crop-area img{display:block;max-width:100%}
+/* Cropper's own container gets a nice rounded overlay */
+.cropper-view-box,.cropper-face{border-radius:6px}
+.cropper-modal{background:#000;opacity:.72}
+.ob-crop-actions{display:flex;gap:10px;padding:14px 16px;background:#0f1420;border-top:1px solid rgba(255,255,255,.08)}
+.ob-crop-actions button{flex:1;padding:14px 18px;border-radius:12px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;border:0;transition:transform .08s,opacity .12s}
+.ob-crop-actions button:active{transform:scale(.99)}
+.ob-crop-actions .ob-crop-cancel{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85)}
+.ob-crop-actions .ob-crop-cancel:hover{background:rgba(255,255,255,.14)}
+.ob-crop-actions .ob-crop-check{background:#fff;color:#0f1420}
+.ob-crop-actions .ob-crop-check[disabled]{opacity:.55;cursor:default}
+.ob-crop-actions .ob-crop-approve{background:linear-gradient(135deg,#e8506b,#e57a4c);color:#fff;box-shadow:0 6px 18px rgba(232,80,107,.28)}
+.ob-crop-actions .ob-crop-approve[disabled]{opacity:.6;cursor:default}
+.ob-crop-preview{padding:10px 16px 0;display:flex;align-items:center;gap:12px}
+.ob-crop-preview img{width:72px;height:72px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,.18)}
+.ob-crop-preview-msg{font-size:13.5px;color:#4ade80;font-weight:600}
 
 /* Welcome logo */
 .ob-welcome-logo{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.6px;color:var(--ink);margin-bottom:10px;animation:obWelcomeIn .5s ease-out}
@@ -1889,7 +1926,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <section class="ob-step" data-step="2">
       <div class="ob-emoji">📷</div>
       <h2>Add your photo</h2>
-      <p class="ob-sub">A clear face photo helps others trust you're real.</p>
+      <p class="ob-sub">A clear face photo helps others trust you're real. You'll crop it next.</p>
       <!-- Owner ask 2 Aug 2026: 'add three images in the image place
            rather than tick and cross'. Photos come from
            randomuser.me — StyleGAN-generated (100% AI, no real
@@ -1987,6 +2024,28 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <p class="ob-sub" style="text-align:center;font-size:12.5px;color:var(--faint);margin-top:8px">We review every new profile — most get verified within a day.</p>
       <button class="ob-next primary-big" onclick="obFinish()">Enter WordSpies</button>
     </section>
+  </div>
+
+  <!-- Photo-crop modal (Cropper.js). Opened by the step-2 photo upload
+       flow before the face check runs. Owner ask 2 Aug 2026 v4. -->
+  <div class="ob-crop-modal" id="obCropModal" aria-hidden="true">
+    <div class="ob-crop-inner">
+      <div class="ob-crop-head">
+        <button class="ob-pop-close" onclick="obCropCancel()" aria-label="Close">✕</button>
+        <div class="ob-pop-title">Crop your photo</div>
+      </div>
+      <div class="ob-crop-hint" id="obCropHint">Move + pinch to fit your face in the frame, then tap Check face.</div>
+      <div class="ob-crop-area"><img id="obCropImg" alt=""></div>
+      <div class="ob-crop-preview" id="obCropPreview" style="display:none">
+        <img id="obCropPreviewImg" alt="Cropped preview">
+        <div class="ob-crop-preview-msg" id="obCropPreviewMsg">Face detected — tap Approve to continue.</div>
+      </div>
+      <div class="ob-crop-actions">
+        <button class="ob-crop-cancel" onclick="obCropCancel()">Cancel</button>
+        <button class="ob-crop-check"   id="obCropCheckBtn"   onclick="obCropCheck()">Check face</button>
+        <button class="ob-crop-approve" id="obCropApproveBtn" onclick="obCropApprove()" style="display:none">Approve &amp; continue</button>
+      </div>
+    </div>
   </div>
 
   <!-- Shared bottom-sheet popup for goal + language pickers on step 4.
@@ -3612,45 +3671,215 @@ function _loadFaceApi(){
   });
   return _faceApiLoadP;
 }
-async function _obCheckFace(file){
+async function _obCheckFaceOnCanvas(canvas){
   try {
     const faceapi = await _loadFaceApi();
-    // Draw the file into a canvas so face-api can read it.
-    const bitmap = await createImageBitmap(file);
-    const canvas = document.createElement('canvas');
-    canvas.width  = Math.min(bitmap.width, 640);
-    canvas.height = Math.round(bitmap.height * (canvas.width / bitmap.width));
-    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    try { bitmap.close && bitmap.close(); } catch(e){}
     // scoreThreshold 0.5 is face-api's default — high enough that
     // trees / landscapes / cars don't sneak through, low enough that
-    // real-world selfies in imperfect light still pass.
-    const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
-    const faces = await faceapi.detectAllFaces(canvas, opts);
+    // real-world selfies in imperfect light still pass. Two passes
+    // at different inputSize handle tight crops that missed at 320.
+    const opts1 = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
+    let faces = await faceapi.detectAllFaces(canvas, opts1);
     if (!faces || faces.length === 0) {
-      return { ok: false, msg: "We can't see a clear face in that photo. Try one with your face facing the camera and good light." };
+      const opts2 = new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.45 });
+      faces = await faceapi.detectAllFaces(canvas, opts2);
+    }
+    if (!faces || faces.length === 0) {
+      return { ok: false, msg: "We couldn't see a clear face. Try zooming so your face fills the frame, or use a brighter photo." };
     }
     if (faces.length > 1) {
-      return { ok: false, msg: 'Please use a photo of just you — we saw more than one face.' };
+      return { ok: false, msg: 'We spotted more than one face — please crop tighter to just you.' };
     }
     return { ok: true };
   } catch (e) {
-    // CDN blocked, model load failed, or decoder threw — don't block
-    // signups on our own infra failure; server-side moderation still
-    // catches non-faces via the pending-account queue.
+    // CDN blocked, model load failed — accept rather than block on
+    // our own infra failure; server-side moderation still catches
+    // non-faces via the pending-account queue.
     console.warn('face-check unavailable:', e && e.message);
     return { ok: true };
   }
 }
+async function _obCheckFace(file){
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement('canvas');
+  canvas.width  = Math.min(bitmap.width, 640);
+  canvas.height = Math.round(bitmap.height * (canvas.width / bitmap.width));
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  try { bitmap.close && bitmap.close(); } catch(e){}
+  return _obCheckFaceOnCanvas(canvas);
+}
 
-// Shared photo-upload handler used by both tap AND drag-and-drop.
-// Owner ask 2 Aug 2026: 'make the signup wizard amazing' + face
-// detection soft-check before upload.
-async function _obDoPhotoUpload(file){
+// ═══════════════════════════════════════════════════════════════
+// Photo crop + approve flow (Cropper.js). Owner ask 2 Aug 2026 v4:
+// 'add the option to crop the images best way and than when he
+// upload the image you can check if its good than we click the
+// button approved and go to next step'. The user picks any-size
+// photo → crops to 1:1 → taps 'Check face' → face-api runs on the
+// CROPPED canvas (better hit rate than checking the whole image) →
+// if a single face is found, the 'Approve & continue' button
+// appears; approve uploads the crop and closes the modal.
+// ═══════════════════════════════════════════════════════════════
+let _obCropper = null;
+let _obCropObjUrl = null;   // revoked on close so we don't leak blobs
+let _obCropBlob = null;     // approved crop blob, held for upload
+
+function obOpenCrop(file){
   if (!file) return;
-  const hint = $('obPhotoHint');
+  if (typeof window.Cropper !== 'function') {
+    // CDN failed — fall back to the direct upload path (with a
+    // best-effort face check on the raw file). Never block a
+    // signup because a JS library didn't reach the browser.
+    _obDoPhotoUploadDirect(file);
+    return;
+  }
+  const modal = document.getElementById('obCropModal');
+  const img   = document.getElementById('obCropImg');
+  const hint  = document.getElementById('obCropHint');
+  const preview = document.getElementById('obCropPreview');
+  const approveBtn = document.getElementById('obCropApproveBtn');
+  const checkBtn = document.getElementById('obCropCheckBtn');
+  // Reset any prior state.
+  if (_obCropper)  { try { _obCropper.destroy(); } catch(e){} _obCropper = null; }
+  if (_obCropObjUrl) { try { URL.revokeObjectURL(_obCropObjUrl); } catch(e){} _obCropObjUrl = null; }
+  _obCropBlob = null;
+  _obCropObjUrl = URL.createObjectURL(file);
+  img.src = _obCropObjUrl;
+  preview.style.display = 'none';
+  approveBtn.style.display = 'none';
+  checkBtn.style.display = '';
+  checkBtn.disabled = false;
+  checkBtn.textContent = 'Check face';
+  approveBtn.disabled = false;
+  approveBtn.textContent = 'Approve & continue';
+  hint.className = 'ob-crop-hint';
+  hint.textContent = 'Move + pinch to fit your face in the frame, then tap Check face.';
+  modal.classList.add('on');
+  modal.setAttribute('aria-hidden', 'false');
+  img.onload = () => {
+    _obCropper = new window.Cropper(img, {
+      aspectRatio: 1,
+      viewMode: 1,
+      dragMode: 'move',
+      autoCropArea: 0.9,
+      cropBoxMovable: true,
+      cropBoxResizable: true,
+      background: false,
+      responsive: true,
+      guides: false,
+      center: true,
+      minCropBoxWidth: 120,
+      minCropBoxHeight: 120
+    });
+    // If the user re-crops after a passed check, hide the approve
+    // button until they re-run 'Check face' — the previous check
+    // was against a different crop.
+    _obCropper.element && _obCropper.element.addEventListener('cropend', () => {
+      if (approveBtn.style.display !== 'none') {
+        approveBtn.style.display = 'none';
+        checkBtn.style.display = '';
+        preview.style.display = 'none';
+        hint.className = 'ob-crop-hint';
+        hint.textContent = 'Cropped area changed — tap Check face again.';
+      }
+    });
+  };
+}
+async function obCropCheck(){
+  if (!_obCropper) return;
+  const hint = document.getElementById('obCropHint');
+  const checkBtn = document.getElementById('obCropCheckBtn');
+  const approveBtn = document.getElementById('obCropApproveBtn');
+  const preview = document.getElementById('obCropPreview');
+  const previewImg = document.getElementById('obCropPreviewImg');
+  const previewMsg = document.getElementById('obCropPreviewMsg');
+  hint.className = 'ob-crop-hint';
+  hint.textContent = 'Checking your face…';
+  checkBtn.disabled = true;
+  try {
+    const canvas = _obCropper.getCroppedCanvas({
+      width: 640, height: 640,
+      imageSmoothingEnabled: true, imageSmoothingQuality: 'high'
+    });
+    const check = await _obCheckFaceOnCanvas(canvas);
+    if (!check.ok) {
+      hint.className = 'ob-crop-hint bad';
+      hint.textContent = check.msg;
+      checkBtn.disabled = false;
+      return;
+    }
+    // Great — freeze the blob, show preview, swap Check → Approve.
+    _obCropBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.92));
+    previewImg.src = canvas.toDataURL('image/jpeg', 0.9);
+    previewMsg.textContent = '✓ Looks great — tap Approve to continue.';
+    preview.style.display = 'flex';
+    checkBtn.style.display = 'none';
+    approveBtn.style.display = '';
+    hint.className = 'ob-crop-hint ok';
+    hint.textContent = 'Face detected. Approve to save this as your profile photo.';
+  } catch (e) {
+    hint.className = 'ob-crop-hint bad';
+    hint.textContent = 'Something went wrong — try again.';
+    checkBtn.disabled = false;
+  }
+}
+async function obCropApprove(){
+  if (!_obCropBlob) return;
+  const hint = document.getElementById('obCropHint');
+  const approveBtn = document.getElementById('obCropApproveBtn');
+  approveBtn.disabled = true;
+  approveBtn.textContent = 'Uploading…';
+  hint.className = 'ob-crop-hint';
+  hint.textContent = 'Uploading your photo…';
+  try {
+    const fd = new FormData();
+    fd.append('photo', _obCropBlob, 'profile.jpg');
+    const r = await fetch('/api/social/photo', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Upload failed');
+    ME = j.me;
+    // Reflect in the wizard step behind the modal.
+    const prev = document.getElementById('obPhotoPreview');
+    if (prev) prev.innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
+    const up = document.getElementById('obPhotoUpload');
+    if (up) up.classList.add('has-photo');
+    const ph = document.getElementById('obPhotoHint');
+    if (ph) ph.textContent = 'Looks great — tap to change';
+    obNewPhotoUploaded = true;
+    obCropCancel();
+  } catch (e) {
+    hint.className = 'ob-crop-hint bad';
+    hint.textContent = (e && e.message) || 'Upload failed — try again.';
+    approveBtn.disabled = false;
+    approveBtn.textContent = 'Approve & continue';
+  }
+}
+function obCropCancel(){
+  const modal = document.getElementById('obCropModal');
+  if (!modal) return;
+  modal.classList.remove('on');
+  modal.setAttribute('aria-hidden', 'true');
+  if (_obCropper) { try { _obCropper.destroy(); } catch(e){} _obCropper = null; }
+  if (_obCropObjUrl) { try { URL.revokeObjectURL(_obCropObjUrl); } catch(e){} _obCropObjUrl = null; }
+  _obCropBlob = null;
+}
+
+// Shared photo entry-point used by both tap AND drag-and-drop.
+// Owner ask 2 Aug 2026 v4: 'add the option to crop the images best
+// way and than when he upload the image you can check if its good
+// than we click the button approved and go to next step'. So the
+// tap/drop path now opens the crop modal — that modal is the sole
+// place face-detection runs + the upload fires.
+function _obDoPhotoUpload(file){
+  if (!file) return;
+  obOpenCrop(file);
+}
+// Fallback path when Cropper.js CDN is blocked: face-check the raw
+// file and upload it as-is. Never blocks a signup on our own infra
+// failure — see the try/catch in _obCheckFaceOnCanvas.
+async function _obDoPhotoUploadDirect(file){
+  if (!file) return;
+  const hint = document.getElementById('obPhotoHint');
   if (hint) hint.textContent = 'Checking photo…';
-  // Client-side face check (best-effort, only Chrome/Edge/Android).
   const check = await _obCheckFace(file);
   if (!check.ok) {
     if (hint) hint.textContent = check.msg;
@@ -3664,8 +3893,8 @@ async function _obDoPhotoUpload(file){
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'Upload failed');
     ME = j.me;
-    $('obPhotoPreview').innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
-    $('obPhotoUpload').classList.add('has-photo');
+    document.getElementById('obPhotoPreview').innerHTML = `<img src="${esc(ME.photo)}" alt="">`;
+    document.getElementById('obPhotoUpload').classList.add('has-photo');
     if (hint) hint.textContent = 'Looks great — tap to change';
     obNewPhotoUploaded = true;
   } catch (e) {
