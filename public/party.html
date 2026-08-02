@@ -1128,10 +1128,15 @@ function endParty(){ if (confirm('End the party for everyone?')) socket && socke
 
 function leaveAndGo(){
   try { socket && socket.emit('leave'); } catch(e){}
+  releaseWakeLock();   // let the phone screen dim again once we're out
   clearPartySession();
   if (EMBED) { postToParent({ type: 'party:left' }); return; }
   location.href = '/social';
 }
+// Belt-and-braces: release the wake lock on any exit path (host closed
+// the party, kicked, tab close, back button). Silent no-op if not held.
+window.addEventListener('pagehide', releaseWakeLock);
+window.addEventListener('beforeunload', releaseWakeLock);
 
 // Session bridge for the community app's mini-bar. Whenever we're in a
 // party we write to localStorage; when the user opens /social they see

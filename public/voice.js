@@ -162,7 +162,22 @@
   //                                    suffer. Off keeps everything.
   //  · cbr=0                       — variable bitrate stays fluid.
   // Applied on both sides of every offer/answer so both peers agree.
-  function tuneOpus(sdp) {
+  // Rewrite an Opus fmtp line. Two profiles now — owner ask 2 Aug 2026
+  // after audio-infra research (stay on Cloudflare Realtime, cut listener
+  // bandwidth 4× via mono 32kbps):
+  //
+  //   role='publish'   — our own mic upload. Keep stereo 128kbps + FEC
+  //                       + no DTX so voice notes / music through the
+  //                       party feel HD. Speakers only pay this cost.
+  //   role='subscribe' — incoming remote track from CF SFU. Ask for
+  //                       mono 32kbps + FEC. 4× less downstream
+  //                       bandwidth per listener; imperceptible for
+  //                       voice; huge win on flaky mobile + old phones.
+  //
+  // The wanted-string is applied to the fmtp line for Opus (payload
+  // type matched from the rtpmap). Existing params merge in and get
+  // overridden by our values.
+  function tuneOpus(sdp, role) {
     if (!sdp || typeof sdp !== 'string') return sdp;
     var lines = sdp.split(/\r?\n/);
     var opusPt = null;
@@ -172,12 +187,20 @@
     }
     if (!opusPt) return sdp;
     var fmtpPattern = new RegExp('^a=fmtp:' + opusPt + '\\s+(.*)$');
+    // Default (publish/speaker): HD stereo 128kbps
     var wanted = 'stereo=1;sprop-stereo=1;maxaveragebitrate=128000;maxplaybackrate=48000;useinbandfec=1;usedtx=0;cbr=0';
+    if (role === 'subscribe') {
+      // Listener-side: mono 40kbps, FEC on so a dropped packet doesn't
+      // stutter. 40 is a safe middle ground (fine for laughter + music
+      // headroom); drop to 24 if the load test shows we need less.
+      // sprop-stereo=0 tells CF SFU we can't play stereo → they don't
+      // waste bytes sending it.
+      wanted = 'stereo=0;sprop-stereo=0;maxaveragebitrate=40000;maxplaybackrate=48000;useinbandfec=1;usedtx=0;cbr=0';
+    }
     var fmtpFound = false;
     for (var j = 0; j < lines.length; j++) {
       var fm = fmtpPattern.exec(lines[j]);
       if (fm) {
-        // Merge with any existing params, our values override.
         var existing = {};
         fm[1].split(';').forEach(function (kv) { var p = kv.split('='); if (p[0]) existing[p[0].trim()] = (p[1] || '').trim(); });
         wanted.split(';').forEach(function (kv) { var p = kv.split('='); if (p[0]) existing[p[0].trim()] = (p[1] || '').trim(); });
@@ -187,7 +210,6 @@
       }
     }
     if (!fmtpFound) {
-      // Insert an fmtp line right after the rtpmap line.
       for (var k = 0; k < lines.length; k++) {
         if (new RegExp('^a=rtpmap:' + opusPt + '\\s').test(lines[k])) {
           lines.splice(k + 1, 0, 'a=fmtp:' + opusPt + ' ' + wanted);
@@ -457,7 +479,7 @@
         // Rewrite our offer's Opus fmtp for stereo + FEC + 128 kbps + no DTX
         // BEFORE handing it to the PC, so the local view already reflects
         // the maxed-out params. CF echoes them back in its answer.
-        offer = new RTCSessionDescription({ type: offer.type, sdp: tuneOpus(offer.sdp) });
+        offer = new RTCSessionDescription({ type: offer.type, sdp: tuneOpus(offer.sdp, 'publish') });
         await self.pc.setLocalDescription(offer);
         var body = {
           sdp: { type: 'offer', sdp: offer.sdp },
@@ -511,7 +533,9 @@
             await self.pc.setRemoteDescription(r.sessionDescription);
             var ans = await self.pc.createAnswer();
             // Tune Opus in our answer too so both directions run at 128 kbps.
-            ans = new RTCSessionDescription({ type: ans.type, sdp: tuneOpus(ans.sdp) });
+            // Listener side — ask CF SFU for mono 40kbps (4× less
+            // downstream bandwidth than the old stereo 128kbps).
+            ans = new RTCSessionDescription({ type: ans.type, sdp: tuneOpus(ans.sdp, 'subscribe') });
             await self.pc.setLocalDescription(ans);
             await fetch('/api/voice/cf/renegotiate/' + self.sessionId, {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -673,6 +697,19 @@
        var pc = sfu.pc;
        if (!pc || pc.connectionState === 'failed' || pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
          sfu.heal('visibility');
+       } else {
+         // Owner ask 2 Aug 2026: 'auto-reconnect on foreground return'.
+         // The pc can look 'connected' but be silently starved — iOS
+         // Safari especially freezes the media pipeline after long
+         // backgrounding. Reset the traffic-silence baseline so the
+         // 500ms stats poll picks up the freeze immediately instead
+         // of waiting the full 15s window.
+         sfu._lastBytesIn = 0;
+         sfu._lastBytesAt = Date.now();
+         // Also nudge the receive-transport by explicitly reading stats
+         // once — some browsers re-arm the pipeline on the first
+         // getStats after a long background.
+         try { pc.getStats(); } catch (e) {}
        }
      }
    });
