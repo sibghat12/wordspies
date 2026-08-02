@@ -159,6 +159,9 @@ function mount(app, redis) {
     // Speaky-style profile fields — languages spoken/learning, interests,
     // goals, a short "Let's talk about" quote, and recommendations.
     talkAbout: u.talkAbout || '',
+    // Owner ask 2 Aug 2026 v7 — plain-language prompts on the profile.
+    purpose: u.purpose || '',
+    partnerType: u.partnerType || '',
     speaks: Array.isArray(u.speaks) ? u.speaks : [],
     learns: Array.isArray(u.learns) ? u.learns : [],
     interests: Array.isArray(u.interests) ? u.interests : [],

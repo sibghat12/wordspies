@@ -133,7 +133,11 @@ function mount(api, ctx) {
           })
           .filter(o => o && o.c)
           .slice(0, max);
-      if (b.talkAbout !== undefined) u.talkAbout = String(b.talkAbout || '').slice(0, 500);
+      if (b.talkAbout   !== undefined) u.talkAbout   = String(b.talkAbout   || '').slice(0, 500);
+      // New free-text prompts (owner ask 2 Aug 2026 v7 — replaces the
+      // interests + goals chip pickers with plain-language questions).
+      if (b.purpose     !== undefined) u.purpose     = String(b.purpose     || '').slice(0, 500);
+      if (b.partnerType !== undefined) u.partnerType = String(b.partnerType || '').slice(0, 500);
       if (b.speaks    !== undefined) u.speaks    = cleanLangArr(b.speaks, 5);
       if (b.learns    !== undefined) u.learns    = cleanLangArr(b.learns, 5);
       if (b.interests !== undefined) u.interests = cleanArr(b.interests, 30, 12);

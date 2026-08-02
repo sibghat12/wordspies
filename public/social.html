@@ -2359,28 +2359,38 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <p id="mAbout"></p>
         </section>
         <section class="mp-card mp-narrow hidden" id="mQuoteCard">
-          <h3>Let's talk about</h3>
+          <h3>What they like to talk about</h3>
           <p id="mQuote"></p>
         </section>
+        <!-- New free-text prompts (owner ask 2 Aug 2026 v7). -->
+        <section class="mp-card hidden" id="mPurposeCard">
+          <h3>Their purpose here</h3>
+          <p id="mPurpose"></p>
+        </section>
+        <section class="mp-card hidden" id="mPartnerCard">
+          <h3>The kind of partner they're looking for</h3>
+          <p id="mPartner"></p>
+        </section>
 
-        <!-- Speaks + Learns stacked (one per row) per owner ask. -->
+        <!-- Languages: Speaks + Learns as two flag-row cards. -->
         <section class="mp-card hidden" id="mSpeaksBox">
           <h3>Speaks</h3>
           <div class="mp-langs" id="mSpeaks"></div>
         </section>
         <section class="mp-card hidden" id="mLearnsBox">
-          <h3>Learns</h3>
+          <h3>Learning</h3>
           <div class="mp-langs" id="mLearns"></div>
         </section>
 
-        <!-- Interests + Goals sit right above Recommendations. -->
+        <!-- Interests + Goals kept for legacy display only (users can no
+             longer edit them per owner v7); hidden if empty. -->
         <div class="mp-2col">
           <section class="mp-card hidden" id="mInterestsBox">
-            <h3>My Interests</h3>
+            <h3>Interests</h3>
             <div class="mp-chips" id="mInterests"></div>
           </section>
           <section class="mp-card hidden" id="mGoalsBox">
-            <h3>My Goals</h3>
+            <h3>Goals</h3>
             <div class="mp-chips" id="mGoals"></div>
           </section>
         </div>
@@ -2588,40 +2598,44 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           </section>
         </div>
 
+        <!-- Owner ask 2 Aug 2026 v7: retire the Interests + Goals
+             chip pickers, add free-text prompts, and drop the
+             level pill from the language chips ('so boring and
+             difficult'). Order matches what people actually want
+             to read first: what you like to talk about, then why
+             you're here, then who you're looking for. -->
         <section class="mp-card mp-narrow">
-          <h3>Let's talk about</h3>
-          <textarea class="me-input me-area" id="fTalk" maxlength="500" rows="2" placeholder="e.g. Books, films, weekend plans, travel stories…"></textarea>
+          <h3>What do you like to talk about?</h3>
+          <textarea class="me-input me-area" id="fTalk" maxlength="500" rows="2" placeholder="Books, films, weekend plans, travel stories, cooking…"></textarea>
         </section>
+
+        <section class="mp-card">
+          <h3>What's your purpose or goal here?</h3>
+          <textarea class="me-input me-area" id="fPurpose" maxlength="500" rows="2" placeholder="e.g. Practise my English for a job move, or just enjoy chatting."></textarea>
+        </section>
+
+        <section class="mp-card">
+          <h3>What kind of language partner are you looking for?</h3>
+          <textarea class="me-input me-area" id="fPartner" maxlength="500" rows="2" placeholder="e.g. Someone patient who's also learning, happy to switch languages half-half."></textarea>
+        </section>
+
+        <div class="mp-2col">
+          <section class="mp-card">
+            <h3>Languages you speak</h3>
+            <div class="chiprow" id="fSpeaksChips"></div>
+            <button type="button" class="chipadd" onclick="openLangPicker('speaks')">+ Add a language</button>
+          </section>
+          <section class="mp-card">
+            <h3>Languages you're learning</h3>
+            <div class="chiprow" id="fLearnsChips"></div>
+            <button type="button" class="chipadd" onclick="openLangPicker('learns')">+ Add a language</button>
+          </section>
+        </div>
 
         <section class="mp-card">
           <h3>About you</h3>
           <textarea class="me-input me-area" id="fBio" maxlength="200" rows="3" placeholder="Say something about yourself…"></textarea>
         </section>
-
-        <section class="mp-card">
-          <h3>Speaks</h3>
-          <div class="chiprow" id="fSpeaksChips"></div>
-          <button type="button" class="chipadd" onclick="openLangPicker('speaks')">+ Add a language you speak</button>
-        </section>
-
-        <section class="mp-card">
-          <h3>Learns</h3>
-          <div class="chiprow" id="fLearnsChips"></div>
-          <button type="button" class="chipadd" onclick="openLangPicker('learns')">+ Add a language you're learning</button>
-        </section>
-
-        <div class="mp-2col">
-          <section class="mp-card">
-            <h3>My Interests</h3>
-            <div class="chiprow" id="fInterestsChips"></div>
-            <button type="button" class="chipadd" onclick="openInterestPicker()">+ Add an interest</button>
-          </section>
-          <section class="mp-card">
-            <h3>My Goals</h3>
-            <div class="chiprow" id="fGoalsChips"></div>
-            <button type="button" class="chipadd" onclick="openGoalPicker()">+ Add a goal</button>
-          </section>
-        </div>
 
         <section class="mp-card">
           <h3>Recommendations</h3>
@@ -6423,6 +6437,9 @@ function openMemberObj(m){
   // we didn't already surface as the About body (i.e. bio existed).
   const _showQuote = m.talkAbout && m.bio && m.talkAbout.trim() !== m.bio.trim();
   setCard('mQuoteCard', 'mQuote', _showQuote ? esc(m.talkAbout).replace(/\n/g,'<br>') : '', true);
+  // Purpose + partner-type free-text cards (owner v7).
+  setCard('mPurposeCard', 'mPurpose', m.purpose     ? esc(m.purpose).replace(/\n/g,'<br>')     : '', true);
+  setCard('mPartnerCard', 'mPartner', m.partnerType ? esc(m.partnerType).replace(/\n/g,'<br>') : '', true);
   // References — fresh fetch every profile open, personalise title
   // ('References for Nina'), hide the 'write' button on your own
   // profile.
@@ -6437,22 +6454,18 @@ function openMemberObj(m){
   else $('mInterestsBox').classList.add('hidden');
   if (m.goals && m.goals.length) { $('mGoals').innerHTML = chipsHTML(m.goals); $('mGoalsBox').classList.remove('hidden'); }
   else $('mGoalsBox').classList.add('hidden');
-  // Languages — one row per language: flag + name + level. If the
-  // stored level > 0 use it (Beginner / … / Native); fall back to
-  // the section fallback ('Native' / 'Learning') for legacy string
-  // records where no proficiency has been set yet.
-  const langRow = (v, fallback) => {
+  // Languages — one row per language: flag + name. Owner ask
+  // 2 Aug 2026 v7: 'remove the level, so boring and difficult'.
+  const langRow = v => {
     const c = langCode(v);
-    const lv = langLvl(v);
-    const lbl = lv > 0 ? levelLabel(lv) : fallback;
-    return `<div class="mp-lang"><span class="mp-lang-flag">${langFlag(c)}</span><span class="mp-lang-name">${esc(langName(c))}</span><span class="mp-lang-lvl">${esc(lbl)}</span></div>`;
+    return `<div class="mp-lang"><span class="mp-lang-flag">${langFlag(c)}</span><span class="mp-lang-name">${esc(langName(c))}</span></div>`;
   };
   if (m.speaks && m.speaks.length) {
-    $('mSpeaks').innerHTML = m.speaks.map(v => langRow(v, 'Native')).join('');
+    $('mSpeaks').innerHTML = m.speaks.map(langRow).join('');
     $('mSpeaksBox').classList.remove('hidden');
   } else $('mSpeaksBox').classList.add('hidden');
   if (m.learns && m.learns.length) {
-    $('mLearns').innerHTML = m.learns.map(v => langRow(v, 'Learning')).join('');
+    $('mLearns').innerHTML = m.learns.map(langRow).join('');
     $('mLearnsBox').classList.remove('hidden');
   } else $('mLearnsBox').classList.add('hidden');
   // Recommendations: text if present, otherwise the friendly placeholder.
@@ -6500,10 +6513,10 @@ async function saveProfile(){
         location: $('fLoc').value,
         birthdate: $('fBirth').value,
         talkAbout: ($('fTalk') || {}).value || '',
+        purpose:     ($('fPurpose') || {}).value || '',
+        partnerType: ($('fPartner') || {}).value || '',
         speaks: EDIT_SPEAKS,
         learns: EDIT_LEARNS,
-        interests: EDIT_INTERESTS,
-        goals: EDIT_GOALS,
         recs: ($('fRecs') || {}).value || ''
       }) });
     const renamed = ME.name !== j.me.name;
@@ -6600,28 +6613,15 @@ function renderChips(hostId, arr, kind){
   const isLang = (kind === 'speaks' || kind === 'learns');
   host.innerHTML = arr.map((v, i) => {
     if (isLang) {
-      const c  = langCode(v);
-      const lv = langLvl(v);
-      const lvlCls  = lv > 0 ? 'chip-lvl on' : 'chip-lvl zero';
-      const lvlHtml = `<span class="${lvlCls}" data-kind="${kind}" data-ix="${i}" role="button" tabindex="0">`
-                    + `<span class="chip-lvl-dots">${levelDots(lv)}</span>`
-                    + `<span>${lv > 0 ? esc(levelLabel(lv)) : 'Set level'}</span></span>`;
-      return `<span class="chip chip-lang">${langFlag(c)} <span class="chip-nm">${esc(langName(c))}</span>${lvlHtml}`
+      // Owner ask 2 Aug 2026 v7: 'remove the level please, so
+      // boring and difficult'. Chip is now flag + name + ×.
+      const c = langCode(v);
+      return `<span class="chip chip-lang">${langFlag(c)} <span class="chip-nm">${esc(langName(c))}</span>`
            + `<button type="button" class="chipx" onclick="removeChip('${kind}',${i})" aria-label="Remove">×</button></span>`;
     }
-    // Non-language chips: plain text label, escape everything.
     return `<span class="chip">${esc(v)}<button type="button" class="chipx" onclick="removeChip('${kind}',${i})" aria-label="Remove">×</button></span>`;
   }).join('');
 }
-// Delegated click on chip-lvl pills — opens the level picker for the
-// underlying chip. Owner ask 2 Aug 2026 v6.
-document.addEventListener('click', ev => {
-  const el = ev.target && ev.target.closest && ev.target.closest('.chip-lvl');
-  if (!el) return;
-  const kind = el.getAttribute('data-kind');
-  const ix = parseInt(el.getAttribute('data-ix'), 10);
-  if (kind && Number.isInteger(ix)) editChipLevel(kind, ix);
-});
 function removeChip(kind, i){
   const map = { speaks:EDIT_SPEAKS, learns:EDIT_LEARNS, interests:EDIT_INTERESTS, goals:EDIT_GOALS };
   const arr = map[kind]; if (!arr) return;
@@ -6631,7 +6631,11 @@ function removeChip(kind, i){
 function addChip(kind, value){
   const map = { speaks:EDIT_SPEAKS, learns:EDIT_LEARNS, interests:EDIT_INTERESTS, goals:EDIT_GOALS };
   const arr = map[kind]; if (!arr) return;
-  if (arr.includes(value)) return;
+  // Language arrays may contain legacy string codes OR {c,lvl} objects
+  // from the previous release; dedup by resolved code regardless.
+  const isLang = (kind === 'speaks' || kind === 'learns');
+  const exists = isLang ? arr.some(v => langCode(v) === value) : arr.includes(value);
+  if (exists) return;
   const caps = { speaks:5, learns:5, interests:12, goals:6 };
   if (arr.length >= caps[kind]) { toast('Max ' + caps[kind] + ' — remove one first.'); return; }
   arr.push(value);
@@ -6675,63 +6679,10 @@ function openPicker(title, items, filterHint, onPick){
 function closePicker(){ const o = document.getElementById('genPicker'); if (o) o.classList.remove('show'); }
 function openLangPicker(kind){
   openPicker(kind === 'speaks' ? 'Add a language you speak' : "Add a language you're learning",
-    LANGS.map(l => ({ value:l.c, label: l.f + ' ' + l.n })),
+    LANGS.map(l => ({ value: l.c, label: l.f + ' ' + l.n })),
     'Search language…',
-    code => {
-      // Language chosen → immediately ask for proficiency. Default
-      // highlight = level 1 (Beginner) so a quick double-tap works,
-      // but nothing is saved until they pick. Owner ask v6:
-      // 'by default all zero'.
-      openLevelPicker(0, lvl => addLangWithLevel(kind, code, lvl));
-    });
+    code => addChip(kind, code));   // owner v7: no level step
 }
-function addLangWithLevel(kind, code, lvl){
-  const arr = kind === 'speaks' ? EDIT_SPEAKS : EDIT_LEARNS;
-  const cap = 5;
-  const ix = arr.findIndex(o => langCode(o) === code);
-  if (ix >= 0) {
-    arr[ix] = { c: code, lvl };
-  } else {
-    if (arr.length >= cap) { toast('Max ' + cap + ' — remove one first.'); return; }
-    arr.push({ c: code, lvl });
-  }
-  renderChips('f' + kind[0].toUpperCase() + kind.slice(1) + 'Chips', arr, kind);
-}
-function editChipLevel(kind, ix){
-  const arr = kind === 'speaks' ? EDIT_SPEAKS : EDIT_LEARNS;
-  if (!arr) return;
-  const cur = arr[ix]; if (!cur) return;
-  openLevelPicker(langLvl(cur), lvl => {
-    arr[ix] = { c: langCode(cur), lvl };
-    renderChips('f' + kind[0].toUpperCase() + kind.slice(1) + 'Chips', arr, kind);
-  });
-}
-// Level picker modal — five rows, dots + label, single tap to pick.
-function openLevelPicker(currentLvl, onPick){
-  let overlay = document.getElementById('lvlPicker');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'lvlPicker';
-    overlay.className = 'pkmod';
-    overlay.innerHTML = `<div class="pkcard lvlcard">
-      <h3>How well do you know it?</h3>
-      <div class="lvl-opts" id="lvlOpts"></div>
-      <button class="pkclose" onclick="closeLevelPicker()">Cancel</button>
-    </div>`;
-    overlay.addEventListener('click', ev => { if (ev.target === overlay) closeLevelPicker(); });
-    document.body.appendChild(overlay);
-  }
-  const opts = document.getElementById('lvlOpts');
-  opts.innerHTML = LEVELS.map(L =>
-    `<button type="button" class="lvl-opt${L.k === currentLvl ? ' on' : ''}" data-k="${L.k}">`
-    + `<span class="lvl-dots">${L.dots}</span><span class="lvl-nm">${L.l}</span></button>`
-  ).join('');
-  opts.querySelectorAll('.lvl-opt').forEach(b =>
-    b.onclick = () => { onPick(parseInt(b.dataset.k, 10)); closeLevelPicker(); }
-  );
-  overlay.classList.add('show');
-}
-function closeLevelPicker(){ const o = document.getElementById('lvlPicker'); if (o) o.classList.remove('show'); }
 function openInterestPicker(){
   openPicker('Add an interest', INTERESTS.map(x => ({ value:x, label:x })), 'Search or type an interest…',
     v => addChip('interests', v));
@@ -6745,13 +6696,15 @@ function openGoalPicker(){
 function syncProfileEditor(){
   EDIT_SPEAKS = [...(ME.speaks || [])];
   EDIT_LEARNS = [...(ME.learns || [])];
+  // Interests + Goals stay in memory so we don't overwrite old data
+  // on save, but the editor UI for them is retired (owner v7).
   EDIT_INTERESTS = [...(ME.interests || [])];
   EDIT_GOALS = [...(ME.goals || [])];
   renderChips('fSpeaksChips', EDIT_SPEAKS, 'speaks');
   renderChips('fLearnsChips', EDIT_LEARNS, 'learns');
-  renderChips('fInterestsChips', EDIT_INTERESTS, 'interests');
-  renderChips('fGoalsChips', EDIT_GOALS, 'goals');
   const talk = document.getElementById('fTalk'); if (talk) talk.value = ME.talkAbout || '';
+  const purp = document.getElementById('fPurpose'); if (purp) purp.value = ME.purpose || '';
+  const part = document.getElementById('fPartner'); if (part) part.value = ME.partnerType || '';
   const recs = document.getElementById('fRecs'); if (recs) recs.value = ME.recs || '';
 }
 
