@@ -175,6 +175,19 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 .ob-age-live.ok{color:#22c07a}
 .ob-age-live.bad{color:var(--err)}
 .ob-lite-help{font-size:11.5px;color:var(--faint);margin-top:4px;line-height:1.4}
+
+/* iOS-style wheel picker for date of birth. Three scroll-snap
+   columns; the centred item in each is the 'selected' one, marked by
+   the horizontal band across the middle. Pure CSS scroll-snap does
+   the snap animation — no JS needed for that. Owner ask 2 Aug 2026
+   ('DOB picker like the modern mobile apps like Apple one'). */
+.ob-wheel{position:relative;display:grid;grid-template-columns:0.9fr 1.4fr 1fr;gap:0;background:#f5f6f8;border-radius:14px;overflow:hidden;height:180px;margin-top:6px;box-shadow:inset 0 0 0 1px var(--line)}
+.ob-wheel-band{position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%);pointer-events:none;background:rgba(232,80,107,.06);border-top:1px solid rgba(232,80,107,.28);border-bottom:1px solid rgba(232,80,107,.28);z-index:1}
+.ob-wheel-col{list-style:none;margin:0;padding:68px 0;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;z-index:2}
+.ob-wheel-col::-webkit-scrollbar{display:none}
+.ob-wheel-col li{height:44px;line-height:44px;text-align:center;font-family:inherit;font-size:17px;font-weight:600;color:var(--sub);scroll-snap-align:center;user-select:none;-webkit-user-select:none;cursor:pointer;transition:color .08s}
+.ob-wheel-col li.on{color:var(--ink);font-weight:700}
+.ob-wheel-col li:hover{color:var(--ink)}
 /* Welcome logo */
 .ob-welcome-logo{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.6px;color:var(--ink);margin-bottom:10px;animation:obWelcomeIn .5s ease-out}
 .ob-welcome-logo em{font-style:normal;color:var(--accent,#e8506b)}
@@ -1816,8 +1829,18 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <input class="ob-lite-input" id="obEmail" type="email" readonly placeholder="you@example.com">
         </div>
         <div class="ob-lite-row">
-          <label class="ob-lite-label" for="obBirth">Date of birth <span class="ob-age-live" id="obAgeLive"></span></label>
-          <input class="ob-lite-input ob-dob" id="obBirth" type="date">
+          <label class="ob-lite-label">Date of birth <span class="ob-age-live" id="obAgeLive"></span></label>
+          <!-- iOS-style wheel picker. Three scroll-snap columns; the
+               centred value in each column is the selected day/month/
+               year. Owner ask 2 Aug 2026: 'DOB picker like the modern
+               mobile apps like Apple one'. -->
+          <div class="ob-wheel" id="obDobWheel">
+            <div class="ob-wheel-band" aria-hidden="true"></div>
+            <ul class="ob-wheel-col" id="obWheelDay"   role="listbox" aria-label="Day"></ul>
+            <ul class="ob-wheel-col" id="obWheelMonth" role="listbox" aria-label="Month"></ul>
+            <ul class="ob-wheel-col" id="obWheelYear"  role="listbox" aria-label="Year"></ul>
+          </div>
+          <input type="hidden" id="obBirth">
           <div class="ob-lite-help">You must be 18+ to join.</div>
         </div>
       </div>
@@ -3236,14 +3259,46 @@ function obFinish(){
   showTab('wall');
 }
 
+// Face-detection soft-check. Uses the browser's native FaceDetector
+// API where available (Chrome/Edge/Android). Safari + Firefox don't
+// ship it → we silently accept (a full face-api.js polyfill is 2MB
+// and not worth the payload for a soft-warn). Owner ask 2 Aug 2026:
+// 'check his picture if that picture has no face or not human'.
+// Returns { ok: true } to proceed, { ok: false, msg } to warn.
+async function _obCheckFace(file){
+  if (!('FaceDetector' in window)) return { ok: true };   // API unsupported → proceed
+  try {
+    const bitmap = await createImageBitmap(file);
+    const det = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 5 });
+    const faces = await det.detect(bitmap);
+    try { bitmap.close && bitmap.close(); } catch(e){}
+    if (!faces || faces.length === 0) {
+      return { ok: false, msg: "We can't see a clear face in that photo. Try one with your face facing the camera and good light." };
+    }
+    if (faces.length > 1) {
+      return { ok: false, msg: 'Please use a photo of just you — we saw more than one face.' };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: true };   // detector threw → don't block on our own bug
+  }
+}
+
 // Shared photo-upload handler used by both tap AND drag-and-drop.
-// Owner ask 2 Aug 2026: 'make the signup wizard amazing'. Bigger
-// affordance + drop-zone.
+// Owner ask 2 Aug 2026: 'make the signup wizard amazing' + face
+// detection soft-check before upload.
 async function _obDoPhotoUpload(file){
   if (!file) return;
+  const hint = $('obPhotoHint');
+  if (hint) hint.textContent = 'Checking photo…';
+  // Client-side face check (best-effort, only Chrome/Edge/Android).
+  const check = await _obCheckFace(file);
+  if (!check.ok) {
+    if (hint) hint.textContent = check.msg;
+    return;
+  }
   const fd = new FormData();
   fd.append('photo', file);
-  const hint = $('obPhotoHint');
   if (hint) hint.textContent = 'Uploading…';
   try {
     const r = await fetch('/api/social/photo', { method: 'POST', body: fd });
@@ -3276,21 +3331,101 @@ document.addEventListener('DOMContentLoaded', () => {
       if (f) _obDoPhotoUpload(f);
     });
   }
-  // Live-age preview on step 1 DOB field. Owner ask 2 Aug 2026.
+  // ═══════════════════════════════════════════════════════════════
+  // iOS-style wheel DOB picker. Owner ask 2 Aug 2026. Three snap-
+  // scrolling columns. Center-detection uses scrollTop / ROW_H;
+  // Center = the item currently in the middle band. Writes ISO date
+  // to hidden #obBirth for the existing obNext(1) validation.
+  // ═══════════════════════════════════════════════════════════════
   const bd = document.getElementById('obBirth');
   const ageEl = document.getElementById('obAgeLive');
-  if (bd && ageEl) {
-    const paint = () => {
-      const v = bd.value;
-      if (!v) { ageEl.textContent = ''; ageEl.className = 'ob-age-live'; return; }
-      const age = ageFromISOClient(v);
-      if (!Number.isFinite(age) || age < 0 || age > 120) {
-        ageEl.textContent = 'invalid'; ageEl.className = 'ob-age-live bad'; return;
-      }
-      ageEl.textContent = '· ' + age + ' years';
-      ageEl.className = 'ob-age-live ' + (age >= 18 ? 'ok' : 'bad');
-    };
-    bd.addEventListener('input', paint); bd.addEventListener('change', paint);
+  const wDay = document.getElementById('obWheelDay');
+  const wMonth = document.getElementById('obWheelMonth');
+  const wYear = document.getElementById('obWheelYear');
+  const ROW_H = 44;
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function _obBuildColumn(el, items, initialIdx){
+    el.innerHTML = items.map((v, i) => `<li data-i="${i}">${v}</li>`).join('');
+    // Wait a frame so the browser has laid the list out before we snap.
+    requestAnimationFrame(() => { el.scrollTop = initialIdx * ROW_H; _obPaintOn(el); });
+  }
+  function _obPaintOn(el){
+    const idx = Math.round(el.scrollTop / ROW_H);
+    Array.from(el.children).forEach((li, i) => li.classList.toggle('on', i === idx));
+    return idx;
+  }
+  function _obDaysIn(month, year){
+    // month 1-12, year 4-digit. Uses Date rollover trick.
+    return new Date(year, month, 0).getDate();
+  }
+  function _obYearFor(idx){
+    const now = new Date();
+    // Year list: 100 years back → current year (idx 0 = 100y ago).
+    return (now.getFullYear() - 100) + idx;
+  }
+  function _obCurrentDob(){
+    if (!wDay || !wMonth || !wYear) return '';
+    const day = Math.round(wDay.scrollTop / ROW_H) + 1;
+    const month = Math.round(wMonth.scrollTop / ROW_H) + 1;
+    const year = _obYearFor(Math.round(wYear.scrollTop / ROW_H));
+    if (!year || !month || !day) return '';
+    return year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+  }
+  function _obPaintAge(){
+    if (!ageEl) return;
+    const iso = _obCurrentDob();
+    if (!iso) { ageEl.textContent = ''; ageEl.className = 'ob-age-live'; return; }
+    const age = ageFromISOClient(iso);
+    if (!Number.isFinite(age) || age < 0 || age > 120) {
+      ageEl.textContent = 'invalid'; ageEl.className = 'ob-age-live bad'; return;
+    }
+    ageEl.textContent = '· ' + age + ' years';
+    ageEl.className = 'ob-age-live ' + (age >= 18 ? 'ok' : 'bad');
+  }
+  function _obRebuildDaysIfNeeded(){
+    if (!wDay || !wMonth || !wYear) return;
+    const monthIdx = Math.round(wMonth.scrollTop / ROW_H);
+    const year = _obYearFor(Math.round(wYear.scrollTop / ROW_H));
+    const dim = _obDaysIn(monthIdx + 1, year);
+    if (wDay.children.length !== dim) {
+      const days = Array.from({length: dim}, (_, i) => String(i + 1).padStart(2, '0'));
+      const keep = Math.min(Math.round(wDay.scrollTop / ROW_H), dim - 1);
+      _obBuildColumn(wDay, days, Math.max(0, keep));
+    }
+  }
+  function _obCommitDob(){
+    _obPaintOn(wDay); _obPaintOn(wMonth); _obPaintOn(wYear);
+    if (bd) bd.value = _obCurrentDob();
+    _obPaintAge();
+  }
+  function _obWireColumn(col, onCommit){
+    let t = null;
+    col.addEventListener('scroll', () => {
+      _obPaintOn(col);
+      clearTimeout(t); t = setTimeout(onCommit, 90);
+    });
+    // Tap an item to snap to it (accessibility + desktop convenience).
+    col.addEventListener('click', ev => {
+      const li = ev.target.closest && ev.target.closest('li');
+      if (!li) return;
+      col.scrollTo({ top: (+li.dataset.i) * ROW_H, behavior: 'smooth' });
+      setTimeout(onCommit, 320);
+    });
+  }
+  if (wDay && wMonth && wYear && bd) {
+    const now = new Date();
+    const yrLo = now.getFullYear() - 100;
+    const years = Array.from({length: 101}, (_, i) => String(yrLo + i));
+    // Default cursor: 25 years ago (comfortable adult default), Jan 1.
+    const defaultYearIdx = 100 - 25;
+    _obBuildColumn(wDay, Array.from({length: 31}, (_, i) => String(i + 1).padStart(2, '0')), 0);
+    _obBuildColumn(wMonth, MONTHS, 0);
+    _obBuildColumn(wYear, years, defaultYearIdx);
+    _obWireColumn(wDay, () => { _obCommitDob(); });
+    _obWireColumn(wMonth, () => { _obRebuildDaysIfNeeded(); _obCommitDob(); });
+    _obWireColumn(wYear, () => { _obRebuildDaysIfNeeded(); _obCommitDob(); });
+    // Prime the hidden field + age readout after the initial render.
+    setTimeout(_obCommitDob, 60);
   }
   // Goal picker — single-select buttons.
   document.querySelectorAll('#obGoalPicker .ob-goal').forEach(btn => {

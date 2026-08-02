@@ -194,27 +194,14 @@ function mount(api, ctx) {
         user.googleId = g.sub;   // link Google to the existing email account
         await db.set('soc:user:' + user.id, JSON.stringify(user));
       }
-      // Best-effort import of the Google avatar on first Google sign-in
-      // if we have no photo for the user yet. Guarded by !user.photo so
-      // an existing custom photo is NEVER overwritten.
-      if (!user.photo && g.picture) {
-        try {
-          const pu = String(g.picture).replace(/=s\d+(-c)?$/, '=s400-c');
-          const pr = await fetch(pu);
-          if (pr.ok) {
-            const buf = Buffer.from(await pr.arrayBuffer());
-            if (buf.length > 100 && buf.length < 3 * 1024 * 1024) {
-              const ct = pr.headers.get('content-type') || '';
-              const ext = ct.includes('png') ? 'png' : 'jpg';
-              for (const old of fs.readdirSync(PHOTO_DIR)) if (old.startsWith(user.id + '.')) fs.unlinkSync(path.join(PHOTO_DIR, old));
-              const fname = `${user.id}.${Date.now().toString(36)}.${ext}`;
-              fs.writeFileSync(path.join(PHOTO_DIR, fname), buf);
-              user.photo = '/social-photos/' + fname;
-              await db.set('soc:user:' + user.id, JSON.stringify(user));
-            }
-          }
-        } catch (e) { /* profile photo import is best-effort */ }
-      }
+      // Owner ask 2 Aug 2026: 'don't display his photo from the Gmail,
+      // ask him to upload a new photo via camera or gallery'. The
+      // Google-avatar auto-import was retired here so every new
+      // Google account lands in the wizard with photo === null, which
+      // forces them through the step-2 upload gate (camera or gallery
+      // on mobile; file picker on desktop) before they can continue.
+      // Existing accounts (`if (user.googleId)` branch above) already
+      // have their photo — we never touched those.
       const token = crypto.randomBytes(24).toString('hex');
       await db.set('soc:sess:' + token, user.id, SESS_TTL);
       setSess(res, token);
