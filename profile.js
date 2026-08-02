@@ -104,12 +104,22 @@ function mount(api, ctx) {
         if (bd && !/^\d{4}-\d{2}-\d{2}$/.test(bd)) return res.status(400).json({ error: 'Invalid birthdate format.' });
         // Owner ask 2 Aug 2026: Gmail signups now defer DOB to the
         // wizard, so /profile is the write-site for the 18+ hard
-        // gate for those accounts. Enforce it here on any account
-        // that hasn't cleared ageVerifiedAt yet.
+        // gate for those accounts. Also mirror auth.js's cooldown:
+        // without it a wizard-stage user could retry <18 DOBs
+        // endlessly (audit gap, 2 Aug 2026).
         if (bd && ctx.ageFromISO && ctx.MIN_AGE) {
+          const emailForCooldown = String(u.email || '').toLowerCase();
+          if (emailForCooldown && ctx.isRecentAgeFail && await ctx.isRecentAgeFail(emailForCooldown)) {
+            return res.status(403).json({ error: 'This email cannot be used for sign-up right now.' });
+          }
           const age = ctx.ageFromISO(bd);
-          if (!Number.isFinite(age) || age < 0 || age > 120) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
-          if (age < ctx.MIN_AGE) return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + ctx.MIN_AGE + ' and over.' });
+          if (!Number.isFinite(age) || age < 0 || age > 120) {
+            return res.status(400).json({ error: 'Please enter a valid date of birth.' });
+          }
+          if (age < ctx.MIN_AGE) {
+            if (emailForCooldown && ctx.markAgeFail) await ctx.markAgeFail(emailForCooldown);
+            return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + ctx.MIN_AGE + ' and over.' });
+          }
         }
         u.birthdate = bd || null;
         if (bd) { u.ageVerifiedAt = Date.now(); u.ageGatePending = false; }

@@ -180,8 +180,12 @@ function mount(app, redis) {
     ...marks(u) });
 
   // ---- simple rate limit (per ip per route bucket) ----
+  // WORDSPIES_TEST_MODE bypasses this so /tmp/*.js suites can create
+  // many test accounts in a burst. Never set in production.
+  const RATE_LIMITS_OFF = process.env.WORDSPIES_TEST_MODE === '1';
   const hits = new Map();
   function limited(req, bucket, max) {
+    if (RATE_LIMITS_OFF) return false;
     const key = bucket + ':' + (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?');
     const now = Date.now();
     const rec = hits.get(key) || { n: 0, t: now };
@@ -881,7 +885,9 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     // Age-gate helpers so /profile's DOB write can enforce 18+ for
     // Gmail signups that deferred DOB (owner ask 2 Aug 2026 —
     // 'remove that popup entirely, DOB goes in the wizard').
-    MIN_AGE, ageFromISO,
+    // markAgeFail/isRecentAgeFail plug the wizard-write gap: without
+    // them a user could retry <18 DOBs from the wizard endlessly.
+    MIN_AGE, ageFromISO, markAgeFail, isRecentAgeFail,
     // Wizard completion gate — profile.js rejects onboardedAt writes
     // that don't correspond to a fully-populated profile so a
     // tampered client can't self-activate.
