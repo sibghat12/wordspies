@@ -357,6 +357,19 @@ function scanMyRooms(uid) {
     }
   }
 
+  // Guess the Word
+  if (guessWordMod && guessWordMod.rooms) {
+    for (const r of guessWordMod.rooms.values()) {
+      if (r.creatorUid !== uid) continue;
+      push('guessword', r, {
+        icon: '❓', title: 'Guess the Word',
+        players: r.players ? r.players.size : 0,
+        href: '/guessword?room=' + r.code,
+        watchers: r.watchers ? r.watchers.size : 0
+      });
+    }
+  }
+
   // Parties I host — includes myself when I'm in them, so the strip is
   // effectively "rooms where I own the keys" whether or not I'm sat inside
   // right now.
@@ -410,6 +423,7 @@ app.post('/api/social/my-rooms/close', express.json({ limit: '2kb' }), async (re
   if (!ok && meldMod && meldMod.rooms && game === 'meld') ok = closeIn(meldMod.rooms, () => { try { io.of('/meld').to(code).emit('roomClosed', { code }); } catch (e) {} });
   if (!ok && spyMod  && spyMod.rooms  && game === 'spy')  ok = closeIn(spyMod.rooms,  () => { try { io.of('/spy' ).to(code).emit('roomClosed', { code }); } catch (e) {} });
   if (!ok && wordChainMod && wordChainMod.rooms && game === 'wordchain') ok = closeIn(wordChainMod.rooms, () => { try { io.of('/wordchain').to(code).emit('roomClosed', { code }); } catch (e) {} });
+  if (!ok && guessWordMod && guessWordMod.rooms && game === 'guessword') ok = closeIn(guessWordMod.rooms, () => { try { io.of('/guessword').to(code).emit('roomClosed', { code }); } catch (e) {} });
   // Parties are keyed by hostUid instead of creatorUid, so closeIn's default
   // check doesn't apply — do the ownership test explicitly here.
   if (!ok && partyMod && partyMod.rooms && game === 'party') {
@@ -641,6 +655,11 @@ let wordChainMod = null;
 try { wordChainMod = require('./wordchain').mount(app, io, { identify: resolveSocialIdentity }) || null; }
 catch (e) { console.error('wordchain module failed to load (game unaffected):', e.message); }
 
+// ❓ Guess the Word — describer-and-guessers vocabulary game at /guessword.
+let guessWordMod = null;
+try { guessWordMod = require('./guessword').mount(app, io, { identify: resolveSocialIdentity }) || null; }
+catch (e) { console.error('guessword module failed to load (game unaffected):', e.message); }
+
 // 🎉 Parties — audio rooms with speakers + listeners + rationed listener chat.
 // Uses the same Cloudflare Realtime pipeline the games do. Own namespace at
 // /party, own rooms map, own REST endpoints under /api/parties.
@@ -719,6 +738,7 @@ app.get('/api/live', (req, res) => {
   add(meldMod && meldMod.live);
   add(spyMod && spyMod.live);
   add(wordChainMod && wordChainMod.live);
+  add(guessWordMod && guessWordMod.live);
   add(partyMod && partyMod.live);
   // Games actually being played first, then the ones still filling up, and
   // within each the ones that moved most recently — a game someone touched a

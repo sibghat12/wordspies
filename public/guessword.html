@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Guess the Word — free describe-and-guess game | WordSpies</title>
+<meta name="description" content="A free browser word game. One player secretly gets a word and gives clues in the chat; everyone else races to guess. Great for language learners.">
+<meta name="theme-color" content="#fafafa">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wordspies.co.uk/guessword">
+<link rel="icon" href="/favicon.ico">
+<meta property="og:site_name" content="WordSpies">
+<meta property="og:title" content="Guess the Word — free describe-and-guess game">
+<meta property="og:description" content="One player describes, everyone else guesses. Free, no sign-up, plays in five minutes.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wordspies.co.uk/guessword">
+<meta property="og:image" content="https://wordspies.co.uk/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --bg:#fafafa; --card:#ffffff;
+  --brand:#6b5ce8; --brand-d:#4b3fbf;
+  --gold:#ffb830; --green:#22c07a; --err:#d33; --hint:#0fa3b1;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:clip;max-width:100%}
+body{
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
+  padding:0 16px calc(28px + env(safe-area-inset-bottom));
+}
+.wrap{width:100%;max-width:560px;flex:1;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:8px;padding:16px 0 14px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+header::-webkit-scrollbar{display:none}
+header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:7px;flex:none}
+header .logo span{font-size:17px}
+header .sp{flex:1;min-width:8px}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap;flex:none}
+.tinylink:active{background:#f3f3f5}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+.card + .card{margin-top:14px}
+h1{font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1.15;font-family:'Fredoka',sans-serif}
+h2{font-size:16px;font-weight:600;letter-spacing:-.3px}
+p.lede{font-size:14px;color:var(--sub);line-height:1.62;margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:0;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:-.2px;transition:filter .12s;}
+.btn:disabled{opacity:.42;cursor:default}
+.btn:active:not(:disabled){filter:brightness(.94)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn-brand{background:linear-gradient(180deg,#8477f0,var(--brand-d));color:#fff}
+.row{display:flex;gap:10px}
+.row .btn{width:auto;flex:1}
+input[type=text]{width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:0 15px;font-family:inherit;font-size:16px;font-weight:500;color:var(--ink);outline:0;}
+input[type=text]:focus{border-color:#c9cbd2}
+input[type=text]::placeholder{color:var(--faint);font-weight:400}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 0 7px 3px;letter-spacing:.1px}
+.hidden{display:none !important}
+.err{background:#fff1f1;border:1px solid #f3d2d2;color:#a02a2a;border-radius:12px;padding:11px 13px;font-size:13px;font-weight:500;margin-top:12px;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:13.5px;font-weight:600;z-index:60;opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+
+.hero .kick{font-size:11.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--brand-d)}
+.hero h1{margin-top:6px}
+.stack{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.ordiv{display:flex;align-items:center;gap:10px;color:var(--faint);font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin:2px 0}
+.ordiv span{flex:1;height:1px;background:var(--line)}
+.rules{margin-top:16px;border-top:1px solid var(--line);padding-top:15px}
+.rules li{list-style:none;display:flex;gap:11px;font-size:13.2px;color:var(--sub);line-height:1.6;margin-bottom:9px}
+.rules li b{color:var(--ink);font-weight:600}
+.rules .n{flex:none;width:20px;height:20px;border-radius:999px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+
+.codebox{text-align:center;padding:22px 16px;border:1px dashed #d8d9de;border-radius:16px;background:#fcfcfd;margin:2px 0 14px}
+.codebox .lbl{font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:1.2px;text-transform:uppercase}
+.codebox .code{font-family:'Fredoka',sans-serif;font-size:44px;font-weight:600;letter-spacing:8px;margin-top:4px;padding-left:8px}
+.codebox .share{display:flex;gap:8px;margin-top:12px;justify-content:center;flex-wrap:wrap}
+.codebox .share button{font-family:inherit;font-size:12.5px;font-weight:600;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:99px;padding:7px 13px;cursor:pointer}
+.peeps{display:flex;flex-wrap:wrap;gap:8px}
+.peep{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 5px;font-size:13px;font-weight:600;position:relative}
+.peep .av{width:26px;height:26px;border-radius:999px;background:#eceef3;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--sub);overflow:hidden}
+.peep .av img{width:100%;height:100%;object-fit:cover}
+.peep.host::after{content:'HOST';position:absolute;top:-6px;right:-4px;background:var(--ink);color:#fff;font-size:8.5px;font-weight:800;letter-spacing:.5px;padding:2px 5px;border-radius:99px}
+.peep.gone{opacity:.5}
+.peep .kbtn{background:none;border:0;color:var(--faint);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}
+.hint{font-size:12.5px;color:var(--faint);text-align:center;margin-top:12px;font-weight:500}
+
+/* playing view */
+.play{padding:20px 18px}
+.wordbox{background:#f6f4ff;border:1px solid #ded7ff;border-radius:16px;padding:14px 14px 12px;text-align:center;position:relative}
+.wordbox .lbl{font-size:10.5px;font-weight:700;color:var(--brand-d);letter-spacing:1.4px;text-transform:uppercase}
+.wordbox .wd{font-family:'Fredoka',sans-serif;font-size:44px;font-weight:600;letter-spacing:-1.5px;color:var(--brand-d);line-height:1.05;margin-top:6px;word-break:break-word}
+.wordbox .sub{font-size:12.5px;color:var(--sub);font-weight:500;margin-top:6px;line-height:1.5}
+.wordbox.hidden-word .wd,.wordbox.hidden-word .sub{filter:blur(18px)}
+.wordbox.hidden-word::before{content:'👁 Tap to peek — keep your screen private';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:14px;font-weight:700;color:var(--brand-d);z-index:2}
+.wordbox.hidden-word{cursor:pointer}
+.roundhdr{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px;font-weight:600;color:var(--sub)}
+.roundhdr .timer{background:var(--ink);color:#fff;font-size:12px;font-weight:800;padding:4px 12px;border-radius:99px;letter-spacing:.4px;font-family:'Fredoka',sans-serif}
+.roundhdr .timer.low{background:var(--err)}
+.scores{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.sco{background:#fff;border:1px solid var(--line);border-radius:99px;padding:4px 10px 4px 4px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px}
+.sco.me{background:#f6f4ff;border-color:#ded7ff}
+.sco.desc{background:#fff9ea;border-color:#f0dcaa}
+.sco .av{width:22px;height:22px;border-radius:999px;background:#eceef3;flex:none;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--sub);overflow:hidden}
+.sco .av img{width:100%;height:100%;object-fit:cover}
+.sco .pt{background:var(--brand);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:99px;letter-spacing:.4px}
+
+/* chat feed */
+.feed{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;max-height:260px;overflow-y:auto}
+.feed .row{display:block}
+.msg{padding:5px 0;font-size:13.5px;line-height:1.45;border-bottom:1px solid #f3f3f5}
+.msg:last-child{border-bottom:0}
+.msg .who{font-weight:700;color:var(--sub);font-size:12px;margin-right:6px}
+.msg.hint .who{color:var(--hint)}
+.msg.hint{color:var(--ink)}
+.msg.guess .who{color:var(--brand-d)}
+.msg.guess.wrong{color:var(--sub)}
+.msg.guess.right{color:var(--green);font-weight:700}
+.msg.system{color:var(--faint);font-style:italic;font-size:12.5px}
+
+.entry{margin-top:12px}
+.entry .row{gap:8px}
+.entry input{flex:1}
+.entry .btn{flex:none;padding:0 20px;min-height:52px;width:auto}
+.entry.disabled input{background:#f6f6f8;color:var(--faint)}
+.entry .waitCap{font-size:12.5px;color:var(--faint);text-align:center;margin-top:8px;font-weight:500}
+
+/* ended */
+.reveal{text-align:center;padding:24px 18px}
+.reveal .kick{font-size:11.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand-d)}
+.reveal .who{font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:-1px;margin:10px 0 4px;line-height:1.1;word-break:break-word}
+.reveal .role{font-size:14.5px;color:var(--sub);line-height:1.5}
+.leader{margin-top:20px;text-align:left}
+.leader h3{font-size:11px;font-weight:700;color:var(--faint);letter-spacing:1.3px;text-transform:uppercase;margin-bottom:8px}
+.leader .lrow{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid #f3f3f5;font-size:14px}
+.leader .lrow:last-child{border-bottom:0}
+.leader .lrow .rk{width:22px;font-weight:800;color:var(--sub)}
+.leader .lrow .av{width:30px;height:30px;border-radius:999px;background:#eceef3;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--sub);overflow:hidden}
+.leader .lrow .av img{width:100%;height:100%;object-fit:cover}
+.leader .lrow .nm{flex:1;font-weight:600}
+.leader .lrow .pt{background:var(--brand);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:.5px}
+.leader .lrow.first .rk{color:var(--gold)}
+.cta{margin-top:20px}
+
+/* invite friends */
+.ov{position:fixed;inset:0;background:rgba(20,22,30,.55);display:flex;align-items:center;justify-content:center;z-index:80;padding:16px;backdrop-filter:blur(3px)}
+.ov.hidden{display:none}
+.invpanel{background:#fff;border-radius:20px;max-width:400px;width:100%;padding:20px 18px 16px;text-align:left;display:flex;flex-direction:column;max-height:82vh;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.invpanel h2{font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;margin-bottom:3px}
+.invpanel .sub{font-size:12.5px;color:var(--sub);font-weight:500;margin-bottom:12px;line-height:1.5}
+.invlist{overflow-y:auto;flex:1;margin:0 -6px;padding:0 6px;min-height:60px}
+.invrow{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;cursor:pointer;transition:background .14s}
+.invrow:hover{background:#f4f4f7}
+.invrow.on{background:#eee9ff}
+.invrow .av{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#e6e9f2;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--sub);overflow:hidden}
+.invrow .av img{width:100%;height:100%;object-fit:cover}
+.invrow .nm{flex:1;min-width:0}
+.invrow .nm b{display:block;font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.invrow .nm span{font-size:11px;color:var(--faint);font-weight:500}
+.invrow .odot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none}
+.invrow .tick{width:22px;height:22px;border-radius:7px;border:1.5px solid #d3d8e6;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:800}
+.invrow.on .tick{background:var(--brand);border-color:var(--brand)}
+.invrow.sent{opacity:.55;cursor:default}
+.invpanel .empty{font-size:12.5px;color:var(--sub);font-weight:500;text-align:center;padding:22px 8px;line-height:1.65}
+.invpanel .empty a{color:var(--brand-d);font-weight:600;text-decoration:none}
+.invfoot{display:flex;gap:8px;margin-top:12px}
+.invfoot .btn{flex:1;min-height:44px;font-size:13.5px}
+
+.watchers{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer}
+.watchers .dot{width:6px;height:6px;border-radius:999px;background:var(--brand);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.confetti i{position:absolute;width:8px;height:13px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.15}}
+.foot{text-align:center;font-size:12px;color:var(--faint);line-height:1.6;padding:22px 8px 0}
+.foot a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">❓ <span>WordSpies</span></div>
+  <div class="sp"></div>
+  <a class="tinylink" href="/">👥 Community</a>
+  <a class="tinylink" href="/games">🎮 All games</a>
+</header>
+
+<!-- HOME -->
+<div id="viewHome" class="card hero">
+  <div class="kick">Describe & Guess · 3–10 friends</div>
+  <h1>Guess the Word</h1>
+  <p class="lede">One player gets a <b>secret word</b> and gives clues in the chat. Everyone else races to guess. First correct guess scores — then a new describer takes over. Fun for language practice at any level.</p>
+
+  <div class="stack">
+    <label class="fl" for="nameIn">Your name</label>
+    <input id="nameIn" type="text" placeholder="e.g. Sam" maxlength="18" autocomplete="off">
+    <button id="createBtn" class="btn btn-brand">Create a room</button>
+    <div class="ordiv"><span></span>or join<span></span></div>
+    <div class="row">
+      <input id="codeIn" type="text" placeholder="Room code" maxlength="4" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:4px;text-align:center;font-weight:700">
+      <button id="joinBtn" class="btn btn-dark" style="flex:0 0 108px">Join</button>
+    </div>
+    <div id="homeErr" class="err hidden"></div>
+  </div>
+
+  <ul class="rules">
+    <li><span class="n">1</span><span><b>One describer per round.</b> They get a secret word and type clues — no saying the word itself.</span></li>
+    <li><span class="n">2</span><span><b>Everyone else guesses</b> in the chat. First correct guess wins the round.</span></li>
+    <li><span class="n">3</span><span><b>2 points to guesser, 1 to describer.</b> 90 seconds per round; if nobody guesses, the word is revealed and we move on.</span></li>
+    <li><span class="n">4</span><span><b>Describer role rotates.</b> Two rounds per player, capped at 12. Top score wins.</span></li>
+  </ul>
+</div>
+
+<!-- LOBBY -->
+<div id="viewLobby" class="card hidden">
+  <div class="codebox">
+    <div class="lbl">Share this code</div>
+    <div class="code" id="lobCode">····</div>
+    <div class="share">
+      <button id="inviteFriendsBtn">👥 Invite friends</button>
+      <button id="copyLink">🔗 Copy link</button>
+      <button id="waShare">💬 WhatsApp</button>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0 10px">
+    <h2 id="lobCount">0 in the room</h2>
+    <span class="watchers hidden" id="watchPill"><span class="dot"></span><span id="watchN">0</span> watching</span>
+  </div>
+  <div id="peeps" class="peeps"></div>
+  <p id="lobHint" class="hint">Need at least 3 players to start.</p>
+  <button id="startBtn" class="btn btn-brand hidden" style="margin-top:14px">Start the game</button>
+  <div class="row" style="margin-top:10px">
+    <button id="leaveBtn" class="btn btn-line">Leave</button>
+    <button id="endRoomBtn" class="btn btn-line hidden" style="color:var(--err);border-color:#f3d2d2">End the game</button>
+  </div>
+</div>
+
+<!-- PLAYING -->
+<div id="viewPlay" class="card play hidden">
+  <div class="wordbox" id="wordBox">
+    <div class="lbl" id="wordLbl">Word to describe</div>
+    <div class="wd" id="wordEl">·</div>
+    <div class="sub" id="wordSub">Type clues — but don't say the word itself.</div>
+  </div>
+  <div class="roundhdr">
+    <div><b id="roundLbl">Round 1</b> · <span id="roundTurn">·</span></div>
+    <div class="timer" id="timerEl">·s</div>
+  </div>
+  <div class="scores" id="scoresEl"></div>
+  <div class="feed" id="feedEl"></div>
+  <div class="entry" id="entryBox">
+    <div class="row">
+      <input id="entryIn" type="text" placeholder="type…" maxlength="60" autocomplete="off">
+      <button id="entryBtn" class="btn btn-brand">Send</button>
+    </div>
+    <div class="waitCap hidden" id="waitCap"></div>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button id="leaveBtn2" class="btn btn-line">Leave</button>
+    <button id="skipBtn" class="btn btn-line hidden" style="color:var(--err);border-color:#f3d2d2">Skip round</button>
+    <button id="endRoomBtn2" class="btn btn-line hidden" style="color:var(--err);border-color:#f3d2d2">End for everyone</button>
+  </div>
+</div>
+
+<!-- ENDED -->
+<div id="viewEnded" class="card reveal hidden">
+  <div class="kick" id="endKick">🏆 Game over</div>
+  <div class="who" id="endWho">·</div>
+  <div class="role" id="endRole">·</div>
+  <div class="leader">
+    <h3>Final scores</h3>
+    <div id="leaderList"></div>
+  </div>
+  <div class="cta">
+    <button id="rematchBtn" class="btn btn-brand">Play again</button>
+    <button id="homeBtn" class="btn btn-line" style="margin-top:10px">Back home</button>
+  </div>
+</div>
+
+<!-- WATCHING -->
+<div id="viewWatch" class="card hidden">
+  <div class="kick" style="font-size:11.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--brand-d)">Watching · Room <span id="wCode"></span></div>
+  <h2 style="margin-top:6px">Spectator view</h2>
+  <p class="lede">You can see the clues and guesses live. The word stays hidden.</p>
+  <div class="row" style="margin-top:14px">
+    <button id="wKnock" class="btn btn-line">👋 Knock</button>
+    <a href="/social" class="btn btn-dark" style="text-decoration:none">Back to community</a>
+  </div>
+</div>
+
+<div class="foot">
+  Free vocabulary game by <a href="/">WordSpies</a> — no sign-up, no download.
+</div>
+</div>
+
+<!-- invite friends -->
+<div id="invOv" class="ov hidden" onclick="if(event.target===this)closeInvite()">
+  <div class="invpanel">
+    <h2>👥 Invite friends</h2>
+    <div class="sub">People you follow, follow you, or have chatted with. They get a message and an email.</div>
+    <div class="invlist" id="invList"></div>
+    <div class="invfoot">
+      <button class="btn btn-line" onclick="closeInvite()">Close</button>
+      <button class="btn btn-brand" id="invSend" disabled>Send invite</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+const $  = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NAME_KEY = 'ws_name';
+const socket = io('/guessword', { transports:['websocket','polling'] });
+let S = null;
+let MY_ID = null;
+let TICK_TIMER = null;
+let LAST_WORD_SHOWN = null;
+
+let __wsMe = null;
+(async () => {
+  try {
+    const r = await fetch('/api/social/me');
+    const j = await r.json();
+    if (!j || !j.me) {
+      const room = new URL(location.href).searchParams.get('room') || '';
+      const next = '/guessword' + (room ? '?room=' + encodeURIComponent(room) : '');
+      location.replace('/social?next=' + encodeURIComponent(next));
+      return;
+    }
+    __wsMe = j.me;
+    const inp = $('nameIn');
+    if (inp) {
+      inp.value = j.me.name || '';
+      inp.readOnly = true;
+      inp.title = 'Locked to your WordSpies name — change it from your profile.';
+    }
+    try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
+  } catch (e) {
+    try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
+  }
+})();
+
+function view(id){
+  ['viewHome','viewLobby','viewPlay','viewEnded','viewWatch']
+    .forEach(v => $(v).classList.toggle('hidden', v !== id));
+}
+function toast(t){ const el = $('toastEl'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2200); }
+function showErr(id, msg){ const e = $(id); if (!msg) return e.classList.add('hidden'); e.textContent = msg; e.classList.remove('hidden'); }
+function avatarHtml(p){
+  if (p && p.photo) return '<span class="av"><img src="' + esc(p.photo) + '" alt=""></span>';
+  const letter = p && p.name ? esc(p.name[0].toUpperCase()) : '?';
+  return '<span class="av">' + letter + '</span>';
+}
+function urlOf(code){ return location.origin + '/guessword?room=' + code; }
+async function copyToClipboard(text){
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch(e){ try{ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); return true;}catch(_){return false;} }
+}
+function saveName(){
+  const n = $('nameIn').value.trim().slice(0, 18);
+  if (n) try { localStorage.setItem(NAME_KEY, n); } catch(e){}
+  return n;
+}
+function _handleAck(r){
+  if (!r || !r.error) return false;
+  if (r.error === 'login_required') {
+    const room = new URL(location.href).searchParams.get('room') || $('codeIn').value.trim();
+    const next = '/guessword' + (room ? '?room=' + encodeURIComponent(room) : '');
+    location.replace('/social?next=' + encodeURIComponent(next));
+    return true;
+  }
+  const map = { gone:'No game with that code — it may have finished.', full:'That room is full.', started:'That game has already started.' };
+  showErr('homeErr', map[r.error] || r.error);
+  return true;
+}
+$('createBtn').onclick = () => {
+  const n = saveName(); if (!n) return showErr('homeErr', 'Type your name first.');
+  showErr('homeErr', '');
+  socket.emit('create', { name: n }, _handleAck);
+};
+$('joinBtn').onclick = () => {
+  const n = saveName(); if (!n) return showErr('homeErr', 'Type your name first.');
+  const c = $('codeIn').value.trim().toUpperCase();
+  if (!c || c.length < 3) return showErr('homeErr', 'Enter the 4-letter room code.');
+  showErr('homeErr', '');
+  socket.emit('join', { name: n, code: c }, _handleAck);
+};
+$('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
+
+$('copyLink').onclick = async () => {
+  if (!S) return;
+  const ok = await copyToClipboard(urlOf(S.code));
+  toast(ok ? 'Invite link copied — paste it in your chat.' : 'Could not copy — long-press to copy the URL.');
+};
+$('waShare').onclick = () => {
+  if (!S) return;
+  const msg = '❓ Guess the Word — join my room: ' + urlOf(S.code);
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+};
+$('startBtn').onclick = () => socket.emit('start');
+function leaveGame(){ if (!confirm('Leave this game?')) return; try { socket.emit('leave'); } catch(e){} setTimeout(() => location.href = '/', 150); }
+function endRoom(){ if (!confirm('End the game for everyone in the room?')) return; try { socket.emit('endRoom'); } catch(e){} setTimeout(() => location.href = '/', 200); }
+$('leaveBtn').onclick = leaveGame;
+$('leaveBtn2').onclick = leaveGame;
+$('endRoomBtn').onclick = endRoom;
+$('endRoomBtn2').onclick = endRoom;
+$('skipBtn').onclick = () => { if (confirm('Skip this round?')) socket.emit('skip'); };
+
+$('entryBtn').onclick = () => sendEntry();
+$('entryIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendEntry(); });
+function sendEntry(){
+  const t = $('entryIn').value.trim();
+  if (!t || !S) return;
+  if (S.state !== 'describe') return;
+  if (S.iAmDescriber) socket.emit('hint',  { text: t });
+  else                socket.emit('guess', { text: t });
+  $('entryIn').value = '';
+}
+
+$('rematchBtn').onclick = () => socket.emit('rematch');
+$('homeBtn').onclick = () => location.href = '/games';
+
+socket.on('err', ({ msg }) => toast(msg || 'Something went wrong.'));
+socket.on('kicked', () => { toast('You were removed from the room.'); setTimeout(() => location.reload(), 900); });
+socket.on('replaced', () => { toast('You joined from another tab — this one is now spectating.'); });
+socket.on('roomClosed', ({ by }) => { toast((by ? esc(by) : 'The host') + ' ended the game.'); setTimeout(() => location.href = '/', 1200); });
+socket.on('seated', ({ code, you }) => { MY_ID = you; history.replaceState(null, '', '/guessword?room=' + code); });
+socket.on('watching', ({ code }) => { view('viewWatch'); $('wCode').textContent = code; });
+socket.on('state', (state) => { S = state; render(); });
+
+(function initFromUrl(){
+  const p = new URLSearchParams(location.search);
+  const wcode = p.get('watch');
+  const rcode = p.get('room');
+  if (wcode) { socket.emit('watch', { code: wcode.toUpperCase() }); return; }
+  if (rcode) {
+    $('codeIn').value = rcode.toUpperCase();
+    const n = $('nameIn').value.trim();
+    if (n) setTimeout(() => $('joinBtn').click(), 40);
+    else $('nameIn').focus();
+  }
+})();
+
+function render(){
+  if (!S) return;
+  const wp = $('watchPill');
+  if (wp) {
+    const n = S.watchers || 0;
+    wp.classList.toggle('hidden', n === 0);
+    if (n) $('watchN').textContent = n;
+  }
+  if (S.state === 'lobby')    return renderLobby();
+  if (S.state === 'describe') return renderPlay();
+  if (S.state === 'ended')    return renderEnded();
+}
+
+function renderLobby(){
+  view('viewLobby');
+  $('lobCode').textContent = S.code;
+  const n = S.players.length;
+  $('lobCount').textContent = n + (n === 1 ? ' player in the room' : ' players in the room');
+  const iAmHost = S.hostId && S.hostId === MY_ID;
+  $('peeps').innerHTML = S.players.map(p => {
+    const kick = (iAmHost && p.id !== MY_ID) ? '<button class="kbtn" onclick="kickIt(\'' + p.id + '\')" title="Remove">✕</button>' : '';
+    return '<div class="peep ' + (p.id === S.hostId ? 'host' : '') + ' ' + (p.connected ? '' : 'gone') + '">'
+      + avatarHtml(p) + '<span>' + esc(p.name) + '</span>' + kick + '</div>';
+  }).join('');
+  const canStart = iAmHost && n >= S.minPlayers;
+  $('startBtn').classList.toggle('hidden', !iAmHost);
+  $('startBtn').disabled = !canStart;
+  $('startBtn').textContent = canStart ? 'Start the game' : ('Need ' + S.minPlayers + '+ players');
+  $('lobHint').textContent = iAmHost
+    ? (canStart ? 'You\'re the host — start when everyone is in.' : ('Need at least ' + S.minPlayers + ' players.'))
+    : ('Waiting for the host to start… (' + n + '/' + S.minPlayers + ')');
+  $('endRoomBtn').classList.toggle('hidden', !iAmHost);
+  $('endRoomBtn2').classList.toggle('hidden', !iAmHost);
+  $('skipBtn').classList.add('hidden');
+  if (TICK_TIMER) { clearInterval(TICK_TIMER); TICK_TIMER = null; }
+}
+window.kickIt = (id) => socket.emit('kick', { id });
+
+function renderPlay(){
+  view('viewPlay');
+  const iAmHost = S.hostId && S.hostId === MY_ID;
+  $('endRoomBtn2').classList.toggle('hidden', !iAmHost);
+  $('skipBtn').classList.toggle('hidden', !iAmHost);
+
+  const describer = S.players.find(p => p.id === S.describerId) || { name: '?' };
+  $('roundLbl').textContent = 'Round ' + S.round + '/' + S.roundCap;
+  $('roundTurn').innerHTML = S.iAmDescriber
+    ? '<b>You describe</b>'
+    : ('<b>' + esc(describer.name) + '</b> describes');
+
+  // Word box: describer sees the word (tap-to-peek gate); everyone else sees "??".
+  const wb = $('wordBox');
+  if (S.iAmDescriber && S.myWord) {
+    const stamp = S.code + '|' + S.round + '|' + S.myWord;
+    $('wordLbl').textContent = 'Your word';
+    $('wordEl').textContent = S.myWord;
+    $('wordSub').textContent = 'Type clues below — don\'t say the word itself.';
+    if (LAST_WORD_SHOWN !== stamp) {
+      LAST_WORD_SHOWN = stamp;
+      wb.classList.add('hidden-word');
+    }
+    wb.style.cursor = 'pointer';
+    wb.onclick = () => wb.classList.remove('hidden-word');
+  } else {
+    $('wordLbl').textContent = describer.name + ' is describing';
+    $('wordEl').textContent = '???';
+    $('wordSub').textContent = 'Type your guess below — first correct answer scores.';
+    wb.classList.remove('hidden-word');
+    wb.onclick = null;
+    wb.style.cursor = 'default';
+  }
+
+  // Scoreboard chips
+  $('scoresEl').innerHTML = S.players.map(p => {
+    const cls = ['sco'];
+    if (p.id === MY_ID) cls.push('me');
+    if (p.id === S.describerId) cls.push('desc');
+    return '<div class="' + cls.join(' ') + '">' + avatarHtml(p)
+      + '<span>' + esc(p.name) + (p.id === S.describerId ? ' 🎤' : '') + '</span>'
+      + '<span class="pt">' + (p.score || 0) + '</span></div>';
+  }).join('');
+
+  renderFeed();
+
+  // Entry box: describer types hints, others type guesses. Disable during
+  // system-only phases (there aren't any yet, but describer's own turn as a
+  // "guesser" is nonsensical — handled above).
+  const canType = S.state === 'describe';
+  $('entryBox').classList.toggle('disabled', !canType);
+  $('entryIn').disabled = !canType;
+  $('entryBtn').disabled = !canType;
+  $('entryIn').placeholder = S.iAmDescriber
+    ? 'type a clue (don\'t say the word)…'
+    : ('guess the word ' + describer.name + ' is describing…');
+  if (canType) setTimeout(() => { try { $('entryIn').focus(); } catch(e){} }, 30);
+
+  renderTimer();
+  if (TICK_TIMER) clearInterval(TICK_TIMER);
+  TICK_TIMER = setInterval(renderTimer, 300);
+}
+
+function renderTimer(){
+  if (!S || S.state !== 'describe' || !S.deadline) { $('timerEl').textContent = '·'; return; }
+  const ms = Math.max(0, S.deadline - Date.now());
+  const s = Math.ceil(ms / 1000);
+  const el = $('timerEl');
+  el.textContent = s + 's';
+  el.classList.toggle('low', s <= 10);
+}
+
+function renderFeed(){
+  const el = $('feedEl');
+  const items = [];
+  // Interleave hints + guesses by time so the log reads chronologically.
+  const H = (S.hints || []).map(h => ({ kind:'hint', at:h.at, text:h.text }));
+  const G = (S.guesses || []).map(g => ({ kind: g.system ? 'system' : 'guess', at:g.at, name:g.name, text:g.system ? g.text : g.text, correct:g.correct, playerId:g.playerId }));
+  const merged = H.concat(G).sort((a, b) => (a.at || 0) - (b.at || 0));
+  if (!merged.length) {
+    el.innerHTML = '<div class="msg system">No clues yet — the describer opens the round.</div>';
+    return;
+  }
+  const describer = S.players.find(p => p.id === S.describerId);
+  const dName = describer ? describer.name : 'Describer';
+  el.innerHTML = merged.map(m => {
+    if (m.kind === 'system') {
+      return '<div class="msg system">' + esc(m.text) + '</div>';
+    }
+    if (m.kind === 'hint') {
+      return '<div class="msg hint"><span class="who">' + esc(dName) + ' 🎤</span>' + esc(m.text) + '</div>';
+    }
+    // guess
+    const cls = 'msg guess ' + (m.correct ? 'right' : 'wrong');
+    return '<div class="' + cls + '"><span class="who">' + esc(m.name || '?') + '</span>' + esc(m.text) + (m.correct ? ' ✓' : '') + '</div>';
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderEnded(){
+  view('viewEnded');
+  if (TICK_TIMER) { clearInterval(TICK_TIMER); TICK_TIMER = null; }
+  const rv = S.reveal || {};
+  const iWon = S.winnerId && S.winnerId === MY_ID;
+  $('endKick').textContent = rv.winnerName ? '🏆 Winner' : '🤝 Nobody scored';
+  $('endWho').textContent = rv.winnerName || '·';
+  $('endRole').innerHTML = rv.winnerName
+    ? ('won with the highest score over ' + (rv.rounds || 0) + ' rounds.')
+    : 'no correct guesses this game — try again.';
+  const list = rv.tally || [];
+  $('leaderList').innerHTML = list.map((p, i) => {
+    const cls = 'lrow' + (i === 0 && p.score > 0 ? ' first' : '');
+    return '<div class="' + cls + '"><span class="rk">' + (i + 1) + '.</span>'
+      + avatarHtml(p)
+      + '<span class="nm">' + esc(p.name) + (p.id === MY_ID ? ' (you)' : '') + '</span>'
+      + '<span class="pt">' + p.score + '</span></div>';
+  }).join('');
+  if (iWon) confetti();
+}
+
+function confetti(){
+  const box = document.createElement('div');
+  box.className = 'confetti';
+  const cols = ['#ffb830','#6b5ce8','#e8506b','#0fa3b1','#22c07a'];
+  for (let i = 0; i < 60; i++){
+    const p = document.createElement('i');
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.top = (-10 - Math.random() * 40) + 'px';
+    p.style.background = cols[i % cols.length];
+    p.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    p.style.animationDelay = (Math.random() * .4) + 's';
+    box.appendChild(p);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 3500);
+}
+
+$('wKnock').onclick = () => { socket.emit('knock'); toast('👋 They\'ll see you knocked.'); };
+
+// invite friends
+let invPicked = new Set();
+let invSent = new Set();
+let invPeople = [];
+$('inviteFriendsBtn').onclick = openInvite;
+async function openInvite(){
+  if (!S || !S.code) return;
+  invPicked = new Set();
+  $('invOv').classList.remove('hidden');
+  $('invList').innerHTML = '<div class="empty">Loading your people…</div>';
+  $('invSend').disabled = true;
+  try {
+    const r = await fetch('/api/social/people', { credentials: 'same-origin' });
+    if (r.status === 401) {
+      $('invList').innerHTML = '<div class="empty">You need to be logged in to invite friends.<br><a href="/">Log in on the Community</a> and come back to your room.</div>';
+      return;
+    }
+    const j = await r.json();
+    invPeople = (j && j.people) || [];
+    renderInvite();
+  } catch(e){ $('invList').innerHTML = '<div class="empty">Couldn\'t load your list — try again in a moment.</div>'; }
+}
+window.closeInvite = () => $('invOv').classList.add('hidden');
+function renderInvite(){
+  const list = $('invList');
+  if (!invPeople.length){
+    list.innerHTML = '<div class="empty">No one here yet.<br>Follow a few people on the <a href="/">Community</a> and they\'ll show up.</div>';
+    $('invSend').disabled = true;
+    return;
+  }
+  list.innerHTML = invPeople.map(p => {
+    const done = invSent.has(p.id);
+    const on = invPicked.has(p.id);
+    const av = p.photo
+      ? '<span class="av"><img src="' + esc(p.photo) + '" alt="" loading="lazy"></span>'
+      : '<span class="av">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
+    return '<div class="invrow' + (on ? ' on' : '') + (done ? ' sent' : '') + '" data-id="' + esc(p.id) + '">'
+      + av
+      + '<div class="nm"><b>' + esc(p.name || 'Player') + '</b><span>' + (done ? 'Invited ✓' : esc(p.rel || '')) + '</span></div>'
+      + (p.online ? '<div class="odot" title="Online now"></div>' : '')
+      + '<div class="tick">' + (on ? '✓' : '') + '</div>'
+      + '</div>';
+  }).join('');
+  list.querySelectorAll('.invrow').forEach(row => {
+    const id = row.dataset.id;
+    if (invSent.has(id)) return;
+    row.onclick = () => { invPicked.has(id) ? invPicked.delete(id) : invPicked.add(id); renderInvite(); };
+  });
+  $('invSend').disabled = !invPicked.size;
+  $('invSend').textContent = invPicked.size ? 'Send invite (' + invPicked.size + ')' : 'Send invite';
+}
+$('invSend').onclick = async () => {
+  if (!invPicked.size || !S || !S.code) return;
+  const ids = [...invPicked];
+  $('invSend').disabled = true;
+  $('invSend').textContent = 'Sending…';
+  try {
+    const r = await fetch('/api/social/invite', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: S.code, ids, game: 'guessword' })
+    });
+    const j = await r.json();
+    if (!j || j.error) { toast(j && j.error ? j.error : 'Couldn\'t send that.'); renderInvite(); return; }
+    (j.ids || []).forEach(id => invSent.add(id));
+    invPicked = new Set();
+    toast(j.sent === 1 ? 'Invite sent ✓' : 'Invites sent to ' + j.sent + ' friends ✓');
+    renderInvite();
+    if (j.sent) setTimeout(closeInvite, 700);
+  } catch(e){ toast('Couldn\'t send that — check your connection.'); renderInvite(); }
+};
+</script>
+
+<script>window.WS_GAME = { slug: 'guessword', label: '❓ Guess the Word' };</script>
+<script src="/game-session.js" defer></script>
+</body>
+</html>
