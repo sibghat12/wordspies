@@ -1953,7 +1953,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
       <div class="ob-photo-upload" id="obPhotoUpload">
         <span id="obPhotoPreview" class="ob-photo-plus">+</span>
-        <input type="file" id="obPhotoIn" accept="image/jpeg,image/png,image/webp" capture="user" hidden>
+        <input type="file" id="obPhotoIn" accept="image/jpeg,image/png,image/webp" hidden>
         <span class="ob-photo-hint" id="obPhotoHint">Tap to upload — or drag a photo here</span>
       </div>
       <div class="ob-err hidden" id="obErr2"></div>
@@ -2560,7 +2560,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <span id="myAv"></span>
           <button class="me-upl" onclick="$('photoIn').click()" title="Change photo">📷</button>
         </div>
-        <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" capture="user" class="hidden">
+        <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" class="hidden">
         <div class="mp-meta">
           <h1 class="mp-name"><span id="myName"></span></h1>
           <div class="mp-active">This is your public profile</div>
@@ -3745,22 +3745,24 @@ async function obCropCheck(){
       width: 640, height: 640,
       imageSmoothingEnabled: true, imageSmoothingQuality: 'high'
     });
+    // Owner ask 3 Aug 2026: 'let them upload any picture — Sumariea
+    // can't join'. Face-detection stays as a *soft* hint (helpful,
+    // never blocking). Approve always becomes available so any photo
+    // — pet, avatar, cartoon — gets through. Server-side moderation
+    // queue still catches anything abusive after the fact.
     const check = await _obCheckFaceOnCanvas(canvas);
-    if (!check.ok) {
-      hint.className = 'ob-crop-hint bad';
-      hint.textContent = check.msg;
-      checkBtn.disabled = false;
-      return;
-    }
-    // Great — freeze the blob, show preview, swap Check → Approve.
     _obCropBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.92));
     previewImg.src = canvas.toDataURL('image/jpeg', 0.9);
-    previewMsg.textContent = '✓ Looks great — tap Approve to continue.';
+    previewMsg.textContent = check.ok
+      ? '✓ Looks great — tap Approve to continue.'
+      : '📷 Any picture works — tap Approve to continue.';
     preview.style.display = 'flex';
     checkBtn.style.display = 'none';
     approveBtn.style.display = '';
     hint.className = 'ob-crop-hint ok';
-    hint.textContent = 'Face detected. Approve to save this as your profile photo.';
+    hint.textContent = check.ok
+      ? 'Face detected. Approve to save this as your profile photo.'
+      : 'No face detected — that\'s fine, you can still use this photo. Tap Approve to save.';
   } catch (e) {
     hint.className = 'ob-crop-hint bad';
     hint.textContent = 'Something went wrong — try again.';
@@ -3825,11 +3827,9 @@ async function _obDoPhotoUploadDirect(file){
   if (!file) return;
   const hint = document.getElementById('obPhotoHint');
   if (hint) hint.textContent = 'Checking photo…';
-  const check = await _obCheckFace(file);
-  if (!check.ok) {
-    if (hint) hint.textContent = check.msg;
-    return;
-  }
+  // Face check is a soft hint here too (see obCropCheck) — any
+  // picture goes through so first-timers never get stuck.
+  await _obCheckFace(file);
   const fd = new FormData();
   fd.append('photo', file);
   if (hint) hint.textContent = 'Uploading…';
