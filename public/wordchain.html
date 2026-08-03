@@ -380,27 +380,25 @@ let TICK_TIMER = null;
 let LAST_MISS = 0;
 let WIN_SHOWN_FOR = null;   // stamp of the game we've already popped for — one popup per game
 
-// Login required — same guard as spy.html. Anonymous visitors bounce to the
-// signup flow with a return path back to their invited room.
+// Owner ask 3 Aug 2026: guests welcome. If signed in, lock the name to
+// the profile; otherwise leave the name editable so anyone can jump in.
 let __wsMe = null;
 (async () => {
   try {
     const r = await fetch('/api/social/me');
     const j = await r.json();
-    if (!j || !j.me) {
-      const room = new URL(location.href).searchParams.get('room') || '';
-      const next = '/wordchain' + (room ? '?room=' + encodeURIComponent(room) : '');
-      location.replace('/social?next=' + encodeURIComponent(next));
-      return;
+    if (j && j.me) {
+      __wsMe = j.me;
+      const inp = $('nameIn');
+      if (inp) {
+        inp.value = j.me.name || '';
+        inp.readOnly = true;
+        inp.title = 'Locked to your WordSpies name — change it from your profile.';
+      }
+      try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
+    } else {
+      try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
     }
-    __wsMe = j.me;
-    const inp = $('nameIn');
-    if (inp) {
-      inp.value = j.me.name || '';
-      inp.readOnly = true;
-      inp.title = 'Locked to your WordSpies name — change it from your profile.';
-    }
-    try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
   } catch (e) {
     try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
   }
@@ -431,12 +429,6 @@ function saveName(){
 }
 function _handleAck(r){
   if (!r || !r.error) return false;
-  if (r.error === 'login_required') {
-    const room = new URL(location.href).searchParams.get('room') || $('codeIn').value.trim();
-    const next = '/wordchain' + (room ? '?room=' + encodeURIComponent(room) : '');
-    location.replace('/social?next=' + encodeURIComponent(next));
-    return true;
-  }
   const map = {
     gone:    'No game with that code — it may have finished.',
     full:    'That room is full.',

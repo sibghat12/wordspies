@@ -326,25 +326,25 @@ let MY_ID = null;
 let TICK_TIMER = null;
 let LAST_WORD_SHOWN = null;
 
+// Owner ask 3 Aug 2026: guests welcome. Prefill + lock name when signed
+// in; leave it editable for guests.
 let __wsMe = null;
 (async () => {
   try {
     const r = await fetch('/api/social/me');
     const j = await r.json();
-    if (!j || !j.me) {
-      const room = new URL(location.href).searchParams.get('room') || '';
-      const next = '/guessword' + (room ? '?room=' + encodeURIComponent(room) : '');
-      location.replace('/social?next=' + encodeURIComponent(next));
-      return;
+    if (j && j.me) {
+      __wsMe = j.me;
+      const inp = $('nameIn');
+      if (inp) {
+        inp.value = j.me.name || '';
+        inp.readOnly = true;
+        inp.title = 'Locked to your WordSpies name — change it from your profile.';
+      }
+      try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
+    } else {
+      try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
     }
-    __wsMe = j.me;
-    const inp = $('nameIn');
-    if (inp) {
-      inp.value = j.me.name || '';
-      inp.readOnly = true;
-      inp.title = 'Locked to your WordSpies name — change it from your profile.';
-    }
-    try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
   } catch (e) {
     try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
   }
@@ -373,12 +373,6 @@ function saveName(){
 }
 function _handleAck(r){
   if (!r || !r.error) return false;
-  if (r.error === 'login_required') {
-    const room = new URL(location.href).searchParams.get('room') || $('codeIn').value.trim();
-    const next = '/guessword' + (room ? '?room=' + encodeURIComponent(room) : '');
-    location.replace('/social?next=' + encodeURIComponent(next));
-    return true;
-  }
   const map = { gone:'No game with that code — it may have finished.', full:'That room is full.', started:'That game has already started.' };
   showErr('homeErr', map[r.error] || r.error);
   return true;

@@ -399,14 +399,11 @@ function mount(app, io, opts) {
     socket.on('create', async (data, ack) => {
       await socket.ready;
       if (room) return;
-      // Owner ask 2 Aug 2026 v8: 'only login user can join this
-      // game as it should be different name email or users'.
-      // Anonymous joiners were creating duplicate seats with the
-      // same typed name; sessioned users are dedup'd by uid.
-      if (!socket.profile || !socket.profile.uid) {
-        if (typeof ack === 'function') ack({ error: 'login_required' });
-        return;
-      }
+      // Owner ask 3 Aug 2026: 'let people play games without login as
+      // guest as well — if he has account use her name, else guest'.
+      // Reverses the 2 Aug v8 login-only guard. Signed-in players are
+      // still dedup'd by uid; guests get a fresh seat under whatever
+      // name they typed.
       const code = newCode();
       const r = newRoom(); r.code = code;
       const prof = socket.profile;
@@ -431,10 +428,8 @@ function mount(app, io, opts) {
     socket.on('join', async (data, ack) => {
       await socket.ready;
       if (room) return;
-      if (!socket.profile || !socket.profile.uid) {
-        if (typeof ack === 'function') ack({ error: 'login_required' });
-        return;
-      }
+      // Guests welcome (owner ask 3 Aug 2026). uid-dedup below only fires
+      // for signed-in players.
       const code = String((data && data.code) || '').trim().toUpperCase();
       const r = rooms.get(code);
       if (!r) {

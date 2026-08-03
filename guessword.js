@@ -351,10 +351,7 @@ function mount(app, io, opts) {
     socket.on('create', async (data, ack) => {
       await socket.ready;
       if (room) return;
-      if (!socket.profile || !socket.profile.uid) {
-        if (typeof ack === 'function') ack({ error: 'login_required' });
-        return;
-      }
+      // Guests welcome (owner ask 3 Aug 2026).
       const code = newCode();
       const r = newRoom(); r.code = code;
       const prof = socket.profile;
@@ -379,10 +376,6 @@ function mount(app, io, opts) {
     socket.on('join', async (data, ack) => {
       await socket.ready;
       if (room) return;
-      if (!socket.profile || !socket.profile.uid) {
-        if (typeof ack === 'function') ack({ error: 'login_required' });
-        return;
-      }
       const code = String((data && data.code) || '').trim().toUpperCase();
       const r = rooms.get(code);
       if (!r) {

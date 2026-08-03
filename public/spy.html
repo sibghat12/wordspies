@@ -407,32 +407,28 @@ let S = null;                 // current game state
 let MY_ID = null;             // socketId once seated
 let LAST_ROLE_SHOWN = null;   // remember what round we've already revealed for
 
-// Owner ask 2 Aug 2026 v8: 'only login user can join this game
-// as it should be different name email or users'. Fetch the
-// signed-in profile and lock the name field to it; anonymous
-// visitors get bounced to the login screen with a return path.
+// Owner ask 3 Aug 2026: guests welcome. If signed in, lock the name to
+// the profile; otherwise leave the name field editable so anyone can
+// jump into a room without an account.
 let __wsSpyMe = null;
 (async () => {
   try {
     const r = await fetch('/api/social/me');
     const j = await r.json();
-    if (!j || !j.me) {
-      const room = new URL(location.href).searchParams.get('room') || '';
-      const next = '/spy' + (room ? '?room=' + encodeURIComponent(room) : '');
-      location.replace('/social?next=' + encodeURIComponent(next));
-      return;
+    if (j && j.me) {
+      __wsSpyMe = j.me;
+      const inp = $('nameIn');
+      if (inp) {
+        inp.value = j.me.name || '';
+        inp.readOnly = true;
+        inp.title = 'Locked to your WordSpies name — change it from your profile.';
+      }
+      try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
+    } else {
+      // Guest — prefill from last-used name if we have one.
+      try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
     }
-    __wsSpyMe = j.me;
-    const inp = $('nameIn');
-    if (inp) {
-      inp.value = j.me.name || '';
-      inp.readOnly = true;
-      inp.title = 'Locked to your WordSpies name — change it from your profile.';
-    }
-    try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
   } catch (e) {
-    // Network hiccup — fall back to the old anonymous flow so a
-    // temporary /me outage doesn't lock everyone out of the game.
     try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
   }
 })();
@@ -466,12 +462,6 @@ function saveName(){
 }
 function _handleAck(r){
   if (!r || !r.error) return false;
-  if (r.error === 'login_required') {
-    const room = new URL(location.href).searchParams.get('room') || $('codeIn').value.trim();
-    const next = '/spy' + (room ? '?room=' + encodeURIComponent(room) : '');
-    location.replace('/social?next=' + encodeURIComponent(next));
-    return true;
-  }
   const map = {
     gone:    'No game with that code — it may have finished.',
     full:    'That room is full.',
