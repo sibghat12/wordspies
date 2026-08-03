@@ -50,8 +50,8 @@ header .sp{flex:1;min-width:8px}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px}
 .card + .card{margin-top:14px}
-h1{font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1.15;font-family:'Fredoka',sans-serif}
-h2{font-size:16px;font-weight:600;letter-spacing:-.3px}
+h1{font-size:22px;font-weight:800;letter-spacing:-.8px;line-height:1.15;font-family:'Fredoka',sans-serif}
+h2{font-size:14.5px;font-weight:600;letter-spacing:-.3px}
 p.lede{font-size:14px;color:var(--sub);line-height:1.62;margin-top:10px}
 .btn{
   display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
@@ -94,7 +94,7 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
   text-align:center;padding:22px 16px;border:1px dashed #d8d9de;border-radius:16px;background:#fcfcfd;margin:2px 0 14px
 }
 .codebox .lbl{font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:1.2px;text-transform:uppercase}
-.codebox .code{font-family:'Fredoka',sans-serif;font-size:44px;font-weight:600;letter-spacing:8px;margin-top:4px;padding-left:8px}
+.codebox .code{font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:6px;margin-top:4px;padding-left:6px}
 .codebox .share{display:flex;gap:8px;margin-top:12px;justify-content:center;flex-wrap:wrap}
 .codebox .share button{font-family:inherit;font-size:12.5px;font-weight:600;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:99px;padding:7px 13px;cursor:pointer}
 .codebox .share button:active{background:#f3f3f5}
@@ -111,7 +111,7 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 .play{padding:20px 18px}
 .needbox{display:flex;flex-direction:column;align-items:center;gap:2px;background:#f4fbf8;border:1px solid #cfe9dd;border-radius:16px;padding:14px 12px}
 .needbox .lbl{font-size:10.5px;font-weight:700;color:var(--brand-d);letter-spacing:1.4px;text-transform:uppercase}
-.needbox .lt{font-family:'Fredoka',sans-serif;font-size:70px;font-weight:600;letter-spacing:-2px;color:var(--brand-d);line-height:1}
+.needbox .lt{font-family:'Fredoka',sans-serif;font-size:52px;font-weight:600;letter-spacing:-1.6px;color:var(--brand-d);line-height:1}
 .needbox .cap{font-size:12.5px;color:var(--sub);font-weight:500;margin-top:4px}
 .needbox .prev{margin-top:6px;font-size:12.5px;color:var(--faint);font-weight:600}
 .needbox .prev b{color:var(--ink);font-weight:700}
@@ -154,7 +154,7 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 /* ended screen */
 .reveal{text-align:center;padding:24px 18px}
 .reveal .kick{font-size:11.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand-d)}
-.reveal .who{font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:-1px;margin:10px 0 4px;line-height:1.1;word-break:break-word}
+.reveal .who{font-family:'Fredoka',sans-serif;font-size:26px;font-weight:600;letter-spacing:-.8px;margin:10px 0 4px;line-height:1.1;word-break:break-word}
 .reveal .role{font-size:14.5px;color:var(--sub);line-height:1.5}
 .reveal .role b{color:var(--ink);font-weight:700}
 .reveal .pair{display:flex;gap:10px;margin-top:18px;text-align:center}
@@ -194,6 +194,23 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
 .confetti i{position:absolute;width:8px;height:13px;border-radius:2px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.15}}
+
+/* winner popup — the loud, unmissable end-of-game modal */
+.winov{position:fixed;inset:0;background:rgba(20,22,30,.72);display:flex;align-items:center;justify-content:center;z-index:90;padding:20px;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}
+.winov.on{opacity:1;pointer-events:auto}
+.winpanel{background:#fff;border-radius:24px;max-width:420px;width:100%;padding:28px 24px 22px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.35);transform:scale(.94);transition:transform .22s cubic-bezier(.2,.9,.3,1.25)}
+.winov.on .winpanel{transform:scale(1)}
+.winpanel .trophy{font-size:48px;line-height:1}
+.winpanel .lbl{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--brand-d);margin-top:6px}
+.winpanel .name{font-family:'Fredoka',sans-serif;font-size:28px;font-weight:600;letter-spacing:-.9px;line-height:1.1;margin-top:8px;word-break:break-word}
+.winpanel .name.tie{color:var(--sub);font-size:22px}
+.winpanel .subline{font-size:13px;color:var(--sub);line-height:1.5;margin-top:8px}
+.winpanel .stats{display:flex;gap:10px;margin-top:18px}
+.winpanel .stat{flex:1;background:#f4fbf8;border:1px solid #cfe9dd;border-radius:14px;padding:12px 8px}
+.winpanel .stat .lb{font-size:10.5px;font-weight:700;color:var(--brand-d);letter-spacing:1px;text-transform:uppercase}
+.winpanel .stat .wd{font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;color:var(--ink);margin-top:4px;word-break:break-word}
+.winpanel .actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.winpanel .actions .btn{width:100%}
 
 .foot{text-align:center;font-size:12px;color:var(--faint);line-height:1.6;padding:22px 8px 0}
 .foot a{color:var(--sub)}
@@ -331,6 +348,25 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
   </div>
 </div>
 
+<!-- Winner popup — fires the moment the game ends -->
+<div class="winov" id="winOv" onclick="if(event.target===this)closeWinOv()">
+  <div class="winpanel">
+    <div class="trophy" id="winTrophy">🏆</div>
+    <div class="lbl" id="winLbl">Winner</div>
+    <div class="name" id="winName">·</div>
+    <div class="subline" id="winSub">·</div>
+    <div class="stats">
+      <div class="stat"><div class="lb">Chain length</div><div class="wd" id="winLen">·</div></div>
+      <div class="stat"><div class="lb">Longest word</div><div class="wd" id="winLong">·</div></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-brand" id="winRematch">🔁 Play again</button>
+      <button class="btn btn-line" onclick="closeWinOv()">See the chain</button>
+      <button class="btn btn-line" onclick="location.href='/games'">Back home</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toastEl"></div>
 
 <script>
@@ -342,6 +378,7 @@ let S = null;
 let MY_ID = null;
 let TICK_TIMER = null;
 let LAST_MISS = 0;
+let WIN_SHOWN_FOR = null;   // stamp of the game we've already popped for — one popup per game
 
 // Login required — same guard as spy.html. Anonymous visitors bounce to the
 // signup flow with a return path back to their invited room.
@@ -514,6 +551,13 @@ function render(){
     wp.classList.toggle('hidden', n === 0);
     if (n) $('watchN').textContent = n;
   }
+  // Whenever the game leaves 'ended' (rematch begins, new lobby, etc.),
+  // dismiss the popup and clear its guard so the next end fires cleanly.
+  if (S.state !== 'ended') {
+    const ov = $('winOv');
+    if (ov && ov.classList.contains('on')) ov.classList.remove('on');
+    WIN_SHOWN_FOR = null;
+  }
   if (S.state === 'lobby')   return renderLobby();
   if (S.state === 'playing') return renderPlaying();
   if (S.state === 'ended')   return renderEnded();
@@ -639,7 +683,37 @@ function renderEnded(){
   $('endLen').textContent = rv.chainLen != null ? rv.chainLen : '·';
   $('endLong').textContent = rv.longestWord || '·';
   if (iWon) confetti();
+  showWinnerPopup(rv, iWon);
 }
+
+// Big unmissable end-of-game modal. Guarded so it only fires once per game
+// — the room can broadcast state=ended more than once (e.g. after a leave
+// during the ended state) and we don't want the popup re-appearing.
+function showWinnerPopup(rv, iWon){
+  const stamp = S.code + '|' + (rv.chainLen || 0) + '|' + (rv.winnerName || 'tie');
+  if (WIN_SHOWN_FOR === stamp) return;
+  WIN_SHOWN_FOR = stamp;
+  const nameEl = $('winName');
+  nameEl.classList.toggle('tie', !rv.winnerName);
+  if (rv.winnerName) {
+    $('winTrophy').textContent = iWon ? '🏆' : '🎉';
+    $('winLbl').textContent    = iWon ? 'You won!' : 'Winner';
+    nameEl.textContent         = iWon ? 'You — ' + rv.winnerName : rv.winnerName;
+    $('winSub').textContent    = iWon
+      ? 'Last one standing. Nice chain.'
+      : (rv.winnerName + ' was the last one with a life left.');
+  } else {
+    $('winTrophy').textContent = '🤝';
+    $('winLbl').textContent    = 'Draw';
+    nameEl.textContent         = 'Everyone out';
+    $('winSub').textContent    = 'The chain broke on everyone at the same round.';
+  }
+  $('winLen').textContent  = rv.chainLen != null ? rv.chainLen : '·';
+  $('winLong').textContent = rv.longestWord || '·';
+  $('winOv').classList.add('on');
+}
+window.closeWinOv = () => $('winOv').classList.remove('on');
+$('winRematch').onclick = () => { closeWinOv(); socket.emit('rematch'); };
 
 function confetti(){
   const box = document.createElement('div');

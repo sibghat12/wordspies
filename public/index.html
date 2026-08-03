@@ -126,6 +126,23 @@ header .sp{flex:1}
 .joinrow{display:flex;gap:8px}
 .codefld{max-width:150px;text-align:center;letter-spacing:7px;font-weight:400;font-size:17.4px;text-transform:uppercase}
 
+/* Live games right now — compact list below the join row. Each row is a
+   direct link to the game with icon + name + short one-liner. */
+.livelist{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+.livelist.hidden{display:none}
+.lltitle{display:flex;align-items:center;gap:7px;font-size:10.4px;font-weight:600;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px}
+.lldot{width:6px;height:6px;border-radius:99px;background:#22c07a;animation:llpulse 1.4s ease-in-out infinite}
+@keyframes llpulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.llrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:11px;background:#fff;text-decoration:none;color:var(--ink);margin-bottom:6px;transition:border-color .15s,background .15s}
+.llrow:hover{border-color:var(--green);background:#f6fbf5}
+.llrow .llic{font-size:18px;flex:none;width:26px;text-align:center}
+.llrow .llbody{flex:1;min-width:0}
+.llrow .lln{font-size:12.5px;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.llrow .llsub{font-size:10.5px;color:var(--muted);font-weight:500;line-height:1.35;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.llrow .llcta{font-size:11px;font-weight:700;color:var(--green);flex:none;letter-spacing:.4px}
+.llrow.state-lobby .llcta{color:var(--blue)}
+.llrow.state-ended{opacity:.55}
+
 /* ---------- top bar ---------- */
 .top{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;margin-bottom:16px;overflow-x:auto;
   scrollbar-width:none;-ms-overflow-style:none}
@@ -611,6 +628,11 @@ b,strong{font-weight:600}
             <input class="fld codefld" id="codeInput" maxlength="4" placeholder="CODE" autocomplete="off">
             <button class="btn btn-light" id="joinBtn" style="flex:1">Join game</button>
           </div>
+          <!-- Live games right now — refreshed every 8s while this landing is open. -->
+          <div class="livelist hidden" id="liveList">
+            <div class="lltitle"><span class="lldot"></span> <span id="llTitle">Live now</span></div>
+            <div id="llRows"></div>
+          </div>
         </div>
         <div id="signin" class="hidden">
           <div class="siOr" id="siDiv"><span></span><i id="siDivT">or save your games</i><span></span></div>
@@ -1029,6 +1051,55 @@ socket.on('sessionExpired', () => { try { localStorage.removeItem('ws_sess'); } 
 
 // ---------- home ----------
 try { const n = localStorage.getItem('ws_name') || sessionStorage.getItem('ws_name'); if (n) $('nameInput').value = n; } catch(e){}
+
+// ─── live games right now — poll /api/live while the landing card shows
+// so a newcomer can see and join an ongoing game (WordSpies + Spy + Word
+// Chain + Guess the Word + parties + arcade) instead of always starting
+// a fresh one. Owner ask 3 Aug 2026: 'if some one click the play game
+// it should show all the live games and can join either with the link
+// or with the code'. Login is handled by the target game — this list
+// just links to it.
+let LL_TIMER = null;
+async function llRefresh(){
+  const box = document.getElementById('liveList');
+  const rows = document.getElementById('llRows');
+  const title = document.getElementById('llTitle');
+  if (!box || !rows) return;
+  // If we've navigated into #app (mid-game), stop polling.
+  if (!document.getElementById('home') || document.getElementById('home').style.display === 'none') {
+    if (LL_TIMER) { clearInterval(LL_TIMER); LL_TIMER = null; }
+    return;
+  }
+  try {
+    const r = await fetch('/api/live', { cache: 'no-store' });
+    const j = await r.json();
+    const games = (j && j.games) || [];
+    // Filter: hide ended games; cap to 8 rows.
+    const visible = games.filter(g => g.state !== 'ended').slice(0, 8);
+    if (!visible.length) { box.classList.add('hidden'); return; }
+    box.classList.remove('hidden');
+    title.textContent = visible.length === 1 ? 'Live now (1)' : ('Live now (' + visible.length + ')');
+    rows.innerHTML = visible.map(g => {
+      const state = String(g.state || '').toLowerCase();
+      const cta = state === 'lobby' ? 'Join →' : state === 'playing' ? 'Watch →' : 'Open →';
+      const href = state === 'lobby' ? (g.href || '#') : (g.watchHref || g.href || '#');
+      const seats = state === 'lobby' && g.seatsFree
+        ? (g.seatsFree + ' seat' + (g.seatsFree === 1 ? '' : 's') + ' free')
+        : (g.lead || '');
+      const sub = [g.turnName ? ('🎯 ' + g.turnName) : '', seats].filter(Boolean).join(' · ');
+      return '<a class="llrow state-' + esc(state) + '" href="' + esc(href) + '">'
+        + '<span class="llic">' + esc(g.icon || '🎮') + '</span>'
+        + '<div class="llbody"><div class="lln">' + esc(g.title || 'Game') + '</div>'
+        + '<div class="llsub">' + esc(sub || 'Room ' + (g.code || '')) + '</div></div>'
+        + '<span class="llcta">' + esc(cta) + '</span></a>';
+    }).join('');
+  } catch(e) {
+    // Silent — the live list is a bonus, not the point of the page.
+  }
+}
+// Fire once immediately, then every 8s while the landing card is visible.
+setTimeout(llRefresh, 400);
+LL_TIMER = setInterval(llRefresh, 8000);
 const urlRoom = new URLSearchParams(location.search).get('room');
 const inviteCode = urlRoom ? urlRoom.toUpperCase().slice(0, 4) : null;
 // ?guest=1 is the escape hatch from the auto-join card: play under a one-off
