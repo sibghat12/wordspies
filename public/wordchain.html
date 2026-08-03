@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Word Chain — free vocabulary game for friends | WordSpies</title>
+<meta name="description" content="A free browser word game. Take turns typing a word that starts with the last letter of the previous one. No repeats. Three lives. Last player standing wins.">
+<meta name="theme-color" content="#fafafa">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://wordspies.co.uk/wordchain">
+<link rel="icon" href="/favicon.ico">
+<meta property="og:site_name" content="WordSpies">
+<meta property="og:title" content="Word Chain — free vocabulary party game">
+<meta property="og:description" content="Take turns saying a word that starts with the last letter of the previous one. Three lives. Last one standing wins.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wordspies.co.uk/wordchain">
+<meta property="og:image" content="https://wordspies.co.uk/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --bg:#fafafa; --card:#ffffff;
+  --brand:#3aa88f; --brand-d:#1f7a63;
+  --gold:#ffb830; --green:#22c07a; --err:#d33; --heart:#e8506b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:clip;max-width:100%}
+body{
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
+  padding:0 16px calc(28px + env(safe-area-inset-bottom));
+}
+.wrap{width:100%;max-width:540px;flex:1;display:flex;flex-direction:column}
+
+header{display:flex;align-items:center;gap:8px;padding:16px 0 14px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+header::-webkit-scrollbar{display:none}
+header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:7px;flex:none}
+header .logo span{font-size:17px}
+header .sp{flex:1;min-width:8px}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap;flex:none}
+.tinylink:active{background:#f3f3f5}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+.card + .card{margin-top:14px}
+h1{font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1.15;font-family:'Fredoka',sans-serif}
+h2{font-size:16px;font-weight:600;letter-spacing:-.3px}
+p.lede{font-size:14px;color:var(--sub);line-height:1.62;margin-top:10px}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:52px;border:0;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;
+  cursor:pointer;letter-spacing:-.2px;transition:filter .12s;
+}
+.btn:disabled{opacity:.42;cursor:default}
+.btn:active:not(:disabled){filter:brightness(.94)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn-brand{background:linear-gradient(180deg,#4bc0a3,var(--brand-d));color:#fff}
+.row{display:flex;gap:10px}
+.row .btn{width:auto;flex:1}
+input[type=text]{
+  width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;
+  padding:0 15px;font-family:inherit;font-size:16px;font-weight:500;color:var(--ink);outline:0;
+}
+input[type=text]:focus{border-color:#c9cbd2}
+input[type=text]::placeholder{color:var(--faint);font-weight:400}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 0 7px 3px;letter-spacing:.1px}
+.hidden{display:none !important}
+.err{background:#fff1f1;border:1px solid #f3d2d2;color:#a02a2a;border-radius:12px;padding:11px 13px;font-size:13px;font-weight:500;margin-top:12px;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:13.5px;font-weight:600;z-index:60;opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+
+.hero .kick{font-size:11.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--brand-d)}
+.hero h1{margin-top:6px}
+.stack{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.ordiv{display:flex;align-items:center;gap:10px;color:var(--faint);font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin:2px 0}
+.ordiv span{flex:1;height:1px;background:var(--line)}
+.rules{margin-top:16px;border-top:1px solid var(--line);padding-top:15px}
+.rules li{list-style:none;display:flex;gap:11px;font-size:13.2px;color:var(--sub);line-height:1.6;margin-bottom:9px}
+.rules li b{color:var(--ink);font-weight:600}
+.rules .n{
+  flex:none;width:20px;height:20px;border-radius:999px;background:var(--ink);color:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px
+}
+
+.codebox{
+  text-align:center;padding:22px 16px;border:1px dashed #d8d9de;border-radius:16px;background:#fcfcfd;margin:2px 0 14px
+}
+.codebox .lbl{font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:1.2px;text-transform:uppercase}
+.codebox .code{font-family:'Fredoka',sans-serif;font-size:44px;font-weight:600;letter-spacing:8px;margin-top:4px;padding-left:8px}
+.codebox .share{display:flex;gap:8px;margin-top:12px;justify-content:center;flex-wrap:wrap}
+.codebox .share button{font-family:inherit;font-size:12.5px;font-weight:600;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:99px;padding:7px 13px;cursor:pointer}
+.codebox .share button:active{background:#f3f3f5}
+.peeps{display:flex;flex-wrap:wrap;gap:8px}
+.peep{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 5px;font-size:13px;font-weight:600;position:relative}
+.peep .av{width:26px;height:26px;border-radius:999px;background:#eceef3;flex:none;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--sub);overflow:hidden}
+.peep .av img{width:100%;height:100%;object-fit:cover}
+.peep.host::after{content:'HOST';position:absolute;top:-6px;right:-4px;background:var(--ink);color:#fff;font-size:8.5px;font-weight:800;letter-spacing:.5px;padding:2px 5px;border-radius:99px}
+.peep.gone{opacity:.5}
+.peep .kbtn{background:none;border:0;color:var(--faint);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}
+.hint{font-size:12.5px;color:var(--faint);text-align:center;margin-top:12px;font-weight:500}
+
+/* playing screen — big next-letter, ring of players with lives */
+.play{padding:20px 18px}
+.needbox{display:flex;flex-direction:column;align-items:center;gap:2px;background:#f4fbf8;border:1px solid #cfe9dd;border-radius:16px;padding:14px 12px}
+.needbox .lbl{font-size:10.5px;font-weight:700;color:var(--brand-d);letter-spacing:1.4px;text-transform:uppercase}
+.needbox .lt{font-family:'Fredoka',sans-serif;font-size:70px;font-weight:600;letter-spacing:-2px;color:var(--brand-d);line-height:1}
+.needbox .cap{font-size:12.5px;color:var(--sub);font-weight:500;margin-top:4px}
+.needbox .prev{margin-top:6px;font-size:12.5px;color:var(--faint);font-weight:600}
+.needbox .prev b{color:var(--ink);font-weight:700}
+.turnup{text-align:center;margin-top:14px;font-size:15.5px;font-weight:700}
+.turnup b{color:var(--brand-d)}
+.turnup .timer{display:inline-block;margin-left:8px;background:var(--ink);color:#fff;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:.4px;font-family:'Fredoka',sans-serif}
+.turnup .timer.low{background:var(--heart)}
+.ring{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:10px;margin-top:14px}
+.pl{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 6px 8px;text-align:center;position:relative;transition:transform .15s}
+.pl .av{width:38px;height:38px;border-radius:999px;background:#eceef3;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--sub);overflow:hidden}
+.pl .av img{width:100%;height:100%;object-fit:cover}
+.pl .nm{font-size:11.5px;font-weight:600;margin-top:6px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .hearts{font-size:11px;letter-spacing:1px;margin-top:2px;color:var(--heart);line-height:1}
+.pl.me{background:#f2fbf7;border-color:#bfe6d6}
+.pl.turn{border-color:var(--brand);box-shadow:0 0 0 2px rgba(58,168,143,.2);transform:translateY(-2px)}
+.pl.turn::after{content:'';position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:var(--brand);border-radius:999px;border:2px solid #fff}
+.pl.dead{opacity:.35}
+.pl.dead::before{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:var(--heart);z-index:1}
+
+.wordBox{margin-top:16px}
+.wordBox .row{gap:8px}
+.wordBox input{flex:1;text-transform:uppercase;font-weight:700;letter-spacing:.5px}
+.wordBox .btn{flex:none;width:auto;padding:0 20px;min-height:52px}
+.wordBox.disabled input{background:#f6f6f8;color:var(--faint)}
+.waitCap{font-size:12.5px;color:var(--faint);text-align:center;margin-top:10px;font-weight:500}
+
+/* chain log */
+.log{margin-top:18px}
+.log h3{font-size:11.5px;font-weight:700;color:var(--faint);letter-spacing:1.3px;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.log h3 .rn{background:#f3f3f6;color:var(--sub);font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.6px}
+.crow{display:flex;align-items:center;gap:9px;padding:8px 2px;border-bottom:1px solid #f2f2f4;font-size:14px}
+.crow:last-child{border-bottom:0}
+.crow .who{font-weight:600;color:var(--sub);flex:none;font-size:12.5px}
+.crow .arr{color:var(--faint);flex:none}
+.crow .w{font-weight:700;color:var(--ink);word-break:break-word}
+.crow .w b{color:var(--brand-d);text-transform:uppercase}
+
+.miss{font-size:12.5px;color:var(--heart);font-weight:600;background:#fff1f3;border:1px solid #f5cfd6;border-radius:10px;padding:8px 12px;margin-top:10px;text-align:center}
+
+/* ended screen */
+.reveal{text-align:center;padding:24px 18px}
+.reveal .kick{font-size:11.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand-d)}
+.reveal .who{font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:-1px;margin:10px 0 4px;line-height:1.1;word-break:break-word}
+.reveal .role{font-size:14.5px;color:var(--sub);line-height:1.5}
+.reveal .role b{color:var(--ink);font-weight:700}
+.reveal .pair{display:flex;gap:10px;margin-top:18px;text-align:center}
+.reveal .pw{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 8px}
+.reveal .pw .lb{font-size:10.5px;font-weight:700;color:var(--faint);letter-spacing:.9px;text-transform:uppercase}
+.reveal .pw .wd{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600;letter-spacing:-.4px;margin-top:6px;word-break:break-word;color:var(--brand-d)}
+.reveal .cta{margin-top:20px}
+
+/* ── invite friends (same style as spy.html) ─── */
+.ov{position:fixed;inset:0;background:rgba(20,22,30,.55);display:flex;align-items:center;justify-content:center;z-index:80;padding:16px;backdrop-filter:blur(3px)}
+.ov.hidden{display:none}
+.invpanel{background:#fff;border-radius:20px;max-width:400px;width:100%;padding:20px 18px 16px;text-align:left;display:flex;flex-direction:column;max-height:82vh;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.invpanel h2{font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;margin-bottom:3px}
+.invpanel .sub{font-size:12.5px;color:var(--sub);font-weight:500;margin-bottom:12px;line-height:1.5}
+.invlist{overflow-y:auto;flex:1;margin:0 -6px;padding:0 6px;min-height:60px}
+.invrow{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;cursor:pointer;transition:background .14s}
+.invrow:hover{background:#f4f4f7}
+.invrow.on{background:#e5f6ee}
+.invrow .av{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#e6e9f2;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--sub);overflow:hidden}
+.invrow .av img{width:100%;height:100%;object-fit:cover}
+.invrow .nm{flex:1;min-width:0}
+.invrow .nm b{display:block;font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.invrow .nm span{font-size:11px;color:var(--faint);font-weight:500}
+.invrow .odot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none}
+.invrow .tick{width:22px;height:22px;border-radius:7px;border:1.5px solid #d3d8e6;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:800}
+.invrow.on .tick{background:var(--brand);border-color:var(--brand)}
+.invrow.sent{opacity:.55;cursor:default}
+.invpanel .empty{font-size:12.5px;color:var(--sub);font-weight:500;text-align:center;padding:22px 8px;line-height:1.65}
+.invpanel .empty a{color:var(--brand-d);font-weight:600;text-decoration:none}
+.invfoot{display:flex;gap:8px;margin-top:12px}
+.invfoot .btn{flex:1;min-height:44px;font-size:13.5px}
+
+.watchers{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer}
+.watchers .dot{width:6px;height:6px;border-radius:999px;background:var(--brand);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.confetti i{position:absolute;width:8px;height:13px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.15}}
+
+.foot{text-align:center;font-size:12px;color:var(--faint);line-height:1.6;padding:22px 8px 0}
+.foot a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">🔗 <span>WordSpies</span></div>
+  <div class="sp"></div>
+  <a class="tinylink" href="/">👥 Community</a>
+  <a class="tinylink" href="/games">🎮 All games</a>
+</header>
+
+<!-- HOME -->
+<div id="viewHome" class="card hero">
+  <div class="kick">Vocabulary · 2–8 friends</div>
+  <h1>Word Chain</h1>
+  <p class="lede">Take turns saying a word. Each new word must start with the <b>last letter</b> of the previous one — "GARDEN" → "NURSE" → "ECHO". No repeats, three lives, last one standing wins. Great for warming up a language exchange.</p>
+
+  <div class="stack">
+    <label class="fl" for="nameIn">Your name</label>
+    <input id="nameIn" type="text" placeholder="e.g. Sam" maxlength="18" autocomplete="off">
+    <button id="createBtn" class="btn btn-brand">Create a room</button>
+    <div class="ordiv"><span></span>or join<span></span></div>
+    <div class="row">
+      <input id="codeIn" type="text" placeholder="Room code" maxlength="4" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:4px;text-align:center;font-weight:700">
+      <button id="joinBtn" class="btn btn-dark" style="flex:0 0 108px">Join</button>
+    </div>
+    <div id="homeErr" class="err hidden"></div>
+  </div>
+
+  <ul class="rules">
+    <li><span class="n">1</span><span><b>One word per turn.</b> It must start with the last letter of the previous word. First word is a free starter.</span></li>
+    <li><span class="n">2</span><span><b>No repeats.</b> If a word's already been used this game, it doesn't count.</span></li>
+    <li><span class="n">3</span><span><b>Three lives each.</b> Wrong letter, a repeat, or 30-second timeout — that's one life gone.</span></li>
+    <li><span class="n">4</span><span><b>Last one standing wins.</b> Great for practising English, Spanish or any language your table shares.</span></li>
+  </ul>
+</div>
+
+<!-- LOBBY -->
+<div id="viewLobby" class="card hidden">
+  <div class="codebox">
+    <div class="lbl">Share this code</div>
+    <div class="code" id="lobCode">····</div>
+    <div class="share">
+      <button id="inviteFriendsBtn">👥 Invite friends</button>
+      <button id="copyLink">🔗 Copy link</button>
+      <button id="waShare">💬 WhatsApp</button>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:2px 0 10px">
+    <h2 id="lobCount">0 in the room</h2>
+    <span class="watchers hidden" id="watchPill"><span class="dot"></span><span id="watchN">0</span> watching</span>
+  </div>
+  <div id="peeps" class="peeps"></div>
+  <p id="lobHint" class="hint">Need at least 2 players to start.</p>
+  <button id="startBtn" class="btn btn-brand hidden" style="margin-top:14px">Start the game</button>
+  <div class="row" style="margin-top:10px">
+    <button id="leaveBtn" class="btn btn-line">Leave</button>
+    <button id="endRoomBtn" class="btn btn-line hidden" style="color:var(--heart);border-color:#f3d2d2">End the game</button>
+  </div>
+</div>
+
+<!-- PLAYING -->
+<div id="viewPlay" class="card play hidden">
+  <div class="needbox">
+    <div class="lbl">Next word starts with</div>
+    <div class="lt" id="needLetter">·</div>
+    <div class="cap" id="needCap">Any word, 2+ letters.</div>
+    <div class="prev hidden" id="needPrev">after <b id="needPrevW">·</b></div>
+  </div>
+  <div class="turnup" id="turnUp"></div>
+  <div class="ring" id="ring"></div>
+  <div id="missNote" class="miss hidden"></div>
+  <div class="wordBox" id="wordBox">
+    <div class="row">
+      <input id="wordIn" type="text" placeholder="type a word…" maxlength="24" autocomplete="off">
+      <button id="wordBtn" class="btn btn-brand">Send</button>
+    </div>
+    <div class="waitCap hidden" id="waitCap"></div>
+  </div>
+  <div class="log">
+    <h3><span>Chain</span><span class="rn" id="chainRn">·</span></h3>
+    <div id="chainList"></div>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button id="leaveBtn2" class="btn btn-line">Leave</button>
+    <button id="endRoomBtn2" class="btn btn-line hidden" style="color:var(--heart);border-color:#f3d2d2">End for everyone</button>
+  </div>
+</div>
+
+<!-- ENDED -->
+<div id="viewEnded" class="card reveal hidden">
+  <div class="kick" id="endKick">🏆 Chain broken</div>
+  <div class="who" id="endWho">·</div>
+  <div class="role" id="endRole">·</div>
+  <div class="pair">
+    <div class="pw"><div class="lb">Chain length</div><div class="wd" id="endLen">·</div></div>
+    <div class="pw"><div class="lb">Longest word</div><div class="wd" id="endLong">·</div></div>
+  </div>
+  <div class="cta">
+    <button id="rematchBtn" class="btn btn-brand">Play again</button>
+    <button id="homeBtn" class="btn btn-line" style="margin-top:10px">Back home</button>
+  </div>
+</div>
+
+<!-- WATCHING -->
+<div id="viewWatch" class="card hidden">
+  <div class="kick" style="font-size:11.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--brand-d)">Watching · Room <span id="wCode"></span></div>
+  <h2 style="margin-top:6px">Spectator view</h2>
+  <p class="lede">You can see the chain live. Knock to let them know you're here.</p>
+  <div class="row" style="margin-top:14px">
+    <button id="wKnock" class="btn btn-line">👋 Knock</button>
+    <a href="/social" class="btn btn-dark" style="text-decoration:none">Back to community</a>
+  </div>
+</div>
+
+<div class="foot">
+  Free vocabulary game by <a href="/">WordSpies</a> — no sign-up, no download.
+</div>
+</div>
+
+<!-- 👥 invite friends -->
+<div id="invOv" class="ov hidden" onclick="if(event.target===this)closeInvite()">
+  <div class="invpanel">
+    <h2>👥 Invite friends</h2>
+    <div class="sub">People you follow, follow you, or have chatted with. They get a message and an email.</div>
+    <div class="invlist" id="invList"></div>
+    <div class="invfoot">
+      <button class="btn btn-line" onclick="closeInvite()">Close</button>
+      <button class="btn btn-brand" id="invSend" disabled>Send invite</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+const $  = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NAME_KEY = 'ws_name';
+const socket = io('/wordchain', { transports:['websocket','polling'] });
+let S = null;
+let MY_ID = null;
+let TICK_TIMER = null;
+let LAST_MISS = 0;
+
+// Login required — same guard as spy.html. Anonymous visitors bounce to the
+// signup flow with a return path back to their invited room.
+let __wsMe = null;
+(async () => {
+  try {
+    const r = await fetch('/api/social/me');
+    const j = await r.json();
+    if (!j || !j.me) {
+      const room = new URL(location.href).searchParams.get('room') || '';
+      const next = '/wordchain' + (room ? '?room=' + encodeURIComponent(room) : '');
+      location.replace('/social?next=' + encodeURIComponent(next));
+      return;
+    }
+    __wsMe = j.me;
+    const inp = $('nameIn');
+    if (inp) {
+      inp.value = j.me.name || '';
+      inp.readOnly = true;
+      inp.title = 'Locked to your WordSpies name — change it from your profile.';
+    }
+    try { if (j.me.name) localStorage.setItem(NAME_KEY, j.me.name); } catch(e){}
+  } catch (e) {
+    try { const n = localStorage.getItem(NAME_KEY); if (n) $('nameIn').value = n; } catch(_){}
+  }
+})();
+
+function view(id){
+  ['viewHome','viewLobby','viewPlay','viewEnded','viewWatch']
+    .forEach(v => $(v).classList.toggle('hidden', v !== id));
+}
+function toast(t){ const el = $('toastEl'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2200); }
+function showErr(id, msg){ const e = $(id); if (!msg) return e.classList.add('hidden'); e.textContent = msg; e.classList.remove('hidden'); }
+
+function avatarHtml(p){
+  if (p && p.photo) return '<span class="av"><img src="' + esc(p.photo) + '" alt=""></span>';
+  const letter = p && p.name ? esc(p.name[0].toUpperCase()) : '?';
+  return '<span class="av">' + letter + '</span>';
+}
+function urlOf(code){ return location.origin + '/wordchain?room=' + code; }
+async function copyToClipboard(text){
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch(e){ try{ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); return true;}catch(_){return false;} }
+}
+
+function saveName(){
+  const n = $('nameIn').value.trim().slice(0, 18);
+  if (n) try { localStorage.setItem(NAME_KEY, n); } catch(e){}
+  return n;
+}
+function _handleAck(r){
+  if (!r || !r.error) return false;
+  if (r.error === 'login_required') {
+    const room = new URL(location.href).searchParams.get('room') || $('codeIn').value.trim();
+    const next = '/wordchain' + (room ? '?room=' + encodeURIComponent(room) : '');
+    location.replace('/social?next=' + encodeURIComponent(next));
+    return true;
+  }
+  const map = {
+    gone:    'No game with that code — it may have finished.',
+    full:    'That room is full.',
+    started: 'That game has already started.'
+  };
+  showErr('homeErr', map[r.error] || r.error);
+  return true;
+}
+$('createBtn').onclick = () => {
+  const n = saveName();
+  if (!n) return showErr('homeErr', 'Type your name first.');
+  showErr('homeErr', '');
+  socket.emit('create', { name: n }, _handleAck);
+};
+$('joinBtn').onclick = () => {
+  const n = saveName();
+  if (!n) return showErr('homeErr', 'Type your name first.');
+  const c = $('codeIn').value.trim().toUpperCase();
+  if (!c || c.length < 3) return showErr('homeErr', 'Enter the 4-letter room code.');
+  showErr('homeErr', '');
+  socket.emit('join', { name: n, code: c }, _handleAck);
+};
+$('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
+
+$('copyLink').onclick = async () => {
+  if (!S) return;
+  const ok = await copyToClipboard(urlOf(S.code));
+  toast(ok ? 'Invite link copied — paste it in your chat.' : 'Could not copy — long-press to copy the URL.');
+};
+$('waShare').onclick = () => {
+  if (!S) return;
+  const msg = '🔗 Word Chain — join my room: ' + urlOf(S.code);
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+};
+$('startBtn').onclick = () => socket.emit('start');
+function leaveGame(){
+  if (!confirm('Leave this game?')) return;
+  try { socket.emit('leave'); } catch(e){}
+  setTimeout(() => location.href = '/', 150);
+}
+function endRoom(){
+  if (!confirm('End the game for everyone in the room?')) return;
+  try { socket.emit('endRoom'); } catch(e){}
+  setTimeout(() => location.href = '/', 200);
+}
+$('leaveBtn').onclick = leaveGame;
+$('leaveBtn2').onclick = leaveGame;
+$('endRoomBtn').onclick = endRoom;
+$('endRoomBtn2').onclick = endRoom;
+
+$('wordBtn').onclick = () => {
+  const w = $('wordIn').value.trim();
+  if (!w) return toast('Type a word first.');
+  socket.emit('word', { word: w });
+  $('wordIn').value = '';
+};
+$('wordIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('wordBtn').click(); });
+
+$('rematchBtn').onclick = () => socket.emit('rematch');
+$('homeBtn').onclick = () => location.href = '/games';
+
+socket.on('err', ({ msg }) => toast(msg || 'Something went wrong.'));
+socket.on('kicked', () => { toast('You were removed from the room.'); setTimeout(() => location.reload(), 900); });
+socket.on('replaced', () => { toast('You joined from another tab — this one is now spectating.'); });
+socket.on('roomClosed', ({ by }) => {
+  toast((by ? esc(by) : 'The host') + ' ended the game.');
+  setTimeout(() => location.href = '/', 1200);
+});
+socket.on('seated', ({ code, you }) => {
+  MY_ID = you;
+  history.replaceState(null, '', '/wordchain?room=' + code);
+});
+socket.on('watching', ({ code }) => {
+  view('viewWatch');
+  $('wCode').textContent = code;
+});
+socket.on('miss', (m) => {
+  // Little flash under the input when someone loses a life. Only show it
+  // for a couple of seconds — the state broadcast that follows re-renders
+  // everything anyway.
+  const now = Date.now();
+  LAST_MISS = now;
+  const el = $('missNote');
+  const reason = m.reason === 'timeout' ? 'ran out of time'
+    : m.reason === 'wrong-letter' ? ('typed "' + esc(m.word || '?') + '" — needed a ' + esc(m.needed || '?') + '-word')
+    : m.reason === 'repeat' ? ('repeated "' + esc(m.word || '?') + '"')
+    : 'missed';
+  el.textContent = '💔 ' + esc(m.name || 'Someone') + ' ' + reason;
+  el.classList.remove('hidden');
+  setTimeout(() => { if (LAST_MISS === now) el.classList.add('hidden'); }, 2400);
+});
+socket.on('state', (state) => { S = state; render(); });
+
+(function initFromUrl(){
+  const p = new URLSearchParams(location.search);
+  const wcode = p.get('watch');
+  const rcode = p.get('room');
+  if (wcode) { socket.emit('watch', { code: wcode.toUpperCase() }); return; }
+  if (rcode) {
+    $('codeIn').value = rcode.toUpperCase();
+    const n = $('nameIn').value.trim();
+    if (n) setTimeout(() => $('joinBtn').click(), 40);
+    else $('nameIn').focus();
+  }
+})();
+
+function render(){
+  if (!S) return;
+  const wp = $('watchPill');
+  if (wp) {
+    const n = S.watchers || 0;
+    wp.classList.toggle('hidden', n === 0);
+    if (n) $('watchN').textContent = n;
+  }
+  if (S.state === 'lobby')   return renderLobby();
+  if (S.state === 'playing') return renderPlaying();
+  if (S.state === 'ended')   return renderEnded();
+}
+
+function renderLobby(){
+  view('viewLobby');
+  $('lobCode').textContent = S.code;
+  const n = S.players.length;
+  $('lobCount').textContent = n + (n === 1 ? ' player in the room' : ' players in the room');
+  const iAmHost = S.hostId && S.hostId === MY_ID;
+  $('peeps').innerHTML = S.players.map(p => {
+    const kick = (iAmHost && p.id !== MY_ID) ? '<button class="kbtn" onclick="kickIt(\'' + p.id + '\')" title="Remove">✕</button>' : '';
+    return '<div class="peep ' + (p.id === S.hostId ? 'host' : '') + ' ' + (p.connected ? '' : 'gone') + '">'
+      + avatarHtml(p) + '<span>' + esc(p.name) + '</span>' + kick + '</div>';
+  }).join('');
+  const canStart = iAmHost && n >= S.minPlayers;
+  $('startBtn').classList.toggle('hidden', !iAmHost);
+  $('startBtn').disabled = !canStart;
+  $('startBtn').textContent = canStart ? 'Start the game' : ('Need ' + S.minPlayers + '+ players');
+  $('lobHint').textContent = iAmHost
+    ? (canStart ? 'You\'re the host — start when everyone is in.' : ('Need at least ' + S.minPlayers + ' players.'))
+    : ('Waiting for the host to start… (' + n + '/' + S.minPlayers + ')');
+  $('endRoomBtn').classList.toggle('hidden', !iAmHost);
+  $('endRoomBtn2').classList.toggle('hidden', !iAmHost);
+  if (TICK_TIMER) { clearInterval(TICK_TIMER); TICK_TIMER = null; }
+}
+window.kickIt = (id) => socket.emit('kick', { id });
+
+function renderPlaying(){
+  view('viewPlay');
+  $('endRoomBtn2').classList.toggle('hidden', !(S.hostId && S.hostId === MY_ID));
+  $('needLetter').textContent = S.nextLetter || '·';
+  const last = S.chain && S.chain.length ? S.chain[S.chain.length - 1] : null;
+  if (last) {
+    $('needPrev').classList.remove('hidden');
+    $('needPrevW').textContent = last.word;
+  } else {
+    $('needPrev').classList.add('hidden');
+  }
+  $('needCap').textContent = last ? 'Chain the last letter — no repeats.' : 'First word — 2+ letters, no repeats.';
+
+  const turnP = S.players.find(p => p.id === S.turnId);
+  const iAmTurn = S.turnId === MY_ID;
+  const meP = S.players.find(p => p.id === MY_ID);
+  const alive = meP && meP.lives > 0;
+  const timerHtml = renderTimer();
+  $('turnUp').innerHTML = iAmTurn
+    ? '<b>Your turn</b> — type a word' + timerHtml
+    : (turnP ? ('<b>' + esc(turnP.name) + '</b> is thinking…' + timerHtml) : 'Waiting for the next player…');
+
+  $('ring').innerHTML = S.players.map(p => {
+    const cls = ['pl'];
+    if (p.id === MY_ID) cls.push('me');
+    if (p.lives <= 0) cls.push('dead');
+    if (p.id === S.turnId) cls.push('turn');
+    const hearts = '♥'.repeat(Math.max(0, p.lives));
+    return '<div class="' + cls.join(' ') + '">' + avatarHtml(p)
+      + '<div class="nm">' + esc(p.name) + '</div>'
+      + '<div class="hearts">' + hearts + '</div></div>';
+  }).join('');
+
+  const canPlay = iAmTurn && alive;
+  $('wordBox').classList.toggle('disabled', !canPlay);
+  $('wordIn').disabled = !canPlay;
+  $('wordBtn').disabled = !canPlay;
+  $('wordIn').placeholder = canPlay
+    ? ('type a ' + (S.nextLetter || '·') + '-word…')
+    : (alive ? 'wait your turn' : 'you\'re out this game');
+  const wcap = !canPlay && alive
+    ? (turnP ? ('Waiting for ' + esc(turnP.name) + '…') : '')
+    : '';
+  $('waitCap').textContent = wcap;
+  $('waitCap').classList.toggle('hidden', !wcap);
+  if (canPlay) setTimeout(() => { try { $('wordIn').focus(); } catch(e){} }, 30);
+
+  $('chainRn').textContent = 'Round ' + S.round + ' · ' + (S.chainLen || 0) + ' words';
+  renderChainList();
+
+  if (TICK_TIMER) clearInterval(TICK_TIMER);
+  TICK_TIMER = setInterval(() => {
+    if (!S || S.state !== 'playing') { clearInterval(TICK_TIMER); TICK_TIMER = null; return; }
+    // Re-render just the turnUp line so the timer tick doesn't rebuild the ring.
+    const turnP2 = S.players.find(p => p.id === S.turnId);
+    const iAmTurn2 = S.turnId === MY_ID;
+    $('turnUp').innerHTML = iAmTurn2
+      ? '<b>Your turn</b> — type a word' + renderTimer()
+      : (turnP2 ? ('<b>' + esc(turnP2.name) + '</b> is thinking…' + renderTimer()) : 'Waiting for the next player…');
+  }, 300);
+}
+
+function renderTimer(){
+  if (!S || !S.turnEndsAt) return '';
+  const ms = Math.max(0, S.turnEndsAt - Date.now());
+  const s = Math.ceil(ms / 1000);
+  const cls = s <= 5 ? ' low' : '';
+  return ' <span class="timer' + cls + '">' + s + 's</span>';
+}
+
+function renderChainList(){
+  const el = $('chainList');
+  if (!el) return;
+  const all = (S.chain || []).slice().reverse();
+  if (!all.length) {
+    el.innerHTML = '<div class="crow" style="color:var(--faint);border:0"><span class="w">No words yet — first player opens the chain.</span></div>';
+    return;
+  }
+  el.innerHTML = all.map(c =>
+    '<div class="crow"><span class="who">' + esc(c.name) + '</span><span class="arr">→</span><span class="w"><b>' + esc(c.word.charAt(0)) + '</b>' + esc(c.word.slice(1)) + '</span></div>'
+  ).join('');
+}
+
+function renderEnded(){
+  view('viewEnded');
+  if (TICK_TIMER) { clearInterval(TICK_TIMER); TICK_TIMER = null; }
+  const rv = S.reveal || {};
+  const iWon = S.winner && S.winner === MY_ID;
+  $('endKick').textContent = rv.winnerName ? '🏆 Winner' : '🤝 Everyone out';
+  $('endWho').textContent = rv.winnerName || '·';
+  $('endRole').innerHTML = rv.winnerName
+    ? 'was the last one standing.'
+    : 'no one made it — the chain broke on everyone.';
+  $('endLen').textContent = rv.chainLen != null ? rv.chainLen : '·';
+  $('endLong').textContent = rv.longestWord || '·';
+  if (iWon) confetti();
+}
+
+function confetti(){
+  const box = document.createElement('div');
+  box.className = 'confetti';
+  const cols = ['#ffb830','#3aa88f','#e8506b','#6b5ce8','#22c07a'];
+  for (let i = 0; i < 60; i++){
+    const p = document.createElement('i');
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.top = (-10 - Math.random() * 40) + 'px';
+    p.style.background = cols[i % cols.length];
+    p.style.animationDuration = (1.6 + Math.random() * 1.6) + 's';
+    p.style.animationDelay = (Math.random() * .4) + 's';
+    box.appendChild(p);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 3500);
+}
+
+$('wKnock').onclick = () => { socket.emit('knock'); toast('👋 They\'ll see you knocked.'); };
+
+// ── invite friends (same shape as spy.html) ────────────────────────────
+let invPicked = new Set();
+let invSent = new Set();
+let invPeople = [];
+
+$('inviteFriendsBtn').onclick = openInvite;
+
+async function openInvite(){
+  if (!S || !S.code) return;
+  invPicked = new Set();
+  $('invOv').classList.remove('hidden');
+  $('invList').innerHTML = '<div class="empty">Loading your people…</div>';
+  $('invSend').disabled = true;
+  try {
+    const r = await fetch('/api/social/people', { credentials: 'same-origin' });
+    if (r.status === 401) {
+      $('invList').innerHTML = '<div class="empty">You need to be logged in to invite friends.<br><a href="/">Log in on the Community</a> and come back to your room.</div>';
+      return;
+    }
+    const j = await r.json();
+    invPeople = (j && j.people) || [];
+    renderInvite();
+  } catch(e){
+    $('invList').innerHTML = '<div class="empty">Couldn\'t load your list — try again in a moment.</div>';
+  }
+}
+window.closeInvite = () => $('invOv').classList.add('hidden');
+
+function renderInvite(){
+  const list = $('invList');
+  if (!invPeople.length){
+    list.innerHTML = '<div class="empty">No one here yet.<br>Follow a few people on the <a href="/">Community</a> and they\'ll show up.</div>';
+    $('invSend').disabled = true;
+    return;
+  }
+  list.innerHTML = invPeople.map(p => {
+    const done = invSent.has(p.id);
+    const on = invPicked.has(p.id);
+    const av = p.photo
+      ? '<span class="av"><img src="' + esc(p.photo) + '" alt="" loading="lazy"></span>'
+      : '<span class="av">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</span>';
+    return '<div class="invrow' + (on ? ' on' : '') + (done ? ' sent' : '') + '" data-id="' + esc(p.id) + '">'
+      + av
+      + '<div class="nm"><b>' + esc(p.name || 'Player') + '</b><span>' + (done ? 'Invited ✓' : esc(p.rel || '')) + '</span></div>'
+      + (p.online ? '<div class="odot" title="Online now"></div>' : '')
+      + '<div class="tick">' + (on ? '✓' : '') + '</div>'
+      + '</div>';
+  }).join('');
+  list.querySelectorAll('.invrow').forEach(row => {
+    const id = row.dataset.id;
+    if (invSent.has(id)) return;
+    row.onclick = () => {
+      invPicked.has(id) ? invPicked.delete(id) : invPicked.add(id);
+      renderInvite();
+    };
+  });
+  $('invSend').disabled = !invPicked.size;
+  $('invSend').textContent = invPicked.size ? 'Send invite (' + invPicked.size + ')' : 'Send invite';
+}
+
+$('invSend').onclick = async () => {
+  if (!invPicked.size || !S || !S.code) return;
+  const ids = [...invPicked];
+  $('invSend').disabled = true;
+  $('invSend').textContent = 'Sending…';
+  try {
+    const r = await fetch('/api/social/invite', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: S.code, ids, game: 'wordchain' })
+    });
+    const j = await r.json();
+    if (!j || j.error) { toast(j && j.error ? j.error : 'Couldn\'t send that.'); renderInvite(); return; }
+    (j.ids || []).forEach(id => invSent.add(id));
+    invPicked = new Set();
+    toast(j.sent === 1 ? 'Invite sent ✓' : 'Invites sent to ' + j.sent + ' friends ✓');
+    renderInvite();
+    if (j.sent) setTimeout(closeInvite, 700);
+  } catch(e){
+    toast('Couldn\'t send that — check your connection.');
+    renderInvite();
+  }
+};
+</script>
+
+<script>window.WS_GAME = { slug: 'wordchain', label: '🔗 Word Chain' };</script>
+<script src="/game-session.js" defer></script>
+</body>
+</html>
