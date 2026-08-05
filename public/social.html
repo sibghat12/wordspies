@@ -492,10 +492,6 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Same edge-alignment rule as .filterrow — no horizontal padding
    on the mobile cards grid; body 3% gutter is the outer bound. */
 .wall{display:grid;grid-template-columns:1fr;gap:12px;padding:6px 0 30px}
-/* 'Show more' pagination button (owner v8). Full-width pill so it
-   reads as a positive next-step, not a hidden overflow control. */
-.wall-more{display:flex;justify-content:center;padding:8px 0 24px}
-.wall-more .btn{min-width:200px;padding:12px 22px;border-radius:99px;font-weight:600}
 /* ═══ Speaky-style horizontal wall card ═══
    Photo on the left, name + quote + language flags on the right. Simple
    border, no shadow. 3-column grid on desktop (see breakpoints below). */
@@ -1019,8 +1015,25 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .playcard-art{position:relative;height:140px;overflow:hidden}
 .playcard-body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
 .playcard-badge{display:inline-block;align-self:flex-start;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;background:#f2f4f7;color:var(--sub);padding:4px 10px;border-radius:99px}
-.playcard-body h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:17px;font-weight:700;letter-spacing:-.4px;color:var(--ink);line-height:1.2;margin-top:2px}
+.playcard-body h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:17px;font-weight:500;letter-spacing:-.4px;color:var(--ink);line-height:1.2;margin-top:2px;display:flex;align-items:center;gap:6px}
 .playcard-body p{font-size:13.5px;color:var(--sub);line-height:1.55;margin:0;flex:1}
+/* Tiny (i) button next to the game name — opens the info popup so the
+   card blurb can stay short. Owner ask 4 Aug 2026. */
+.pc-info{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#eef1f7;color:var(--sub);border:0;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:11.5px;font-style:italic;cursor:pointer;padding:0;line-height:1;flex-shrink:0}
+.pc-info:hover{background:#dfe4ee;color:var(--ink)}
+/* Info popup shared across all playcards. Single dialog element in
+   the DOM; contents swapped in from PCINFO on click. */
+.pcinfo-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:12000;padding:20px}
+.pcinfo-bd.on{display:flex;animation:pcinfoFade .16s ease}
+@keyframes pcinfoFade{from{opacity:0}to{opacity:1}}
+.pcinfo{background:#fff;border-radius:22px;max-width:420px;width:100%;padding:22px 22px 20px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.pcinfo-close{position:absolute;top:10px;right:10px;background:transparent;border:0;width:36px;height:36px;border-radius:50%;font-size:20px;color:var(--sub);cursor:pointer}
+.pcinfo-close:hover{background:#f2f3f5;color:var(--ink)}
+.pcinfo h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0 0 10px}
+.pcinfo p{font-size:14.2px;line-height:1.6;color:var(--ink);margin:0 0 14px;font-weight:500}
+.pcinfo .pcinfo-meta{font-size:12.5px;color:var(--sub);font-weight:600;margin-bottom:14px}
+.pcinfo .pcinfo-play{display:block;text-align:center;background:var(--ink,#16181f);color:#fff;border-radius:16px;padding:12px 18px;text-decoration:none;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:15.5px}
+.pcinfo .pcinfo-play:hover{background:#000}
 .playcard-cta{font-weight:800;font-size:13px;letter-spacing:.2px;padding:2px 0;color:var(--ink);margin-top:6px;transition:transform .12s}
 .playcard:hover .playcard-cta{transform:translateX(4px)}
 
@@ -1045,6 +1058,10 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pc-chain > span:not(.pc-arr){background:#fff;color:#0d3a2d;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:11.5px;padding:6px 10px;border-radius:8px;letter-spacing:.3px;box-shadow:0 3px 8px rgba(0,0,0,.16)}
 .pc-arr{color:rgba(255,255,255,.85);font-weight:800;font-size:14px}
 
+/* Word Race: warm orange with a stopwatch and a category trail. */
+.playcard-race .playcard-art{background:linear-gradient(135deg,#ffb35c,#e0651a);padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.pc-race-clock{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:38px;color:#fff;letter-spacing:2px;text-shadow:0 3px 8px rgba(0,0,0,.18)}
+.pc-race-cat{color:#fff5eb;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:11px;letter-spacing:.4px;opacity:.94}
 /* Guess the Word: warm amber with mystery '???' + three emoji clues. */
 .playcard-guess .playcard-art{background:linear-gradient(135deg,#ffbf58,#e9852b);padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .pc-guess-word{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:28px;color:#fff;letter-spacing:2px;text-shadow:0 3px 8px rgba(0,0,0,.18)}
@@ -1484,7 +1501,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .chstate{font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Owner ask 2 Aug 2026: 'make the chat compact please'. Tighter
    vertical rhythm across the msgs list + inside each bubble. */
-.msgs{padding:6px 14px 150px;display:flex;flex-direction:column;gap:2px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.msgs{padding:6px 14px 150px;display:flex;flex-direction:column;gap:14px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .mb{max-width:78%;padding:5px 11px;border-radius:12px;font-size:13.5px;font-weight:500;line-height:1.3;word-break:break-word;overflow-wrap:anywhere;min-width:0}
 .chatmode .gamelink{display:none}
 .chatfull .tabbar{display:none}
@@ -1505,7 +1522,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
   --caccent-soft:#eef1ff;                   /* soft bg for reactions/actions */
 }
 .mb{position:relative}
-.mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:5px;box-shadow:var(--cme-shadow)}
+.mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:5px;box-shadow:none}
 .mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:5px}
 .mb img{max-width:220px;border-radius:10px;display:block}
 /* Chat image messages — bigger than GIFs so photos are actually
@@ -1619,6 +1636,11 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .recbar .rec-cancel{background:transparent;border:0;color:var(--sub);font-size:18px;width:34px;height:34px;border-radius:50%;cursor:pointer}
 .recbar .rec-cancel:hover{background:#f2f3f5;color:var(--err)}
 .recbar .rec-send{background:linear-gradient(135deg,#22c07a,#159f5d);color:#fff;border:0;border-radius:99px;padding:0 16px;height:36px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 4px 12px rgba(23,155,90,.28)}
+.recbar .rec-send:disabled{opacity:.6;cursor:progress}
+/* Preview-play button that appears in the "listen back" bar after
+   recording stops. Sits where the pulsing red dot did during capture. */
+.recbar .rec-play{background:var(--caccent);color:#fff;border:0;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;flex-shrink:0}
+.recbar .rec-play:hover{transform:scale(1.05)}
 
 /* Voice message bubble: play button + waveform stub + duration. Auto-scales
    the play button colour to the bubble side (mine = white on gradient,
@@ -2094,15 +2116,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <!-- Blog + How-to-play were living here as top-nav chrome. Moved to
            the marketing footer per owner ask; kept out of the app to
            reduce clutter. -->
-      <button id="pwaRefresh" class="pwaref hidden" onclick="pwaRefresh()" title="Refresh — new version available" aria-label="Refresh">↻</button>
-      <!-- Avatar chip in the top-right now opens a dropdown menu with
-           quick-nav + settings, rather than jumping straight to the Me
-           tab. Owner ask 2 Aug 2026 v7: 'move the settings dropdown
-           for the users in his profile picture on the top corner like
-           settings, my languages, my profile, about us, support …'. -->
+      <!-- Retired 4 Aug 2026 (owner ask):
+             · pwaRefresh button — extra clutter, PWA can be pulled
+               to reload the same way.
+             · top-right avatar image — kept getting cut off inside
+               the pill and looked worse than no photo at all.
+           The dropdown menu still opens from the name chip. -->
       <div class="mechip" id="tbMe" onclick="toggleAvatarMenu(event)">
         <span class="mename" id="meName"></span>
-        <span id="meAvSmall"></span>
       </div>
       <div class="avmenu" id="avMenu" role="menu" aria-hidden="true">
         <a class="avitem" role="menuitem" onclick="avGo('profile')"><span class="avic">👤</span>My profile</a>
@@ -2251,8 +2272,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
         <div class="playcard-body">
           <div class="playcard-badge">Team · 4–10 players</div>
-          <h3>WordSpies</h3>
-          <p>Two teams, one hidden word list, and a spy who ends everything. The classic clue-giving party game.</p>
+          <h3>WordSpies <button class="pc-info" type="button" data-pcinfo="wordspies" aria-label="About WordSpies">i</button></h3>
+          <p>Two teams, secret words, one wrong guess.</p>
           <span class="playcard-cta">Start a room →</span>
         </div>
       </a>
@@ -2268,8 +2289,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
         <div class="playcard-body">
           <div class="playcard-badge">Party · 4–10 players</div>
-          <h3>Who is the Spy?</h3>
-          <p>Everyone gets a word — except the spy. Discuss, deceive, and vote out who doesn't belong.</p>
+          <h3>Who is the Spy? <button class="pc-info" type="button" data-pcinfo="spy" aria-label="About Who is the Spy?">i</button></h3>
+          <p>Find the imposter in the room.</p>
           <span class="playcard-cta">Start a room →</span>
         </div>
       </a>
@@ -2284,12 +2305,25 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
         <div class="playcard-body">
           <div class="playcard-badge">Vocabulary · 2+ players</div>
-          <h3>Word Chain</h3>
-          <p>Each player says a word starting with the last letter of the previous one. Fast, silly, and a great vocabulary warm-up.</p>
+          <h3>Word Chain <button class="pc-info" type="button" data-pcinfo="wordchain" aria-label="About Word Chain">i</button></h3>
+          <p>Last letter starts the next word.</p>
           <span class="playcard-cta">Start a room →</span>
         </div>
       </a>
-      <!-- 4 · Guess the Word (describer + guessers) -->
+      <!-- 4 · Word Race (60-second vocab sprint) — new 4 Aug 2026 -->
+      <a class="playcard playcard-race" href="/wordrace" onclick="return wsPlayStart(this,event)">
+        <div class="playcard-art">
+          <div class="pc-race-clock">1:00</div>
+          <div class="pc-race-cat">Animals · Foods · Verbs…</div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Sprint · 2–8 players</div>
+          <h3>Word Race <button class="pc-info" type="button" data-pcinfo="wordrace" aria-label="About Word Race">i</button></h3>
+          <p>60 seconds. A category. Most words wins.</p>
+          <span class="playcard-cta">Start a room →</span>
+        </div>
+      </a>
+      <!-- 5 · Guess the Word (describer + guessers) -->
       <a class="playcard playcard-guess" href="/guessword" onclick="return wsPlayStart(this,event)">
         <div class="playcard-art">
           <div class="pc-guess-word">???</div>
@@ -2301,8 +2335,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
         <div class="playcard-body">
           <div class="playcard-badge">Describe & Guess · 3+ players</div>
-          <h3>Guess the Word</h3>
-          <p>One player describes a word without saying it, everyone else races to guess. Brilliant for learners at any level.</p>
+          <h3>Guess the Word <button class="pc-info" type="button" data-pcinfo="guessword" aria-label="About Guess the Word">i</button></h3>
+          <p>Describe it. Everyone races to guess.</p>
           <span class="playcard-cta">Start a room →</span>
         </div>
       </a>
@@ -2320,21 +2354,26 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <div class="mp-meta">
           <h1 class="mp-name"><span id="mName"></span></h1>
           <div class="mp-active" id="mActive"></div>
-          <div class="mp-info-row"><span class="mp-icn">📍</span><span id="mLoc"></span></div>
-          <div class="mp-info-row"><span class="mp-icn">@</span><span id="mHandle"></span></div>
+          <!-- Owner ask 4 Aug 2026: dropped the 📍 pin and @ icons on
+               these rows — the label was doing all the work anyway,
+               the icons just added visual noise. -->
+          <div class="mp-info-row"><span id="mLoc"></span></div>
+          <div class="mp-info-row"><span id="mHandle"></span></div>
           <div class="mp-counts">
             <div><b id="mFollowers">0</b><span>Followers</span></div>
             <div><b id="mFollowing">0</b><span>Following</span></div>
             <div><b id="mRecCount">0</b><span>Recommendations</span></div>
           </div>
+          <!-- Owner ask 4 Aug 2026: 'make the chat and follow two
+               buttons in the top right after the image and also add
+               the other one call' — Chat + Follow + Call, side by
+               side. The ⋯ more menu (Report + Block) was retired
+               from this surface per owner ask; the same actions
+               still live on the wall card kebab. -->
           <div class="mp-actions">
             <button class="mp-btn primary" onclick="openChatWith(curMember)">💬 Chat</button>
             <button class="mp-btn line" id="followBtn" onclick="toggleFollow()">＋ Follow</button>
-            <button class="mp-btn line square" onclick="toggleMoreMenu(event)" title="More" id="moreBtn">⋯</button>
-            <div class="mp-more hidden" id="moreMenu">
-              <button onclick="reportUser();closeMoreMenu()">🚩 Report</button>
-              <button id="blockBtn" onclick="toggleBlock();closeMoreMenu()">🚫 Block</button>
-            </div>
+            <button class="mp-btn line" onclick="startCallWithCurMember()">📞 Call</button>
           </div>
           <!-- Legacy stat targets kept as hidden shells so old JS writes
                don't error even though the block itself is retired. -->
@@ -2521,8 +2560,18 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button type="button" class="rec-cancel" onclick="cancelVoice()" title="Cancel">✕</button>
       <span class="rec-dot"></span>
       <span class="rec-time" id="recTime">0:00</span>
-      <span class="rec-hint">Release to send · tap ✕ to cancel</span>
-      <button type="button" class="rec-send" onclick="stopAndSendVoice()" title="Send">➤</button>
+      <span class="rec-hint">Release to preview · tap ✕ to cancel</span>
+      <button type="button" class="rec-send" onclick="stopAndSendVoice()" title="Stop">■</button>
+    </div>
+    <!-- Preview bar shown after recording stops: play back your own
+         clip, then tap ➤ to send or 🗑 to discard. Owner ask 4 Aug
+         2026 — 'user can't listen his audio before he send'. -->
+    <div class="recbar" id="recPreview">
+      <button type="button" class="rec-cancel" onclick="discardVoicePreview()" title="Discard">🗑</button>
+      <button type="button" class="rec-play" id="recPlayBtn" onclick="togglePreviewPlay()" title="Play">▶</button>
+      <span class="rec-time" id="recPreviewTime">0:00</span>
+      <span class="rec-hint">Listen back — tap ➤ to send</span>
+      <button type="button" class="rec-send" id="recPreviewSend" onclick="sendPreviewedVoice()" title="Send">➤</button>
     </div>
     <div class="composer">
       <button class="cbtn" onclick="togglePicker()">😊</button>
@@ -2564,7 +2613,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <div class="mp-meta">
           <h1 class="mp-name"><span id="myName"></span></h1>
           <div class="mp-active">This is your public profile</div>
-          <div class="mp-info-row"><span class="mp-icn">📍</span><span id="myEmail"></span></div>
+          <div class="mp-info-row"><span id="myEmail"></span></div>
           <div class="mp-actions">
             <button class="mp-btn primary" onclick="saveProfile()">💾 Save profile</button>
             <button class="mp-btn line" onclick="logout()">Log out</button>
@@ -2721,6 +2770,18 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
 <div class="toast" id="toastEl"></div>
 
+<!-- Playcard info popup — one dialog, contents swapped in from
+     PCINFO on click. Fires when any .pc-info button is tapped. -->
+<div class="pcinfo-bd" id="pcinfoBd" onclick="if(event.target===this)closePcInfo()">
+  <div class="pcinfo" role="dialog" aria-modal="true" aria-labelledby="pcinfoTitle">
+    <button class="pcinfo-close" onclick="closePcInfo()" aria-label="Close">✕</button>
+    <h3 id="pcinfoTitle"></h3>
+    <p id="pcinfoBody"></p>
+    <div class="pcinfo-meta" id="pcinfoMeta"></div>
+    <a class="pcinfo-play" id="pcinfoPlay" href="#">Play now →</a>
+  </div>
+</div>
+
 <!-- Incoming-call overlay. Populated by pollIncomingCall(). Full-screen
      ringing UI with caller info + Accept / Decline. -->
 <div class="callring hidden" id="callRing">
@@ -2845,16 +2906,10 @@ function paintLive(){
 // appears and disappears in step with the game without anybody refreshing.
 window.addEventListener('storage', e => { if (e.key === LIVE_KEY) paintLive(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) paintLive(); });
-// The installed app has no reload button, so we give it one: fresh code,
-// fresh people, fresh messages, one tap. Only shows when running standalone.
-if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
-  $('pwaRefresh').classList.remove('hidden');
-}
-function pwaRefresh(){
-  $('pwaRefresh').classList.add('spin');
-  $('pwaRefresh').textContent = '↻';
-  location.reload();
-}
+// pwaRefresh button retired 4 Aug 2026 — owner ask. Null-guarded stubs
+// left in place in case a service-worker update callback or an older
+// service worker still tries to poke them; unified into a no-op.
+function pwaRefresh(){ try { location.reload(); } catch (e) {} }
 // Coming back to the installed app after it sat in the background: pull fresh
 // data for whatever screen is open, so nobody stares at stale messages.
 document.addEventListener('visibilitychange', () => {
@@ -3745,24 +3800,22 @@ async function obCropCheck(){
       width: 640, height: 640,
       imageSmoothingEnabled: true, imageSmoothingQuality: 'high'
     });
-    // Owner ask 3 Aug 2026: 'let them upload any picture — Sumariea
-    // can't join'. Face-detection stays as a *soft* hint (helpful,
-    // never blocking). Approve always becomes available so any photo
-    // — pet, avatar, cartoon — gets through. Server-side moderation
-    // queue still catches anything abusive after the fact.
     const check = await _obCheckFaceOnCanvas(canvas);
+    if (!check.ok) {
+      hint.className = 'ob-crop-hint bad';
+      hint.textContent = check.msg;
+      checkBtn.disabled = false;
+      return;
+    }
+    // Great — freeze the blob, show preview, swap Check → Approve.
     _obCropBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.92));
     previewImg.src = canvas.toDataURL('image/jpeg', 0.9);
-    previewMsg.textContent = check.ok
-      ? '✓ Looks great — tap Approve to continue.'
-      : '📷 Any picture works — tap Approve to continue.';
+    previewMsg.textContent = '✓ Looks great — tap Approve to continue.';
     preview.style.display = 'flex';
     checkBtn.style.display = 'none';
     approveBtn.style.display = '';
     hint.className = 'ob-crop-hint ok';
-    hint.textContent = check.ok
-      ? 'Face detected. Approve to save this as your profile photo.'
-      : 'No face detected — that\'s fine, you can still use this photo. Tap Approve to save.';
+    hint.textContent = 'Face detected. Approve to save this as your profile photo.';
   } catch (e) {
     hint.className = 'ob-crop-hint bad';
     hint.textContent = 'Something went wrong — try again.';
@@ -3827,9 +3880,11 @@ async function _obDoPhotoUploadDirect(file){
   if (!file) return;
   const hint = document.getElementById('obPhotoHint');
   if (hint) hint.textContent = 'Checking photo…';
-  // Face check is a soft hint here too (see obCropCheck) — any
-  // picture goes through so first-timers never get stuck.
-  await _obCheckFace(file);
+  const check = await _obCheckFace(file);
+  if (!check.ok) {
+    if (hint) hint.textContent = check.msg;
+    return;
+  }
   const fd = new FormData();
   fd.append('photo', file);
   if (hint) hint.textContent = 'Uploading…';
@@ -4286,6 +4341,14 @@ async function declineCall(){
   INCOMING_CALL = null;
 }
 // Caller side: tap the 📞 button in the chat header.
+// Kick a voice call from the member profile — same code path as the
+// in-chat call button, just seeded with the profile's uid.
+async function startCallWithCurMember(){
+  if (typeof curMember === 'undefined' || !curMember) return;
+  if (typeof GUEST !== 'undefined' && GUEST) { requireLogin('📞 Log in to make voice calls'); return; }
+  curChat = curMember;
+  ringCurrentChat();
+}
 async function ringCurrentChat(){
   if (!curChat) return;
   if (GUEST) { requireLogin('📞 Log in to make voice calls'); return; }
@@ -4456,11 +4519,55 @@ function wsPlayComingSoon(slug, ev){
 function wsPlayStart(anchor, ev){
   const url = anchor && anchor.getAttribute('href');
   if (!url) return true;
-  try { if (typeof toast === 'function') toast('🎮 New game started'); } catch(e){}
-  // Let the anchor navigate naturally (no preventDefault) — the toast
-  // stays visible for a beat while the game page loads.
-  return true;
+  // Preflight the 'already in a game' guard before we navigate away.
+  // If active, wsHandleActiveGame takes over the flow (navigates the
+  // user to their existing game, or clears + lets us proceed).
+  if (ev) ev.preventDefault();
+  wsCheckBeforePlay().then(out => {
+    if (out.action === 'cancel' || out.action === 'continue') return;
+    try { if (typeof toast === 'function') toast('🎮 New game started'); } catch(e){}
+    location.href = url;
+  });
+  return false;
 }
+
+// Playcard info-popup content. Full descriptions live here so the
+// card body itself can stay to one short line + an (i) icon.
+const PCINFO = {
+  wordspies: { name:'WordSpies', href:'/codenames?from=social',
+    body:'Two teams, one grid of secret words. Your spymaster gives a single clue and a number, and your team races to guess only your words — one wrong tap can hand the round to the other side. Best with 4–10 friends around a phone or on a call.',
+    meta:'4–10+ players · shared link · bots fill seats' },
+  spy: { name:'Who is the Spy?', href:'/spy',
+    body:'Everyone gets the same word — except the spy, who gets nothing. Take turns dropping subtle hints. The room votes on who they think the imposter is. Great for practising conversation.',
+    meta:'4–10 players · social deduction' },
+  wordchain: { name:'Word Chain', href:'/wordchain',
+    body:'The last letter of the previous word starts the next. Fast, silly, and a genuinely useful vocabulary warm-up for anyone learning a language. Race the clock.',
+    meta:'2+ players · vocabulary warm-up' },
+  guessword: { name:'Guess the Word', href:'/guessword',
+    body:'One player describes a secret word without saying it. Everyone else races to type the answer. Brilliant for learners at any level — you\'ll pick up new words on both sides of the mic.',
+    meta:'3+ players · describe & guess' },
+  wordrace: { name:'Word Race', href:'/wordrace',
+    body:'You get 60 seconds. A category shows up (Animals, Foods, Verbs, Colours…). Type as many words as you can in the language you\'re learning. Most words wins the round; best of 3 wins the match.',
+    meta:'2–8 players · 60-second rounds · any language' },
+};
+function openPcInfo(id){
+  const g = PCINFO[id]; if (!g) return;
+  document.getElementById('pcinfoTitle').textContent = g.name;
+  document.getElementById('pcinfoBody').textContent = g.body;
+  document.getElementById('pcinfoMeta').textContent = g.meta;
+  const play = document.getElementById('pcinfoPlay');
+  play.href = g.href;
+  play.textContent = 'Play ' + g.name + ' →';
+  document.getElementById('pcinfoBd').classList.add('on');
+}
+function closePcInfo(){ document.getElementById('pcinfoBd').classList.remove('on'); }
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.pc-info');
+  if (!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  openPcInfo(btn.dataset.pcinfo);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePcInfo(); });
 
 // ---------- In-app party host (iframe mini-player) ----------
 // The party runs inside an iframe mounted in /social. Because the iframe
@@ -5510,6 +5617,9 @@ async function startVoice(){
   if (GUEST) { requireLogin('🎤 Log in to send voice messages'); return; }
   if (recRec) return;                                    // already recording
   if (!navigator.mediaDevices || !window.MediaRecorder) { toast('Voice messages not supported in this browser.'); return; }
+  // Toss any un-sent preview from a previous recording — you can only
+  // stage one clip at a time.
+  if (recPreviewBlob) discardVoicePreview();
   try {
     recStream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation:true, noiseSuppression:true, autoGainControl:true, sampleRate:48000 }, video:false
@@ -5551,6 +5661,12 @@ function cleanupVoice(){
   $('recBar').classList.remove('show');
   $('micRecBtn').classList.remove('recording');
 }
+// After the recorder stops we now stage the clip in a preview bar
+// instead of firing it straight to the server — owner ask 4 Aug 2026,
+// 'let hime self listen first than it goes send button'. The preview
+// bar has its own Play / Send / 🗑 controls (see sendPreviewedVoice
+// + discardVoicePreview). Nothing hits /message/voice until Send.
+let recPreviewBlob = null, recPreviewDurMs = 0, recPreviewAudio = null, recPreviewUrl = null;
 async function onVoiceStop(){
   const chunks = recChunks;
   const durMs = Date.now() - recStart;
@@ -5558,17 +5674,56 @@ async function onVoiceStop(){
   cleanupVoice();
   if (cancel || !chunks.length) return;
   if (durMs < 400) { toast('Hold the mic a bit longer to record.'); return; }
-  // Upload
-  const blob = new Blob(chunks, { type: (chunks[0] && chunks[0].type) || 'audio/webm' });
+  recPreviewBlob = new Blob(chunks, { type: (chunks[0] && chunks[0].type) || 'audio/webm' });
+  recPreviewDurMs = durMs;
+  showVoicePreview();
+}
+function showVoicePreview(){
+  const bar = $('recPreview');
+  if (!bar) return;
+  $('recPreviewTime').textContent = fmtRecT(recPreviewDurMs);
+  const play = $('recPlayBtn'); if (play) play.textContent = '▶';
+  const send = $('recPreviewSend'); if (send) send.disabled = false;
+  bar.classList.add('show');
+}
+function togglePreviewPlay(){
+  if (!recPreviewBlob) return;
+  const btn = $('recPlayBtn');
+  if (!recPreviewAudio) {
+    recPreviewUrl = URL.createObjectURL(recPreviewBlob);
+    recPreviewAudio = new Audio(recPreviewUrl);
+    recPreviewAudio.addEventListener('ended', () => {
+      if (btn) btn.textContent = '▶';
+      $('recPreviewTime').textContent = fmtRecT(recPreviewDurMs);
+    });
+    recPreviewAudio.addEventListener('timeupdate', () => {
+      const rem = Math.max(0, recPreviewDurMs - (recPreviewAudio.currentTime * 1000));
+      $('recPreviewTime').textContent = fmtRecT(rem);
+    });
+  }
+  if (recPreviewAudio.paused) { recPreviewAudio.play().catch(()=>{}); if (btn) btn.textContent = '⏸'; }
+  else { recPreviewAudio.pause(); if (btn) btn.textContent = '▶'; }
+}
+function discardVoicePreview(){
+  if (recPreviewAudio) { try { recPreviewAudio.pause(); } catch(e){} recPreviewAudio = null; }
+  if (recPreviewUrl)   { try { URL.revokeObjectURL(recPreviewUrl); } catch(e){} recPreviewUrl = null; }
+  recPreviewBlob = null; recPreviewDurMs = 0;
+  const bar = $('recPreview'); if (bar) bar.classList.remove('show');
+}
+async function sendPreviewedVoice(){
+  const blob = recPreviewBlob;
+  const durMs = recPreviewDurMs;
+  if (!blob) return;
+  const send = $('recPreviewSend'); if (send) send.disabled = true;
+  const filename = 'voice.' + (blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm');
   const fd = new FormData();
-  fd.append('clip', blob, 'voice.' + (blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm'));
+  fd.append('clip', blob, filename);
   let up;
   try {
     const r = await fetch('/api/social/message/voice', { method:'POST', body: fd });
     up = await r.json();
     if (!r.ok || !up.url) throw new Error(up.error || 'Upload failed.');
-  } catch(e){ toast(e.message); return; }
-  // Send as a normal message with kind:'voice'
+  } catch(e){ toast(e.message); if (send) send.disabled = false; return; }
   try {
     await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ to: curChat, kind:'voice', text: up.url, d: Math.round(durMs/1000) }) });
@@ -5576,6 +5731,29 @@ async function onVoiceStop(){
     await refreshChat();
     toBottom($('msgs'));
   } catch(e){ toast(e.message); }
+  // AI expert chat: the voice note itself is now sitting in the thread
+  // like any other DM, but the AI can't hear it. Transcribe the same
+  // blob via ElevenLabs Scribe, then hand the transcript to /ai/reply
+  // so Claude answers. Owner ask 4 Aug 2026: 'the user can speak to
+  // him like audio and he can listen to the voice note and answer'.
+  if (CUR_CHAT_IS_AI) {
+    showAITyping(true);
+    try {
+      const scribeFd = new FormData();
+      scribeFd.append('clip', blob, filename);
+      const sr = await fetch('/api/social/ai/transcribe', { method:'POST', body: scribeFd });
+      const sj = await sr.json();
+      if (!sr.ok || !sj.text) throw new Error(sj.error || 'Could not transcribe the voice note.');
+      const rr = await fetch('/api/social/ai/reply', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ to: curChat, text: sj.text }) });
+      const rj = await rr.json();
+      if (!rr.ok || !rj.reply) throw new Error(rj.error || 'AI could not reply.');
+      if (typeof rj.msgsLeft === 'number') CUR_AI_MSGS_LEFT = rj.msgsLeft;
+      showAITyping(false);
+      await typewriteAIReply(rj.reply);
+    } catch(e) { showAITyping(false); toast(e.message || 'AI could not reply to that voice note.'); }
+  }
+  discardVoicePreview();
 }
 
 // Wire hold-to-record events. Mouse + touch, with a safety net so a mouse
@@ -5685,12 +5863,71 @@ function toggleGamePick(){
 // 🎮 → pick a game → a table is set up, the invite lands in the chat as a
 // tappable link, and you're taken straight to your seat. Their tap on the
 // link does the same for them — no codes, no forms, no lobby-hunting.
+// Shared "already in a game" client helper. Server returns 409 with
+// { activeGame: { game, code, url } } from any /api/{game}/new when the
+// logged-in user has another game open. This dialog offers three ways
+// out: continue that game, close it + retry the create, or bail.
+//   Resolves to:
+//     { action: 'proceed' }     → the create is allowed (nothing was active,
+//                                  or user chose to close current)
+//     { action: 'continue' }    → user chose to keep playing existing;
+//                                  caller should navigate to active.url
+//     { action: 'cancel' }      → user cancelled; caller should do nothing
+const AG_LABEL = { wordspies:'WordSpies', spy:'Who is the Spy?', wordchain:'Word Chain',
+  guessword:'Guess the Word', wordrace:'Word Race', meld:'Mind Meld', pool:'8-Ball Pool', ludo:'Ludo', four:'Connect 4' };
+async function wsHandleActiveGame(active){
+  const nice = AG_LABEL[active.game] || active.game;
+  const useSwal = typeof window.Swal === 'object' && typeof window.Swal.fire === 'function';
+  if (!useSwal) {
+    const ok = confirm(`You're already in a ${nice} game (code ${active.code}). Close it and start a new one?`);
+    if (!ok) return { action:'continue' };
+    try { await fetch('/api/user/active-game', { method:'DELETE' }); } catch(e){}
+    return { action:'proceed' };
+  }
+  const res = await Swal.fire({
+    icon: 'info',
+    title: `You're already in ${nice}`,
+    html: `<div style="font-size:14px;line-height:1.5;color:#5c6270">You've got a ${nice} game open (code <b>${active.code}</b>). Finish that first, or close it to start a new one.</div>`,
+    showCancelButton: true,
+    showDenyButton: true,
+    confirmButtonText: '↩︎ Continue that game',
+    denyButtonText: 'Close & start new',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#5a7bff',
+    denyButtonColor: '#e8506b',
+    reverseButtons: true
+  });
+  if (res.isConfirmed) { if (active.url) location.href = active.url; return { action:'continue' }; }
+  if (res.isDenied) {
+    try { await fetch('/api/user/active-game', { method:'DELETE' }); } catch(e){}
+    return { action:'proceed' };
+  }
+  return { action:'cancel' };
+}
+// Preflight: called BEFORE navigating to a game surface (playcards on the
+// Practice tab). Guests skip the check (server ignores them anyway).
+async function wsCheckBeforePlay(){
+  if (typeof GUEST !== 'undefined' && GUEST) return { action:'proceed' };
+  try {
+    const r = await fetch('/api/user/active-game', { cache:'no-store' }).then(x => x.json());
+    if (!r || !r.activeGame) return { action:'proceed' };
+    return await wsHandleActiveGame(r.activeGame);
+  } catch(e){ return { action:'proceed' }; }
+}
+
 async function gameInvite(game, label){
   if (!curChat) return;
   hidePickers();
   try {
-    const r = await fetch('/api/' + game + '/new', { method:'POST' }).then(x => x.json());
-    if (!r || !r.code) throw new Error('Could not set up the game.');
+    const resp = await fetch('/api/' + game + '/new', { method:'POST' });
+    const r = await resp.json();
+    if (resp.status === 409 && r && r.activeGame) {
+      const out = await wsHandleActiveGame(r.activeGame);
+      if (out.action !== 'proceed') return;                // continue or cancel
+      // User closed the old game — retry once.
+      return gameInvite(game, label);
+    }
+    if (!resp.ok || !r || !r.code) throw new Error((r && r.error) || 'Could not set up the game.');
     const url = location.origin + '/' + game + '?room=' + r.code + '&go=1';
     await api('/message', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ to: curChat, kind:'text', text: label + ' — I’ve set up a table. Tap to play me: ' + url }) });
@@ -6112,13 +6349,11 @@ async function loadMembers(){
 const flag = cc => (cc && cc.length === 2) ? [...cc.toUpperCase()].map(c => String.fromCodePoint(127397 + c.charCodeAt(0))).join('') : '🌍';
 const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 6; };
 let wallFilter = 'all';
-// Pagination — owner ask 2 Aug 2026 v8: 'divide all this into 2
-// pages or sections … show more and than next'. Cap the visible
-// list; a 'Show more' button below reveals the next PAGE_SIZE.
-const WALL_PAGE_SIZE = 8;
-let wallPageLimit = WALL_PAGE_SIZE;
-function resetWallPage(){ wallPageLimit = WALL_PAGE_SIZE; }
-function wallShowMore(){ wallPageLimit += WALL_PAGE_SIZE; renderWall(); }
+// Wall pagination was retired 4 Aug 2026 — owner ask: 'show all the
+// profiles at once, no pagination'. resetWallPage stays as a no-op
+// so existing call sites (search input, filter chips) don't need to
+// change; it just costs a function call.
+function resetWallPage(){ /* no-op: pagination removed */ }
 function renderWall(){
   const q = ($('q').value || '').toLowerCase();
   const WEEK7 = 7 * 24 * 3600 * 1000;
@@ -6164,12 +6399,9 @@ function renderWall(){
       else ee.textContent = "You're one of the first — invite your friends to fill the wall.";
     }
   }
-  // Cap for the 'Show more' pagination — remember the pre-cap total
-  // so we can render the "N left" button below.
-  const _wallTotal = list.length;
-  list = list.slice(0, wallPageLimit);
+  // No pagination — every matching profile lands in the grid at once.
   window.__wallList = list;
-  window.__wallTotal = _wallTotal;
+  window.__wallTotal = list.length;
 
   // Cards index into __wallList, so build the grids from the same array.
   const card = i => {
@@ -6242,12 +6474,12 @@ function renderWall(){
   const grid = idx => idx.length ? `<div class="wall">${idx.map(card).join('')}</div>` : '';
   const head = (t, n) => `<div class="sect"><h3>${t}</h3><span class="cnt">${n}</span><span class="ln"></span></div>`;
 
-  // Section split (Online / New / Everyone) only when we have the
-  // FULL list rendered — under pagination the truncated group counts
-  // are misleading and the 'Show more' button lands under the wrong
-  // section (audit fix, 2 Aug 2026 v8).
+  // Section split (Online / New / Everyone) only under the default
+  // 'all' filter with no search — otherwise the sections stop
+  // matching what the user asked for. Pagination itself is retired
+  // (owner ask 4 Aug 2026: 'show all profiles at once').
   const idx = list.map((m, i) => i);
-  const showSections = wallFilter === 'all' && !q && list.length >= 6 && _wallTotal <= wallPageLimit;
+  const showSections = wallFilter === 'all' && !q && list.length >= 6;
   if (showSections) {
     const on  = idx.filter(i => list[i].online);
     const nw  = idx.filter(i => !list[i].online && Date.now() - list[i].createdAt < WEEK7);
@@ -6258,13 +6490,6 @@ function renderWall(){
       (rest.length ? head(on.length || nw.length ? 'Every spy' : 'The wall', rest.length) + grid(rest) : '');
   } else {
     $('wallBody').innerHTML = grid(idx);
-  }
-  // 'Show more' button at the bottom — owner v8. Reveals the next
-  // WALL_PAGE_SIZE members without a full page navigation.
-  if (window.__wallTotal > list.length) {
-    const remaining = window.__wallTotal - list.length;
-    $('wallBody').insertAdjacentHTML('beforeend',
-      `<div class="wall-more"><button class="btn btn-line" onclick="wallShowMore()">Show more (${remaining} left)</button></div>`);
   }
   renderSide();
 }
@@ -6797,39 +7022,11 @@ async function setupGoogle(){
   } catch(e){}
 }
 
-// ---------- 👋 the beta welcome ----------
-// Shown exactly once per browser. Personal if we know who you are, warm
-// either way — and it puts a straight line between "I found a problem" and
-// the person who can fix it.
-function maybeWelcome(){
-  try { if (localStorage.getItem('ws_welcomed')) return; } catch(e){ return; }
-  const name = ME && ME.name ? ME.name.split(' ')[0] : null;
-  const el = document.createElement('div');
-  el.id = 'wsWelcome';
-  el.innerHTML =
-    '<div class="wcard">' +
-      '<div class="wemj">👋</div>' +
-      '<h3>' + (name ? 'Hi ' + esc(name) + ', welcome!' : 'Welcome!') + '</h3>' +
-      '<p>WordSpies is a <b>beta</b> — we’re polishing it every single day, and you’re part of that. ' +
-      'Spotted a bug? Got an idea? <b>Sibi</b> built this — find him in the Community and message him directly. ' +
-      'He reads everything. Thank you for being here 💛</p>' +
-      '<button class="btn btn-dark" id="wGo">Let’s go</button>' +
-      '<button class="wsub" id="wSibi">💬 Message Sibi some feedback</button>' +
-    '</div>';
-  document.body.appendChild(el);
-  const done = () => { try { localStorage.setItem('ws_welcomed','1'); } catch(e){} el.remove(); };
-  el.querySelector('#wGo').onclick = done;
-  el.querySelector('#wSibi').onclick = async () => {
-    done();
-    try {
-      const j = await api('/members');
-      const sibi = (j.members || []).find(m => m.name === 'Sibi');
-      if (!sibi) return;
-      if (ME) openChatWith(sibi.id);
-      else requireLogin('👋 Log in to message Sibi');
-    } catch(e){}
-  };
-}
+// The one-time "welcome to the beta, message Sibi" popup was retired
+// 4 Aug 2026 (owner ask). Kept as a no-op stub so any lingering call
+// site — including maybeWelcome() near boot — is inert instead of
+// throwing.
+function maybeWelcome(){ /* retired — no popup */ }
 
 // ---------- boot ----------
 (async () => {

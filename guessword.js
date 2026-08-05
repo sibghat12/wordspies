@@ -144,18 +144,37 @@ function publicState(room, socketId) {
 function mount(app, io, opts) {
   const options = opts || {};
   const identify = typeof options.identify === 'function' ? options.identify : null;
+  const _uidFromReq = typeof options.uidFromReq === 'function' ? options.uidFromReq : null;
+  const _activeGame = options.activeGame || null;
+  if (_activeGame && _activeGame.registerVerifier) _activeGame.registerVerifier('guessword', code => rooms.has(code));
+  async function _guardActive(req, res) {
+    if (!_activeGame || !_uidFromReq) return true;
+    const uid = await _uidFromReq(req);
+    if (!uid) return true;
+    const active = await _activeGame.getVerified(uid);
+    if (!active) return true;
+    res.status(409).json({ error: 'active-game', activeGame: active });
+    return false;
+  }
+  async function _markActive(req, game, code, url) {
+    if (!_activeGame || !_uidFromReq) return;
+    const uid = await _uidFromReq(req);
+    if (uid) await _activeGame.set(uid, { game, code, url });
+  }
 
   app.get('/guessword', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(__dirname, 'public', 'guessword.html'));
   });
 
-  app.post('/api/guessword/new', (req, res) => {
+  app.post('/api/guessword/new', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
+    if (!(await _guardActive(req, res))) return;
     const code = newCode();
     const r = newRoom();
     r.code = code;
     rooms.set(code, r);
+    await _markActive(req, 'guessword', code, '/guessword?room=' + code);
     res.json({ code });
   });
 

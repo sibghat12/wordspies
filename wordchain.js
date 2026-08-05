@@ -120,6 +120,23 @@ function publicState(room) {
 function mount(app, io, opts) {
   const options = opts || {};
   const identify = typeof options.identify === 'function' ? options.identify : null;
+  const _uidFromReq = typeof options.uidFromReq === 'function' ? options.uidFromReq : null;
+  const _activeGame = options.activeGame || null;
+  if (_activeGame && _activeGame.registerVerifier) _activeGame.registerVerifier('wordchain', code => rooms.has(code));
+  async function _guardActive(req, res) {
+    if (!_activeGame || !_uidFromReq) return true;
+    const uid = await _uidFromReq(req);
+    if (!uid) return true;
+    const active = await _activeGame.getVerified(uid);
+    if (!active) return true;
+    res.status(409).json({ error: 'active-game', activeGame: active });
+    return false;
+  }
+  async function _markActive(req, game, code, url) {
+    if (!_activeGame || !_uidFromReq) return;
+    const uid = await _uidFromReq(req);
+    if (uid) await _activeGame.set(uid, { game, code, url });
+  }
 
   app.get('/wordchain', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
@@ -128,12 +145,14 @@ function mount(app, io, opts) {
 
   // Empty-room bootstrap — mirrors /api/spy/new so the chat game-picker
   // can hand a code to friends before anyone opens the tab.
-  app.post('/api/wordchain/new', (req, res) => {
+  app.post('/api/wordchain/new', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
+    if (!(await _guardActive(req, res))) return;
     const code = newCode();
     const r = newRoom();
     r.code = code;
     rooms.set(code, r);
+    await _markActive(req, 'wordchain', code, '/wordchain?room=' + code);
     res.json({ code });
   });
 

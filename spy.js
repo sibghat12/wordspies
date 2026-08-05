@@ -181,6 +181,30 @@ function publicState(room, socketId) {
 }
 
 function mount(app, io, opts) {
+  const _opts = opts || {};
+  const _uidFromReq = typeof _opts.uidFromReq === 'function' ? _opts.uidFromReq : null;
+  const _activeGame = _opts.activeGame || null;
+  // Register the "does this room still exist?" callback so getVerified()
+  // can drop a stale key transparently. Without this, ending a spy game
+  // would leave the user 'locked in' for the full 4h TTL.
+  if (_activeGame && _activeGame.registerVerifier) _activeGame.registerVerifier('spy', code => rooms.has(code));
+  // Shared "already in a game" guard — see activegame.js. Returns true if
+  // the create should proceed, false if the request has already been
+  // answered with 409. Idempotent + safe when uid is null (guest).
+  async function _guardActive(req, res) {
+    if (!_activeGame || !_uidFromReq) return true;
+    const uid = await _uidFromReq(req);
+    if (!uid) return true;
+    const active = await _activeGame.getVerified(uid);
+    if (!active) return true;
+    res.status(409).json({ error: 'active-game', activeGame: active });
+    return false;
+  }
+  async function _markActive(req, game, code, url) {
+    if (!_activeGame || !_uidFromReq) return;
+    const uid = await _uidFromReq(req);
+    if (uid) await _activeGame.set(uid, { game, code, url });
+  }
   const options = opts || {};
   const identify = typeof options.identify === 'function' ? options.identify : null;
 
@@ -191,12 +215,14 @@ function mount(app, io, opts) {
 
   // Empty-room bootstrap, same shape as /api/meld/new — chat's game picker
   // needs a code before anyone has opened a tab.
-  app.post('/api/spy/new', (req, res) => {
+  app.post('/api/spy/new', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
+    if (!(await _guardActive(req, res))) return;
     const code = newCode();
     const r = newRoom();
     r.code = code;
     rooms.set(code, r);
+    await _markActive(req, 'spy', code, '/spy?room=' + code);
     res.json({ code });
   });
 

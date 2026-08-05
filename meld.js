@@ -69,6 +69,23 @@ function verdict(rounds) {
 function mount(app, io, opts) {
   const options = opts || {};
   const identify = typeof options.identify === 'function' ? options.identify : null;
+  const _uidFromReq = typeof options.uidFromReq === 'function' ? options.uidFromReq : null;
+  const _activeGame = options.activeGame || null;
+  if (_activeGame && _activeGame.registerVerifier) _activeGame.registerVerifier('meld', code => rooms.has(code));
+  async function _guardActive(req, res) {
+    if (!_activeGame || !_uidFromReq) return true;
+    const uid = await _uidFromReq(req);
+    if (!uid) return true;
+    const active = await _activeGame.getVerified(uid);
+    if (!active) return true;
+    res.status(409).json({ error: 'active-game', activeGame: active });
+    return false;
+  }
+  async function _markActive(req, game, code, url) {
+    if (!_activeGame || !_uidFromReq) return;
+    const uid = await _uidFromReq(req);
+    if (uid) await _activeGame.set(uid, { game, code, url });
+  }
 
   app.get('/meld', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
@@ -78,8 +95,9 @@ function mount(app, io, opts) {
   // A room born empty, over plain HTTP — for the chat's game picker, which
   // needs a code to put in the invite message before anyone has opened the
   // page. Whoever arrives first is simply the first player.
-  app.post('/api/meld/new', (req, res) => {
+  app.post('/api/meld/new', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
+    if (!(await _guardActive(req, res))) return;
     const code = newCode();
     rooms.set(code, {
       code, state: 'lobby', round: 1,
@@ -87,6 +105,7 @@ function mount(app, io, opts) {
       history: [], used: [], meld: null,
       hostId: null, touched: Date.now()
     });
+    await _markActive(req, 'meld', code, '/meld?room=' + code);
     res.json({ code });
   });
 

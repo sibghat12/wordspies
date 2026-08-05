@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Word Race — 60-second vocabulary sprint | WordSpies</title>
+<meta name="description" content="Sixty seconds. A category. Type as many words as you can. Most words wins. Free multiplayer vocabulary game — works in any language you're learning.">
+<meta name="theme-color" content="#fafafa">
+<link rel="canonical" href="https://wordspies.com/wordrace">
+<link rel="icon" href="/favicon.ico">
+<meta property="og:site_name" content="WordSpies">
+<meta property="og:title" content="Word Race — 60-second vocabulary sprint">
+<meta property="og:description" content="Category shows up. 60 seconds. Type as many words as you can. Most words wins. Play with friends in any language.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wordspies.com/wordrace">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="/socket.io/socket.io.js"></script>
+<style>
+:root{
+  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
+  --bg:#fafafa; --card:#ffffff;
+  --brand:#ff8b3d; --brand-d:#e0651a;   /* Word Race → warm orange */
+  --gold:#ffb830; --green:#22c07a; --err:#d33;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:clip;max-width:100%}
+body{
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
+  padding:0 16px calc(28px + env(safe-area-inset-bottom));
+}
+.wrap{width:100%;max-width:540px;flex:1;display:flex;flex-direction:column}
+
+header{display:flex;align-items:center;gap:8px;padding:16px 0 14px;flex-wrap:nowrap}
+header .logo{font-family:'Fredoka',sans-serif;font-size:17px;font-weight:500;letter-spacing:-.2px;display:flex;align-items:center;gap:7px;flex:none}
+header .sp{flex:1}
+.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:600;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap;flex:none}
+.tinylink:active{background:#f3f3f5}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px}
+.card + .card{margin-top:14px}
+h1{font-family:'Fredoka',sans-serif;font-size:24px;font-weight:500;letter-spacing:-.6px;line-height:1.15}
+h2{font-family:'Fredoka',sans-serif;font-size:15px;font-weight:500;letter-spacing:-.3px}
+p.lede{font-size:14px;color:var(--sub);line-height:1.6;margin-top:10px}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:52px;border:0;border-radius:14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:15.5px;font-weight:500;
+  cursor:pointer;letter-spacing:-.2px;transition:filter .12s;
+}
+.btn:disabled{opacity:.42;cursor:default}
+.btn:active:not(:disabled){filter:brightness(.94)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn-brand{background:linear-gradient(180deg,#ffa257,var(--brand-d));color:#fff;box-shadow:0 6px 18px rgba(224,101,26,.28)}
+.row{display:flex;gap:10px;margin-top:12px}
+.row .btn{width:auto;flex:1}
+input[type=text]{
+  width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;
+  padding:0 15px;font-family:inherit;font-size:16px;font-weight:500;color:var(--ink);outline:0;
+}
+input[type=text]:focus{border-color:#c9cbd2}
+input[type=text]::placeholder{color:var(--faint);font-weight:400}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 0 7px 3px;letter-spacing:.1px}
+.hidden{display:none !important}
+.err{background:#fff1f1;border:1px solid #f3d2d2;color:#a02a2a;border-radius:12px;padding:11px 13px;font-size:13px;font-weight:500;margin-top:12px;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:13.5px;font-weight:600;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+
+/* Hero (home screen) */
+.hero .kick{font-family:'Fredoka',sans-serif;font-size:12px;font-weight:500;letter-spacing:1.4px;text-transform:uppercase;color:var(--brand-d)}
+.hero .kick .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--brand);margin-right:6px;vertical-align:middle}
+.hero h1{margin-top:6px}
+.hero .fields{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+
+/* Lobby */
+.codebox{border:2px dashed #ffd1ad;background:#fff8f2;border-radius:16px;padding:14px 12px;text-align:center;margin:6px 0 14px}
+.codebox .code{font-family:'Fredoka',sans-serif;font-size:26px;font-weight:500;letter-spacing:6px;color:var(--brand-d);cursor:pointer}
+.codebox .sub{font-size:12px;color:var(--sub);margin-top:4px}
+.seats{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.seat{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 11px 5px 5px;font-size:13.5px;font-weight:600}
+.seat.host{border-color:#ffb830;background:#fff8ea}
+.seat .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#ff8b3d,#c34d0c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px}
+.seat .av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.seat.you{outline:2px solid var(--brand);outline-offset:1px}
+.seat .off{width:8px;height:8px;border-radius:50%;background:var(--faint);margin-left:2px}
+
+/* Playing */
+.stage{margin-top:6px;text-align:center}
+.stage .cat-kick{font-family:'Fredoka',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:1.4px;text-transform:uppercase;color:var(--sub)}
+.stage .cat{font-family:'Fredoka',sans-serif;font-size:28px;font-weight:500;letter-spacing:-.4px;margin-top:2px;color:var(--ink)}
+.timerbar{height:8px;background:#f2f2f5;border-radius:99px;margin-top:14px;overflow:hidden}
+.timerbar > i{display:block;height:100%;background:linear-gradient(90deg,#ffb35c,#e0651a);width:100%;transition:width .25s linear}
+.timerbar.hot > i{background:linear-gradient(90deg,#ff5252,#c00)}
+.tcount{margin-top:6px;font-family:'Fredoka',sans-serif;font-size:14px;font-weight:500;color:var(--sub);letter-spacing:.5px}
+
+.inputrow{display:flex;gap:8px;margin-top:14px}
+.inputrow input{flex:1}
+.inputrow .btn{width:auto;min-width:78px;padding:0 16px}
+
+.mywords{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;min-height:26px}
+.mywords .w{background:#fff5eb;color:#a44608;border:1px solid #ffd6b3;border-radius:99px;padding:4px 11px;font-size:12.5px;font-weight:600;animation:popin .18s ease}
+@keyframes popin{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+
+.board{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.brow{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:12px}
+.brow.you{border-color:#ffb35c;background:#fff9f2}
+.brow .av{width:26px;height:26px;border-radius:50%;background:#eee;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#555;overflow:hidden}
+.brow .av img{width:100%;height:100%;object-fit:cover}
+.brow .nm{flex:1;font-size:13.5px;font-weight:600;min-width:0;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.brow .cnt{font-family:'Fredoka',sans-serif;font-size:16px;font-weight:500;color:var(--brand-d);min-width:22px;text-align:right}
+.brow .rw{font-size:11px;color:var(--gold);font-weight:800;margin-left:6px}
+.brow .off{color:var(--faint);font-size:10.5px;margin-left:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+/* Reveal cards */
+.reveal-card{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.reveal-card h3{font-family:'Fredoka',sans-serif;font-size:14px;font-weight:500;letter-spacing:-.2px;margin-bottom:8px}
+.reveal-player{margin-top:10px}
+.reveal-player .who{font-size:12.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
+.reveal-player .words{display:flex;flex-wrap:wrap;gap:5px}
+.reveal-player .words .w{background:#f2f4f7;color:#555;border-radius:99px;padding:3px 9px;font-size:12px;font-weight:600}
+.reveal-player.mine .words .w{background:#fff5eb;color:#a44608}
+
+.winner{text-align:center;padding:20px 12px 8px}
+.winner .crown{font-size:44px;margin-bottom:4px}
+.winner .name{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:500}
+.winner .sub{color:var(--sub);font-size:13px;margin-top:2px}
+
+.foot{margin-top:22px;text-align:center;font-size:12px;color:var(--faint)}
+.foot a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="/games" class="logo">🏁 Word Race</a>
+    <div class="sp"></div>
+    <a class="tinylink" href="/games">← Games</a>
+  </header>
+
+  <!-- ── HOME (choose: new game or join by code) ─────────────────────── -->
+  <div class="card hero" id="scHome">
+    <div class="kick"><span class="dot"></span>60-SECOND VOCAB SPRINT</div>
+    <h1>A category. A minute. Most words wins.</h1>
+    <p class="lede">Race your friends to type as many words as you can that fit the prompt — animals, foods, verbs, colours… Works in any language you're learning. Two to eight players.</p>
+    <div class="fields">
+      <div>
+        <label class="fl" for="nmIn">Your name</label>
+        <input type="text" id="nmIn" maxlength="18" placeholder="Enter your name" autocomplete="off">
+      </div>
+      <button class="btn btn-brand" id="btnNew">Start a new game →</button>
+      <div style="display:flex;gap:10px;align-items:end">
+        <div style="flex:1">
+          <label class="fl" for="cdIn">or join with a code</label>
+          <input type="text" id="cdIn" maxlength="6" placeholder="ABCD" autocomplete="off" style="text-transform:uppercase;letter-spacing:3px;font-family:'Fredoka',sans-serif">
+        </div>
+        <button class="btn btn-line" id="btnJoin" style="width:auto;min-width:88px">Join</button>
+      </div>
+    </div>
+    <div class="err hidden" id="homeErr"></div>
+  </div>
+
+  <!-- ── LOBBY ───────────────────────────────────────────────────────── -->
+  <div class="card hidden" id="scLobby">
+    <h2 style="color:var(--sub);text-transform:uppercase;letter-spacing:.8px;font-size:11.5px;font-weight:800">Share this code</h2>
+    <div class="codebox">
+      <div class="code" id="lbCode" onclick="copyLink()" title="Tap to copy the link">••••</div>
+      <div class="sub">Tap the code to copy the invite link</div>
+    </div>
+    <h2 style="margin-top:16px">Players in the room</h2>
+    <div class="seats" id="lbSeats"></div>
+    <div class="row">
+      <button class="btn btn-line" id="btnLeave" style="flex:0 0 auto;width:auto;padding:0 16px">Leave</button>
+      <button class="btn btn-brand" id="btnStart" disabled>Start →</button>
+    </div>
+    <div class="err hidden" id="lobbyErr"></div>
+    <p style="font-size:12px;color:var(--faint);margin-top:12px;line-height:1.5">Best of 3 rounds. Each round is 60 seconds. Most words in a round wins that round.</p>
+  </div>
+
+  <!-- ── PLAYING (round in progress) ─────────────────────────────────── -->
+  <div class="card hidden" id="scPlay">
+    <div class="stage">
+      <div class="cat-kick" id="pRoundLbl">Round 1 of 3</div>
+      <div class="cat" id="pCategory">Animals</div>
+    </div>
+    <div class="timerbar" id="pTimerBar"><i style="width:100%"></i></div>
+    <div class="tcount" id="pTime">1:00</div>
+    <div class="inputrow">
+      <input type="text" id="wordIn" placeholder="Type a word + press Enter…" autocomplete="off" maxlength="24">
+      <button class="btn btn-brand" id="btnSubmit">Send</button>
+    </div>
+    <div class="mywords" id="myWords"></div>
+    <h2 style="margin-top:16px;color:var(--sub);text-transform:uppercase;letter-spacing:.8px;font-size:11px;font-weight:800">Live scoreboard</h2>
+    <div class="board" id="board"></div>
+  </div>
+
+  <!-- ── BETWEEN-ROUND REVEAL ────────────────────────────────────────── -->
+  <div class="card hidden" id="scReveal">
+    <div class="stage">
+      <div class="cat-kick" id="rvRoundLbl">Round 1 recap</div>
+      <div class="cat" id="rvCategory">Animals</div>
+    </div>
+    <div id="rvPlayers"></div>
+    <p style="text-align:center;font-size:12.5px;color:var(--sub);margin-top:14px">Next round in a few seconds…</p>
+  </div>
+
+  <!-- ── END (match over) ────────────────────────────────────────────── -->
+  <div class="card hidden" id="scEnd">
+    <div class="winner">
+      <div class="crown">🏆</div>
+      <div class="name" id="endName">—</div>
+      <div class="sub" id="endSub"></div>
+    </div>
+    <div class="board" id="endBoard"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn btn-line" onclick="location.href='/games'" style="flex:0 0 auto;width:auto;padding:0 16px">Home</button>
+      <button class="btn btn-brand" id="btnAgain">Play again →</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    <a href="/games">← All games</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── tiny helpers ─────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const show = which => ['scHome','scLobby','scPlay','scReveal','scEnd'].forEach(id => {
+  $(id).classList.toggle('hidden', id !== which);
+});
+let toastT = null;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200);
+}
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function initials(n){ const p = String(n||'?').trim().split(/\s+/); return ((p[0]||'?')[0] + (p[1]?p[1][0]:'')).toUpperCase(); }
+function fmtT(ms){ const s = Math.max(0, Math.ceil(ms/1000)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+
+// ─── persistent nickname ──────────────────────────────────────────────────
+try { $('nmIn').value = localStorage.getItem('wr_name') || ''; } catch(e){}
+$('nmIn').addEventListener('input', () => { try { localStorage.setItem('wr_name', $('nmIn').value); } catch(e){} });
+
+// ─── connect ──────────────────────────────────────────────────────────────
+const socket = io('/wordrace', { transports:['websocket','polling'] });
+let STATE = null;      // last snapshot from server
+let ME = null;         // my socketId once seated
+
+socket.on('connect_error', e => toast('Connection lost — retrying…'));
+socket.on('err', e => showErr(e && e.msg || 'Something went wrong.'));
+
+function showErr(msg){
+  const el = STATE ? $('lobbyErr') : $('homeErr');
+  if (!el) { toast(msg); return; }
+  el.textContent = msg; el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 4500);
+}
+
+socket.on('seated', ({ code, you, reconnected }) => {
+  ME = you;
+  history.replaceState(null, '', '/wordrace?room=' + code);
+  if (reconnected) toast('Reconnected');
+});
+socket.on('replaced', () => toast('Opened in another tab — this one is idle.'));
+socket.on('roomClosed', () => { toast('Host closed the room.'); setTimeout(()=>location.href='/games', 1200); });
+socket.on('accepted', ({ word }) => {
+  $('wordIn').value = '';
+  $('wordIn').focus();
+});
+
+socket.on('state', snap => {
+  STATE = snap;
+  render();
+});
+
+// ─── actions ──────────────────────────────────────────────────────────────
+$('btnNew').onclick = () => {
+  const name = ($('nmIn').value || '').trim();
+  socket.emit('create', { name }, ack => {
+    if (ack && ack.error) return showErr(ack.error);
+  });
+};
+$('btnJoin').onclick = () => tryJoin();
+$('cdIn').addEventListener('keydown', ev => { if (ev.key === 'Enter') tryJoin(); });
+function tryJoin(){
+  const code = ($('cdIn').value || '').trim().toUpperCase();
+  const name = ($('nmIn').value || '').trim();
+  if (code.length < 3) return showErr('Enter the 4-letter code.');
+  socket.emit('join', { code, name }, ack => {
+    if (ack && ack.error === 'gone')    return showErr('No game with that code.');
+    if (ack && ack.error === 'started') return showErr('That game is already running.');
+    if (ack && ack.error === 'full')    return showErr('That room is full.');
+    if (ack && ack.error)               return showErr(ack.error);
+  });
+}
+$('btnStart').onclick = () => socket.emit('start');
+$('btnLeave').onclick = () => { location.href = '/games'; };
+$('btnAgain').onclick = () => socket.emit('again');
+$('btnSubmit').onclick = () => submitWord();
+$('wordIn').addEventListener('keydown', ev => { if (ev.key === 'Enter') submitWord(); });
+function submitWord(){
+  const w = ($('wordIn').value || '').trim();
+  if (w.length < 2) return;
+  socket.emit('word', { word: w });
+}
+
+function copyLink(){
+  const u = location.origin + '/wordrace?room=' + STATE.code;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(u); toast('Link copied — paste it to your friends');
+    } else {
+      const ta = document.createElement('textarea'); ta.value = u; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove(); toast('Link copied');
+    }
+  } catch(e){ toast(u); }
+}
+
+// ─── auto-join via ?room=CODE ─────────────────────────────────────────────
+(function autoJoin(){
+  const m = location.search.match(/room=([A-Z0-9]{3,6})/i);
+  if (!m) return;
+  const code = m[1].toUpperCase();
+  $('cdIn').value = code;
+  socket.on('connect', () => {
+    setTimeout(() => tryJoin(), 60);
+  });
+})();
+
+// ─── render ───────────────────────────────────────────────────────────────
+let tickT = null;
+function render(){
+  if (!STATE) return show('scHome');
+  if (STATE.state === 'ended')  return renderEnd();
+  if (STATE.state === 'playing') return renderPlayOrReveal();
+  return renderLobby();
+}
+
+function renderLobby(){
+  show('scLobby');
+  $('lbCode').textContent = STATE.code || '••••';
+  const you = ME;
+  const isHost = you === STATE.hostId;
+  $('lbSeats').innerHTML = STATE.players.map(p => {
+    const av = p.photo ? `<span class="av"><img src="${esc(p.photo)}" alt=""></span>` : `<span class="av">${esc(initials(p.name))}</span>`;
+    return `<div class="seat ${p.id === STATE.hostId ? 'host' : ''} ${p.id === you ? 'you' : ''}">${av}${esc(p.name)}${p.id === STATE.hostId ? ' 👑' : ''}${p.connected ? '' : '<span class="off" title="Disconnected"></span>'}</div>`;
+  }).join('');
+  const enough = STATE.players.length >= STATE.minPlayers;
+  $('btnStart').disabled = !isHost || !enough;
+  $('btnStart').textContent = isHost ? (enough ? 'Start →' : `Waiting for ${STATE.minPlayers - STATE.players.length} more…`) : 'Waiting for host…';
+}
+
+function renderPlayOrReveal(){
+  const cur = STATE.curRound;
+  if (cur && cur.state === 'done') return renderReveal();
+  renderPlaying();
+}
+
+function renderPlaying(){
+  show('scPlay');
+  const cur = STATE.curRound;
+  if (!cur) return;
+  $('pRoundLbl').textContent = 'Round ' + (cur.idx + 1) + ' of ' + STATE.maxRounds;
+  $('pCategory').textContent = cur.category;
+  // Timer tick — one interval, cancelled on next render.
+  if (tickT) { clearInterval(tickT); tickT = null; }
+  const paint = () => {
+    const rem = Math.max(0, cur.endsAt - Date.now());
+    $('pTime').textContent = fmtT(rem);
+    const pct = Math.max(0, Math.min(100, (rem / STATE.roundMs) * 100));
+    const bar = $('pTimerBar');
+    bar.classList.toggle('hot', rem < 10000);
+    bar.querySelector('i').style.width = pct + '%';
+  };
+  paint();
+  tickT = setInterval(paint, 250);
+  // My words pill list
+  const mine = cur.myWords || [];
+  $('myWords').innerHTML = mine.map(w => `<span class="w">${esc(w)}</span>`).join('');
+  // Scoreboard — my count from myWords, others from cur.counts.
+  const countBy = new Map(cur.counts.map(c => [c.pid, c.count]));
+  $('board').innerHTML = STATE.players.map(p => {
+    const c = countBy.get(p.id) || 0;
+    const av = p.photo ? `<span class="av"><img src="${esc(p.photo)}" alt=""></span>` : `<span class="av">${esc(initials(p.name))}</span>`;
+    return `<div class="brow ${p.id === ME ? 'you' : ''}">${av}<span class="nm">${esc(p.name)}${p.connected ? '' : '<span class="off">off</span>'}</span><span class="cnt">${c}</span></div>`;
+  }).join('');
+  // Focus the input if it's not already
+  const inp = $('wordIn');
+  if (document.activeElement !== inp) inp.focus();
+}
+
+function renderReveal(){
+  show('scReveal');
+  if (tickT) { clearInterval(tickT); tickT = null; }
+  const cur = STATE.curRound;
+  if (!cur) return;
+  $('rvRoundLbl').textContent = 'Round ' + (cur.idx + 1) + ' recap';
+  $('rvCategory').textContent = cur.category;
+  // Pull reveal words from STATE.rounds[cur.idx].reveal.
+  const r = STATE.rounds[cur.idx];
+  const reveal = (r && r.reveal) || [];
+  // Sort by count desc so the leader is at the top.
+  reveal.sort((a, b) => b.words.length - a.words.length);
+  const nameById = new Map(STATE.players.map(p => [p.id, p]));
+  $('rvPlayers').innerHTML = reveal.map(row => {
+    const p = nameById.get(row.pid) || { name: 'Player' };
+    const words = row.words.length
+      ? row.words.map(w => `<span class="w">${esc(w)}</span>`).join('')
+      : '<span style="color:var(--faint);font-size:12px">— no words —</span>';
+    return `<div class="reveal-player ${row.pid === ME ? 'mine' : ''}"><div class="who">${esc(p.name)} · ${row.words.length}</div><div class="words">${words}</div></div>`;
+  }).join('');
+}
+
+function renderEnd(){
+  show('scEnd');
+  if (tickT) { clearInterval(tickT); tickT = null; }
+  const r = STATE.reveal || {};
+  $('endName').textContent = r.winnerName ? r.winnerName + ' won it' : 'It ended in a tie';
+  $('endSub').textContent  = r.totals && r.totals[0]
+    ? (r.totals[0].roundWins + ' round win' + (r.totals[0].roundWins === 1 ? '' : 's') + ' · ' + r.totals[0].score + ' words total')
+    : '';
+  $('endBoard').innerHTML = (r.totals || []).map((t, i) => {
+    const av = t.photo ? `<span class="av"><img src="${esc(t.photo)}" alt=""></span>` : `<span class="av">${esc(initials(t.name))}</span>`;
+    const medal = ['🥇','🥈','🥉'][i] || '';
+    return `<div class="brow ${t.id === ME ? 'you' : ''}">${av}<span class="nm">${medal ? medal + ' ' : ''}${esc(t.name)}</span><span class="rw">${t.roundWins} 🏆</span><span class="cnt">${t.score}</span></div>`;
+  }).join('');
+  const isHost = ME === STATE.hostId;
+  $('btnAgain').disabled = !isHost;
+  $('btnAgain').textContent = isHost ? 'Play again →' : 'Waiting for host…';
+}
+</script>
+</body>
+</html>

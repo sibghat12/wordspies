@@ -370,6 +370,19 @@ function scanMyRooms(uid) {
     }
   }
 
+  // Word Race
+  if (wordRaceMod && wordRaceMod.rooms) {
+    for (const r of wordRaceMod.rooms.values()) {
+      if (r.creatorUid !== uid) continue;
+      push('wordrace', r, {
+        icon: '🏁', title: 'Word Race',
+        players: r.players ? r.players.size : 0,
+        href: '/wordrace?room=' + r.code,
+        watchers: r.watchers ? r.watchers.size : 0
+      });
+    }
+  }
+
   // Parties I host — includes myself when I'm in them, so the strip is
   // effectively "rooms where I own the keys" whether or not I'm sat inside
   // right now.
@@ -424,6 +437,7 @@ app.post('/api/social/my-rooms/close', express.json({ limit: '2kb' }), async (re
   if (!ok && spyMod  && spyMod.rooms  && game === 'spy')  ok = closeIn(spyMod.rooms,  () => { try { io.of('/spy' ).to(code).emit('roomClosed', { code }); } catch (e) {} });
   if (!ok && wordChainMod && wordChainMod.rooms && game === 'wordchain') ok = closeIn(wordChainMod.rooms, () => { try { io.of('/wordchain').to(code).emit('roomClosed', { code }); } catch (e) {} });
   if (!ok && guessWordMod && guessWordMod.rooms && game === 'guessword') ok = closeIn(guessWordMod.rooms, () => { try { io.of('/guessword').to(code).emit('roomClosed', { code }); } catch (e) {} });
+  if (!ok && wordRaceMod  && wordRaceMod.rooms  && game === 'wordrace')  ok = closeIn(wordRaceMod.rooms,  () => { try { io.of('/wordrace').to(code).emit('roomClosed', { code }); } catch (e) {} });
   // Parties are keyed by hostUid instead of creatorUid, so closeIn's default
   // check doesn't apply — do the ownership test explicitly here.
   if (!ok && partyMod && partyMod.rooms && game === 'party') {
@@ -629,36 +643,75 @@ if (process.env.REDIS_URL) {
 let social = null;
 try { social = require('./social').mount(app, redis) || null; } catch (e) { console.error('social module failed to load (game unaffected):', e.message); }
 
+// Per-user "already in a game" guard — owner ask 4 Aug 2026. Each game
+// module runs POSTs to /api/{game}/new through activeGame.guardCreate,
+// which returns 409 + { activeGame } if the user already has one going.
+// The client shows a 'close current game or continue?' dialog when it
+// sees that response. Redis-backed with a Map fallback (see activegame.js).
+const activeGame = require('./activegame').make(redis);
+// Verifier for the WordSpies main game — lets getVerified drop the key
+// as soon as the referenced room dies (game ended, host disconnected,
+// TTL swept it). Every other module registers its own verifier inside
+// its mount() below.
+activeGame.registerVerifier('wordspies', code => rooms.has(code));
+
+// Read + clear endpoints for the client. The playcard tap in /social
+// calls GET first (pre-check UX); a game page that hits 409 calls
+// DELETE when the user chooses 'close & start new'.
+app.get('/api/user/active-game', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const uid = await uidFromCookie(req);
+  if (!uid) return res.json({ activeGame: null });
+  // Verified read — if the room the record points at no longer exists,
+  // the key is dropped and this returns null so the client's playcard
+  // isn't blocked by a ghost game.
+  res.json({ activeGame: await activeGame.getVerified(uid) });
+});
+app.delete('/api/user/active-game', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const uid = await uidFromCookie(req);
+  if (uid) await activeGame.clear(uid);
+  res.json({ ok: true });
+});
+
 // 🧠 Mind Meld — the two-player side game at /meld. Same deal as social: its
 // own module, its own socket namespace, its own rooms. If it fails to load the
 // main game does not notice. It borrows nothing but the identity lookup, so a
 // signed-in player is seated under their own name and photo.
+// Every game module gets identify + uidFromReq + activeGame so the shared
+// 'already in a game' guard can wrap their POST /api/{game}/new endpoints.
+const gameOpts = { identify: resolveSocialIdentity, uidFromReq: uidFromCookie, activeGame };
+
 let meldMod = null;
-try { meldMod = require('./meld').mount(app, io, { identify: resolveSocialIdentity }) || null; }
+try { meldMod = require('./meld').mount(app, io, gameOpts) || null; }
 catch (e) { console.error('meld module failed to load (game unaffected):', e.message); }
 
-// 🎲 The arcade — Ludo, Connect 4 and 8-ball pool, at /games. Same isolation
-// rules again: own namespaces, own rooms, borrows only the identity lookup.
+// 🎲 The arcade — Ludo, Connect 4 and 8-ball pool, at /games.
 let arcadeMod = null;
-try { arcadeMod = require('./arcade').mount(app, io, { identify: resolveSocialIdentity }) || null; }
+try { arcadeMod = require('./arcade').mount(app, io, gameOpts) || null; }
 catch (e) { console.error('arcade module failed to load (game unaffected):', e.message); }
 
-// 🕵️ Who is the Spy? — the party word game at /spy. Own module, own namespace,
-// own rooms — a bug in here can't take anything else down.
+// 🕵️ Who is the Spy? — the party word game at /spy.
 let spyMod = null;
-try { spyMod = require('./spy').mount(app, io, { identify: resolveSocialIdentity }) || null; }
+try { spyMod = require('./spy').mount(app, io, gameOpts) || null; }
 catch (e) { console.error('spy module failed to load (game unaffected):', e.message); }
 
-// 🔗 Word Chain — turn-based vocabulary game at /wordchain. Same isolation
-// contract as the other games — own module, own namespace, own rooms table.
+// 🔗 Word Chain — turn-based vocabulary game at /wordchain.
 let wordChainMod = null;
-try { wordChainMod = require('./wordchain').mount(app, io, { identify: resolveSocialIdentity }) || null; }
+try { wordChainMod = require('./wordchain').mount(app, io, gameOpts) || null; }
 catch (e) { console.error('wordchain module failed to load (game unaffected):', e.message); }
 
 // ❓ Guess the Word — describer-and-guessers vocabulary game at /guessword.
 let guessWordMod = null;
-try { guessWordMod = require('./guessword').mount(app, io, { identify: resolveSocialIdentity }) || null; }
+try { guessWordMod = require('./guessword').mount(app, io, gameOpts) || null; }
 catch (e) { console.error('guessword module failed to load (game unaffected):', e.message); }
+
+// 🏁 Word Race — 60-second vocabulary sprint at /wordrace. First game
+// added under the LingoLand pivot's 'language-learning multiplayer'
+// bucket (owner ask 4 Aug 2026).
+let wordRaceMod = null;
+try { wordRaceMod = require('./wordrace').mount(app, io, gameOpts) || null; }
+catch (e) { console.error('wordrace module failed to load (game unaffected):', e.message); }
 
 // 🎉 Parties — audio rooms with speakers + listeners + rationed listener chat.
 // Uses the same Cloudflare Realtime pipeline the games do. Own namespace at
@@ -739,6 +792,7 @@ app.get('/api/live', (req, res) => {
   add(spyMod && spyMod.live);
   add(wordChainMod && wordChainMod.live);
   add(guessWordMod && guessWordMod.live);
+  add(wordRaceMod && wordRaceMod.live);
   add(partyMod && partyMod.live);
   // Games actually being played first, then the ones still filling up, and
   // within each the ones that moved most recently — a game someone touched a
@@ -1085,6 +1139,14 @@ io.on('connection', (socket) => {
     entering = true;
     try {
       const idn = await socket.socReady;
+      // 'Already in a game' guard for WordSpies main — the other games
+      // enforce this in their REST /new endpoint, but this one enters
+      // via socket. Same UX: fire an event the client turns into the
+      // 'close current game or continue?' dialog.
+      if (idn && idn.uid) {
+        const active = await activeGame.getVerified(idn.uid);
+        if (active) { socket.emit('activeGame', active); return; }
+      }
       // No name typed (auto-join from a link) → use the profile name.
       name = String(name || '').trim().slice(0, 20) || (idn && idn.name) || 'Player';
       room = createRoom(name);
@@ -1095,11 +1157,13 @@ io.on('connection', (socket) => {
       };
       room.hostId = socket.id;
       // Signed-in creator? Stamp their uid so the room survives all-sockets-
-      // disconnected and shows in their "My games" list.
+      // disconnected and shows in their "My games" list, and register the
+      // room in the active-game guard so a second /new call is blocked.
       if (idn && idn.uid) {
         room.creatorUid = idn.uid;
         room.creatorName = idn.name || name;
         room.creatorPhoto = idn.photo || null;
+        activeGame.set(idn.uid, { game: 'wordspies', code: room.code, url: '/play?code=' + room.code }).catch(() => {});
       }
       room.players.set(socket.id, player);
       socket.join(room.code);

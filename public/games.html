@@ -46,8 +46,30 @@ p.lede{font-size:13.8px;color:var(--sub);line-height:1.6;margin-bottom:18px}
 .game:hover{transform:translateY(-2px);border-color:#ddd9fb}
 .game .gi{flex:none;width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1}
 .game .gt{flex:1;min-width:0}
-.game .gt b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.3px}
+.game .gt b{display:block;font-size:15.5px;font-weight:500;letter-spacing:-.3px}
 .game .gt span{display:block;font-size:12.3px;color:var(--sub);margin-top:3px;line-height:1.5}
+/* Small circular (i) info button that opens the game's popup — added
+   4 Aug 2026 so the card can stay short + tidy while still explaining
+   the game in full when someone taps for details. */
+.gt-line{display:flex;align-items:center;gap:6px}
+.gi-info{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#eef1f7;color:var(--sub);border:0;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:12px;font-style:italic;cursor:pointer;padding:0;line-height:1;flex-shrink:0;transition:background .12s,color .12s}
+.gi-info:hover{background:#dfe4ee;color:var(--ink)}
+.gi-info:focus{outline:2px solid rgba(90,123,255,.35);outline-offset:1px}
+/* Info modal — plain centred dialog, dismisses on backdrop tap or ✕. */
+.ginfo-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;animation:ginfoFade .16s ease}
+.ginfo-bd.on{display:flex}
+@keyframes ginfoFade{from{opacity:0}to{opacity:1}}
+.ginfo{background:#fff;border-radius:22px;max-width:400px;width:100%;padding:22px 22px 20px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:ginfoUp .2s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes ginfoUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ginfo-close{position:absolute;top:10px;right:10px;background:transparent;border:0;width:36px;height:36px;border-radius:50%;font-size:20px;color:var(--sub);cursor:pointer}
+.ginfo-close:hover{background:#f2f3f5;color:var(--ink)}
+.ginfo-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.ginfo-head .gi{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.ginfo-head h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0}
+.ginfo-body{font-size:14.2px;line-height:1.6;color:var(--ink);margin:6px 0 14px;font-weight:500}
+.ginfo-meta{font-size:12.5px;color:var(--sub);font-weight:600;margin-bottom:14px}
+.ginfo-play{display:block;text-align:center;background:var(--ink);color:#fff;border-radius:16px;padding:12px 18px;text-decoration:none;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:15.5px;letter-spacing:.1px}
+.ginfo-play:hover{background:#000}
 .game .chips{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex:none}
 .chip{font-size:10.6px;font-weight:600;padding:4px 9px;border-radius:999px;white-space:nowrap}
 .chip.bot{background:#eef7ef;color:#1c7c33}
@@ -99,7 +121,7 @@ label.fl{font-weight:800}
 .game{border:2px solid var(--edge);border-radius:24px;
   box-shadow:none}
 .game:hover{transform:translateY(-3px)}
-.game .gt b{font-family:'Fredoka',system-ui,sans-serif;font-size:16.5px;font-weight:600;letter-spacing:-.2px}
+.game .gt b{font-family:'Fredoka',system-ui,sans-serif;font-size:16.5px;font-weight:500;letter-spacing:-.2px}
 .game .gi{border-radius:18px}
 .chip{font-weight:700}
 </style>
@@ -116,31 +138,38 @@ label.fl{font-weight:800}
   <p class="lede">Alone, with one friend, or the whole group — there’s a game for however many of you there are. Every one of them works with a shared link, and the bot fills any empty seat.</p>
 
   <div class="sect">The big one</div>
-  <a class="game" href="/play">
+  <a class="game" href="/play" data-game="wordspies">
     <span class="gi" style="background:#fdeef1">🕵️</span>
-    <span class="gt"><b>WordSpies</b><span>Two teams, secret words, one wrong guess from disaster. The party game.</span></span>
+    <span class="gt"><b>WordSpies</b><span class="gt-line">Team word game <button class="gi-info" type="button" data-info="wordspies" aria-label="About WordSpies">i</button></span></span>
     <span class="chips"><span class="chip ppl">4–10+ friends</span></span>
   </a>
 
+  <div class="sect">Language sprint</div>
+  <a class="game" href="/wordrace" data-game="wordrace">
+    <span class="gi" style="background:#fff2e5">🏁</span>
+    <span class="gt"><b>Word Race</b><span class="gt-line">60-second vocab sprint <button class="gi-info" type="button" data-info="wordrace" aria-label="About Word Race">i</button></span></span>
+    <span class="chips"><span class="chip ppl">2–8 friends</span></span>
+  </a>
+
   <div class="sect">Quick games</div>
-  <a class="game" href="/ludo">
+  <a class="game" href="/ludo" data-game="ludo">
     <span class="gi" style="background:#fff4e5">🎲</span>
-    <span class="gt"><b>Ludo</b><span>The classic board race. Roll, move, and send each other home.</span></span>
+    <span class="gt"><b>Ludo</b><span class="gt-line">Classic board race <button class="gi-info" type="button" data-info="ludo" aria-label="About Ludo">i</button></span></span>
     <span class="chips"><span class="chip ppl">2–4 friends</span><span class="chip bot">or vs bots</span></span>
   </a>
-  <a class="game" href="/pool">
+  <a class="game" href="/pool" data-game="pool">
     <span class="gi" style="background:#e8f6ee">🎱</span>
-    <span class="gt"><b>8-Ball Pool</b><span>Real physics. Pot your balls, then the 8 — and don’t sink the cue.</span></span>
+    <span class="gt"><b>8-Ball Pool</b><span class="gt-line">Sink your balls first <button class="gi-info" type="button" data-info="pool" aria-label="About 8-Ball Pool">i</button></span></span>
     <span class="chips"><span class="chip ppl">2 friends</span><span class="chip bot">or vs the bot</span></span>
   </a>
-  <a class="game" href="/four">
+  <a class="game" href="/four" data-game="four">
     <span class="gi" style="background:#eef2fd">🔴</span>
-    <span class="gt"><b>Connect 4</b><span>Drop pieces, make four in a row, block theirs. Thirty-second rounds.</span></span>
+    <span class="gt"><b>Connect 4</b><span class="gt-line">Four in a row <button class="gi-info" type="button" data-info="four" aria-label="About Connect 4">i</button></span></span>
     <span class="chips"><span class="chip ppl">2 friends</span><span class="chip bot">or vs the bot</span></span>
   </a>
-  <a class="game" href="/meld">
+  <a class="game" href="/meld" data-game="meld">
     <span class="gi" style="background:#f3f1fe">🧠</span>
-    <span class="gt"><b>Mind Meld</b><span>Both type a word at the same time. Try to say the same one.</span></span>
+    <span class="gt"><b>Mind Meld</b><span class="gt-line">Match minds in one word <button class="gi-info" type="button" data-info="meld" aria-label="About Mind Meld">i</button></span></span>
     <span class="chips"><span class="chip ppl">exactly 2</span></span>
   </a>
 
@@ -149,6 +178,64 @@ label.fl{font-weight:800}
     <a href="/social">Meet people to play with in the Community →</a>
   </div>
 </div>
+
+<!-- Info popup — one dialog, contents swapped in from GAME_INFO on click. -->
+<div class="ginfo-bd" id="ginfoBd" onclick="if(event.target===this)closeGameInfo()">
+  <div class="ginfo" role="dialog" aria-modal="true" aria-labelledby="ginfoTitle">
+    <button class="ginfo-close" onclick="closeGameInfo()" aria-label="Close">✕</button>
+    <div class="ginfo-head">
+      <span class="gi" id="ginfoIcon"></span>
+      <h3 id="ginfoTitle"></h3>
+    </div>
+    <p class="ginfo-body" id="ginfoBody"></p>
+    <div class="ginfo-meta" id="ginfoMeta"></div>
+    <a class="ginfo-play" id="ginfoPlay" href="#">Play now →</a>
+  </div>
+</div>
+
+<script>
+// Info-popup content lives here so the card markup stays lean.
+const GAME_INFO = {
+  wordspies: { name:'WordSpies', icon:'🕵️', bg:'#fdeef1', href:'/play',
+    body:'Two teams, one grid of secret words. Your spymaster gives a single clue and a number, and your team has to guess only your words — one wrong tap can hand the round to the other side. Best with 4–10 friends around a phone or on a call. Bots can fill any empty seat.',
+    meta:'4–10+ players · shared link · bots fill seats' },
+  ludo: { name:'Ludo', icon:'🎲', bg:'#fff4e5', href:'/ludo',
+    body:'The classic board race. Roll the die, move your four pieces around the board, land on a friend to send them home. First to get all four home wins. Runs in the browser — share the link, take turns.',
+    meta:'2–4 players · vs friends or bots' },
+  pool: { name:'8-Ball Pool', icon:'🎱', bg:'#e8f6ee', href:'/pool',
+    body:'Real physics 8-ball. Break, call your set, pot them all, then the 8 — but don\'t sink the cue on the way. Aim by dragging, tap to shoot. Play a friend by link or take on the bot.',
+    meta:'2 players · vs a friend or the bot' },
+  four: { name:'Connect 4', icon:'🔴', bg:'#eef2fd', href:'/four',
+    body:'Drop pieces into columns, get four in a row (up, down, sideways, or diagonal) before your opponent does. Rounds last about thirty seconds. Perfect for a quick match while you chat.',
+    meta:'2 players · vs a friend or the bot' },
+  meld: { name:'Mind Meld', icon:'🧠', bg:'#f3f1fe', href:'/meld',
+    body:'You both type a word at the same time, then try to match. If you both say "cat" you win. If not, use both your words as a hint and try again. Silly, fast, weirdly bonding — great for two friends learning each other.',
+    meta:'2 players only · no bot' },
+  wordrace: { name:'Word Race', icon:'🏁', bg:'#fff2e5', href:'/wordrace',
+    body:'A category shows up — Animals, Foods, Verbs, Colours — and you have 60 seconds to type as many words as you can that fit. Most words wins the round. Best of 3 wins the match. Works in any language you\'re learning.',
+    meta:'2–8 players · 60-second rounds · any language' },
+};
+function openGameInfo(id){
+  const g = GAME_INFO[id]; if (!g) return;
+  const icon = document.getElementById('ginfoIcon');
+  icon.textContent = g.icon; icon.style.background = g.bg;
+  document.getElementById('ginfoTitle').textContent = g.name;
+  document.getElementById('ginfoBody').textContent = g.body;
+  document.getElementById('ginfoMeta').textContent = g.meta;
+  document.getElementById('ginfoPlay').href = g.href;
+  document.getElementById('ginfoPlay').textContent = 'Play ' + g.name + ' →';
+  document.getElementById('ginfoBd').classList.add('on');
+}
+function closeGameInfo(){ document.getElementById('ginfoBd').classList.remove('on'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGameInfo(); });
+// Delegate the (i) button so the card's own <a> navigation doesn't fire.
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.gi-info');
+  if (!btn) return;
+  e.preventDefault(); e.stopPropagation();
+  openGameInfo(btn.dataset.info);
+});
+</script>
 <script src="/a2hs.js" defer></script>
 <script src="/wsbrand.js" defer></script>
 </body>

@@ -1958,6 +1958,79 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     }
   });
 
+  // POST /api/social/ai/transcribe — accepts a short audio clip (same
+  // format the DM voice-note recorder produces: opus/webm, ogg or m4a),
+  // forwards it to ElevenLabs' Scribe speech-to-text and returns the
+  // transcript. Only used when the DM peer is an AI expert; a human
+  // never triggers a transcription request. Owner ask 4 Aug 2026:
+  // 'the user can speak to him like audio and he can listen to the
+  // voice note and answer'.
+  const scribeUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 3 * 1024 * 1024, files: 1 }
+  });
+  api.post('/ai/transcribe', (req, res) => {
+    scribeUpload.single('clip')(req, res, async err => {
+      try {
+        if (err) return res.status(400).json({ error: 'Voice clip too large (max 3 MB).' });
+        const me = await userFromReq(req);
+        if (!me) return res.status(401).json({ error: 'Please log in.' });
+        if (process.env.AI_VOICE_ENABLED === 'false') return res.status(503).json({ error: 'Voice is off.' });
+        if (!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ error: 'Voice is not configured.' });
+        // Same daily-rate lane as the voice-note uploader: 30/min so a
+        // stuck client can't hammer the STT API.
+        if (limited(req, 'vscribe', 30)) return res.status(429).json({ error: 'Slow down a little ✋' });
+        const f = req.file;
+        if (!f || !f.buffer || !f.buffer.length) return res.status(400).json({ error: 'No audio received.' });
+        // Same magic-byte sniff as /message/voice — don't proxy an
+        // .exe to a paid API.
+        const b = f.buffer;
+        const isWebm = b[0] === 0x1A && b[1] === 0x45 && b[2] === 0xDF && b[3] === 0xA3;
+        const isOgg  = b[0] === 0x4F && b[1] === 0x67 && b[2] === 0x67 && b[3] === 0x53;
+        const isMp4  = b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70;
+        if (!isWebm && !isOgg && !isMp4) return res.status(400).json({ error: 'Unsupported audio format.' });
+        const mime = isWebm ? 'audio/webm' : isOgg ? 'audio/ogg' : 'audio/mp4';
+        const ext  = isWebm ? 'webm' : isOgg ? 'ogg' : 'm4a';
+
+        // ElevenLabs Scribe expects multipart/form-data with 'file' +
+        // 'model_id=scribe_v1'. Native FormData + Blob (Node 18+) so
+        // we don't pull in another dep.
+        const fd = new FormData();
+        fd.append('model_id', 'scribe_v1');
+        fd.append('file', new Blob([b], { type: mime }), 'voice.' + ext);
+        let upstream;
+        try {
+          upstream = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+            method: 'POST',
+            headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY, 'Accept': 'application/json' },
+            body: fd
+          });
+        } catch (e) {
+          console.error('[scribe] fetch failed:', e.message);
+          return res.status(502).json({ error: 'Transcription service unreachable.' });
+        }
+        if (!upstream.ok) {
+          const errBody = await upstream.text().catch(() => '');
+          console.error('[scribe] ElevenLabs', upstream.status, errBody.slice(0, 200));
+          return res.status(upstream.status === 401 || upstream.status === 402 ? 503 : 502).json({ error: 'Transcription failed.' });
+        }
+        const j = await upstream.json().catch(() => null);
+        const text = (j && String(j.text || '').trim()) || '';
+        if (!text) return res.status(422).json({ error: 'Could not understand the voice note — try again in a quiet spot.' });
+        // Cost log — Scribe is roughly $0.40 / hour ≈ $0.007 per minute.
+        // We don't know the duration here (client could send it) so log
+        // by bytes as a rough proxy.
+        const day = new Date().toISOString().slice(0, 10);
+        await db.rpush('soc:scribe-usage:' + day, JSON.stringify({ u: me.id, bytes: b.length, chars: text.length, t: Date.now() }));
+        await db.ltrim('soc:scribe-usage:' + day, -1000, -1);
+        res.json({ text });
+      } catch (e) {
+        console.error('[scribe] error:', e.message);
+        res.status(500).json({ error: 'Something went wrong.' });
+      }
+    });
+  });
+
   // POST /api/social/ai/reply — the user sends a message to an AI, we
   // save it to the normal chat store, call Claude, save the reply, and
   // send it back. Kill switch: BOT_ENABLED=false. Rate-limited per user
@@ -2034,16 +2107,22 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const meLearn = (me.learns || []).join(', ') || 'unknown';
       const system = `${bot.persona}
 
-You are ${bot.name}, a warm, curious language-exchange partner on WordSpies.
+You are ${bot.name}, a friendly language-learning partner on WordSpies. Your job is to help ${me.name} practise + get better at the language they're learning.
 
 HOW YOU CHAT:
-- Speak like a friend, not a teacher. Casual, warm, contractions, occasional emoji when they fit.
-- Keep replies SHORT: 1–3 sentences unless the user clearly wants more.
-- Match the user's message length. If they write "hi", don't write a paragraph.
-- Ask ONE natural follow-up question per turn to keep the chat flowing. Vary the questions.
-- If the user makes a small grammar mistake, don't correct them unless they ask.
-- Reply in the same language the user wrote in.
-- Never pretend to be a real human. If asked directly, briefly say yes you're AI and carry on — the user can see the ✨ AI badge, be relaxed about it.
+- Keep replies VERY SHORT — 1 or 2 sentences, ideally under 25 words. No paragraphs, ever.
+- Reply in the language the user is LEARNING (${meLearn}) by default, unless they wrote in their native tongue asking a meta-question.
+- Speak like a warm friend, not a teacher. Casual, contractions, occasional emoji when they fit.
+- Ask ONE simple follow-up per turn to keep them talking. Vary the questions.
+- Match their level: if their message is simple, keep your reply simple. If they use richer vocabulary, meet them there.
+
+GENTLE CORRECTION (this is important):
+- If the user makes a grammar, spelling, word-choice, or word-order mistake in the language they're learning, gently correct it FIRST in a short line:
+    ✏️ "orange fruit is" → "the orange is a fruit"
+  then reply normally.
+- Only correct ONE mistake per turn — the most useful one. Don't nitpick.
+- If the message is perfect, don't say "great job" every time. Just reply naturally.
+- Never correct their native language.
 
 USER YOU ARE TALKING TO:
 - Their name is ${me.name}.
@@ -2066,7 +2145,10 @@ Reply as ${bot.name}. No preamble, just the reply.`;
       try {
         const result = await client.messages.create({
           model: process.env.BOT_MODEL || 'claude-haiku-4-5',
-          max_tokens: 300,
+          // Hard cap on length — the system prompt asks for 1-2 sentences,
+          // and this backstops it so a runaway generation can't produce a
+          // wall of text. ~150 tokens ≈ 100 words ≈ 3 short sentences.
+          max_tokens: 150,
           temperature: 0.75,
           system,
           messages

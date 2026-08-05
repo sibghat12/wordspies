@@ -1052,6 +1052,36 @@ socket.on('state', st => {
 });
 socket.on('session', sess => { try { localStorage.setItem('ws_sess', JSON.stringify(sess)); } catch(e){} });
 socket.on('sessionExpired', () => { try { localStorage.removeItem('ws_sess'); } catch(e){} });
+// 'Already in a game' guard — server fires this when a signed-in player
+// tries to create a WordSpies room while they've got another game open.
+// Same UX as the HTTP flow: continue that game, close it and retry, or
+// cancel. Owner ask 4 Aug 2026.
+socket.on('activeGame', async (active) => {
+  const AG_LABEL = { wordspies:'WordSpies', spy:'Who is the Spy?', wordchain:'Word Chain',
+    guessword:'Guess the Word', wordrace:'Word Race', meld:'Mind Meld', pool:'8-Ball Pool', ludo:'Ludo', four:'Connect 4' };
+  const nice = AG_LABEL[active.game] || active.game;
+  const useSwal = typeof window.Swal === 'object' && typeof window.Swal.fire === 'function';
+  if (!useSwal) {
+    if (confirm(`You're already in a ${nice} game (code ${active.code}). Close it and start new here?`)) {
+      try { await fetch('/api/user/active-game', { method:'DELETE' }); } catch(e){}
+      const btn = document.getElementById('createBtn'); if (btn) btn.click();
+    } else if (active.url) location.href = active.url;
+    return;
+  }
+  const res = await Swal.fire({
+    icon: 'info',
+    title: `You're already in ${nice}`,
+    html: `<div style="font-size:14px;line-height:1.5;color:#5c6270">You've got a ${nice} game open (code <b>${active.code}</b>). Finish that first, or close it to start a new one.</div>`,
+    showCancelButton: true, showDenyButton: true,
+    confirmButtonText: '↩︎ Continue that game', denyButtonText: 'Close & start new', cancelButtonText: 'Cancel',
+    confirmButtonColor: '#5a7bff', denyButtonColor: '#e8506b', reverseButtons: true
+  });
+  if (res.isConfirmed) { if (active.url) location.href = active.url; }
+  else if (res.isDenied) {
+    try { await fetch('/api/user/active-game', { method:'DELETE' }); } catch(e){}
+    const btn = document.getElementById('createBtn'); if (btn) btn.click();
+  }
+});
 
 // ---------- home ----------
 try { const n = localStorage.getItem('ws_name') || sessionStorage.getItem('ws_name'); if (n) $('nameInput').value = n; } catch(e){}

@@ -431,6 +431,29 @@ function poolBotShot(room) {
 function mount(app, io, opts) {
   const options = opts || {};
   const identify = typeof options.identify === 'function' ? options.identify : null;
+  const _uidFromReq = typeof options.uidFromReq === 'function' ? options.uidFromReq : null;
+  const _activeGame = options.activeGame || null;
+  // Three arcade games share this module — register one verifier per
+  // game so getVerified() can drop stale keys for any of them.
+  if (_activeGame && _activeGame.registerVerifier) {
+    _activeGame.registerVerifier('ludo', code => ludoRooms.has(code));
+    _activeGame.registerVerifier('four', code => fourRooms.has(code));
+    _activeGame.registerVerifier('pool', code => poolRooms.has(code));
+  }
+  async function _guardActive(req, res) {
+    if (!_activeGame || !_uidFromReq) return true;
+    const uid = await _uidFromReq(req);
+    if (!uid) return true;
+    const active = await _activeGame.getVerified(uid);
+    if (!active) return true;
+    res.status(409).json({ error: 'active-game', activeGame: active });
+    return false;
+  }
+  async function _markActive(req, game, code, url) {
+    if (!_activeGame || !_uidFromReq) return;
+    const uid = await _uidFromReq(req);
+    if (uid) await _activeGame.set(uid, { game, code, url });
+  }
 
   const page = (route, file) => app.get(route, (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
@@ -458,26 +481,32 @@ function mount(app, io, opts) {
   // A room born empty, over plain HTTP. This is what the chat's game picker
   // uses: it needs a code to put in the message BEFORE anyone has opened the
   // game page. Whoever arrives first takes the first seat and becomes host.
-  const born = (maker, table) => (req, res) => {
+  //
+  // Also runs the shared "already in a game" guard — logged-in users get 409
+  // if they already have another game open, so the client can prompt them to
+  // close it first (owner ask 4 Aug 2026).
+  const born = (game, url, maker, table) => async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
+    if (!(await _guardActive(req, res))) return;
     const code = makeCode(table);
     table.set(code, maker(code));
+    await _markActive(req, game, code, url(code));
     res.json({ code });
   };
-  app.post('/api/ludo/new', born(code => ({
+  app.post('/api/ludo/new', born('ludo', c => '/ludo?room=' + c, code => ({
     code, cap: 4, state: 'lobby',
     players: new Map(), seatOrder: [null, null, null, null],
     tokens: [[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1],[-1,-1,-1,-1]],
     turn: 0, dice: 0, rolled: false, moves: [], last: null,
     sixes: 0, winner: null, order: [], hostId: null, touched: Date.now()
   }), ludoRooms));
-  app.post('/api/four/new', born(code => ({
+  app.post('/api/four/new', born('four', c => '/four?room=' + c, code => ({
     code, cap: 2, state: 'lobby',
     players: new Map(), seatOrder: [null, null],
     board: c4Empty(), turn: 1, winner: null, line: null, lastCol: null,
     scores: [0, 0], depth: 5, hostId: null, touched: Date.now()
   }), fourRooms));
-  app.post('/api/pool/new', born(code => ({
+  app.post('/api/pool/new', born('pool', c => '/pool?room=' + c, code => ({
     code, cap: 2, state: 'lobby',
     players: new Map(), seatOrder: [null, null],
     balls: poolRack(), turn: 1, groups: [null, null],
