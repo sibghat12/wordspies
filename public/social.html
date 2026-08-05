@@ -292,6 +292,13 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
 .avdiv{height:1px;background:var(--line);margin:6px 4px}
 @media(max-width:520px){.avmenu{right:10px;min-width:220px}}
 .mechip .mename{font-weight:700;font-size:13.5px;letter-spacing:-.1px}
+/* Explicit circle for the tiny avatar inside the header chip. Without
+   locked dimensions + overflow:hidden, the img would either overflow
+   the chip's rounded pill or squish flat when the flexbox tried to
+   negotiate widths. object-fit:cover on the img is set inside the
+   .topnav .mechip block for mobile — this handles desktop. */
+.meav{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;font-weight:800;font-size:12px}
+.meav img,.meav .av,.meav .avph{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
 /* Top navigation bar: logo + primary tabs on the left, secondary links +
    your profile chip on the right. Persistent across every tab so the site
    header stops being a per-tab afterthought. */
@@ -2116,14 +2123,16 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <!-- Blog + How-to-play were living here as top-nav chrome. Moved to
            the marketing footer per owner ask; kept out of the app to
            reduce clutter. -->
-      <!-- Retired 4 Aug 2026 (owner ask):
-             · pwaRefresh button — extra clutter, PWA can be pulled
-               to reload the same way.
-             · top-right avatar image — kept getting cut off inside
-               the pill and looked worse than no photo at all.
-           The dropdown menu still opens from the name chip. -->
+      <!-- pwaRefresh button retired 4 Aug 2026 — PWA pulls to reload
+           just as well and the extra button crowded the header.
+           Top-right avatar re-added 5 Aug 2026 (owner ask). The
+           earlier cut-off was because the chip's flex-item didn't
+           lock a size; explicit width/height + object-fit:cover on
+           the img (see .topnav .mechip img rules) keep it a clean
+           circle now. -->
       <div class="mechip" id="tbMe" onclick="toggleAvatarMenu(event)">
         <span class="mename" id="meName"></span>
+        <span id="meAvSmall" class="meav"></span>
       </div>
       <div class="avmenu" id="avMenu" role="menu" aria-hidden="true">
         <a class="avitem" role="menuitem" onclick="avGo('profile')"><span class="avic">👤</span>My profile</a>
