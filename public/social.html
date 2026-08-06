@@ -1557,6 +1557,20 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb .mtime .edited{opacity:.75;font-style:italic}
 /* deleted message tombstone — same shape, ghosted content */
 .mb.gone{background:transparent !important;border:1px dashed var(--edge);color:var(--faint);font-style:italic;box-shadow:none}
+/* Translated bubble state — owner ask 6 Aug 2026. Translation sits
+   on top in the bubble's normal weight; the original slips in below
+   at 85% size + 70% opacity so you can still read it if you need
+   the source. Tapping "🌐 Translate" again on the bubble collapses
+   back to the original. */
+.mb.is-translated .mb-trans{display:block}
+.mb.is-translated .mb-orig{display:block;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.18);font-size:.85em;opacity:.7;font-style:italic}
+.mb.them.is-translated .mb-orig{border-top-color:rgba(90,123,255,.18)}
+.mb-trans-loading{display:inline-block;margin-left:6px;font-size:11px;opacity:.7;animation:tload 1s ease-in-out infinite}
+@keyframes tload{0%,100%{opacity:.4}50%{opacity:.9}}
+/* Compose translate button — the small 🌐 that lets a user type in
+   their native + hand the peer a version in the peer's language. */
+.composer .cbtn.xlat{color:var(--sub)}
+.composer .cbtn.xlat.busy{opacity:.6;animation:tload .9s ease-in-out infinite}
 .mb.gone .mtime{color:var(--faint)}
 /* long-press hint / hover affordance */
 .mb{transition:transform .12s ease}
@@ -2608,6 +2622,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="cbtn" onclick="togglePicker()">😊</button>
       <button class="cbtn" onclick="$('imgIn').click()" title="Send a photo">📷</button>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
+      <!-- 🌐 translates the current draft into the peer's native
+           language before you send. Owner ask 6 Aug 2026: 'make it
+           easy for his own typing'. Only usable when there's text. -->
+      <button class="cbtn xlat" id="composerXlat" onclick="translateComposer()" title="Translate my typing" aria-label="Translate my typing">🌐</button>
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
       <!-- Smart action: shows the mic when the input is empty (hold to
            record voice), swaps to the send arrow when there's text. -->
@@ -5882,6 +5900,33 @@ function togglePicker(){
   em.classList.toggle('hidden');
   if (!em.dataset.ready) { buildEmojis(); em.dataset.ready = 1; }
 }
+
+// Translate the current compose draft into the peer's native language
+// (or the caller's own native as a fallback). Replaces the input in
+// place; you can still edit the result before sending. Owner ask 6
+// Aug 2026: 'make it easy for his own typing'.
+async function translateComposer(){
+  const inp = $('msgIn');
+  if (!inp) return;
+  const text = (inp.value || '').trim();
+  if (!text) { toast('Type something first.'); return; }
+  if (!curChat) return;
+  const btn = $('composerXlat');
+  if (btn) btn.classList.add('busy');
+  try {
+    const j = await api('/translate', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text, peerId: curChat }) });
+    if (!j.text) throw new Error('No translation');
+    inp.value = j.text;
+    inp.focus();
+    // Nudge the input event so the send/mic swap picks up the new text.
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  } catch (e) {
+    toast(e.message || 'Could not translate.');
+  } finally {
+    if (btn) btn.classList.remove('busy');
+  }
+}
 // toggleGamePick retired 6 Aug 2026 alongside the #gamePick popover.
 // Kept as a no-op in case something still emits a legacy click.
 function toggleGamePick(){ /* no-op — game picker retired */ }
@@ -6061,10 +6106,84 @@ async function msDelete(){
 function msCopy(){
   if (!curActMsg) return;
   const clone = curActMsg.el.cloneNode(true);
-  clone.querySelectorAll('.qref, .mtime').forEach(x => x.remove());
+  clone.querySelectorAll('.qref, .mtime, .mb-orig, .mb-trans').forEach(x => x.remove());
   const text = clone.textContent.trim();
   try { navigator.clipboard.writeText(text); toast('Copied'); } catch(e){ toast('Copy failed'); }
   closeMsAct();
+}
+
+// Translate the selected message into ME's native language. Owner ask
+// 6 Aug 2026. Toggle behaviour: first tap → translate + show BOTH the
+// translation and a small "Show original" pill; second tap on the
+// bubble → collapses back to the original. Cached per bubble in a
+// data-* attribute so we don't re-hit the API for the same message.
+async function msTranslate(){
+  if (!curActMsg) return;
+  const bub = curActMsg.el;
+  closeMsAct();
+  // If a translation is already showing → collapse back to original.
+  if (bub.classList.contains('is-translated')) {
+    const orig = bub.querySelector('.mb-orig');
+    const trans = bub.querySelector('.mb-trans');
+    if (orig) orig.remove();
+    if (trans) trans.remove();
+    // Restore original text node we squirrelled away.
+    if (bub.dataset.origHtml) {
+      const time = bub.querySelector('.mtime');
+      bub.innerHTML = bub.dataset.origHtml + (time ? time.outerHTML : '');
+    }
+    bub.classList.remove('is-translated');
+    return;
+  }
+  // Cache hit? Just render.
+  if (bub.dataset.translation) {
+    renderTranslation(bub, bub.dataset.translation);
+    return;
+  }
+  // Fresh translation. Pull the plain text (skip reply refs + timestamp).
+  const clone = bub.cloneNode(true);
+  clone.querySelectorAll('.qref, .mtime, .rxrow').forEach(x => x.remove());
+  const text = clone.textContent.trim();
+  if (!text) return;
+  const badge = document.createElement('span');
+  badge.className = 'mb-trans-loading';
+  badge.textContent = '🌐 …';
+  bub.appendChild(badge);
+  try {
+    const j = await api('/translate', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text, peerId: curActMsg.mine ? curChat : null }) });
+    badge.remove();
+    if (!j.text) throw new Error('No translation');
+    bub.dataset.translation = j.text;
+    renderTranslation(bub, j.text);
+  } catch (e) {
+    badge.remove();
+    toast(e.message || 'Could not translate.');
+  }
+}
+function renderTranslation(bub, translated){
+  // Freeze the original html once so we can toggle back.
+  if (!bub.dataset.origHtml) {
+    const time = bub.querySelector('.mtime');
+    const timeHtml = time ? time.outerHTML : '';
+    // Everything except the timestamp is 'the original text'.
+    const inner = bub.innerHTML.replace(timeHtml, '').trim();
+    bub.dataset.origHtml = inner;
+  }
+  const time = bub.querySelector('.mtime');
+  const origWrap = document.createElement('div');
+  origWrap.className = 'mb-orig';
+  origWrap.innerHTML = bub.dataset.origHtml;
+  const transWrap = document.createElement('div');
+  transWrap.className = 'mb-trans';
+  transWrap.textContent = translated;
+  // Wipe + rebuild: translation on top, original underneath (smaller/dim),
+  // timestamp at the very end.
+  bub.innerHTML = '';
+  bub.appendChild(transWrap);
+  bub.appendChild(origWrap);
+  if (time) bub.appendChild(time);
+  bub.classList.add('is-translated');
 }
 
 // Report the currently-selected message. Sends a note the moderator can
@@ -7214,6 +7333,7 @@ function maybeWelcome(){ /* retired — no popup */ }
   </div>
   <div class="macthr"></div>
   <button class="mact" onclick="msReply()"><span class="mai">↩︎</span><span class="mal">Reply</span></button>
+  <button class="mact" id="msActTranslate" onclick="msTranslate()"><span class="mai">🌐</span><span class="mal">Translate</span></button>
   <button class="mact" id="msActEdit" onclick="msEdit()"><span class="mai">✎</span><span class="mal">Edit</span></button>
   <button class="mact" id="msActCopy" onclick="msCopy()"><span class="mai">⧉</span><span class="mal">Copy</span></button>
   <button class="mact" id="msActReport" onclick="msReport()"><span class="mai">🚩</span><span class="mal">Report</span></button>

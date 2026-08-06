@@ -2185,6 +2185,90 @@ Reply as ${bot.name}. No preamble, just the reply.`;
     }
   });
 
+  // POST /api/social/translate — on-demand chat translation via Claude.
+  // Owner ask 6 Aug 2026: 'we have to add the translation for all
+  // languages in the chat as well' + 'make it easy for him own typing'.
+  //
+  // Two flows, one endpoint:
+  //   INCOMING → tap a peer's bubble → translate to your native.
+  //   OUTGOING → tap the 🌐 next to Send → translate what you typed
+  //              into the peer's native so they can read easily.
+  //
+  // Body: { text: string, to?: string, from?: string, peerId?: string }
+  //   - `to` = target language name/code (e.g. 'English', 'es', 'French').
+  //     If missing, we default to the caller's own `speaks[0]`.
+  //   - `peerId` = alternative: use the peer's `speaks[0]` as target.
+  //   - `from` is optional; Haiku detects source language reliably.
+  //
+  // Rate: same 30/min rip-cord as other chat writes. Cost lands in
+  // `soc:translate-usage:<day>` so we can eyeball spend.
+  api.post('/translate', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (process.env.BOT_ENABLED === 'false') return res.status(503).json({ error: 'Translation is off.' });
+      const client = getAnthropic();
+      if (!client) return res.status(503).json({ error: 'Translation is not configured yet.' });
+      if (limited(req, 'xlat', 30)) return res.status(429).json({ error: 'Slow down a little ✋' });
+
+      const body = req.body || {};
+      const text = String(body.text || '').trim().slice(0, 1200);
+      if (!text) return res.status(400).json({ error: 'Nothing to translate.' });
+
+      // Figure out the target language. Preference order:
+      //   1. explicit `to` in the body
+      //   2. the peer's declared native (peerId → speaks[0])
+      //   3. the caller's own declared native
+      //   4. 'English' as a last resort so we never hand Haiku ""
+      let target = String(body.to || '').trim();
+      if (!target && body.peerId) {
+        try {
+          const raw = await db.get('soc:user:' + String(body.peerId));
+          if (raw) {
+            const peer = JSON.parse(raw);
+            if (Array.isArray(peer.speaks) && peer.speaks[0]) target = String(peer.speaks[0]);
+          }
+        } catch (e) {}
+      }
+      if (!target && Array.isArray(me.speaks) && me.speaks[0]) target = String(me.speaks[0]);
+      if (!target) target = 'English';
+      target = target.slice(0, 40);
+
+      const startTime = Date.now();
+      let translated = '', usage = { input_tokens: 0, output_tokens: 0 };
+      try {
+        const result = await client.messages.create({
+          model: process.env.BOT_MODEL || 'claude-haiku-4-5',
+          // Translation is typically shorter than the original. 400 is
+          // generous head-room even for German → Spanish expansion.
+          max_tokens: 400,
+          temperature: 0.2,
+          system: `You are a chat-message translator. Translate the user's next message into ${target}. Reply with ONLY the translation — no quotes, no notes, no "here's the translation:" preamble. If the message is already in ${target}, reply with the exact same text unchanged. Preserve emoji, punctuation, and line breaks.`,
+          messages: [{ role: 'user', content: text }]
+        });
+        translated = (result.content && result.content[0] && result.content[0].text || '').trim();
+        usage = result.usage || usage;
+      } catch (e) {
+        console.error('[translate] Anthropic error:', e.message);
+        return res.status(502).json({ error: 'Translation service unreachable — try again in a moment.' });
+      }
+      if (!translated) return res.status(502).json({ error: 'No translation returned.' });
+
+      // Cost log — Haiku 4.5 pricing matches /ai/reply so we can
+      // roll both up together later.
+      const day = new Date().toISOString().slice(0, 10);
+      const cost = ((usage.input_tokens || 0) * 0.80 + (usage.output_tokens || 0) * 4.00) / 1_000_000;
+      const logEntry = { u: me.id, chars: text.length, tIn: usage.input_tokens || 0, tOut: usage.output_tokens || 0, $: cost.toFixed(6), ms: Date.now() - startTime, target, t: Date.now() };
+      await db.rpush('soc:translate-usage:' + day, JSON.stringify(logEntry));
+      await db.ltrim('soc:translate-usage:' + day, -1000, -1);
+
+      res.json({ text: translated, target });
+    } catch (e) {
+      console.error('[translate] error:', e.message);
+      res.status(500).json({ error: 'Something went wrong.' });
+    }
+  });
+
   // Called by the game server when a match ends: winners/losers are social
   // profile ids. Everyone gets +1 game played; winners also get +1 win.
   async function recordResult(winnerIds, loserIds) {
