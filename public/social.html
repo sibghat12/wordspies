@@ -668,8 +668,10 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    goals / speaks / learns / recommendations / photos). Two-column on
    desktop; stacked on mobile. */
 .mp-hero{display:none;height:120px;background:linear-gradient(90deg,#5a7bff 0%,#a656e0 100%);position:relative;border-radius:4px}
-.mp-hero .mp-back{position:absolute;top:16px;left:16px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);border:0;font-size:16px;cursor:pointer;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:background .12s}
-.mp-hero .mp-back:hover{background:#fff}
+/* Plain black ← in the profile hero — no filled circle. Owner ask
+   6 Aug 2026. Still a 40×40 tap-target so it's easy to hit. */
+.mp-hero .mp-back{position:absolute;top:14px;left:12px;width:40px;height:40px;background:transparent;border:0;font-size:26px;font-weight:500;line-height:1;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.mp-hero .mp-back:hover,.mp-hero .mp-back:active{background:transparent;color:#000}
 /* Hero band: extend to full viewport width on desktop even though
    tabMember lives inside .wrap (max-width 1400px). The negative-margin
    trick breaks the child out to the viewport edges — Speaky's exact
@@ -1476,7 +1478,13 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .cunread{display:inline-flex;background:var(--accent);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:99px;align-items:center;justify-content:center;margin-top:4px;padding:0 5px}
 .chathead{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;min-height:56px;box-sizing:border-box}
 @media(min-width:700px){.chathead{top:56px}}
-.back2{background:var(--ink);color:#fff;border:none;font-size:17px;width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+/* Back arrows: owner ask 6 Aug 2026 — 'simple black arrow, no
+   background'. Both the chat header (.back2) and profile hero
+   (.mp-back) drop their filled circle in favour of a plain 24px
+   glyph in the ink colour. Keeps the tap-target at 40×40 (via
+   flex + padding) without the button chrome. */
+.back2{background:transparent;color:var(--ink);border:0;font-size:24px;font-weight:500;line-height:1;width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.back2:hover,.back2:active{background:transparent;color:#000}
 .chwho{min-width:0;overflow:hidden;flex:1;border-radius:8px;padding:4px 6px;margin:-4px -6px;transition:background .12s}
 /* Chat header is now a shortcut to the peer's profile — see
    openChatPeerProfile(). Subtle hover tint on both avatar + name so
@@ -1615,24 +1623,24 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .composer .cbtn.send svg{width:16px;height:16px;fill:currentColor}
 .composer input:focus{outline:none;border-color:var(--caccent);box-shadow:0 0 0 3px rgba(90,123,255,.12)}
 
-/* Hold-to-record mic button. ALWAYS visible next to the send button —
-   hiding it on the empty state confused first-time mobile users who
-   never realised voice messages were an option. The mic is a bright
-   blue pill so the affordance is unmistakable, and it grows into a
-   pulsing red when actively recording. Send stays in its own slot;
-   whichever button you tap wins. */
-.composer .micrec{background:var(--ink,#16181f);color:#fff;border:0;box-shadow:none;position:relative;user-select:none;-webkit-user-select:none;min-width:44px;width:44px;height:44px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;line-height:0;transition:background .12s}
+/* Hold-to-record mic — the send-slot when the input is empty. Solid
+   ink circle so it reads as *the* primary action, same visual weight
+   as .cbtn.send (they swap places based on whether there's text).
+   Pulses red while recording. Owner ask 6 Aug 2026 rebuilt this
+   from the old blocky square. */
+.composer .micrec{background:var(--ink,#16181f);color:#fff;border:0;box-shadow:none;position:relative;user-select:none;-webkit-user-select:none;min-width:40px;width:40px;height:40px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;line-height:0;border-radius:50%;transition:background .12s,transform .12s}
 .composer .micrec:hover{background:#000}
-.composer .micrec svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.composer .micrec.recording{background:linear-gradient(135deg,#ff3d5b,#c8123b);animation:micrecpulse 1.2s ease-in-out infinite;transform:scale(1.06)}
+.composer .micrec svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.composer .micrec.recording{background:linear-gradient(135deg,#ff3d5b,#c8123b);animation:micrecpulse 1.2s ease-in-out infinite;transform:scale(1.08)}
 @keyframes micrecpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,61,91,.55)}70%{box-shadow:0 0 0 10px rgba(255,61,91,0)}}
-/* On very tight screens, tuck the game-invite (🎮) button behind the picker
-   button by narrowing everything a hair so the mic doesn't fall off. */
+.composer .cbtn.send svg{width:16px;height:16px;fill:currentColor}
+/* Tight-phone tweaks — the composer stays a single row without the
+   picker/mic falling off. */
 @media(max-width:380px){
-  .composer{gap:5px;padding:8px 10px}
-  .composer .cbtn{min-width:38px;width:38px;height:38px;font-size:14px}
-  .composer .micrec{min-width:42px;width:42px;height:42px}
-  .composer input{padding:8px 12px;font-size:15px}
+  .composer{gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+  .composer .cbtn{min-width:38px;width:38px;height:38px;font-size:19px}
+  .composer .micrec{min-width:38px;width:38px;height:38px}
+  .composer input{padding:9px 14px;font-size:15px}
 }
 .recbar{display:none;background:#fff;border-top:1px solid var(--line);padding:9px 12px;align-items:center;gap:10px;position:relative}
 .recbar.show{display:flex}
@@ -1706,11 +1714,25 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .jumpnew{display:none !important}
 /* stop the page itself moving while you're inside a chat on a phone */
 body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:none}
-.composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:7px;padding:10px 14px;background:var(--bg);border-top:1px solid var(--line);z-index:12}
+/* Composer — modernised 6 Aug 2026 (owner ask). WhatsApp / Telegram
+   idiom: a big pill-shaped input takes almost the whole row, small
+   flat glyph buttons (emoji, camera) sit on either side, and one
+   filled circular action button on the right swaps between mic and
+   send depending on whether there's text. No borders on the glyphs
+   themselves — they read as touchable icons, not chrome. */
+.composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:12;align-items:center}
 @media(min-width:700px){.composer{bottom:0}}
-.composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:9px 16px;font-size:16px;min-width:0}
-.cbtn{background:#fff;border:1px solid var(--line);border-radius:99px;min-width:40px;height:40px;font-size:15px;font-weight:800;flex-shrink:0}
-.cbtn.send{background:var(--accent);color:#fff;border:none}
+.composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:11px 18px;font-size:16px;min-width:0}
+/* Flat glyph buttons — no background, no border. Circular tap target
+   with a subtle hover tint. Never carry weight themselves, so the
+   input stays the visual focus. */
+.cbtn{background:transparent;border:0;border-radius:50%;min-width:40px;width:40px;height:40px;font-size:20px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;padding:0;color:var(--sub);cursor:pointer;transition:background .12s,color .12s;line-height:1}
+.cbtn:hover{background:#eef1f7;color:var(--ink)}
+.cbtn:active{background:#e2e6ef}
+/* The one filled action — send. WhatsApp-green analog = our ink,
+   consistent with the rest of the site's dark accents. */
+.cbtn.send{background:var(--ink);color:#fff;border:0}
+.cbtn.send:hover{background:#000;color:#fff}
 .picker{position:fixed;bottom:132px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:496px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.14);padding:12px;z-index:13;max-height:290px;overflow-y:auto}
 @media(min-width:700px){.picker{bottom:66px}}
 .em{background:none;border:none;font-size:22px;padding:5px;border-radius:8px}
@@ -2597,12 +2619,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </button>
     </div>
     <div class="picker hidden" id="emojiPick"></div>
-    <div class="picker hidden" id="gamePick">
-      <div style="font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);padding:2px 4px 10px">Practice together…</div>
-      <div class="gpick" onclick="inviteToPlay()"><span class="gi">🕵️</span><span><b>WordSpies</b><i>word game — great for vocabulary</i></span></div>
-      <div class="gpick" onclick="gameInvite('spy','🎭 Who is the Spy?')"><span class="gi">🎭</span><span><b>Who is the Spy?</b><i>conversation practice, 4+ players</i></span></div>
-      <div class="gpick" onclick="gameInvite('pool','🎱 8-Ball Pool')"><span class="gi">🎱</span><span><b>8-Ball Pool</b><i>hang out, talk, play — casual</i></span></div>
-    </div>
+    <!-- #gamePick (the 🎮 in-chat game-invite popover) retired 6 Aug
+         2026 (owner ask). Game invites still work — you send a
+         /wordrace or /play link from the games shelf — this just
+         drops the crowded composer picker. -->
   </div>
 
   <!-- MY profile — same Speaky-style layout as tabMember (hero + sidebar
@@ -5860,14 +5880,11 @@ function buildEmojis(){
 function togglePicker(){
   const em = $('emojiPick');
   em.classList.toggle('hidden');
-  $('gamePick').classList.add('hidden');
   if (!em.dataset.ready) { buildEmojis(); em.dataset.ready = 1; }
 }
-
-function toggleGamePick(){
-  $('gamePick').classList.toggle('hidden');
-  $('emojiPick').classList.add('hidden');
-}
+// toggleGamePick retired 6 Aug 2026 alongside the #gamePick popover.
+// Kept as a no-op in case something still emits a legacy click.
+function toggleGamePick(){ /* no-op — game picker retired */ }
 
 // 🎮 → pick a game → a table is set up, the invite lands in the chat as a
 // tappable link, and you're taken straight to your seat. Their tap on the
@@ -5948,7 +5965,7 @@ async function gameInvite(game, label){
     toast('⚔️ Challenge sent — you’ll get a Start button here when they accept');
   } catch(e){ toast(e.message || 'Could not set up the game.'); }
 }
-function hidePickers(){ $('emojiPick').classList.add('hidden'); $('gamePick').classList.add('hidden'); }
+function hidePickers(){ const em = $('emojiPick'); if (em) em.classList.add('hidden'); }
 
 // ---------- message actions (reply, edit, delete, react) ----------
 // One shared action sheet at the bottom of the doc. `curActMsg` tracks which
