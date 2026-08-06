@@ -131,6 +131,16 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 .ob-lite{display:flex;flex-direction:column;gap:20px;margin-top:20px}
 .ob-lite-row{display:flex;flex-direction:column;gap:6px}
 .ob-lite-label{font-size:11px;font-weight:600;color:var(--sub);letter-spacing:.6px;text-transform:uppercase;line-height:1.2}
+/* One-question-per-page underline input — owner ask 5 Aug 2026:
+   'one page or box with the border bottom only nothing more no
+   placeholder'. Bigger + friendlier than .ob-lite-input, meant to
+   sit under a large H2 question and be the only thing on the page.
+   No placeholder, no label chrome — the H2 IS the label. */
+.ob-underline{width:100%;border:0;border-bottom:2px solid var(--line);background:transparent;padding:14px 0 12px;font-family:inherit;font-size:22px;font-weight:500;color:var(--ink);outline:none;transition:border-color .18s;text-align:left;margin-top:6px}
+.ob-underline:focus{border-bottom-color:var(--accent,#e8506b)}
+.ob-underline[readonly]{color:var(--ink);cursor:pointer}
+textarea.ob-underline,.ob-underline-area{width:100%;border:0;border-bottom:2px solid var(--line);background:transparent;padding:12px 0;font-family:inherit;font-size:18px;font-weight:500;color:var(--ink);outline:none;resize:none;line-height:1.4;min-height:60px;transition:border-bottom-color .18s;margin-top:6px}
+.ob-underline-area:focus{border-bottom-color:var(--accent,#e8506b)}
 .ob-lite-input{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:8px 0 10px;font-family:inherit;font-size:16px;font-weight:500;color:var(--ink);outline:none;transition:border-color .15s}
 .ob-lite-input::placeholder{color:#c4c8d0;font-weight:400}
 .ob-lite-input:focus{border-bottom-color:var(--accent,#e8506b)}
@@ -144,10 +154,15 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 /* Buttons row — Back is a subtle link, Continue is a firm pill that
    respects the content width instead of stretching the row. Owner
    said Continue was 'so big and messy'. */
-.ob-row{display:flex;gap:10px;margin-top:18px;padding-top:0;align-items:center;justify-content:space-between}
-.ob-back{background:transparent;color:var(--sub);border:0;font-family:inherit;font-weight:600;font-size:14px;padding:10px 14px;border-radius:10px;cursor:pointer;flex-shrink:0}
+/* Wizard footer row — owner ask 5 Aug 2026: 'the buttons like next
+   lets go and the flags button are so bad on mobile not aligned'.
+   Back stays a slim ghost link on the left, Next fills all remaining
+   width so on a narrow phone it never squishes. Locked min-height
+   for a comfortable tap target. */
+.ob-row{display:flex;gap:10px;margin-top:22px;align-items:stretch;justify-content:stretch}
+.ob-back{background:transparent;color:var(--sub);border:0;font-family:inherit;font-weight:600;font-size:14px;padding:0 16px;border-radius:12px;cursor:pointer;flex:0 0 auto;min-height:48px;display:inline-flex;align-items:center;justify-content:center}
 .ob-back:hover{color:var(--ink);background:var(--hover,#f4f5f7)}
-.ob-next{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 24px;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;transition:transform .1s,background .12s;min-height:44px;flex:0 1 auto}
+.ob-next{background:var(--ink);color:#fff;border:0;border-radius:14px;padding:0 20px;font-family:inherit;font-weight:600;font-size:15.5px;cursor:pointer;transition:filter .1s,background .12s;min-height:48px;flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center}
 /* When Continue stands alone (no Back), let it stretch full-width so
    the tap target is unmistakable. */
 .ob-step > .ob-next:only-of-type,
@@ -615,7 +630,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    .field, feels like a proper form label. */
 .flbl{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--faint);margin:14px 4px 6px}
 .chipfield{background:transparent;border:0;padding:0}
-.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:1px}
+.chiprow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-height:1px;align-items:center;justify-content:flex-start}
 .chiprow:empty{display:none}
 .chip{display:inline-flex;align-items:center;gap:6px;background:#eef1ff;color:var(--accent);border:1px solid #d0d7ff;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600}
 .chip .chipx{background:transparent;border:0;color:inherit;font-size:14px;cursor:pointer;padding:0;line-height:1;opacity:.6}
@@ -1963,40 +1978,42 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <div class="ob-progress" id="obProgress"></div>
 
-    <!-- STEP 1 · The basics. Owner ask 2 Aug 2026 (v2 wizard polish):
-         'make it amazing so people can easily make their account'.
-         Three underline inputs, live age preview, one primary CTA. -->
+    <!-- STEP 1 · Name only.
+         Owner ask 5 Aug 2026 (wizard v11): 'design the signup process
+         in more parts you asking all the questions at once in one
+         page … make one page or box with the border bottom only,
+         nothing more, no placeholder'. Every step from here on is
+         ONE question / ONE input, big and calm. -->
     <section class="ob-step" data-step="1">
       <div class="ob-emoji">👋</div>
-      <h2>Let's set up your profile</h2>
-      <p class="ob-sub">Takes about a minute. We've pre-filled what we could.</p>
-      <div class="ob-lite">
-        <div class="ob-lite-row">
-          <label class="ob-lite-label" for="obFirstName">Your name</label>
-          <input class="ob-lite-input" id="obFirstName" maxlength="30" placeholder="First Last" autocomplete="name">
-          <input type="hidden" id="obLastName">
-        </div>
-        <div class="ob-lite-row">
-          <label class="ob-lite-label" for="obEmail">Email</label>
-          <input class="ob-lite-input" id="obEmail" type="email" readonly placeholder="you@example.com">
-        </div>
-        <div class="ob-lite-row">
-          <label class="ob-lite-label" for="obBirth">Date of birth <span class="ob-age-live" id="obAgeLive"></span></label>
-          <!-- flatpickr-powered date input. Owner ask 2 Aug 2026:
-               'date picker so ugly, use a JS library please'. Loaded
-               from cdnjs; obInitDobWheels() (below) initialises it
-               with 18-years-ago max + 100-years-ago min. Falls back
-               to native <input type=date> if the CDN can't reach. -->
-          <input class="ob-lite-input ob-dob" id="obBirth" type="text" placeholder="Tap to pick" readonly>
-          <div class="ob-lite-help">You must be 18+ to join.</div>
-        </div>
-      </div>
+      <h2>What's your name?</h2>
+      <input class="ob-underline" id="obFirstName" maxlength="30" autocomplete="name" aria-label="Your name">
+      <input type="hidden" id="obLastName">
       <div class="ob-err hidden" id="obErr1"></div>
-      <button class="ob-next" onclick="obNext(1)">That's me — continue</button>
+      <button class="ob-next" onclick="obNext(1)">Continue</button>
     </section>
 
-    <!-- STEP 2 · Photo. Bigger drop zone, drag-and-drop, better states. -->
+    <!-- STEP 2 · Date of birth (email stays as a hidden field — it
+         is pre-filled from OAuth and never asked here anymore). -->
     <section class="ob-step" data-step="2">
+      <div class="ob-emoji">🎂</div>
+      <h2>When were you born?</h2>
+      <p class="ob-sub">You must be 18 or over to join. <span class="ob-age-live" id="obAgeLive"></span></p>
+      <!-- flatpickr-powered date input. Owner ask 2 Aug 2026:
+           'date picker so ugly, use a JS library please'. Loaded
+           from cdnjs; obInitDobWheels() (below) initialises it
+           with 18-years-ago max + 100-years-ago min. -->
+      <input class="ob-underline ob-dob" id="obBirth" type="text" readonly aria-label="Date of birth">
+      <input type="hidden" id="obEmail">
+      <div class="ob-err hidden" id="obErr2"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(2)">Back</button>
+        <button class="ob-next" onclick="obNext(2)">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 3 · Photo (was step 2). Bigger drop zone, drag-and-drop. -->
+    <section class="ob-step" data-step="3">
       <div class="ob-emoji">📷</div>
       <h2>Add your photo</h2>
       <p class="ob-sub">A clear face photo helps others trust you're real. You'll crop it next.</p>
@@ -2025,15 +2042,15 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <input type="file" id="obPhotoIn" accept="image/jpeg,image/png,image/webp" hidden>
         <span class="ob-photo-hint" id="obPhotoHint">Tap to upload — or drag a photo here</span>
       </div>
-      <div class="ob-err hidden" id="obErr2"></div>
+      <div class="ob-err hidden" id="obErr3"></div>
       <div class="ob-row">
-        <button class="ob-back" onclick="obBack(2)">Back</button>
-        <button class="ob-next" onclick="obNext(2)">Looks good</button>
+        <button class="ob-back" onclick="obBack(3)">Back</button>
+        <button class="ob-next" onclick="obNext(3)">Looks good</button>
       </div>
     </section>
 
-    <!-- STEP 3 · Terms & Conditions -->
-    <section class="ob-step" data-step="3">
+    <!-- STEP 4 · Terms & Conditions (was step 3) -->
+    <section class="ob-step" data-step="4">
       <div class="ob-emoji">📜</div>
       <h2>Our house rules</h2>
       <p class="ob-para"><b>Be kind and real.</b> WordSpies is a community of language learners around the world. Treat everyone with respect. No harassment, hate speech, spam, or nudity.</p>
@@ -2041,55 +2058,81 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <p class="ob-para"><b>Report freely.</b> Every profile and every message has a Report and a Block button. We review reports within 24 hours and act firmly.</p>
       <p class="ob-sub" style="margin-top:16px;font-size:12.5px">Full <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy" target="_blank" rel="noopener">Privacy</a> · <a href="/child-safety" target="_blank" rel="noopener">Child safety</a></p>
       <div class="ob-row">
-        <button class="ob-back" onclick="obBack(3)">Back</button>
-        <button class="ob-next" onclick="obNext(3)">I agree — continue</button>
-      </div>
-    </section>
-
-    <!-- STEP 4 · Four short questions the profile page displays.
-         Owner ask 2 Aug 2026 v8: 'lets make 3 questions … you need
-         to ask what language he is native and what one he is like
-         to learn … and ask 2 more questions'. Fields map 1:1 to the
-         member-view cards (Speaks, Learning, What they like to
-         talk about, Their purpose here). -->
-    <section class="ob-step" data-step="4">
-      <div class="ob-emoji">💬</div>
-      <h2>Tell us a bit about you</h2>
-      <p class="ob-sub">Four quick answers — this is what other people see first.</p>
-      <div class="ob-fields">
-        <label class="ob-label">Your native language</label>
-        <div class="chiprow" id="obSpeaksChips"></div>
-        <button type="button" class="chipadd" onclick="obAddLang('speaks')">+ Add a language you speak</button>
-
-        <label class="ob-label" style="margin-top:14px">Language you'd like to learn</label>
-        <div class="chiprow" id="obLearnsChips"></div>
-        <button type="button" class="chipadd" onclick="obAddLang('learns')">+ Add a language you're learning</button>
-
-        <label class="ob-label" style="margin-top:14px">What do you like to talk about?</label>
-        <textarea class="ob-input" id="obTalkAbout" maxlength="200" rows="2" placeholder="e.g. films, football, cooking, travel…"></textarea>
-
-        <label class="ob-label" style="margin-top:14px">What's your purpose or goal here?</label>
-        <textarea class="ob-input" id="obPurpose" maxlength="200" rows="2" placeholder="e.g. Practise my English for a job move, or just enjoy chatting."></textarea>
-
-        <label class="ob-label" style="margin-top:14px">What kind of language partner are you looking for?</label>
-        <textarea class="ob-input" id="obPartner" maxlength="200" rows="2" placeholder="e.g. Someone patient who's also learning, happy to switch languages half-half."></textarea>
-      </div>
-      <div class="ob-err hidden" id="obErr4"></div>
-      <div class="ob-row">
         <button class="ob-back" onclick="obBack(4)">Back</button>
-        <button class="ob-next" onclick="obNext(4)">Almost done</button>
+        <button class="ob-next" onclick="obNext(4)">I agree — continue</button>
       </div>
     </section>
 
-    <!-- STEP 5 · Welcome (retired the separate verification-pending step —
-         the ask 'we review profiles' is now the note below the CTA so
-         users don't tap through a dead screen). Owner ask 2 Aug 2026. -->
+    <!-- STEPS 5-9 · The five "about you" questions, each on its own
+         page (owner ask 5 Aug 2026). Native language → learning
+         language → talk about → purpose → partner type. Fields map
+         1:1 to the member-view cards. -->
     <section class="ob-step" data-step="5">
+      <div class="ob-emoji">🗣️</div>
+      <h2>What's your native language?</h2>
+      <p class="ob-sub">The one you grew up speaking.</p>
+      <div class="chiprow" id="obSpeaksChips"></div>
+      <button type="button" class="chipadd" onclick="obAddLang('speaks')">+ Add a language</button>
+      <div class="ob-err hidden" id="obErr5"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(5)">Back</button>
+        <button class="ob-next" onclick="obNext(5)">Continue</button>
+      </div>
+    </section>
+
+    <section class="ob-step" data-step="6">
+      <div class="ob-emoji">📖</div>
+      <h2>What are you learning?</h2>
+      <p class="ob-sub">Pick a language you'd like to practise.</p>
+      <div class="chiprow" id="obLearnsChips"></div>
+      <button type="button" class="chipadd" onclick="obAddLang('learns')">+ Add a language</button>
+      <div class="ob-err hidden" id="obErr6"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(6)">Back</button>
+        <button class="ob-next" onclick="obNext(6)">Continue</button>
+      </div>
+    </section>
+
+    <section class="ob-step" data-step="7">
+      <div class="ob-emoji">💬</div>
+      <h2>What do you like to talk about?</h2>
+      <textarea class="ob-underline-area" id="obTalkAbout" maxlength="200" rows="2" aria-label="What you like to talk about"></textarea>
+      <div class="ob-err hidden" id="obErr7"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(7)">Back</button>
+        <button class="ob-next" onclick="obNext(7)">Continue</button>
+      </div>
+    </section>
+
+    <section class="ob-step" data-step="8">
+      <div class="ob-emoji">🎯</div>
+      <h2>What brings you here?</h2>
+      <textarea class="ob-underline-area" id="obPurpose" maxlength="200" rows="2" aria-label="Your purpose or goal"></textarea>
+      <div class="ob-err hidden" id="obErr8"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(8)">Back</button>
+        <button class="ob-next" onclick="obNext(8)">Continue</button>
+      </div>
+    </section>
+
+    <section class="ob-step" data-step="9">
+      <div class="ob-emoji">🤝</div>
+      <h2>Who would you like to chat with?</h2>
+      <textarea class="ob-underline-area" id="obPartner" maxlength="200" rows="2" aria-label="What kind of language partner"></textarea>
+      <div class="ob-err hidden" id="obErr9"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(9)">Back</button>
+        <button class="ob-next" onclick="obNext(9)">Almost done</button>
+      </div>
+    </section>
+
+    <!-- STEP 10 · Welcome (was step 5). -->
+    <section class="ob-step" data-step="10">
       <div class="ob-welcome-logo">Word<em>Spies</em></div>
       <h2 style="font-size:28px;text-align:center">You're all set, <span id="obWelcomeName">friend</span> 🎉</h2>
       <p class="ob-sub" style="text-align:center">Your profile is live. Time to meet some people.</p>
       <p class="ob-sub" style="text-align:center;font-size:12.5px;color:var(--faint);margin-top:8px">We review every new profile — most get verified within a day.</p>
-      <div class="ob-err hidden" id="obErr5" style="margin:12px auto;max-width:360px"></div>
+      <div class="ob-err hidden" id="obErr10" style="margin:12px auto;max-width:360px"></div>
       <button class="ob-next primary-big" onclick="obFinish()">Enter WordSpies</button>
     </section>
   </div>
@@ -3359,7 +3402,10 @@ function enterApp(justJoined){
 // TOTAL_STEPS is kept in one place — bump progress dots + guards
 // automatically if we ever add or remove a step.
 // ═══════════════════════════════════════════════════════════════════
-const OB_TOTAL = 5;
+// Wizard step count — bumped from 5 → 10 on 6 Aug 2026 when the
+// bundled Step 4 got split into one-question-per-page (owner ask
+// 5 Aug 2026). See obNext for the per-step save routing.
+const OB_TOTAL = 10;
 let obNewPhotoUploaded = false;
 // Wizard-local language chip arrays for step 4 (owner v8: 4 questions
 // on step 4 — speaks, learns, talkAbout, purpose). Independent from
@@ -3570,74 +3616,88 @@ async function obNext(step){
   clearErr();
 
   try {
-    // Per-step validate + save. Owner consolidated steps 1-3
-    // (name + DOB + email) into a single step 1 on 1 Aug 2026.
+    // Per-step validate + save. Wizard v11 (owner ask 5-6 Aug 2026):
+    // one question per page. Each step saves just its own field so a
+    // slow network can't lose earlier answers if the user drops off.
+    //   1 = name          2 = DOB
+    //   3 = photo (gate)  4 = terms (gate)
+    //   5 = native lang   6 = learning lang
+    //   7 = talkAbout     8 = purpose         9 = partnerType
+    //   10 = welcome (obFinish)
     if (step === 1) {
-      // Step 1 has a single 'Full name' visible input; split on the
-      // first space for the server (which expects a display name).
+      // Split the display name on the first space for /profile.
       const raw = $('obFirstName').value.trim();
       const parts = raw.split(/\s+/);
       const first = parts[0] || '';
       const last = parts.slice(1).join(' ');
-      const bd = $('obBirth').value;
       if (!first || first.length < 3) return err('Name needs to be at least 3 letters.');
-      if (!bd) return err('Please enter your date of birth.');
-      const age = ageFromISOClient(bd);
-      if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date of birth.');
-      if (age < 18) return err('Sorry — WordSpies is for people aged 18 and over.');
-      // Save NAME if changed. Server (profile.js) accepts /^[a-zA-Z0-9_ ]{3,15}$/,
-      // so refuse non-ASCII rather than silently stripping accents to a
-      // shorter name the user didn't type (audit bug, 2 Aug 2026).
       const raw2 = (last ? first + ' ' + last : first).slice(0, 15);
       if (!/^[a-zA-Z0-9_ ]{3,15}$/.test(raw2)) {
         return err("Please use letters, numbers and spaces only — try romanising your name.");
       }
-      const full = raw2;
-      if (full !== ME.name) {
+      if (raw2 !== ME.name) {
         try {
           const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ name: full }) });
+            body: JSON.stringify({ name: raw2 }) });
           ME = j.me;
         } catch (e2) {
           if (/taken/i.test(e2.message)) return err('That name is taken — try adding your last name too.');
           return err(e2.message);
         }
       }
-      // Save DOB if changed.
+    }
+    if (step === 2) {
+      const bd = $('obBirth').value;
+      if (!bd) return err('Please enter your date of birth.');
+      const age = ageFromISOClient(bd);
+      if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date of birth.');
+      if (age < 18) return err('Sorry — WordSpies is for people aged 18 and over.');
       if (bd !== ME.birthdate) {
         const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ birthdate: bd }) });
         ME = j.me;
       }
     }
-    if (step === 2) {
+    if (step === 3) {
       if (!ME.photo) return err('Please upload a clear face photo.');
     }
-    // Step 3 (T&C): re-confirmation gate, nothing to save.
-    if (step === 4) {
-      const t = $('obTalkAbout').value.trim();
-      const p = (document.getElementById('obPurpose') || {}).value.trim();
-      const pt = (document.getElementById('obPartner') || {}).value.trim();
+    // Step 4 (T&C): re-confirmation gate, nothing to save.
+    if (step === 5) {
       if (!obSpeaks.length) return err('Please add at least one language you speak.');
+      const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ speaks: obSpeaks }) });
+      ME = j.me;
+    }
+    if (step === 6) {
       if (!obLearns.length) return err("Please add at least one language you're learning.");
-      if (!t || t.length < 4)   return err('A quick line about what you like to talk about.');
-      if (!p || p.length < 4)   return err('Add your purpose or goal — a few words is fine.');
+      const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ learns: obLearns }) });
+      ME = j.me;
+    }
+    if (step === 7) {
+      const t = $('obTalkAbout').value.trim();
+      if (!t || t.length < 4) return err('A quick line about what you like to talk about.');
+      const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ talkAbout: t }) });
+      ME = j.me;
+    }
+    if (step === 8) {
+      const p = ($('obPurpose') || {}).value.trim();
+      if (!p || p.length < 4) return err('Add your purpose or goal — a few words is fine.');
+      const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ purpose: p }) });
+      ME = j.me;
+    }
+    if (step === 9) {
+      const pt = ($('obPartner') || {}).value.trim();
       if (!pt || pt.length < 4) return err('Add what kind of partner you\'re looking for.');
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          talkAbout: t,
-          purpose: p,
-          partnerType: pt,
-          speaks: obSpeaks,
-          learns: obLearns
-        }) });
+        body: JSON.stringify({ partnerType: pt }) });
       ME = j.me;
-      // Register with the moderation queue so the owner can verify.
+      // Last question answered → register with the moderation queue.
       try { await api('/account/pending', { method:'POST' }); } catch (e2) {}
     }
-    // Step 5 IS the welcome now (retired the separate verification-
-    // pending step). Owner ask 2 Aug 2026 v10 — no dead tap-through
-    // screens. The welcome button calls obFinish() directly.
+    // Step 10 IS the welcome. obFinish() runs from its button, not obNext.
 
     // Persist the completed step so a refresh resumes here (not step 1).
     // Fire-and-forget — profile.js clamps + never moves obStep backwards,
