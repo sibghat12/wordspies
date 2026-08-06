@@ -20,7 +20,11 @@
 <meta name="apple-mobile-web-app-title" content="WordSpies">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Typography — owner ask 6 Aug 2026: 'fonts are not good'. Swapped
+     the body face from Nunito to Inter (cleaner, thinner, the
+     Notion/Linear standard). Kept Fredoka for display headings.
+     Weight range trimmed to what's actually used. -->
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <!-- flatpickr — used for the DOB picker in the wizard. Owner ask
      2 Aug 2026: 'date picker so ugly, use some JS library please'. -->
@@ -40,7 +44,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow-x:clip;max-width:100%}
-body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:pan-y;padding-left:4%;padding-right:4%}
+body{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;touch-action:pan-y;padding-left:4%;padding-right:4%;letter-spacing:-.005em}
 /* Responsive body gutters — matches marketing pages. Proportional both
    ways: 5% on phones (≈18px on a 375-wide iPhone), 10% on tablet-and-
    up so the community UI doesn't stretch to the browser edges on wide
@@ -93,7 +97,7 @@ body.ob-open{overflow:hidden}
 .ob-step.show{opacity:1;transform:translateX(0) scale(1);pointer-events:auto}
 .ob-emoji{font-size:58px;line-height:1;margin:4px 0 6px;animation:obEmojiPop .5s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes obEmojiPop{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
-.ob-step h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.15;color:var(--ink);margin:0}
+.ob-step h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.15;color:var(--ink);margin:0}
 .ob-sub{color:var(--sub);font-size:15px;line-height:1.55;margin:0}
 
 /* Logo-splash overlay — shown for ~500ms between steps. Owner ask
@@ -101,7 +105,7 @@ body.ob-open{overflow:hidden}
    logo like cool.' Fades in and out over the wizard body. */
 .ob-splash{position:absolute;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:5;opacity:0;pointer-events:none;transition:opacity .22s ease}
 .ob-splash.show{opacity:1;pointer-events:auto}
-.ob-splash-mark{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:44px;letter-spacing:-.7px;color:var(--ink);animation:obSplashIn .5s ease-out both}
+.ob-splash-mark{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:44px;letter-spacing:-.7px;color:var(--ink);animation:obSplashIn .5s ease-out both}
 .ob-splash-mark em{font-style:normal;color:var(--accent,#e8506b)}
 @keyframes obSplashIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 .ob-para{color:var(--ink);font-size:14.5px;line-height:1.65;margin:0}
@@ -233,7 +237,7 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
 .ob-crop-preview-msg{font-size:13.5px;color:#4ade80;font-weight:600}
 
 /* Welcome logo */
-.ob-welcome-logo{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.6px;color:var(--ink);margin-bottom:10px;animation:obWelcomeIn .5s ease-out}
+.ob-welcome-logo{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.6px;color:var(--ink);margin-bottom:10px;animation:obWelcomeIn .5s ease-out}
 .ob-welcome-logo em{font-style:normal;color:var(--accent,#e8506b)}
 @keyframes obWelcomeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 .wrap{max-width:520px;margin:0 auto;min-height:100%;position:relative;padding-bottom:86px;overflow-x:clip}
@@ -423,7 +427,7 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
 /* LIVE chip that sits inside .tnright next to the profile: red pulsing
    dot + "LIVE" label + count. Only shows when there's at least one live
    game (paintLive toggles the .show class). Never on mobile chat view.  */
-.tnlive{display:none;align-items:center;gap:4px;background:#ff2f4c;color:#fff;border-radius:99px;padding:5px 10px 5px 8px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.03em;cursor:pointer;border:0;text-decoration:none;flex-shrink:0;transition:transform .1s}
+.tnlive{display:none;align-items:center;gap:4px;background:#ff2f4c;color:#fff;border-radius:99px;padding:5px 10px 5px 8px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:11.5px;letter-spacing:.03em;cursor:pointer;border:0;text-decoration:none;flex-shrink:0;transition:transform .1s}
 .tnlive:hover{transform:scale(1.04)}
 /* LIVE chip in the top nav retired per owner ask — live game
    counts already surface as small player-count links inside the
@@ -513,7 +517,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .wcard:active{transform:translateY(0)}
 .wcard-photo{width:130px;height:140px;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);flex-shrink:0}
 .wcard-photo img{width:100%;height:100%;object-fit:cover;display:block}
-.wcard-photo .pcircph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:48px;font-family:'Fredoka','Nunito',system-ui,sans-serif}
+.wcard-photo .pcircph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:48px;font-family:'Fredoka','Inter',system-ui,sans-serif}
 .wcard-body{display:flex;flex-direction:column;justify-content:flex-start;min-width:0;gap:8px}
 /* gap:3px (was 6px) so the crown/tick sits right next to the name.
    Owner ask 1 Aug 2026: 'make the crown icon and the name distance
@@ -577,7 +581,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .psub2{display:none}
 /* "Let's talk about" snippet on the wall card — Speaky-style italic
    teaser under the name/location. Trimmed to ~90 chars in JS. */
-.ptalk{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-style:italic;font-size:12.5px;color:var(--sub);margin-top:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ptalk{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-style:italic;font-size:12.5px;color:var(--sub);margin-top:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pw{position:relative;height:216px;overflow:hidden;background:#eceef2}
 .pw .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px) brightness(.9);transform:scale(1.2)}
 .pw .photo{position:relative;width:100%;height:100%;object-fit:contain;display:block}
@@ -622,7 +626,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pkmod{position:fixed;inset:0;background:rgba(20,22,28,.5);display:none;align-items:center;justify-content:center;z-index:300;padding:20px}
 .pkmod.show{display:flex}
 .pkcard{background:#fff;border-radius:20px;padding:20px;max-width:min(440px,92vw);max-height:80vh;display:flex;flex-direction:column;gap:12px}
-.pkcard h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:18px;margin:0}
+.pkcard h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:18px;margin:0}
 .pkinp{flex:none;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-family:inherit;font-size:14px;outline:none}
 .pkinp:focus{border-color:var(--accent)}
 .pklist{flex:1;min-height:200px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
@@ -653,7 +657,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 
 /* Profile display of the new fields — quote block, language rows, goal
    chips, recommendations. Reused across Me + Member views. */
-.pquote{margin:8px 24px 6px;padding:14px 18px;background:linear-gradient(135deg,#f5f6ff,#ffffff);border-left:3px solid var(--accent);border-radius:12px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-style:normal;font-size:14.5px;color:var(--sub);line-height:1.5}
+.pquote{margin:8px 24px 6px;padding:14px 18px;background:linear-gradient(135deg,#f5f6ff,#ffffff);border-left:3px solid var(--accent);border-radius:12px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-style:normal;font-size:14.5px;color:var(--sub);line-height:1.5}
 .plangrow{display:flex;flex-wrap:wrap;gap:10px 16px;padding:6px 24px 4px;font-size:12.5px;color:var(--sub);font-weight:600}
 .plangrow .plabel{color:var(--faint);font-weight:600;margin-right:4px;text-transform:uppercase;letter-spacing:.4px;font-size:10.5px}
 .plangrow .plangchip{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:4px 10px;font-size:13px}
@@ -699,7 +703,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
      the name on desktop. */
   .mp-side{padding-top:0;align-items:flex-start}
 }
-.mp-photo{width:170px;height:170px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:68px;font-weight:800;font-family:'Fredoka','Nunito',system-ui,sans-serif;flex-shrink:0}
+.mp-photo{width:170px;height:170px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:68px;font-weight:800;font-family:'Fredoka','Inter',system-ui,sans-serif;flex-shrink:0}
 @media(min-width:769px){ .mp-photo{width:200px;height:200px;box-shadow:0 6px 30px rgba(0,0,0,.10),0 0 0 4px rgba(255,255,255,.9);margin-top:-115px;align-self:flex-start;position:relative;z-index:5} }
 /* Ensure the sidebar sits above the hero so the photo can overlap it
    properly. Without this the hero paints on top of the photo. */
@@ -720,7 +724,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-photo > span,.mp-photo > #myAv,.mp-photo > #mAv{display:block;width:100%;height:100%}
 .mp-meta{width:100%;text-align:center;display:flex;flex-direction:column;gap:12px}
 @media(min-width:769px){ .mp-meta{text-align:left;padding:0 4px} }
-.mp-name{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:28px;line-height:1.15;color:var(--accent);letter-spacing:-.3px}
+.mp-name{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:28px;line-height:1.15;color:var(--accent);letter-spacing:-.3px}
 .mp-active{font-size:15.5px;color:var(--sub);font-weight:500}
 /* Location + @handle rows. Tighter icon-to-text gap so '@username'
    reads as one unit. Body font bumped so the address + username are
@@ -757,7 +761,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-main{display:flex;flex-direction:column;gap:16px;padding-top:24px;margin-top:20px}
 @media(min-width:769px){ .mp-main{padding-top:0} }
 .mp-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 18px}
-.mp-card h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:16px;color:var(--ink);margin-bottom:8px}
+.mp-card h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:16px;color:var(--ink);margin-bottom:8px}
 .mp-card p{font-size:14.5px;color:var(--sub);line-height:1.6;word-break:break-word}
 .mp-card p.mp-empty{color:var(--faint);font-style:italic;font-size:13.5px}
 /* References — Tandem-style. Header row (title left, write button
@@ -782,7 +786,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ref-modal{position:fixed;inset:0;z-index:220;background:rgba(15,17,25,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}
 .ref-modal.hidden{display:none}
 .ref-modal .ref-card{background:#fff;border-radius:20px;max-width:520px;width:100%;padding:24px 22px 20px;box-shadow:0 24px 70px rgba(0,0,0,.35);max-height:90vh;overflow-y:auto}
-.ref-card h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:20px;color:var(--ink);margin-bottom:6px}
+.ref-card h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:20px;color:var(--ink);margin-bottom:6px}
 .ref-card .ref-sub{color:var(--sub);font-size:13.5px;line-height:1.5;margin-bottom:14px}
 .ref-card textarea{width:100%;min-height:180px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-family:inherit;font-size:14.5px;line-height:1.55;background:#f9fafc;color:var(--ink);outline:none;resize:vertical;box-sizing:border-box}
 .ref-card textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,80,107,.12)}
@@ -830,7 +834,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    chip that read as a speaker/mic icon at a glance. Hover reveals
    a soft "Change photo" overlay. */
 .me-photo-edit{position:relative;cursor:pointer}
-.me-photo-edit::after{content:'Change photo';position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14px;opacity:0;transition:opacity .18s;pointer-events:none}
+.me-photo-edit::after{content:'Change photo';position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:14px;opacity:0;transition:opacity .18s;pointer-events:none}
 .me-photo-edit:hover::after{opacity:1}
 /* The old corner camera chip is retired — the whole circle is
    clickable now. Kept as a hidden shell so any JS click ref still
@@ -1014,7 +1018,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    panel on top (small illustration) + a white body with badge /
    title / desc / CTA. */
 .playhead{padding:8px 0 4px}
-.playhead h2{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:20px;font-weight:500;letter-spacing:-.3px;color:var(--ink)}
+.playhead h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:20px;font-weight:500;letter-spacing:-.3px;color:var(--ink)}
 .playgrid{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 0 30px}
 @media(min-width:640px){.playgrid{grid-template-columns:repeat(2,1fr);gap:18px}}
 @media(min-width:1080px){.playgrid{grid-template-columns:repeat(4,1fr)}}
@@ -1024,7 +1028,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .playcard-art{position:relative;height:140px;overflow:hidden}
 .playcard-body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
 .playcard-badge{display:inline-block;align-self:flex-start;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;background:#f2f4f7;color:var(--sub);padding:4px 10px;border-radius:99px}
-.playcard-body h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-size:17px;font-weight:500;letter-spacing:-.4px;color:var(--ink);line-height:1.2;margin-top:2px;display:flex;align-items:center;gap:6px}
+.playcard-body h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:17px;font-weight:500;letter-spacing:-.4px;color:var(--ink);line-height:1.2;margin-top:2px;display:flex;align-items:center;gap:6px}
 .playcard-body p{font-size:13.5px;color:var(--sub);line-height:1.55;margin:0;flex:1}
 /* Tiny (i) button next to the game name — opens the info popup so the
    card blurb can stay short. Owner ask 4 Aug 2026. */
@@ -1038,10 +1042,10 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pcinfo{background:#fff;border-radius:22px;max-width:420px;width:100%;padding:22px 22px 20px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.28)}
 .pcinfo-close{position:absolute;top:10px;right:10px;background:transparent;border:0;width:36px;height:36px;border-radius:50%;font-size:20px;color:var(--sub);cursor:pointer}
 .pcinfo-close:hover{background:#f2f3f5;color:var(--ink)}
-.pcinfo h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0 0 10px}
+.pcinfo h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0 0 10px}
 .pcinfo p{font-size:14.2px;line-height:1.6;color:var(--ink);margin:0 0 14px;font-weight:500}
 .pcinfo .pcinfo-meta{font-size:12.5px;color:var(--sub);font-weight:600;margin-bottom:14px}
-.pcinfo .pcinfo-play{display:block;text-align:center;background:var(--ink,#16181f);color:#fff;border-radius:16px;padding:12px 18px;text-decoration:none;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:500;font-size:15.5px}
+.pcinfo .pcinfo-play{display:block;text-align:center;background:var(--ink,#16181f);color:#fff;border-radius:16px;padding:12px 18px;text-decoration:none;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:15.5px}
 .pcinfo .pcinfo-play:hover{background:#000}
 .playcard-cta{font-weight:800;font-size:13px;letter-spacing:.2px;padding:2px 0;color:var(--ink);margin-top:6px;transition:transform .12s}
 .playcard:hover .playcard-cta{transform:translateX(4px)}
@@ -1049,7 +1053,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Per-card art panels — small illustration in each. */
 /* WordSpies: word-tile grid on red/blue backdrop */
 .playcard-spies .playcard-art{background:linear-gradient(135deg,#ff6f8a,#d94a67);padding:18px 22px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:center}
-.pc-tile{background:#fff;color:#2b2e36;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:12px;text-align:center;padding:10px 6px;border-radius:8px;letter-spacing:.4px;box-shadow:0 3px 8px rgba(0,0,0,.14);text-transform:uppercase}
+.pc-tile{background:#fff;color:#2b2e36;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:12px;text-align:center;padding:10px 6px;border-radius:8px;letter-spacing:.4px;box-shadow:0 3px 8px rgba(0,0,0,.14);text-transform:uppercase}
 .pc-tile.pc-r{background:#ff5a72;color:#fff}
 .pc-tile.pc-b{background:#3d7bff;color:#fff}
 .pc-tile.pc-x{background:#1c1e21;color:#fff;font-size:16px}
@@ -1064,18 +1068,18 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    learning games'. */
 .playcard-chain .playcard-art{background:linear-gradient(135deg,#3aa88f,#1f7a63);padding:18px;display:flex;align-items:center;justify-content:center}
 .pc-chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
-.pc-chain > span:not(.pc-arr){background:#fff;color:#0d3a2d;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:11.5px;padding:6px 10px;border-radius:8px;letter-spacing:.3px;box-shadow:0 3px 8px rgba(0,0,0,.16)}
+.pc-chain > span:not(.pc-arr){background:#fff;color:#0d3a2d;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:11.5px;padding:6px 10px;border-radius:8px;letter-spacing:.3px;box-shadow:0 3px 8px rgba(0,0,0,.16)}
 .pc-arr{color:rgba(255,255,255,.85);font-weight:800;font-size:14px}
 
 /* Word Race: warm orange with a stopwatch and a category trail. */
 .playcard-race .playcard-art{background:linear-gradient(135deg,#ffb35c,#e0651a);padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
-.pc-race-clock{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:38px;color:#fff;letter-spacing:2px;text-shadow:0 3px 8px rgba(0,0,0,.18)}
-.pc-race-cat{color:#fff5eb;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:11px;letter-spacing:.4px;opacity:.94}
+.pc-race-clock{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:38px;color:#fff;letter-spacing:2px;text-shadow:0 3px 8px rgba(0,0,0,.18)}
+.pc-race-cat{color:#fff5eb;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:11px;letter-spacing:.4px;opacity:.94}
 /* Guess the Word: warm amber with mystery '???' + three emoji clues. */
 .playcard-guess .playcard-art{background:linear-gradient(135deg,#ffbf58,#e9852b);padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
-.pc-guess-word{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:800;font-size:28px;color:#fff;letter-spacing:2px;text-shadow:0 3px 8px rgba(0,0,0,.18)}
+.pc-guess-word{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:28px;color:#fff;letter-spacing:2px;text-shadow:0 3px 8px rgba(0,0,0,.18)}
 .pc-guess-clues{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.pc-guess-clues > span{background:#fff;color:#7a3f00;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:10.5px;padding:4px 8px;border-radius:99px;box-shadow:0 2px 5px rgba(0,0,0,.12)}
+.pc-guess-clues > span{background:#fff;color:#7a3f00;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:10.5px;padding:4px 8px;border-radius:99px;box-shadow:0 2px 5px rgba(0,0,0,.12)}
 
 /* Coming-soon cards get a slightly muted CTA. */
 .playcard-chain .playcard-cta,
@@ -1098,7 +1102,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    one tap away hours later. Rendered by paintMyRooms() from
    /api/social/my-rooms; stays hidden if you have none. */
 .myrooms{background:linear-gradient(135deg,#eef1ff,#f6f0ff);border:1px solid #d8ddff;border-radius:18px;margin:14px 20px 4px;padding:12px 14px}
-.myrooms-h{display:flex;align-items:center;justify-content:space-between;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);margin-bottom:8px}
+.myrooms-h{display:flex;align-items:center;justify-content:space-between;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);margin-bottom:8px}
 .myrooms-cnt{font-size:11.5px;font-weight:800;color:var(--caccent,#5a7bff);background:#fff;border-radius:99px;padding:2px 9px}
 .myrooms-list{display:flex;flex-direction:column;gap:8px}
 .myrooms-row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:9px 10px;border:1px solid #e6e6ef}
@@ -1108,7 +1112,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .myrooms-row .mrs{font-size:11.5px;color:var(--sub);font-weight:600;margin-top:1px}
 .myrooms-row .mrs .mrdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#22c07a;margin-right:5px;vertical-align:1px;animation:gcpulse 1.4s ease-in-out infinite}
 .myrooms-row .mrbtns{display:flex;gap:6px;flex-shrink:0}
-.myrooms-row .mrbtn{background:var(--ink);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:12.5px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.myrooms-row .mrbtn{background:var(--ink);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:12.5px;cursor:pointer;text-decoration:none;white-space:nowrap}
 .myrooms-row .mrbtn.close{background:#fff;color:#d33;border:1px solid #ecdcdc}
 .myrooms-row .mrbtn.close:hover{background:#fdf2f4}
 .myrooms-row .mrbtn:hover{filter:brightness(1.06)}
@@ -1124,14 +1128,14 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .gcard2:hover{border-color:#c9cfe3;transform:translateY(-2px)}
 .gcard2:active{transform:translateY(0)}
 .gcard2 .gicon{font-size:26px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;background:#f4f5f7;color:var(--ink);position:relative;z-index:1}
-.gcard2 .gtitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:17px;letter-spacing:-.2px;color:var(--ink);position:relative;z-index:1}
+.gcard2 .gtitle{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:17px;letter-spacing:-.2px;color:var(--ink);position:relative;z-index:1}
 .gcard2 .gtag{font-size:12px;font-weight:500;color:var(--sub);position:relative;z-index:1;line-height:1.45}
 .gcard2 .gplayers{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.01em;background:#f4f5f7;color:var(--sub);padding:4px 10px 4px 8px;border-radius:99px;align-self:start;position:relative;z-index:1}
 .gcard2 .gplayers .dot{width:6px;height:6px;border-radius:50%;background:#c9cdda}
 .gcard2 .gplayers.live{background:#e8f9ef;color:#159f5d}
 .gcard2 .gplayers.live .dot{background:#22c07a;animation:gcpulse 1.4s ease-in-out infinite}
 @keyframes gcpulse{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
-.gcard2 .gcta{margin-top:10px;background:transparent;color:var(--caccent,#5a7bff);font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:14px;padding:8px 0;text-align:left;position:relative;z-index:1}
+.gcard2 .gcta{margin-top:10px;background:transparent;color:var(--caccent,#5a7bff);font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:14px;padding:8px 0;text-align:left;position:relative;z-index:1}
 .gcard2 .ginvite{position:absolute;top:14px;right:14px;background:transparent;color:var(--faint);border-radius:10px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;z-index:2;transition:background .12s,color .12s}
 .gcard2 .ginvite:hover{background:var(--hover);color:var(--ink)}
 /* Very subtle per-card tint on the icon chip only — hint of theme
@@ -1282,7 +1286,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .phost.mini{bottom:calc(14px + env(safe-area-inset-bottom));top:auto;left:14px;right:14px;height:48px;max-width:520px;margin:0 auto;border-radius:99px}
 .phost.mini .phost-frame{display:none}
 .phost.mini .phost-bar{padding:9px 18px;display:flex;align-items:center;gap:10px;height:100%}
-.phost.mini #phostTitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.phost.mini #phostTitle{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .phost.mini .phost-arrow{width:26px;height:26px;border-radius:50%;background:#000;color:#fff;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .phost.mini .phost-dot{width:8px;height:8px;border-radius:50%;background:#22c07a;flex-shrink:0;box-shadow:0 0 0 3px rgba(34,192,122,.22);animation:phostDot 1.6s ease-in-out infinite}
 @keyframes phostDot{0%,100%{opacity:1}50%{opacity:.55}}
@@ -1318,24 +1322,24 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
    mini-bar. Owner ask 1 Aug 2026 v8: 'just the party name + arrow,
    easy to come out and come back'. Black rounded pill, pulsing
    green dot, uppercase title, black arrow chip. */
-.partybar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#16181f;color:#fff;border-radius:99px;padding:9px 14px;display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Nunito',system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,23,42,.28);z-index:150;transition:transform .12s;min-width:200px;max-width:calc(100vw - 28px)}
+.partybar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#16181f;color:#fff;border-radius:99px;padding:9px 14px;display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Inter',system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,23,42,.28);z-index:150;transition:transform .12s;min-width:200px;max-width:calc(100vw - 28px)}
 .partybar:hover{transform:translateX(-50%) translateY(-2px)}
 .partybar .pbdot{width:8px;height:8px;border-radius:50%;background:#22c07a;flex-shrink:0;box-shadow:0 0 0 3px rgba(34,192,122,.22);animation:gcpulse 1.6s ease-in-out infinite}
-.partybar #pbTitle{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.partybar #pbTitle{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .partybar .pbarrow{width:26px;height:26px;border-radius:50%;background:#000;color:#fff;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 /* Small speaker avatar stack. Owner ask 2 Aug 2026: 'show some
    people as speakers small images'. Overlapped 22px circles with
    dark rings so they read as one group on the black pill. */
 .partybar .pbspeakers{display:inline-flex;align-items:center;gap:0;flex-shrink:0;margin-right:2px}
 .partybar .pbspeakers:empty{display:none}
-.partybar .pbav{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;overflow:hidden;background:#2b2e36;color:#fff;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;font-size:10px;box-shadow:0 0 0 2px #16181f;flex-shrink:0}
+.partybar .pbav{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;overflow:hidden;background:#2b2e36;color:#fff;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:10px;box-shadow:0 0 0 2px #16181f;flex-shrink:0}
 .partybar .pbav+.pbav{margin-left:-6px}
 .partybar .pbav img{width:100%;height:100%;object-fit:cover;display:block}
 @media(max-width:480px){ .partybar{padding:8px 14px} .partybar .pbtxt small{display:none} }
 /* Persistent game-session pill — same visual language as .partybar
    but yellow-dot to distinguish. Nudged UP by 74px when both are
    visible so they stack instead of overlap. Owner ask 1 Aug 2026. */
-.gamebar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111318;color:#fff;border-radius:99px;padding:10px 16px;display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Nunito',system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,23,42,.28);z-index:149;transition:transform .12s}
+.gamebar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111318;color:#fff;border-radius:99px;padding:10px 16px;display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Inter',system-ui,sans-serif;box-shadow:0 8px 24px rgba(20,23,42,.28);z-index:149;transition:transform .12s}
 .gamebar:hover{transform:translateX(-50%) translateY(-2px)}
 .gamebar .pbgo{background:linear-gradient(135deg,#ffb84d,#ff8f2c);color:#fff;font-weight:700;font-size:12px;padding:5px 12px;border-radius:99px}
 .gamebar .pbclose{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;margin-left:2px;cursor:pointer;flex-shrink:0}
@@ -1548,7 +1552,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 /* Drag-drop overlay — appears when a file is dragged over the chat. */
 .chat-drop-overlay{position:absolute;inset:0;background:rgba(90,123,255,.10);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:180;display:flex;align-items:center;justify-content:center;pointer-events:none;border:3px dashed var(--accent);border-radius:16px;margin:12px}
 .chat-drop-overlay.hidden{display:none}
-.chat-drop-inner{background:#fff;border-radius:16px;padding:24px 32px;text-align:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:16px;color:var(--accent);box-shadow:0 8px 26px rgba(0,0,0,.12)}
+.chat-drop-inner{background:#fff;border-radius:16px;padding:24px 32px;text-align:center;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:16px;color:var(--accent);box-shadow:0 8px 26px rgba(0,0,0,.12)}
 .chat-drop-inner{line-height:1.6}
 .chat-drop-inner span{font-size:13px;color:var(--sub);font-weight:500}
 .mb .mtime{font-size:9px;margin-top:2px;display:flex;align-items:center;justify-content:flex-end;gap:4px;line-height:1;font-weight:500;opacity:.9}
@@ -1660,7 +1664,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .recbar.show{display:flex}
 .recbar .rec-dot{width:11px;height:11px;border-radius:50%;background:#ff3d5b;animation:recpulse 1s ease-in-out infinite;flex-shrink:0}
 @keyframes recpulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.05)}}
-.recbar .rec-time{font-family:'Nunito',system-ui,sans-serif;font-weight:800;font-size:15px;color:#c8123b;font-variant-numeric:tabular-nums;min-width:44px}
+.recbar .rec-time{font-family:'Inter',system-ui,sans-serif;font-weight:800;font-size:15px;color:#c8123b;font-variant-numeric:tabular-nums;min-width:44px}
 .recbar .rec-hint{font-size:12px;color:var(--sub);font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .recbar .rec-cancel{background:transparent;border:0;color:var(--sub);font-size:18px;width:34px;height:34px;border-radius:50%;cursor:pointer}
 .recbar .rec-cancel:hover{background:#f2f3f5;color:var(--err)}
@@ -1830,7 +1834,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
      only shown when we're in desktop split-view + chatempty-mode. */
   .splitview .chatempty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:calc(100vh - 130px);background:#fff;border:1px solid var(--line);border-radius:16px;padding:40px 32px;color:var(--sub)}
   .splitview .chatempty-emoji{font-size:56px;line-height:1;margin-bottom:14px;opacity:.85}
-  .splitview .chatempty h3{font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:20px;color:var(--ink);letter-spacing:-.3px;margin-bottom:6px}
+  .splitview .chatempty h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:20px;color:var(--ink);letter-spacing:-.3px;margin-bottom:6px}
   .splitview .chatempty p{font-size:14px;line-height:1.55;max-width:340px}
   /* Chat panel content hides in favour of the empty state when
      curChat is null (body.chatempty-mode is set from showTab JS). */
@@ -2272,7 +2276,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div style="max-width:640px;margin:32px auto 0;padding:0 6px">
       <div style="text-align:center;padding:36px 20px 40px;background:linear-gradient(180deg,#fafbff,#eef1ff);border:1px solid #dce1ff;border-radius:24px">
         <div style="font-size:52px;line-height:1;margin-bottom:14px">📚</div>
-        <h2 style="font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:26px;letter-spacing:-.5px;color:var(--ink);margin:0 0 8px">Learn</h2>
+        <h2 style="font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:26px;letter-spacing:-.5px;color:var(--ink);margin:0 0 8px">Learn</h2>
         <p style="font-size:14.5px;line-height:1.6;color:var(--sub);margin:0 auto 20px;max-width:420px">Curated resources, short lessons and a roadmap for every language you're learning. Coming soon — tell us what you want first.</p>
         <div id="lnMsg" style="font-size:13px;color:var(--sub);min-height:16px;margin-bottom:10px"></div>
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:460px;margin:0 auto">
