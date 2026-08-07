@@ -2028,42 +2028,31 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <div class="ob-progress" id="obProgress"></div>
 
-    <!-- STEP 1 · Name only.
-         Owner ask 5 Aug 2026 (wizard v11): 'design the signup process
-         in more parts you asking all the questions at once in one
-         page … make one page or box with the border bottom only,
-         nothing more, no placeholder'. Every step from here on is
-         ONE question / ONE input, big and calm. -->
+    <!-- STEP 1 · Name + DOB together (email is a hidden field, pre-
+         filled from OAuth). Owner ask 7 Aug 2026: 'you make the name,
+         date of birth and email are 3 pages, make it one'. Rolled the
+         two split pages back together as one — but the "one field per
+         page" idea still applies to the language / about-you questions
+         (steps 4-8 below), which is where users used to feel steamrolled. -->
     <section class="ob-step" data-step="1">
       <div class="ob-emoji">👋</div>
-      <h2>What's your name?</h2>
-      <input class="ob-underline" id="obFirstName" maxlength="30" autocomplete="name" aria-label="Your name">
-      <input type="hidden" id="obLastName">
+      <h2>Let's set up your profile</h2>
+      <p class="ob-sub">A couple of basics, then you're in.</p>
+      <div class="ob-fields">
+        <label class="ob-label">Your name</label>
+        <input class="ob-underline" id="obFirstName" maxlength="30" autocomplete="name" aria-label="Your name">
+        <input type="hidden" id="obLastName">
+        <label class="ob-label" style="margin-top:18px">Date of birth <span class="ob-age-live" id="obAgeLive"></span></label>
+        <input class="ob-underline ob-dob" id="obBirth" type="text" readonly aria-label="Date of birth">
+        <p class="ob-sub" style="font-size:12px;margin-top:6px">You must be 18 or over to join.</p>
+        <input type="hidden" id="obEmail">
+      </div>
       <div class="ob-err hidden" id="obErr1"></div>
       <button class="ob-next" onclick="obNext(1)">Continue</button>
     </section>
 
-    <!-- STEP 2 · Date of birth (email stays as a hidden field — it
-         is pre-filled from OAuth and never asked here anymore). -->
+    <!-- STEP 2 · Photo (was step 3 in v11). Bigger drop zone, drag-and-drop. -->
     <section class="ob-step" data-step="2">
-      <div class="ob-emoji">🎂</div>
-      <h2>When were you born?</h2>
-      <p class="ob-sub">You must be 18 or over to join. <span class="ob-age-live" id="obAgeLive"></span></p>
-      <!-- flatpickr-powered date input. Owner ask 2 Aug 2026:
-           'date picker so ugly, use a JS library please'. Loaded
-           from cdnjs; obInitDobWheels() (below) initialises it
-           with 18-years-ago max + 100-years-ago min. -->
-      <input class="ob-underline ob-dob" id="obBirth" type="text" readonly aria-label="Date of birth">
-      <input type="hidden" id="obEmail">
-      <div class="ob-err hidden" id="obErr2"></div>
-      <div class="ob-row">
-        <button class="ob-back" onclick="obBack(2)">Back</button>
-        <button class="ob-next" onclick="obNext(2)">Continue</button>
-      </div>
-    </section>
-
-    <!-- STEP 3 · Photo (was step 2). Bigger drop zone, drag-and-drop. -->
-    <section class="ob-step" data-step="3">
       <div class="ob-emoji">📷</div>
       <h2>Add your photo</h2>
       <p class="ob-sub">A clear face photo helps others trust you're real. You'll crop it next.</p>
@@ -2092,15 +2081,15 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <input type="file" id="obPhotoIn" accept="image/jpeg,image/png,image/webp" hidden>
         <span class="ob-photo-hint" id="obPhotoHint">Tap to upload — or drag a photo here</span>
       </div>
-      <div class="ob-err hidden" id="obErr3"></div>
+      <div class="ob-err hidden" id="obErr2"></div>
       <div class="ob-row">
-        <button class="ob-back" onclick="obBack(3)">Back</button>
-        <button class="ob-next" onclick="obNext(3)">Looks good</button>
+        <button class="ob-back" onclick="obBack(2)">Back</button>
+        <button class="ob-next" onclick="obNext(2)">Looks good</button>
       </div>
     </section>
 
-    <!-- STEP 4 · Terms & Conditions (was step 3) -->
-    <section class="ob-step" data-step="4">
+    <!-- STEP 3 · Terms & Conditions -->
+    <section class="ob-step" data-step="3">
       <div class="ob-emoji">📜</div>
       <h2>Our house rules</h2>
       <p class="ob-para"><b>Be kind and real.</b> WordSpies is a community of language learners around the world. Treat everyone with respect. No harassment, hate speech, spam, or nudity.</p>
@@ -2108,21 +2097,34 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <p class="ob-para"><b>Report freely.</b> Every profile and every message has a Report and a Block button. We review reports within 24 hours and act firmly.</p>
       <p class="ob-sub" style="margin-top:16px;font-size:12.5px">Full <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy" target="_blank" rel="noopener">Privacy</a> · <a href="/child-safety" target="_blank" rel="noopener">Child safety</a></p>
       <div class="ob-row">
-        <button class="ob-back" onclick="obBack(4)">Back</button>
-        <button class="ob-next" onclick="obNext(4)">I agree — continue</button>
+        <button class="ob-back" onclick="obBack(3)">Back</button>
+        <button class="ob-next" onclick="obNext(3)">I agree — continue</button>
       </div>
     </section>
 
-    <!-- STEPS 5-9 · The five "about you" questions, each on its own
+    <!-- STEPS 4-8 · The five "about you" questions, each on its own
          page (owner ask 5 Aug 2026). Native language → learning
          language → talk about → purpose → partner type. Fields map
          1:1 to the member-view cards. -->
-    <section class="ob-step" data-step="5">
+    <section class="ob-step" data-step="4">
       <div class="ob-emoji">🗣️</div>
       <h2>What's your native language?</h2>
       <p class="ob-sub">The one you grew up speaking.</p>
       <div class="chiprow" id="obSpeaksChips"></div>
       <button type="button" class="chipadd" onclick="obAddLang('speaks')">+ Add a language</button>
+      <div class="ob-err hidden" id="obErr4"></div>
+      <div class="ob-row">
+        <button class="ob-back" onclick="obBack(4)">Back</button>
+        <button class="ob-next" onclick="obNext(4)">Continue</button>
+      </div>
+    </section>
+
+    <section class="ob-step" data-step="5">
+      <div class="ob-emoji">📖</div>
+      <h2>What are you learning?</h2>
+      <p class="ob-sub">Pick a language you'd like to practise.</p>
+      <div class="chiprow" id="obLearnsChips"></div>
+      <button type="button" class="chipadd" onclick="obAddLang('learns')">+ Add a language</button>
       <div class="ob-err hidden" id="obErr5"></div>
       <div class="ob-row">
         <button class="ob-back" onclick="obBack(5)">Back</button>
@@ -2131,11 +2133,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </section>
 
     <section class="ob-step" data-step="6">
-      <div class="ob-emoji">📖</div>
-      <h2>What are you learning?</h2>
-      <p class="ob-sub">Pick a language you'd like to practise.</p>
-      <div class="chiprow" id="obLearnsChips"></div>
-      <button type="button" class="chipadd" onclick="obAddLang('learns')">+ Add a language</button>
+      <div class="ob-emoji">💬</div>
+      <h2>What do you like to talk about?</h2>
+      <textarea class="ob-underline-area" id="obTalkAbout" maxlength="200" rows="2" aria-label="What you like to talk about"></textarea>
       <div class="ob-err hidden" id="obErr6"></div>
       <div class="ob-row">
         <button class="ob-back" onclick="obBack(6)">Back</button>
@@ -2144,9 +2144,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </section>
 
     <section class="ob-step" data-step="7">
-      <div class="ob-emoji">💬</div>
-      <h2>What do you like to talk about?</h2>
-      <textarea class="ob-underline-area" id="obTalkAbout" maxlength="200" rows="2" aria-label="What you like to talk about"></textarea>
+      <div class="ob-emoji">🎯</div>
+      <h2>What brings you here?</h2>
+      <textarea class="ob-underline-area" id="obPurpose" maxlength="200" rows="2" aria-label="Your purpose or goal"></textarea>
       <div class="ob-err hidden" id="obErr7"></div>
       <div class="ob-row">
         <button class="ob-back" onclick="obBack(7)">Back</button>
@@ -2155,34 +2155,23 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </section>
 
     <section class="ob-step" data-step="8">
-      <div class="ob-emoji">🎯</div>
-      <h2>What brings you here?</h2>
-      <textarea class="ob-underline-area" id="obPurpose" maxlength="200" rows="2" aria-label="Your purpose or goal"></textarea>
-      <div class="ob-err hidden" id="obErr8"></div>
-      <div class="ob-row">
-        <button class="ob-back" onclick="obBack(8)">Back</button>
-        <button class="ob-next" onclick="obNext(8)">Continue</button>
-      </div>
-    </section>
-
-    <section class="ob-step" data-step="9">
       <div class="ob-emoji">🤝</div>
       <h2>Who would you like to chat with?</h2>
       <textarea class="ob-underline-area" id="obPartner" maxlength="200" rows="2" aria-label="What kind of language partner"></textarea>
-      <div class="ob-err hidden" id="obErr9"></div>
+      <div class="ob-err hidden" id="obErr8"></div>
       <div class="ob-row">
-        <button class="ob-back" onclick="obBack(9)">Back</button>
-        <button class="ob-next" onclick="obNext(9)">Almost done</button>
+        <button class="ob-back" onclick="obBack(8)">Back</button>
+        <button class="ob-next" onclick="obNext(8)">Almost done</button>
       </div>
     </section>
 
-    <!-- STEP 10 · Welcome (was step 5). -->
-    <section class="ob-step" data-step="10">
+    <!-- STEP 9 · Welcome. -->
+    <section class="ob-step" data-step="9">
       <div class="ob-welcome-logo">Word<em>Spies</em></div>
       <h2 style="font-size:28px;text-align:center">You're all set, <span id="obWelcomeName">friend</span> 🎉</h2>
       <p class="ob-sub" style="text-align:center">Your profile is live. Time to meet some people.</p>
       <p class="ob-sub" style="text-align:center;font-size:12.5px;color:var(--faint);margin-top:8px">We review every new profile — most get verified within a day.</p>
-      <div class="ob-err hidden" id="obErr10" style="margin:12px auto;max-width:360px"></div>
+      <div class="ob-err hidden" id="obErr9" style="margin:12px auto;max-width:360px"></div>
       <button class="ob-next primary-big" onclick="obFinish()">Enter WordSpies</button>
     </section>
   </div>
@@ -3484,10 +3473,11 @@ function enterApp(justJoined){
 // TOTAL_STEPS is kept in one place — bump progress dots + guards
 // automatically if we ever add or remove a step.
 // ═══════════════════════════════════════════════════════════════════
-// Wizard step count — bumped from 5 → 10 on 6 Aug 2026 when the
-// bundled Step 4 got split into one-question-per-page (owner ask
-// 5 Aug 2026). See obNext for the per-step save routing.
-const OB_TOTAL = 10;
+// Wizard step count. v11 was 10 steps; v12 (owner ask 7 Aug 2026)
+// merged name + DOB back onto step 1 since 'name, date of birth
+// and email are 3 pages, make it one'. Language + about-you
+// questions still get their own page each. Total is now 9.
+const OB_TOTAL = 9;
 let obNewPhotoUploaded = false;
 // Wizard-local language chip arrays for step 4 (owner v8: 4 questions
 // on step 4 — speaks, learns, talkAbout, purpose). Independent from
@@ -3698,16 +3688,17 @@ async function obNext(step){
   clearErr();
 
   try {
-    // Per-step validate + save. Wizard v11 (owner ask 5-6 Aug 2026):
-    // one question per page. Each step saves just its own field so a
-    // slow network can't lose earlier answers if the user drops off.
-    //   1 = name          2 = DOB
-    //   3 = photo (gate)  4 = terms (gate)
-    //   5 = native lang   6 = learning lang
-    //   7 = talkAbout     8 = purpose         9 = partnerType
-    //   10 = welcome (obFinish)
+    // Per-step validate + save. Wizard v12 (owner ask 7 Aug 2026):
+    // rolled name + DOB back onto one page; language + about-you
+    // questions still get their own page each. Each step saves just
+    // its own field(s) so a slow network can't lose earlier answers.
+    //   1 = name + DOB
+    //   2 = photo (gate)  3 = terms (gate)
+    //   4 = native lang   5 = learning lang
+    //   6 = talkAbout     7 = purpose        8 = partnerType
+    //   9 = welcome (obFinish)
     if (step === 1) {
-      // Split the display name on the first space for /profile.
+      // NAME
       const raw = $('obFirstName').value.trim();
       const parts = raw.split(/\s+/);
       const first = parts[0] || '';
@@ -3717,6 +3708,13 @@ async function obNext(step){
       if (!/^[a-zA-Z0-9_ ]{3,15}$/.test(raw2)) {
         return err("Please use letters, numbers and spaces only — try romanising your name.");
       }
+      // DOB
+      const bd = $('obBirth').value;
+      if (!bd) return err('Please enter your date of birth.');
+      const age = ageFromISOClient(bd);
+      if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date of birth.');
+      if (age < 18) return err('Sorry — WordSpies is for people aged 18 and over.');
+      // Save name if changed.
       if (raw2 !== ME.name) {
         try {
           const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
@@ -3727,50 +3725,44 @@ async function obNext(step){
           return err(e2.message);
         }
       }
-    }
-    if (step === 2) {
-      const bd = $('obBirth').value;
-      if (!bd) return err('Please enter your date of birth.');
-      const age = ageFromISOClient(bd);
-      if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date of birth.');
-      if (age < 18) return err('Sorry — WordSpies is for people aged 18 and over.');
+      // Save DOB if changed.
       if (bd !== ME.birthdate) {
         const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ birthdate: bd }) });
         ME = j.me;
       }
     }
-    if (step === 3) {
+    if (step === 2) {
       if (!ME.photo) return err('Please upload a clear face photo.');
     }
-    // Step 4 (T&C): re-confirmation gate, nothing to save.
-    if (step === 5) {
+    // Step 3 (T&C): re-confirmation gate, nothing to save.
+    if (step === 4) {
       if (!obSpeaks.length) return err('Please add at least one language you speak.');
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ speaks: obSpeaks }) });
       ME = j.me;
     }
-    if (step === 6) {
+    if (step === 5) {
       if (!obLearns.length) return err("Please add at least one language you're learning.");
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ learns: obLearns }) });
       ME = j.me;
     }
-    if (step === 7) {
+    if (step === 6) {
       const t = $('obTalkAbout').value.trim();
       if (!t || t.length < 4) return err('A quick line about what you like to talk about.');
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ talkAbout: t }) });
       ME = j.me;
     }
-    if (step === 8) {
+    if (step === 7) {
       const p = ($('obPurpose') || {}).value.trim();
       if (!p || p.length < 4) return err('Add your purpose or goal — a few words is fine.');
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ purpose: p }) });
       ME = j.me;
     }
-    if (step === 9) {
+    if (step === 8) {
       const pt = ($('obPartner') || {}).value.trim();
       if (!pt || pt.length < 4) return err('Add what kind of partner you\'re looking for.');
       const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
@@ -3779,7 +3771,7 @@ async function obNext(step){
       // Last question answered → register with the moderation queue.
       try { await api('/account/pending', { method:'POST' }); } catch (e2) {}
     }
-    // Step 10 IS the welcome. obFinish() runs from its button, not obNext.
+    // Step 9 IS the welcome. obFinish() runs from its button, not obNext.
 
     // Persist the completed step so a refresh resumes here (not step 1).
     // Fire-and-forget — profile.js clamps + never moves obStep backwards,
