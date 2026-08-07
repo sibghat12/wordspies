@@ -131,6 +131,23 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 
 .foot{margin-top:22px;text-align:center;font-size:12px;color:var(--faint)}
 .foot a{color:var(--sub)}
+
+/* How-to-play popup */
+.howto-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#eef1f7;color:var(--sub,#5c6270);border:0;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:14px;font-style:italic;cursor:pointer;margin-left:8px;line-height:1;vertical-align:middle}
+.howto-btn:hover{background:#dfe4ee;color:var(--ink,#16181f)}
+.howto-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.howto-bd.on{display:flex;animation:howfade .16s ease}
+@keyframes howfade{from{opacity:0}to{opacity:1}}
+.howto{background:#fff;border-radius:22px;max-width:440px;width:100%;padding:24px 22px 20px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.howto-x{position:absolute;top:10px;right:10px;background:transparent;border:0;width:36px;height:36px;border-radius:50%;font-size:20px;color:var(--sub,#5c6270);cursor:pointer}
+.howto-x:hover{background:#f2f3f5;color:var(--ink,#16181f)}
+.howto h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:22px;letter-spacing:-.3px;color:var(--ink,#16181f);margin:0 0 12px}
+.howto h3 em{font-style:normal;color:var(--brand,var(--accent,#e8506b))}
+.howto-body{font-family:'Inter',system-ui,sans-serif;font-size:14.5px;line-height:1.62;color:var(--ink,#16181f);margin-bottom:16px}
+.howto-body p{margin:0 0 10px}
+.howto-body p:last-child{margin-bottom:0}
+.howto-ok{width:100%;background:var(--ink,#16181f);color:#fff;border:0;border-radius:14px;padding:12px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:15.5px;cursor:pointer}
+.howto-ok:hover{background:#000}
 </style>
 </head>
 <body>
@@ -144,8 +161,7 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
   <!-- ── HOME (choose: new game or join by code) ─────────────────────── -->
   <div class="card hero" id="scHome">
     <div class="kick"><span class="dot"></span>60-SECOND VOCAB SPRINT</div>
-    <h1>A category. A minute. Most words wins.</h1>
-    <p class="lede">Race your friends to type as many words as you can that fit the prompt — animals, foods, verbs, colours… Works in any language you're learning. Two to eight players.</p>
+    <h1>Word Race<button class="howto-btn" onclick="openHowto()" aria-label="How to play">?</button></h1>
     <div class="fields">
       <div>
         <label class="fl" for="nmIn">Your name</label>
@@ -227,6 +243,24 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="howto-bd" id="howtoBd" onclick="if(event.target===this)closeHowto()">
+  <div class="howto">
+    <button class="howto-x" onclick="closeHowto()" aria-label="Close">✕</button>
+    <h3>How to play <em>Word Race</em></h3>
+    <div class="howto-body">
+      <p>You have 60 seconds. A category shows up (Animals, Foods, Verbs, Colours…). Type as many words as you can that fit.</p>
+      <p>Most words wins the round; best of 3 rounds wins the match. Works in any language you're learning.</p>
+    </div>
+    <button class="howto-ok" onclick="closeHowto()">Got it</button>
+  </div>
+</div>
+
+<script>
+function openHowto(){ document.getElementById('howtoBd').classList.add('on'); }
+function closeHowto(){ document.getElementById('howtoBd').classList.remove('on'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeHowto(); });
+</script>
 
 <script>
 // ─── tiny helpers ─────────────────────────────────────────────────────────

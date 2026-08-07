@@ -129,6 +129,23 @@ input[type=text]::placeholder{font-weight:500}
 .codebox{border:2.5px dashed #dcdce8;border-radius:20px}
 .codebox .code{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:7px}
 label.fl{font-weight:800}
+
+/* How-to-play popup */
+.howto-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#eef1f7;color:var(--sub,#5c6270);border:0;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:14px;font-style:italic;cursor:pointer;margin-left:8px;line-height:1;vertical-align:middle}
+.howto-btn:hover{background:#dfe4ee;color:var(--ink,#16181f)}
+.howto-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.howto-bd.on{display:flex;animation:howfade .16s ease}
+@keyframes howfade{from{opacity:0}to{opacity:1}}
+.howto{background:#fff;border-radius:22px;max-width:440px;width:100%;padding:24px 22px 20px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.howto-x{position:absolute;top:10px;right:10px;background:transparent;border:0;width:36px;height:36px;border-radius:50%;font-size:20px;color:var(--sub,#5c6270);cursor:pointer}
+.howto-x:hover{background:#f2f3f5;color:var(--ink,#16181f)}
+.howto h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:22px;letter-spacing:-.3px;color:var(--ink,#16181f);margin:0 0 12px}
+.howto h3 em{font-style:normal;color:var(--brand,var(--accent,#e8506b))}
+.howto-body{font-family:'Inter',system-ui,sans-serif;font-size:14.5px;line-height:1.62;color:var(--ink,#16181f);margin-bottom:16px}
+.howto-body p{margin:0 0 10px}
+.howto-body p:last-child{margin-bottom:0}
+.howto-ok{width:100%;background:var(--ink,#16181f);color:#fff;border:0;border-radius:14px;padding:12px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:15.5px;cursor:pointer}
+.howto-ok:hover{background:#000}
 </style>
 </head>
 <body>
@@ -142,8 +159,8 @@ label.fl{font-weight:800}
   <!-- ── home ─────────────────────────────────────────────────────────── -->
   <div id="home">
     <div class="card">
-      <h1>Four in a row wins.</h1>
-      <p class="lede">Take turns dropping a piece into a column. First to line up four — across, down or diagonally — takes the game. Play a friend with a link, or the bot right now.</p>
+      <h1>Connect 4<button class="howto-btn" onclick="openHowto()" aria-label="How to play">?</button></h1>
+      <p class="lede" style="margin-top:8px">Four in a row wins.</p>
       <div id="nameBox">
         <label class="fl" for="nameIn">Your name</label>
         <input type="text" id="nameIn" maxlength="18" placeholder="e.g. Ayoub" autocomplete="off">
@@ -168,6 +185,23 @@ label.fl{font-weight:800}
     </div>
     <p class="mut">Nothing to install, nothing to sign up for. A game takes about two minutes.</p>
   </div>
+
+  <div class="howto-bd" id="howtoBd" onclick="if(event.target===this)closeHowto()">
+    <div class="howto">
+      <button class="howto-x" onclick="closeHowto()" aria-label="Close">✕</button>
+      <h3>How to play <em>Connect 4</em></h3>
+      <div class="howto-body">
+        <p>Drop pieces into columns. Get four in a row — up, down, sideways, diagonal — before your opponent.</p>
+        <p>Two players; play a friend or the bot.</p>
+      </div>
+      <button class="howto-ok" onclick="closeHowto()">Got it</button>
+    </div>
+  </div>
+  <script>
+  function openHowto(){ document.getElementById('howtoBd').classList.add('on'); }
+  function closeHowto(){ document.getElementById('howtoBd').classList.remove('on'); }
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeHowto(); });
+  </script>
 
   <!-- ── lobby ────────────────────────────────────────────────────────── -->
   <div id="lobby" class="hidden">

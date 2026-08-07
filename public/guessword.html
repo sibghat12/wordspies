@@ -181,6 +181,23 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 @keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.15}}
 .foot{text-align:center;font-size:12px;color:var(--faint);line-height:1.6;padding:22px 8px 0}
 .foot a{color:var(--sub)}
+
+/* How-to-play popup */
+.howto-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#eef1f7;color:var(--sub,#5c6270);border:0;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:14px;font-style:italic;cursor:pointer;margin-left:8px;line-height:1;vertical-align:middle}
+.howto-btn:hover{background:#dfe4ee;color:var(--ink,#16181f)}
+.howto-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.howto-bd.on{display:flex;animation:howfade .16s ease}
+@keyframes howfade{from{opacity:0}to{opacity:1}}
+.howto{background:#fff;border-radius:22px;max-width:440px;width:100%;padding:24px 22px 20px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.howto-x{position:absolute;top:10px;right:10px;background:transparent;border:0;width:36px;height:36px;border-radius:50%;font-size:20px;color:var(--sub,#5c6270);cursor:pointer}
+.howto-x:hover{background:#f2f3f5;color:var(--ink,#16181f)}
+.howto h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:22px;letter-spacing:-.3px;color:var(--ink,#16181f);margin:0 0 12px}
+.howto h3 em{font-style:normal;color:var(--brand,var(--accent,#e8506b))}
+.howto-body{font-family:'Inter',system-ui,sans-serif;font-size:14.5px;line-height:1.62;color:var(--ink,#16181f);margin-bottom:16px}
+.howto-body p{margin:0 0 10px}
+.howto-body p:last-child{margin-bottom:0}
+.howto-ok{width:100%;background:var(--ink,#16181f);color:#fff;border:0;border-radius:14px;padding:12px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:15.5px;cursor:pointer}
+.howto-ok:hover{background:#000}
 </style>
 </head>
 <body>
@@ -196,8 +213,7 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 <!-- HOME -->
 <div id="viewHome" class="card hero">
   <div class="kick">Describe & Guess · 3–10 friends</div>
-  <h1>Guess the Word</h1>
-  <p class="lede">One player gets a <b>secret word</b> and gives clues in the chat. Everyone else races to guess. First correct guess scores — then a new describer takes over. Fun for language practice at any level.</p>
+  <h1>Guess the Word<button class="howto-btn" onclick="openHowto()" aria-label="How to play">?</button></h1>
 
   <div class="stack">
     <label class="fl" for="nameIn">Your name</label>
@@ -210,14 +226,25 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
     </div>
     <div id="homeErr" class="err hidden"></div>
   </div>
-
-  <ul class="rules">
-    <li><span class="n">1</span><span><b>One describer per round.</b> They get a secret word and type clues — no saying the word itself.</span></li>
-    <li><span class="n">2</span><span><b>Everyone else guesses</b> in the chat. First correct guess wins the round.</span></li>
-    <li><span class="n">3</span><span><b>2 points to guesser, 1 to describer.</b> 90 seconds per round; if nobody guesses, the word is revealed and we move on.</span></li>
-    <li><span class="n">4</span><span><b>Describer role rotates.</b> Two rounds per player, capped at 12. Top score wins.</span></li>
-  </ul>
 </div>
+
+<div class="howto-bd" id="howtoBd" onclick="if(event.target===this)closeHowto()">
+  <div class="howto">
+    <button class="howto-x" onclick="closeHowto()" aria-label="Close">✕</button>
+    <h3>How to play <em>Guess the Word</em></h3>
+    <div class="howto-body">
+      <p>One player is the describer — they get a secret word and drop hints in the chat. Everyone else races to guess.</p>
+      <p>First correct guess gets 2 points, the describer gets 1. Rounds rotate.</p>
+      <p>Highest score at the end wins.</p>
+    </div>
+    <button class="howto-ok" onclick="closeHowto()">Got it</button>
+  </div>
+</div>
+<script>
+function openHowto(){ document.getElementById('howtoBd').classList.add('on'); }
+function closeHowto(){ document.getElementById('howtoBd').classList.remove('on'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeHowto(); });
+</script>
 
 <!-- LOBBY -->
 <div id="viewLobby" class="card hidden">

@@ -185,6 +185,23 @@ input[type=text]::placeholder{font-weight:500}
 .codebox{border:2.5px dashed #dcdce8;border-radius:20px}
 .codebox .code{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:7px}
 label.fl{font-weight:800}
+
+/* How-to-play popup */
+.howto-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#eef1f7;color:var(--sub,#5c6270);border:0;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:14px;font-style:italic;cursor:pointer;margin-left:8px;line-height:1;vertical-align:middle}
+.howto-btn:hover{background:#dfe4ee;color:var(--ink,#16181f)}
+.howto-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.howto-bd.on{display:flex;animation:howfade .16s ease}
+@keyframes howfade{from{opacity:0}to{opacity:1}}
+.howto{background:#fff;border-radius:22px;max-width:440px;width:100%;padding:24px 22px 20px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.howto-x{position:absolute;top:10px;right:10px;background:transparent;border:0;width:36px;height:36px;border-radius:50%;font-size:20px;color:var(--sub,#5c6270);cursor:pointer}
+.howto-x:hover{background:#f2f3f5;color:var(--ink,#16181f)}
+.howto h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:22px;letter-spacing:-.3px;color:var(--ink,#16181f);margin:0 0 12px}
+.howto h3 em{font-style:normal;color:var(--brand,var(--accent,#e8506b))}
+.howto-body{font-family:'Inter',system-ui,sans-serif;font-size:14.5px;line-height:1.62;color:var(--ink,#16181f);margin-bottom:16px}
+.howto-body p{margin:0 0 10px}
+.howto-body p:last-child{margin-bottom:0}
+.howto-ok{width:100%;background:var(--ink,#16181f);color:#fff;border:0;border-radius:14px;padding:12px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:15.5px;cursor:pointer}
+.howto-ok:hover{background:#000}
 </style>
 </head>
 <body>
@@ -200,15 +217,27 @@ label.fl{font-weight:800}
   <!-- ══ HOME ══════════════════════════════════════════════════════════ -->
   <div id="home">
     <div class="card">
-      <h1>Say the same word<br>as your friend.</h1>
-      <p class="lede">You both type a word at the same time. You are not trying to be clever — you are trying to type the <b>same word</b> as each other. You won't. So then you both aim for the word sitting between the two you just said, and you keep going until your minds meet.</p>
-
-      <ul class="rules">
-        <li><span class="n">1</span><span>Round one, you both type <b>any word at all</b>. Reveal together.</span></li>
-        <li><span class="n">2</span><span>Different words? Now you both type the word <b>in between</b> them.</span></li>
-        <li><span class="n">3</span><span>No word twice, and you never see theirs first. Fewest rounds wins the bragging.</span></li>
-      </ul>
+      <h1>Mind Meld<button class="howto-btn" onclick="openHowto()" aria-label="How to play">?</button></h1>
+      <p class="lede" style="margin-top:8px">Type the same word as your friend.</p>
     </div>
+
+    <div class="howto-bd" id="howtoBd" onclick="if(event.target===this)closeHowto()">
+      <div class="howto">
+        <button class="howto-x" onclick="closeHowto()" aria-label="Close">✕</button>
+        <h3>How to play <em>Mind Meld</em></h3>
+        <div class="howto-body">
+          <p>Both players type a word at the same time. If you both type the same word, you win.</p>
+          <p>If not, the two words become the next hint — try again.</p>
+          <p>Silly, fast, weirdly bonding.</p>
+        </div>
+        <button class="howto-ok" onclick="closeHowto()">Got it</button>
+      </div>
+    </div>
+    <script>
+    function openHowto(){ document.getElementById('howtoBd').classList.add('on'); }
+    function closeHowto(){ document.getElementById('howtoBd').classList.remove('on'); }
+    document.addEventListener('keydown', e => { if(e.key==='Escape') closeHowto(); });
+    </script>
 
     <div class="card">
       <div id="nameWrap">
