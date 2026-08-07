@@ -1348,6 +1348,38 @@ body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .phost.fs .phost-btn.expand{transform:rotate(180deg)}
 .phost-frame iframe{width:100%;height:100%;border:0;display:block}
 
+/* Game host — a second iframe host, side by side with the party
+   one, so a running game survives tab switches. Owner ask 7 Aug
+   2026: 'stay in the site, don't leave the game to switch tabs'.
+   Same visual language as .phost — small dark pill at the bottom
+   when minimised, fullscreen when expanded. Mini-player pulses
+   red instead of green so users can tell games and parties apart
+   at a glance. */
+.ghost{position:fixed;z-index:169;background:#16181f;color:#fff;border:0;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.22);overflow:hidden;transition:all .22s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column;cursor:pointer}
+.ghost.mini{bottom:calc(14px + env(safe-area-inset-bottom));top:auto;left:14px;right:14px;height:48px;max-width:520px;margin:0 auto;border-radius:99px}
+.ghost.mini .ghost-frame{display:none}
+.ghost.mini .ghost-bar{padding:9px 18px;display:flex;align-items:center;gap:10px;height:100%}
+.ghost.mini #ghostTitle{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.ghost.mini .ghost-arrow{width:26px;height:26px;border-radius:50%;background:#000;color:#fff;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.ghost.mini .ghost-dot{width:8px;height:8px;border-radius:50%;background:#ff3d5b;flex-shrink:0;box-shadow:0 0 0 3px rgba(255,61,91,.22);animation:phostDot 1.6s ease-in-out infinite}
+.ghost.fs{inset:0;border-radius:0;border:0;box-shadow:none}
+@media(min-width:900px){ .ghost.fs{inset:0;border-radius:0;box-shadow:0 0 60px rgba(0,0,0,.15)} }
+body.in-game .topnav{display:none !important}
+body.in-game .partybar{display:none !important}
+body.in-game .wsfoot,body.in-game .wshead{display:none !important}
+.ghost.fs .ghost-bar{padding:10px 14px;border-bottom:1px solid var(--line);flex:0 0 auto;display:flex;align-items:center;gap:10px;background:#fff}
+.ghost.fs .ghost-frame{flex:1;min-height:0;display:block;background:#fff}
+.ghost .ghost-dot{width:9px;height:9px;border-radius:50%;background:#ff3d5b;animation:gcpulse 1.4s ease-in-out infinite;flex-shrink:0}
+.ghost .ghost-text{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.ghost .ghost-text b{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ghost .ghost-text small{font-size:11px;color:var(--faint);font-weight:600}
+.ghost .ghost-btn{background:transparent;color:var(--sub);border:1px solid var(--line);border-radius:10px;width:34px;height:34px;font-size:14px;cursor:pointer;flex-shrink:0;transition:background .12s}
+.ghost .ghost-btn:hover{background:var(--hover);color:var(--ink)}
+.ghost .ghost-btn.leave{color:#d93025;border-color:#f8d3d3}
+.ghost .ghost-btn.leave:hover{background:#fff5f5}
+.ghost.fs .ghost-btn.expand{transform:rotate(180deg)}
+.ghost-frame iframe{width:100%;height:100%;border:0;display:block}
+
 /* Persistent rejoin pill — appears at the bottom of the community app
    whenever localStorage.wsActiveParty is set, i.e. the user opened a
    party in a sibling page. Tapping it takes them back into /party. */
@@ -2966,6 +2998,24 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <button class="phost-btn leave" id="phostLeave" title="Leave party">✕</button>
   </div>
   <div class="phost-frame" id="phostFrameWrap"><iframe id="phostFrame" allow="microphone; autoplay" title="Party"></iframe></div>
+</div>
+
+<!-- Game host — the same 'persistent iframe' pattern as the party
+     host, but for game rooms. Owner ask 7 Aug 2026: 'stay in the
+     site, switch tabs without leaving the game, mini-player at
+     the bottom, one-click end'. Fullscreen when playing, minimised
+     to a bottom pill when the user switches tabs. -->
+<div id="gameHost" class="ghost hidden">
+  <div class="ghost-bar" id="ghostBar">
+    <span class="ghost-dot"></span>
+    <div class="ghost-text">
+      <b id="ghostTitle">Game</b>
+      <small id="ghostSub" class="hidden"></small>
+    </div>
+    <button class="ghost-btn expand" id="ghostExpand" title="Open game">▲</button>
+    <button class="ghost-btn leave" id="ghostLeave" title="End game">✕</button>
+  </div>
+  <div class="ghost-frame" id="ghostFrameWrap"><iframe id="ghostFrame" title="Game"></iframe></div>
 </div>
 
 <script>
@@ -4708,14 +4758,22 @@ function wsPlayComingSoon(slug, ev){
 function wsPlayStart(anchor, ev){
   const url = anchor && anchor.getAttribute('href');
   if (!url) return true;
-  // Preflight the 'already in a game' guard before we navigate away.
-  // If active, wsHandleActiveGame takes over the flow (navigates the
-  // user to their existing game, or clears + lets us proceed).
   if (ev) ev.preventDefault();
+  // Preflight the 'already in a game' guard first.
   wsCheckBeforePlay().then(out => {
     if (out.action === 'cancel' || out.action === 'continue') return;
+    // Owner ask 7 Aug 2026: open the game inside the persistent
+    // shell (iframe host) instead of navigating away. This keeps
+    // the game socket alive when the user switches to Chats or
+    // any other tab. openGameInApp figures out the game name from
+    // the URL and appends ?embed=1 for the game HTML to hide its
+    // own chrome.
     try { if (typeof toast === 'function') toast('🎮 New game started'); } catch(e){}
-    location.href = url;
+    const u = new URL(url, location.origin);
+    let game = (u.pathname.split('/')[1] || '').toLowerCase();
+    if (game === 'play' || game === 'codenames') game = 'wordspies';
+    const code = u.searchParams.get('room') || u.searchParams.get('code') || '';
+    openGameInApp(game, code);
   });
   return false;
 }
@@ -4821,6 +4879,116 @@ function togglePartyExpand(){
     $('phostSub').textContent = 'Tap ▲ to minimise';
   }
 }
+
+// ─── Game host (in-app iframe for game rooms) ─────────────────────────────
+// Mirrors openPartyInApp — but for games. Loads the game HTML with
+// ?embed=1 so it hides its own header/footer chrome, then keeps the
+// iframe mounted while the user browses other tabs. Owner ask 7 Aug
+// 2026: 'stay in the site, one-click end, mini-player at the bottom'.
+const GAME_LABEL = { wordspies:'WordSpies', wordrace:'Word Race', wordchain:'Word Chain',
+  guessword:'Guess the Word', spy:'Who is the Spy?', meld:'Mind Meld',
+  ludo:'Ludo', four:'Connect 4', pool:'8-Ball Pool' };
+const GAME_ROUTE = { wordspies:'/play', wordrace:'/wordrace', wordchain:'/wordchain',
+  guessword:'/guessword', spy:'/spy', meld:'/meld',
+  ludo:'/ludo', four:'/four', pool:'/pool' };
+let GHOST_GAME = null, GHOST_CODE = null;
+function openGameInApp(game, code, title){
+  game = String(game || '').toLowerCase();
+  code = String(code || '').trim().toUpperCase();
+  const route = GAME_ROUTE[game];
+  if (!route) { toast('Unknown game.'); return; }
+  const host = $('gameHost');
+  const frame = $('ghostFrame');
+  if (!host || !frame) return;
+  // Same game + same code already mounted → just re-expand.
+  if (GHOST_GAME === game && GHOST_CODE === code) {
+    host.classList.remove('hidden', 'mini');
+    host.classList.add('fs');
+    document.body.classList.add('in-game');
+    return;
+  }
+  // Different game or different code → tear down and mount fresh.
+  if (GHOST_GAME || GHOST_CODE) closeGameInApp(true);
+  GHOST_GAME = game; GHOST_CODE = code;
+  const t = $('ghostTitle');
+  if (t) t.textContent = (title || GAME_LABEL[game] || 'Game').toUpperCase();
+  host.classList.remove('hidden');
+  host.classList.add('fs');
+  host.classList.remove('mini');
+  document.body.classList.add('in-game');
+  const url = route + (code ? '?room=' + encodeURIComponent(code) + '&' : '?') + 'embed=1';
+  frame.src = url;
+}
+function closeGameInApp(silent){
+  const host = $('gameHost'); const frame = $('ghostFrame');
+  if (!host) return;
+  host.classList.add('hidden');
+  host.classList.remove('fs', 'mini');
+  document.body.classList.remove('in-game');
+  GHOST_GAME = null; GHOST_CODE = null;
+  if (frame) { try { frame.src = 'about:blank'; } catch(e){} }
+  if (!silent) toast('Left the game');
+}
+function minimizeGameInApp(){
+  const host = $('gameHost'); if (!host || !GHOST_CODE) return;
+  host.classList.remove('fs');
+  host.classList.add('mini');
+  document.body.classList.remove('in-game');
+}
+function toggleGameExpand(){
+  const host = $('gameHost'); if (!host || host.classList.contains('hidden')) return;
+  if (host.classList.contains('fs')) minimizeGameInApp();
+  else {
+    host.classList.remove('mini');
+    host.classList.add('fs');
+    document.body.classList.add('in-game');
+  }
+}
+// Chat has a hard rule from the owner: opening a chat should NOT
+// leave the game — the game stays alive in the mini-player. Every
+// other tab switch also collapses to the mini-player (they'd all
+// otherwise obscure the fullscreen game).
+(function wireGameHostToTabs(){
+  const orig = window.showTab;
+  if (typeof orig !== 'function') return;
+  window.showTab = function(name){
+    if (GHOST_CODE) minimizeGameInApp();
+    return orig.apply(this, arguments);
+  };
+})();
+document.addEventListener('DOMContentLoaded', () => {
+  const ex = $('ghostExpand'); if (ex) ex.onclick = toggleGameExpand;
+  const lv = $('ghostLeave'); if (lv) lv.onclick = () => {
+    // Try to tell the iframe to leave cleanly (each game listens for
+    // this postMessage — see the embed script in each game HTML).
+    try { $('ghostFrame').contentWindow.postMessage({ type: 'game:leave' }, location.origin); } catch(e){}
+    setTimeout(() => closeGameInApp(false), 200);
+  };
+  // Tap anywhere on the mini bar (except a button) to expand.
+  const bar = $('ghostBar'); if (bar) bar.addEventListener('click', (ev) => {
+    if (ev.target.closest('.ghost-btn')) return;
+    if ($('gameHost').classList.contains('mini')) toggleGameExpand();
+  });
+});
+// Intercept every "join / watch / play" link to a game route and
+// re-route through the in-app host instead of leaving the site.
+// Preserves guest-friendly UX + auto-join since each game already
+// handles ?room=CODE + session-token rejoin from today's earlier work.
+document.addEventListener('click', (ev) => {
+  const a = ev.target.closest && ev.target.closest('a[href]');
+  if (!a) return;
+  const href = a.getAttribute('href') || '';
+  const m = href.match(/^\/(wordrace|wordchain|guessword|spy|meld|ludo|four|pool|play|codenames)(\?|$)/);
+  if (!m) return;
+  // Let non-primary clicks / cmd+click / new-tab requests behave normally.
+  if (ev.metaKey || ev.ctrlKey || ev.shiftKey || (ev.button|0) !== 0) return;
+  let game = m[1];
+  if (game === 'play' || game === 'codenames') game = 'wordspies';
+  const url = new URL(a.href, location.origin);
+  const code = url.searchParams.get('room') || url.searchParams.get('code') || '';
+  ev.preventDefault();
+  openGameInApp(game, code);
+});
 document.addEventListener('DOMContentLoaded', () => {
   const ex = $('phostExpand'); if (ex) ex.onclick = togglePartyExpand;
   const lv = $('phostLeave'); if (lv) lv.onclick = () => {

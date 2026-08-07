@@ -148,9 +148,26 @@ label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:0 
 .howto-body p:last-child{margin-bottom:0}
 .howto-ok{width:100%;background:var(--ink,#16181f);color:#fff;border:0;border-radius:14px;padding:12px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:500;font-size:15.5px;cursor:pointer}
 .howto-ok:hover{background:#000}
+
+/* Embedded-in-shell mode (?embed=1) — parent Community app provides
+   the top nav + footer, so hide this page's own chrome. Owner ask
+   7 Aug 2026: 'stay in the site, don't leave the game to switch tabs'. */
+body.embed header,
+body.embed .wshead,
+body.embed .foot,
+body.embed .tinylink[href="/games"],
+body.embed .tinylink[href="/social"],
+body.embed .wsfoot {
+  display: none !important;
+}
+body.embed { padding-top: 0 !important; padding-bottom: 20px !important; }
+body.embed .wrap { padding-top: 0 !important; }
 </style>
 </head>
 <body>
+<script>
+if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed');
+</script>
 <div class="wrap">
   <header>
     <a href="/games" class="logo">🏁 Word Race</a>
