@@ -1,18 +1,15 @@
-# installed dependencies
+# IDE + editor config
+.idea/
+.vscode/
+*.iml
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Screenshots dropped in the repo root
+*.png
+*.jpeg
+*.jpg
+
+# node
 node_modules/
-
-# user-uploaded profile photos, created at runtime on the server
-social-photos/
-
-# secrets — never commit
-.env
-.env.*
-
-# logs and OS noise
-*.log
-.DS_Store
-
-# Screenshots dragged into repo root
-Screenshot*.png
-Screenshot*.jpg
-*.webp.bak
