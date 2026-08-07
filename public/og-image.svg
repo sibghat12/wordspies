@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WordSpies social share card (Open Graph / Twitter card).
+     Owner ask 7 Aug 2026: 'when I share it should show an amazing
+     image, people laughing and play games'. Designed here as SVG
+     so it stays crisp on every scaler and doesn't need a raster
+     export step. 1200x630 is the OG standard. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff7a9c"/>
+      <stop offset="55%" stop-color="#ff8b3d"/>
+      <stop offset="100%" stop-color="#7c5cff"/>
+    </linearGradient>
+    <linearGradient id="tileR" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff5a72"/>
+      <stop offset="100%" stop-color="#e0384f"/>
+    </linearGradient>
+    <linearGradient id="tileB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5c8bff"/>
+      <stop offset="100%" stop-color="#3d5be0"/>
+    </linearGradient>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.18"/>
+    </filter>
+    <filter id="tileShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <!-- Warm sunset gradient background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Soft blurred blobs for depth -->
+  <circle cx="150" cy="120" r="180" fill="#fff" opacity="0.09"/>
+  <circle cx="1050" cy="510" r="230" fill="#fff" opacity="0.08"/>
+  <circle cx="1120" cy="140" r="80" fill="#fff" opacity="0.12"/>
+
+  <!-- Big wordmark on the left, headline + tagline underneath -->
+  <g font-family="'Fredoka', 'Nunito', system-ui, sans-serif">
+    <text x="70" y="180" font-size="90" font-weight="600" fill="#fff" letter-spacing="-2">
+      Word<tspan fill="#fffbea">Spies</tspan>
+    </text>
+    <text x="72" y="260" font-size="42" font-weight="500" fill="#fff" opacity="0.95">
+      Learn languages by playing
+    </text>
+    <text x="72" y="308" font-size="42" font-weight="500" fill="#fff" opacity="0.95">
+      games with friends around the world.
+    </text>
+    <text x="72" y="400" font-size="26" font-weight="500" fill="#fff" opacity="0.85">
+      Word Race · WordSpies · Word Chain · Who is the Spy?
+    </text>
+    <text x="72" y="435" font-size="26" font-weight="500" fill="#fff" opacity="0.85">
+      Guess the Word · Ludo · 8-Ball Pool · Mind Meld
+    </text>
+    <!-- Small footer badge -->
+    <g transform="translate(72,510)">
+      <rect x="0" y="0" width="290" height="52" rx="26" fill="#16181f"/>
+      <text x="145" y="34" font-size="20" font-weight="600" fill="#fff" text-anchor="middle" letter-spacing="0.5">
+        wordspies.com · free, no signup
+      </text>
+    </g>
+  </g>
+
+  <!-- Right half: playful cluster of laughing faces + game tiles.
+       Emoji are actual Unicode so they inherit the OS emoji font
+       on whichever platform renders the preview card. -->
+  <g font-family="'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif" text-anchor="middle">
+    <!-- Laughing faces trio -->
+    <g transform="translate(880,150)">
+      <circle cx="0" cy="0" r="78" fill="#fff" filter="url(#soft)"/>
+      <text x="0" y="30" font-size="118">😄</text>
+    </g>
+    <g transform="translate(1050,270)">
+      <circle cx="0" cy="0" r="66" fill="#fff" filter="url(#soft)"/>
+      <text x="0" y="26" font-size="100">🤣</text>
+    </g>
+    <g transform="translate(760,300)">
+      <circle cx="0" cy="0" r="58" fill="#fff" filter="url(#soft)"/>
+      <text x="0" y="22" font-size="88">😊</text>
+    </g>
+
+    <!-- Game tiles — a mini WordSpies board hint + chat bubble -->
+    <g transform="translate(900,420)" filter="url(#tileShadow)">
+      <rect x="-70" y="-32" width="60" height="60" rx="12" fill="url(#tileR)"/>
+      <text x="-40" y="8" font-family="'Fredoka','Nunito',sans-serif" font-size="14" font-weight="700" fill="#fff">MOON</text>
+      <rect x="0" y="-32" width="60" height="60" rx="12" fill="url(#tileB)"/>
+      <text x="30" y="8" font-family="'Fredoka','Nunito',sans-serif" font-size="14" font-weight="700" fill="#fff">BANK</text>
+      <rect x="70" y="-32" width="60" height="60" rx="12" fill="#fff"/>
+      <text x="100" y="8" font-family="'Fredoka','Nunito',sans-serif" font-size="14" font-weight="700" fill="#2b2e36">NUT</text>
+    </g>
+    <g transform="translate(760,470)" filter="url(#tileShadow)">
+      <rect x="-58" y="-24" width="116" height="48" rx="24" fill="#ffe28a"/>
+      <text x="0" y="12" font-size="30">🎮 💬 🕵️</text>
+    </g>
+  </g>
+</svg>
