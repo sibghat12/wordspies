@@ -4747,26 +4747,34 @@ function wsPlayComingSoon(slug, ev){
 // "New game started" when they click a new game'. So tapping a Play
 // card now shows a tiny toast and navigates immediately, no
 // countdown overlay.
-function wsPlayStart(anchor, ev){
+async function wsPlayStart(anchor, ev){
   const url = anchor && anchor.getAttribute('href');
   if (!url) return true;
-  if (ev) ev.preventDefault();
-  // Preflight the 'already in a game' guard first.
-  wsCheckBeforePlay().then(out => {
-    if (out.action === 'cancel' || out.action === 'continue') return;
-    // Owner ask 7 Aug 2026: open the game inside the persistent
-    // shell (iframe host) instead of navigating away. This keeps
-    // the game socket alive when the user switches to Chats or
-    // any other tab. openGameInApp figures out the game name from
-    // the URL and appends ?embed=1 for the game HTML to hide its
-    // own chrome.
-    try { if (typeof toast === 'function') toast('🎮 New game started'); } catch(e){}
-    const u = new URL(url, location.origin);
-    let game = (u.pathname.split('/')[1] || '').toLowerCase();
-    if (game === 'play' || game === 'codenames') game = 'wordspies';
-    const code = u.searchParams.get('room') || u.searchParams.get('code') || '';
-    openGameInApp(game, code);
-  });
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }   // stop the delegated interceptor firing too
+  // Preflight the 'already in a game' guard.
+  const out = await wsCheckBeforePlay();
+  if (out.action === 'cancel' || out.action === 'continue') return false;
+  const u = new URL(url, location.origin);
+  let game = (u.pathname.split('/')[1] || '').toLowerCase();
+  if (game === 'play' || game === 'codenames') game = 'wordspies';
+  let code = u.searchParams.get('room') || u.searchParams.get('code') || '';
+  // Owner ask 7 Aug 2026: 'Start a room' should actually create a
+  // room, not dump the user on the game's home screen. Server has
+  // /api/{game}/new for every side game — POST it to mint a code,
+  // then open the iframe pointed at that fresh room. WordSpies main
+  // creates via socket inside the game HTML, so skip the POST for it.
+  if (!code && game !== 'wordspies') {
+    try {
+      const r = await fetch('/api/' + game + '/new', { method:'POST' });
+      const j = await r.json();
+      if (r.status === 409 && j && j.activeGame) {
+        return wsHandleActiveGame(j.activeGame);
+      }
+      if (r.ok && j && j.code) code = j.code;
+    } catch(e){}
+  }
+  try { if (typeof toast === 'function') toast('🎮 New game started'); } catch(e){}
+  openGameInApp(game, code);
   return false;
 }
 
@@ -4939,15 +4947,18 @@ function toggleGameExpand(){
 // Chat has a hard rule from the owner: opening a chat should NOT
 // leave the game — the game stays alive in the mini-player. Every
 // other tab switch also collapses to the mini-player (they'd all
-// otherwise obscure the fullscreen game).
-(function wireGameHostToTabs(){
+// otherwise obscure the fullscreen game). Wrap showTab AFTER DOM
+// load because it's defined later in this file; a bare IIFE at
+// script-parse time races and misses it (the actual bug behind
+// 'game stuff not working' 7 Aug 2026).
+document.addEventListener('DOMContentLoaded', () => {
   const orig = window.showTab;
   if (typeof orig !== 'function') return;
   window.showTab = function(name){
     if (GHOST_CODE) minimizeGameInApp();
     return orig.apply(this, arguments);
   };
-})();
+});
 document.addEventListener('DOMContentLoaded', () => {
   const ex = $('ghostExpand'); if (ex) ex.onclick = toggleGameExpand;
   const lv = $('ghostLeave'); if (lv) lv.onclick = () => {
