@@ -19,6 +19,7 @@
 // ever compared is your two answers against each other.
 
 const path = require('path');
+const crypto = require('crypto');
 
 // Rooms live in memory, exactly like the main game. Losing them on a restart is
 // fine: a round of this lasts two minutes, not two days.
@@ -248,13 +249,18 @@ function mount(app, io, opts) {
         id: socket.id,
         name: safeName((prof && prof.name) || name),
         photo: (prof && prof.photo) || null,
-        connected: true
+        connected: true,
+        _uid: (prof && prof.uid) || null,
+        // Per-player session token — client stashes in 'meld_sess' for
+        // refresh-safe rejoin.
+        token: crypto.randomUUID()
       };
       r.players.set(socket.id, p);
       if (!r.hostId) r.hostId = socket.id;
       room = r; me = p;
       socket.join(r.code);
       socket.emit('seated', { code: r.code, you: socket.id });
+      socket.emit('session', { code: r.code, token: p.token, name: p.name });
       broadcast(r);
     };
 
@@ -285,6 +291,44 @@ function mount(app, io, opts) {
       if (!uid || uid !== r.creatorUid) return;
       rooms.delete(code);
       try { nsp.to(code).emit('roomClosed', { code }); } catch (e) {}
+    });
+
+    // Token-based rejoin — client stashes { code, token } in 'meld_sess'.
+    socket.on('rejoin', async (data, ack) => {
+      await socket.ready;
+      if (room) return;
+      const code = String((data && data.code) || '').trim().toUpperCase();
+      const token = String((data && data.token) || '');
+      const r = rooms.get(code);
+      if (!r) {
+        fail('That game is no longer running.');
+        if (typeof ack === 'function') ack({ error: 'gone' });
+        return;
+      }
+      const entry = [...r.players.entries()].find(([, p]) => p.token && p.token === token);
+      if (!entry) {
+        if (typeof ack === 'function') ack({ error: 'expired' });
+        return;
+      }
+      const [oldId, p] = entry;
+      const oldSock = nsp.sockets.get(oldId);
+      if (oldSock) { try { oldSock.emit('replaced'); oldSock.leave(r.code); } catch (e) {} }
+      r.players.delete(oldId);
+      if (r.hostId === oldId) r.hostId = socket.id;
+      // picks is an object keyed by socket.id — move the entry across so
+      // the returning player's locked-in word (if any) survives the swap.
+      if (Object.prototype.hasOwnProperty.call(r.picks, oldId)) {
+        r.picks[socket.id] = r.picks[oldId];
+        delete r.picks[oldId];
+      }
+      p.id = socket.id; p.connected = true;
+      r.players.set(socket.id, p);
+      room = r; me = p;
+      socket.join(r.code);
+      socket.emit('seated', { code: r.code, you: socket.id, reconnected: true });
+      socket.emit('session', { code: r.code, token: p.token, name: p.name });
+      broadcast(r);
+      if (typeof ack === 'function') ack({ code, reconnected: true });
     });
 
     socket.on('join', async (data, ack) => {

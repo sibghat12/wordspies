@@ -313,7 +313,7 @@ fetch('/api/social/me').then(r => r.json()).then(d => {
     show($('nameBox'), false); show($('meRow'), true);
     $('meNm').textContent = ME.name;
     if (ME.photo) $('meImg').src = ME.photo; else $('meImg').style.display = 'none';
-    if (AUTOGO && pre) conn().emit('join', { code: pre.toUpperCase(), name: ME.name });
+    if (AUTOGO && pre && !REJOIN_TRIED) conn().emit('join', { code: pre.toUpperCase(), name: ME.name });
   }
 }).catch(() => {});
 
@@ -331,6 +331,19 @@ function conn() {
     }
   });
   socket.on('seated', d => { myId = d.you; mySeat = d.seat; history.replaceState(null, '', '/ludo?room=' + d.code); });
+  // Session token — server hands it back on every seat/rejoin; we stash it in
+  // localStorage so a browser refresh rejoins the SAME seat instead of
+  // stacking a fresh one. Cleared on 'replaced' or 'roomClosed'.
+  socket.on('session', ({ code, token }) => {
+    try { localStorage.setItem('ludo_sess', JSON.stringify({ code, token, at: Date.now() })); } catch(e){}
+  });
+  socket.on('replaced', () => {
+    try { localStorage.removeItem('ludo_sess'); } catch(e){}
+    flash('Opened in another tab — this one is idle.');
+  });
+  socket.on('roomClosed', () => {
+    try { localStorage.removeItem('ludo_sess'); } catch(e){}
+  });
   watchWire(socket, render);
   socket.on('err', d => flash(d.msg));
   // While we're sat in the lobby we keep asking the server who's there. The
@@ -380,9 +393,26 @@ $('againBtn').onclick = () => socket.emit('rematch');
 
 const AUTOGO = new URLSearchParams(location.search).get('go') === '1';
 const pre = new URLSearchParams(location.search).get('room');
+// If we have a saved session for this exact room, prefer rejoin over join —
+// server swaps sockets atomically, no duplicate seat. Fires BEFORE AUTOGO so
+// a refresh with a live session doesn't create a fresh seat.
+let REJOIN_TRIED = false;
 if (pre) {
-  $('codeIn').value = pre.toUpperCase();
-  fetch('/api/ludo/' + pre.toUpperCase()).then(r => r.json()).then(d => {
+  const code = pre.toUpperCase();
+  $('codeIn').value = code;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('ludo_sess') || 'null'); } catch(e){}
+  if (saved && saved.code === code && saved.token) {
+    REJOIN_TRIED = true;
+    conn().emit('rejoin', { code, token: saved.token }, ack => {
+      if (ack && ack.error) {
+        // Token gone / room ended-and-restarted → fall through to normal join.
+        try { localStorage.removeItem('ludo_sess'); } catch(e){}
+        if (AUTOGO && ME && ME.name) socket.emit('join', { code, name: ME.name });
+      }
+    });
+  }
+  fetch('/api/ludo/' + code).then(r => r.json()).then(d => {
     if (d.exists && d.host) $('joinBtn').textContent = 'Join ' + d.host;
     if (!d.exists) flash('No game with that code. It may have finished.');
   }).catch(() => {});

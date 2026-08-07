@@ -11,6 +11,44 @@
 // file throws on load the main game does not notice.
 
 const path = require('path');
+const crypto = require('crypto');
+
+// Shared session-token rejoin helper for the three arcade games (ludo,
+// four, pool). Owner ask 7 Aug 2026: refreshing the tab must NOT create
+// a duplicate seat. The client saves { code, token } in localStorage on
+// the 'session' event; on refresh it emits 'rejoin' before showing any
+// name field, and we swap the old socket.id for the new one everywhere
+// it appears — players Map key, seatOrder, hostId, order[].
+function _arcadeRejoin(opts) {
+  const { data, room, nsp, socket, table, broadcast, publicState } = opts;
+  const code = String((data && data.code) || '').trim().toUpperCase();
+  const token = String((data && data.token) || '');
+  const r = table.get(code);
+  if (!r) return { error: 'gone' };
+  let oldId = null, p = null;
+  for (const [id, pl] of r.players) {
+    if (pl.token && pl.token === token) { oldId = id; p = pl; break; }
+  }
+  if (!p) return { error: 'expired' };
+  const oldSock = nsp.sockets.get(oldId);
+  if (oldSock) { try { oldSock.emit('replaced'); oldSock.leave(r.code); } catch (e) {} }
+  r.players.delete(oldId);
+  r.players.set(socket.id, Object.assign({}, p, { id: socket.id, connected: true }));
+  if (r.hostId === oldId) r.hostId = socket.id;
+  if (Array.isArray(r.seatOrder)) {
+    for (let i = 0; i < r.seatOrder.length; i++) if (r.seatOrder[i] === oldId) r.seatOrder[i] = socket.id;
+  }
+  if (Array.isArray(r.order)) {
+    // r.order in ludo holds SEAT INDICES (numbers), not socket.ids, so nothing to re-key.
+    // Guard just in case a future variant stores ids.
+    r.order = r.order.map(x => x === oldId ? socket.id : x);
+  }
+  socket.join(r.code);
+  socket.emit('seated', { code: r.code, you: socket.id, reconnected: true });
+  socket.emit('session', { code: r.code, token: p.token, name: p.name });
+  broadcast(r);
+  return { room: r, code: r.code };
+}
 
 // ── shared odds and ends ──────────────────────────────────────────────────
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no I/O/0/1, they get misread aloud
@@ -671,19 +709,36 @@ function mount(app, io, opts) {
 
     const seat = (r, name, seatIdx) => {
       const prof = socket.profile;
+      const token = crypto.randomUUID();
       r.players.set(socket.id, {
         id: socket.id,
         name: safeName((prof && prof.name) || name),
         photo: (prof && prof.photo) || null,
-        bot: false, connected: true
+        bot: false, connected: true,
+        _uid: (prof && prof.uid) || null,
+        // Per-player token — the client saves this so a refresh rejoins
+        // the same seat instead of stacking a fresh one (owner ask 7
+        // Aug 2026). Cleared on 'replaced' or 'roomClosed' client-side.
+        token
       });
       r.seatOrder[seatIdx] = socket.id;
       if (!r.hostId) r.hostId = socket.id;
       room = r;
       socket.join(r.code);
       socket.emit('seated', { code: r.code, you: socket.id, seat: seatIdx });
+      socket.emit('session', { code: r.code, token, name: r.players.get(socket.id).name });
       lbroad(r);
     };
+
+    // Token-based rejoin — see the _arcadeRejoin helper above.
+    socket.on('rejoin', async (data, ack) => {
+      await socket.ready;
+      if (room) return;
+      const out = _arcadeRejoin({ data, room, nsp: lnsp, socket, table: ludoRooms, broadcast: lbroad, publicState: ludoPublic });
+      if (out.error) { if (typeof ack === 'function') ack({ error: out.error }); return; }
+      room = out.room;
+      if (typeof ack === 'function') ack({ code: out.code, reconnected: true });
+    });
 
     // The lobby asks for this every few seconds. The room already broadcasts on
     // every join, but a slept phone or a dropped socket can miss that push, so
@@ -909,19 +964,33 @@ function mount(app, io, opts) {
 
     const seat = (r, name, idx) => {
       const prof = socket.profile;
+      const token = crypto.randomUUID();
       r.players.set(socket.id, {
         id: socket.id,
         name: safeName((prof && prof.name) || name),
         photo: (prof && prof.photo) || null,
-        bot: false, connected: true
+        bot: false, connected: true,
+        _uid: (prof && prof.uid) || null,
+        token
       });
       r.seatOrder[idx] = socket.id;
       if (!r.hostId) r.hostId = socket.id;
       room = r;
       socket.join(r.code);
       socket.emit('seated', { code: r.code, you: socket.id, seat: idx });
+      socket.emit('session', { code: r.code, token, name: r.players.get(socket.id).name });
       fbroad(r);
     };
+
+    // Refresh-safe rejoin — same helper the ludo namespace uses.
+    socket.on('rejoin', async (data, ack) => {
+      await socket.ready;
+      if (room) return;
+      const out = _arcadeRejoin({ data, room, nsp: fnsp, socket, table: fourRooms, broadcast: fbroad, publicState: fourPublic });
+      if (out.error) { if (typeof ack === 'function') ack({ error: out.error }); return; }
+      room = out.room;
+      if (typeof ack === 'function') ack({ code: out.code, reconnected: true });
+    });
 
     socket.on('create', async (data, ack) => {
       await socket.ready;
@@ -1154,19 +1223,33 @@ function mount(app, io, opts) {
 
     const seat = (r, name, idx) => {
       const prof = socket.profile;
+      const token = crypto.randomUUID();
       r.players.set(socket.id, {
         id: socket.id,
         name: safeName((prof && prof.name) || name),
         photo: (prof && prof.photo) || null,
-        bot: false, connected: true
+        bot: false, connected: true,
+        _uid: (prof && prof.uid) || null,
+        token
       });
       r.seatOrder[idx] = socket.id;
       if (!r.hostId) r.hostId = socket.id;
       room = r;
       socket.join(r.code);
       socket.emit('seated', { code: r.code, you: socket.id, seat: idx });
+      socket.emit('session', { code: r.code, token, name: r.players.get(socket.id).name });
       pbroad(r);
     };
+
+    // Refresh-safe rejoin — same helper the other arcade namespaces use.
+    socket.on('rejoin', async (data, ack) => {
+      await socket.ready;
+      if (room) return;
+      const out = _arcadeRejoin({ data, room, nsp: pnsp, socket, table: poolRooms, broadcast: pbroad, publicState: poolPublic });
+      if (out.error) { if (typeof ack === 'function') ack({ error: out.error }); return; }
+      room = out.room;
+      if (typeof ack === 'function') ack({ code: out.code, reconnected: true });
+    });
 
     socket.on('create', async (data, ack) => {
       await socket.ready;

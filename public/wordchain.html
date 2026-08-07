@@ -492,14 +492,23 @@ $('homeBtn').onclick = () => location.href = '/games';
 
 socket.on('err', ({ msg }) => toast(msg || 'Something went wrong.'));
 socket.on('kicked', () => { toast('You were removed from the room.'); setTimeout(() => location.reload(), 900); });
-socket.on('replaced', () => { toast('You joined from another tab — this one is now spectating.'); });
+socket.on('replaced', () => {
+  toast('You joined from another tab — this one is now spectating.');
+  try { localStorage.removeItem('wc_sess'); } catch(e){}
+});
 socket.on('roomClosed', ({ by }) => {
+  try { localStorage.removeItem('wc_sess'); } catch(e){}
   toast((by ? esc(by) : 'The host') + ' ended the game.');
   setTimeout(() => location.href = '/', 1200);
 });
 socket.on('seated', ({ code, you }) => {
   MY_ID = you;
   history.replaceState(null, '', '/wordchain?room=' + code);
+});
+// Session token — server hands it back on seat; we stash it in
+// localStorage so a browser refresh rejoins the SAME seat.
+socket.on('session', ({ code, token }) => {
+  try { localStorage.setItem('wc_sess', JSON.stringify({ code, token, at: Date.now() })); } catch(e){}
 });
 socket.on('watching', ({ code }) => {
   view('viewWatch');
@@ -528,10 +537,28 @@ socket.on('state', (state) => { S = state; render(); });
   const rcode = p.get('room');
   if (wcode) { socket.emit('watch', { code: wcode.toUpperCase() }); return; }
   if (rcode) {
-    $('codeIn').value = rcode.toUpperCase();
-    const n = $('nameIn').value.trim();
-    if (n) setTimeout(() => $('joinBtn').click(), 40);
-    else $('nameIn').focus();
+    const code = rcode.toUpperCase();
+    $('codeIn').value = code;
+    // Three-way auto-join, matching wordrace: saved session first, then
+    // saved name, then focus the name field for a fresh visitor.
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('wc_sess') || 'null'); } catch(e){}
+    const tryFresh = () => {
+      const n = $('nameIn').value.trim();
+      if (n) setTimeout(() => $('joinBtn').click(), 40);
+      else $('nameIn').focus();
+    };
+    if (saved && saved.code === code && saved.token) {
+      const go = () => socket.emit('rejoin', { code, token: saved.token }, ack => {
+        if (ack && ack.error) {
+          try { localStorage.removeItem('wc_sess'); } catch(e){}
+          tryFresh();
+        }
+      });
+      if (socket.connected) go(); else socket.on('connect', go);
+      return;
+    }
+    tryFresh();
   }
 })();
 

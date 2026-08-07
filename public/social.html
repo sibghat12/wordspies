@@ -1290,6 +1290,24 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .wpsrow .wpsmeta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--sub)}
 .wpsrow .wpslive{background:#fff5f5;color:#d93025;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.08em;border:1px solid #f8d3d3}
 
+/* Live-games banner — pulses on the Community + Games tabs whenever
+   /api/live has anything playing. One row per live room. Hidden
+   entirely when nothing is happening. */
+.livebanner{border:1px solid var(--line);border-radius:16px;padding:12px;margin:8px 0 18px;background:#fff}
+.livebanner h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:14px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:var(--sub);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#ff3d5b;box-shadow:0 0 0 0 rgba(255,61,91,.5);animation:livePulse 1.4s ease-out infinite}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(255,61,91,.65)}70%{box-shadow:0 0 0 8px rgba(255,61,91,0)}100%{box-shadow:0 0 0 0 rgba(255,61,91,0)}}
+.liverow{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;text-decoration:none;color:inherit;transition:background .1s}
+.liverow:hover{background:#f6f7fb}
+.liverow + .liverow{border-top:1px solid var(--line)}
+.liverow .lvic{font-size:22px;width:36px;text-align:center;flex-shrink:0}
+.liverow .lvbody{flex:1;min-width:0}
+.liverow .lvtitle{font-family:'Fredoka','Inter',sans-serif;font-weight:500;font-size:15px;letter-spacing:-.2px}
+.liverow .lvmeta{font-size:12px;color:var(--sub);margin-top:2px}
+.liverow .lvbtns{display:flex;gap:6px;flex-shrink:0}
+.liverow .lvbtn{background:#f2f4f7;color:var(--ink);border:0;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;text-decoration:none;cursor:pointer;font-family:inherit}
+.liverow .lvbtn.join{background:var(--ink);color:#fff}
+
 /* In-app party host — iframe stays mounted so party audio + socket
    live through tab switches inside /social. Two modes:
    .phost.fs  → fullscreen overlay (in-party view)
@@ -2195,7 +2213,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
            games back — Codenames and the Imposter and 8-ball pool
            in a very nice layout'. Shows a curated 3-card shelf
            instead of the old 5-way list. -->
-      <button id="tbGames" class="tnt" onclick="showTab('games')"><span class="ico">🕹️</span>Play</button>
+      <button id="tbGames" class="tnt" onclick="showTab('games')"><span class="ico">🕹️</span>Games</button>
     </div>
     <div class="tnright">
       <!-- LIVE chip: pulsing red pill in the corner, only when there's a
@@ -2249,6 +2267,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <a class="lvnudge hidden" id="lvNudge" href="#live" onclick="showTab('live');return false">
       <span class="lvdot"></span><b id="lvNudgeT"></b><span class="lvna" aria-hidden="true">→</span>
     </a>
+    <!-- Happening-now banner — mirrors #lbWallLive on the Games tab so a
+         visitor landing on Community immediately sees any live games and
+         can jump straight in. Populated by paintLiveBanners(). -->
+    <div class="livebanner hidden" id="lbWall">
+      <h3><span class="live-dot"></span>Happening now</h3>
+      <div id="lbWallRows"></div>
+    </div>
     <!-- Live parties strip — surfaces any active party directly on the
          community wall. Owner asked: parties should appear across the site,
          not just on the Parties tab. Populated by paintCommunityPartyStrip. -->
@@ -2341,6 +2366,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        pool, very nice layout so real users love it'. Three big
        gradient cards, one gameplay illustration each, clear CTA. -->
   <div id="tabGames" class="hidden">
+    <!-- Happening-now banner — shows every currently-playing room from
+         /api/live (falling back to lobby rooms if nothing is mid-game
+         yet). Hidden entirely when zero live + zero lobby. -->
+    <div class="livebanner hidden" id="lbGames">
+      <h3><span class="live-dot"></span>Happening now</h3>
+      <div id="lbGamesRows"></div>
+    </div>
     <div class="myrooms hidden" id="myRooms">
       <div class="myrooms-h">
         <span>🎮 My open games</span>
@@ -4368,6 +4400,52 @@ function paintCommunityPartyStrip(parties){
   }).join('');
 }
 
+// "Happening now" banner — one row per live game, with Join + Watch
+// buttons. Painted on the Community and Games tabs so a newcomer sees
+// active rooms wherever they land. Prefers state==='playing'; falls
+// back to lobby rooms if nothing's mid-game yet. Hidden entirely when
+// there's nothing at all to show.
+function paintLiveBanners(games){
+  const wallBox = $('lbWall'), wallRows = $('lbWallRows');
+  const gamesBox = $('lbGames'), gamesRows = $('lbGamesRows');
+  if (!wallBox && !gamesBox) return;
+
+  const all = (games || []).filter(g => g.state === 'playing' || g.state === 'lobby');
+  const playing = all.filter(g => g.state === 'playing');
+  const show = playing.length ? playing : all;
+
+  if (!show.length) {
+    if (wallBox) wallBox.classList.add('hidden');
+    if (gamesBox) gamesBox.classList.add('hidden');
+    return;
+  }
+
+  const html = show.map(g => {
+    const players = (g.players || []).length;
+    const watchers = g.watchers || 0;
+    const bits = [];
+    bits.push(players === 1 ? '1 player' : (players + ' players'));
+    if (watchers) bits.push(watchers === 1 ? '1 watching' : (watchers + ' watching'));
+    const meta = bits.join(' · ');
+    const watchBtn = g.watchHref
+      ? `<a class="lvbtn" href="${esc(g.watchHref)}">Watch</a>` : '';
+    return `<div class="liverow">
+      <span class="lvic">${esc(g.icon || '🎮')}</span>
+      <div class="lvbody">
+        <div class="lvtitle">${esc(g.title || 'Game')}</div>
+        <div class="lvmeta">${esc(meta)}</div>
+      </div>
+      <div class="lvbtns">
+        ${watchBtn}
+        <a class="lvbtn join" href="${esc(g.href || '#')}">Join</a>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (wallBox && wallRows) { wallRows.innerHTML = html; wallBox.classList.remove('hidden'); }
+  if (gamesBox && gamesRows) { gamesRows.innerHTML = html; gamesBox.classList.remove('hidden'); }
+}
+
 // ---------- 📞 Voice calls (1-on-1) ----------
 // Ringing / calling / active-call flow. A call is a 2-person private
 // party under the hood — this layer just handles the ringing UX.
@@ -4872,6 +4950,9 @@ function paintLiveGames(j){
 
   // Live parties strip on the Community wall.
   paintCommunityPartyStrip(games.filter(g => g.game === 'party'));
+
+  // "Happening now" banner — rendered on both Community + Games tabs.
+  paintLiveBanners(games);
   const gameCardMap = {
     wordspies: 'cntWordspies', ludo: 'cntLudo', pool: 'cntPool',
     four: 'cntFour', meld: 'cntMeld', spy: 'cntSpy'

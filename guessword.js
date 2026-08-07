@@ -10,6 +10,7 @@
 // spy.js. A crash here can never take the rest of the site down.
 
 const path = require('path');
+const crypto = require('crypto');
 
 const rooms = new Map();
 
@@ -357,13 +358,17 @@ function mount(app, io, opts) {
         connected: true,
         score: 0,
         described: 0,
-        _uid: (prof && prof.uid) || null
+        _uid: (prof && prof.uid) || null,
+        // Per-player session token — client stashes in 'gw_sess' for
+        // refresh-safe rejoin.
+        token: crypto.randomUUID()
       };
       r.players.set(socket.id, p);
       if (!r.hostId) r.hostId = socket.id;
       room = r; me = p;
       socket.join(r.code);
       socket.emit('seated', { code: r.code, you: socket.id });
+      socket.emit('session', { code: r.code, token: p.token, name: p.name });
       broadcast(r);
     };
 
@@ -392,6 +397,43 @@ function mount(app, io, opts) {
       try { nsp.to(code).emit('roomClosed', { code }); } catch (e) {}
     });
 
+    // Token-based rejoin — client stashes { code, token } in 'gw_sess'.
+    socket.on('rejoin', async (data, ack) => {
+      await socket.ready;
+      if (room) return;
+      const code = String((data && data.code) || '').trim().toUpperCase();
+      const token = String((data && data.token) || '');
+      const r = rooms.get(code);
+      if (!r) {
+        fail('That game is no longer running.');
+        if (typeof ack === 'function') ack({ error: 'gone' });
+        return;
+      }
+      const entry = [...r.players.entries()].find(([, p]) => p.token && p.token === token);
+      if (!entry) {
+        if (typeof ack === 'function') ack({ error: 'expired' });
+        return;
+      }
+      const [oldId, p] = entry;
+      const oldSock = nsp.sockets.get(oldId);
+      if (oldSock) { try { oldSock.emit('replaced'); oldSock.leave(r.code); } catch (e) {} }
+      r.players.delete(oldId);
+      if (r.hostId === oldId) r.hostId = socket.id;
+      if (r.order.length) r.order = r.order.map(x => x === oldId ? socket.id : x);
+      if (r.describerId === oldId) r.describerId = socket.id;
+      // Re-key any guesses tagged with the old socket id so the guesser's
+      // avatar still resolves after the swap.
+      for (const g of r.guesses) { if (g.playerId === oldId) g.playerId = socket.id; }
+      p.id = socket.id; p.connected = true;
+      r.players.set(socket.id, p);
+      room = r; me = p;
+      socket.join(r.code);
+      socket.emit('seated', { code: r.code, you: socket.id, reconnected: true });
+      socket.emit('session', { code: r.code, token: p.token, name: p.name });
+      broadcast(r);
+      if (typeof ack === 'function') ack({ code, reconnected: true });
+    });
+
     socket.on('join', async (data, ack) => {
       await socket.ready;
       if (room) return;
@@ -417,6 +459,7 @@ function mount(app, io, opts) {
             room = r; me = seated;
             socket.join(r.code);
             socket.emit('seated', { code: r.code, you: socket.id, reconnected: true });
+            socket.emit('session', { code: r.code, token: seated.token, name: seated.name });
             broadcast(r);
             if (typeof ack === 'function') ack({ code, reconnected: true });
             return;

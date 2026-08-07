@@ -267,8 +267,21 @@ socket.on('seated', ({ code, you, reconnected }) => {
   history.replaceState(null, '', '/wordrace?room=' + code);
   if (reconnected) toast('Reconnected');
 });
-socket.on('replaced', () => toast('Opened in another tab — this one is idle.'));
-socket.on('roomClosed', () => { toast('Host closed the room.'); setTimeout(()=>location.href='/games', 1200); });
+// Session token — server hands it back when we seat; we stash it in
+// localStorage so a browser refresh rejoins the SAME seat instead of
+// stacking a fresh one (owner ask 7 Aug 2026 — 'refresh should keep 1,
+// not become 2'). Cleared on 'replaced' or 'roomClosed'.
+socket.on('session', ({ code, token }) => {
+  try { localStorage.setItem('wr_sess', JSON.stringify({ code, token, at: Date.now() })); } catch(e){}
+});
+socket.on('replaced', () => {
+  toast('Opened in another tab — this one is idle.');
+  try { localStorage.removeItem('wr_sess'); } catch(e){}
+});
+socket.on('roomClosed', () => {
+  try { localStorage.removeItem('wr_sess'); } catch(e){}
+  toast('Host closed the room.'); setTimeout(()=>location.href='/games', 1200);
+});
 socket.on('accepted', ({ word }) => {
   $('wordIn').value = '';
   $('wordIn').focus();
@@ -323,13 +336,34 @@ function copyLink(){
 }
 
 // ─── auto-join via ?room=CODE ─────────────────────────────────────────────
+// Three-way flow:
+//   1. Saved session for this code → emit 'rejoin' with the token.
+//      Server swaps sockets in place, no duplicate seat.
+//   2. Saved name but no session → emit 'join' with the name, one tap
+//      from a link is enough.
+//   3. No name → drop the code into the field and wait for them to
+//      type their name + tap Join.
 (function autoJoin(){
   const m = location.search.match(/room=([A-Z0-9]{3,6})/i);
   if (!m) return;
   const code = m[1].toUpperCase();
   $('cdIn').value = code;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('wr_sess') || 'null'); } catch(e){}
   socket.on('connect', () => {
-    setTimeout(() => tryJoin(), 60);
+    if (saved && saved.code === code && saved.token) {
+      socket.emit('rejoin', { code, token: saved.token }, ack => {
+        if (ack && ack.error) {
+          // Token gone / room ended-and-restarted → fresh join.
+          try { localStorage.removeItem('wr_sess'); } catch(e){}
+          setTimeout(() => tryJoin(), 40);
+        }
+      });
+      return;
+    }
+    const savedName = ($('nmIn').value || '').trim();
+    if (savedName) setTimeout(() => tryJoin(), 60);
+    else $('nmIn').focus();     // link visitor with no name yet
   });
 })();
 

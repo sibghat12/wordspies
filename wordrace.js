@@ -13,6 +13,7 @@
 // so a bug in here can never take the rest of the site down.
 
 const path = require('path');
+const crypto = require('crypto');
 
 const rooms = new Map();
 
@@ -343,13 +344,19 @@ function mount(app, io, opts) {
         name: safeName((prof && prof.name) || name),
         photo: (prof && prof.photo) || null,
         connected: true,
-        _uid: (prof && prof.uid) || null
+        _uid: (prof && prof.uid) || null,
+        // Per-player session token — the client saves this in
+        // localStorage as 'wr_sess' so a browser refresh can rejoin
+        // the same seat instead of stacking a second one. Owner ask
+        // 7 Aug 2026: 'refresh and it should stay 1, not become 2'.
+        token: crypto.randomUUID()
       };
       r.players.set(socket.id, p);
       if (!r.hostId) r.hostId = socket.id;
       room = r; me = p;
       socket.join(r.code);
       socket.emit('seated', { code: r.code, you: socket.id });
+      socket.emit('session', { code: r.code, token: p.token, name: p.name });
       broadcast(r);
     };
 
@@ -366,6 +373,53 @@ function mount(app, io, opts) {
       rooms.set(code, r);
       seat(r, data && data.name);
       if (typeof ack === 'function') ack({ code });
+    });
+
+    // Token-based rejoin. The client stores { code, token } in
+    // localStorage from the 'session' event above. On refresh it
+    // fires this event; we find the matching seat by token and swap
+    // sockets in place — no duplicate seat, no name re-prompt, no
+    // need to have been signed in. Same UX the main WordSpies game
+    // has had since day one; retrofitted here 7 Aug 2026.
+    socket.on('rejoin', async (data, ack) => {
+      await socket.ready;
+      if (room) return;
+      const code = String((data && data.code) || '').trim().toUpperCase();
+      const token = String((data && data.token) || '');
+      const r = rooms.get(code);
+      if (!r) {
+        fail('That game is no longer running.');
+        if (typeof ack === 'function') ack({ error: 'gone' });
+        return;
+      }
+      const entry = [...r.players.entries()].find(([, p]) => p.token && p.token === token);
+      if (!entry) {
+        // Token expired / player was removed while offline. Fall
+        // back to a fresh join if the client wants — but we don't
+        // implicitly seat them here, that's the client's call.
+        if (typeof ack === 'function') ack({ error: 'expired' });
+        return;
+      }
+      const [oldId, p] = entry;
+      // Boot the ghost socket if it's still hanging around.
+      const oldSock = nsp.sockets.get(oldId);
+      if (oldSock) { try { oldSock.emit('replaced'); oldSock.leave(r.code); } catch (e) {} }
+      r.players.delete(oldId);
+      if (r.hostId === oldId) r.hostId = socket.id;
+      if (r.order.length) r.order = r.order.map(x => x === oldId ? socket.id : x);
+      // Move per-round words map onto the new socket id so counts
+      // don't stale-out on a mid-round refresh.
+      for (const rd of r.rounds) {
+        if (rd.words.has(oldId)) { rd.words.set(socket.id, rd.words.get(oldId)); rd.words.delete(oldId); }
+      }
+      p.id = socket.id; p.connected = true;
+      r.players.set(socket.id, p);
+      room = r; me = p;
+      socket.join(r.code);
+      socket.emit('seated', { code: r.code, you: socket.id, reconnected: true });
+      socket.emit('session', { code: r.code, token: p.token, name: p.name });
+      broadcast(r);
+      if (typeof ack === 'function') ack({ code, reconnected: true });
     });
 
     socket.on('closeMyRoom', (data) => {
@@ -406,6 +460,7 @@ function mount(app, io, opts) {
             room = r; me = seated;
             socket.join(r.code);
             socket.emit('seated', { code: r.code, you: socket.id, reconnected: true });
+            socket.emit('session', { code: r.code, token: seated.token, name: seated.name });
             broadcast(r);
             if (typeof ack === 'function') ack({ code, reconnected: true });
             return;

@@ -426,9 +426,20 @@ $('homeBtn').onclick = () => location.href = '/games';
 
 socket.on('err', ({ msg }) => toast(msg || 'Something went wrong.'));
 socket.on('kicked', () => { toast('You were removed from the room.'); setTimeout(() => location.reload(), 900); });
-socket.on('replaced', () => { toast('You joined from another tab — this one is now spectating.'); });
-socket.on('roomClosed', ({ by }) => { toast((by ? esc(by) : 'The host') + ' ended the game.'); setTimeout(() => location.href = '/', 1200); });
+socket.on('replaced', () => {
+  toast('You joined from another tab — this one is now spectating.');
+  try { localStorage.removeItem('gw_sess'); } catch(e){}
+});
+socket.on('roomClosed', ({ by }) => {
+  try { localStorage.removeItem('gw_sess'); } catch(e){}
+  toast((by ? esc(by) : 'The host') + ' ended the game.');
+  setTimeout(() => location.href = '/', 1200);
+});
 socket.on('seated', ({ code, you }) => { MY_ID = you; history.replaceState(null, '', '/guessword?room=' + code); });
+// Session token — stash for refresh-safe rejoin.
+socket.on('session', ({ code, token }) => {
+  try { localStorage.setItem('gw_sess', JSON.stringify({ code, token, at: Date.now() })); } catch(e){}
+});
 socket.on('watching', ({ code }) => { view('viewWatch'); $('wCode').textContent = code; });
 socket.on('state', (state) => { S = state; render(); });
 
@@ -438,10 +449,26 @@ socket.on('state', (state) => { S = state; render(); });
   const rcode = p.get('room');
   if (wcode) { socket.emit('watch', { code: wcode.toUpperCase() }); return; }
   if (rcode) {
-    $('codeIn').value = rcode.toUpperCase();
-    const n = $('nameIn').value.trim();
-    if (n) setTimeout(() => $('joinBtn').click(), 40);
-    else $('nameIn').focus();
+    const code = rcode.toUpperCase();
+    $('codeIn').value = code;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('gw_sess') || 'null'); } catch(e){}
+    const tryFresh = () => {
+      const n = $('nameIn').value.trim();
+      if (n) setTimeout(() => $('joinBtn').click(), 40);
+      else $('nameIn').focus();
+    };
+    if (saved && saved.code === code && saved.token) {
+      const go = () => socket.emit('rejoin', { code, token: saved.token }, ack => {
+        if (ack && ack.error) {
+          try { localStorage.removeItem('gw_sess'); } catch(e){}
+          tryFresh();
+        }
+      });
+      if (socket.connected) go(); else socket.on('connect', go);
+      return;
+    }
+    tryFresh();
   }
 })();
 

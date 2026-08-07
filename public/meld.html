@@ -337,7 +337,7 @@ fetch('/api/social/me', { cache:'no-store' })
     else $('meAv').textContent = (ME.name || '?').trim().charAt(0).toUpperCase();
     // Came here from a chat invite while signed in? Straight in, no forms.
     if (new URLSearchParams(location.search).get('go') === '1' && /^[A-Z0-9]{4}$/.test(urlCode)) {
-      connect().emit('join', { code: urlCode, name: ME.name });
+      tryRejoinOrJoin(urlCode, ME.name);
     }
   })
   .catch(() => {});
@@ -349,6 +349,18 @@ function connect(){
   socket = io('/meld');
   socket.on('state', st => { S = st; render(); });
   socket.on('seated', d => { myId = d.you; history.replaceState(null, '', '/meld?room=' + d.code); });
+  // Session token — stash for refresh-safe rejoin.
+  socket.on('session', ({ code, token }) => {
+    try { localStorage.setItem('meld_sess', JSON.stringify({ code, token, at: Date.now() })); } catch(e){}
+  });
+  socket.on('replaced', () => {
+    try { localStorage.removeItem('meld_sess'); } catch(e){}
+    flash('Opened in another tab — this one is idle.');
+  });
+  socket.on('roomClosed', () => {
+    try { localStorage.removeItem('meld_sess'); } catch(e){}
+    flash('The room was closed.');
+  });
   watchWire(socket, render);
   socket.on('err', d => flash(d && d.msg));
   socket.on('disconnect', () => { const w = $('waitTxt'); if (w) w.textContent = 'Reconnecting…'; });
@@ -380,10 +392,28 @@ function doJoin(code){
   const n = myName();
   if (!n) { flash('Put a name in first.'); $('nameIn').focus(); return; }
   try { localStorage.setItem('meld_name', n); } catch(e){}
-  connect().emit('join', { code: code, name: n }, r => {
+  tryRejoinOrJoin(code, n);
+}
+// Try token-based rejoin first (silent refresh recovery), then fall back
+// to a fresh join. Matches the wordrace pattern.
+function tryRejoinOrJoin(code, name){
+  const s = connect();
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('meld_sess') || 'null'); } catch(e){}
+  const freshJoin = () => s.emit('join', { code, name }, r => {
     if (r && r.error === 'gone') flash('No game with that code — it may have finished.');
     if (r && r.error === 'full') flash('That game already has its two players.');
   });
+  if (saved && saved.code === code && saved.token) {
+    s.emit('rejoin', { code, token: saved.token }, ack => {
+      if (ack && ack.error) {
+        try { localStorage.removeItem('meld_sess'); } catch(e){}
+        freshJoin();
+      }
+    });
+    return;
+  }
+  freshJoin();
 }
 $('joinBtn').onclick = () => {
   const c = $('codeIn').value.trim().toUpperCase();
@@ -398,6 +428,16 @@ $('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('createB
 const urlCode = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase();
 if (/^[A-Z0-9]{4}$/.test(urlCode)) {
   $('codeIn').value = urlCode;
+  // Silent refresh recovery: if we have a saved session for this exact
+  // code, try to rejoin without waiting for a button tap.
+  let __savedSess = null;
+  try { __savedSess = JSON.parse(localStorage.getItem('meld_sess') || 'null'); } catch(e){}
+  if (__savedSess && __savedSess.code === urlCode && __savedSess.token) {
+    const s = connect();
+    s.emit('rejoin', { code: urlCode, token: __savedSess.token }, ack => {
+      if (ack && ack.error) { try { localStorage.removeItem('meld_sess'); } catch(e){} }
+    });
+  }
   fetch('/api/meld/' + urlCode, { cache:'no-store' }).then(r => r.json()).then(d => {
     if (!d.exists) return flash('That game has finished. Start a fresh one.');
     if (d.full) return flash('That game already has its two players.');
