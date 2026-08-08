@@ -136,7 +136,10 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
    placeholder'. Bigger + friendlier than .ob-lite-input, meant to
    sit under a large H2 question and be the only thing on the page.
    No placeholder, no label chrome — the H2 IS the label. */
-.ob-underline{width:100%;border:0;border-bottom:2px solid var(--line);background:transparent;padding:14px 0 12px;font-family:inherit;font-size:22px;font-weight:500;color:var(--ink);outline:none;transition:border-color .18s;text-align:left;margin-top:6px}
+.ob-underline{width:100%;border:0;border-bottom:2px solid var(--line);background:transparent;padding:14px 0 12px;font-family:inherit;font-size:22px;font-weight:500;color:var(--ink);outline:none;transition:border-color .18s;text-align:left !important;margin-top:6px}
+/* DOB overrides — some browsers / flatpickr default to center-align
+   on date inputs. Force left so it matches the name field above. */
+.ob-underline.ob-dob{text-align:left !important}
 .ob-underline:focus{border-bottom-color:var(--accent,#e8506b)}
 .ob-underline[readonly]{color:var(--ink);cursor:pointer}
 textarea.ob-underline,.ob-underline-area{width:100%;border:0;border-bottom:2px solid var(--line);background:transparent;padding:12px 0;font-family:inherit;font-size:18px;font-weight:500;color:var(--ink);outline:none;resize:none;line-height:1.4;min-height:60px;transition:border-bottom-color .18s;margin-top:6px}
@@ -162,7 +165,12 @@ textarea.ob-underline,.ob-underline-area{width:100%;border:0;border-bottom:2px s
 .ob-row{display:flex;gap:10px;margin-top:22px;align-items:stretch;justify-content:stretch}
 .ob-back{background:transparent;color:var(--sub);border:0;font-family:inherit;font-weight:600;font-size:14px;padding:0 16px;border-radius:12px;cursor:pointer;flex:0 0 auto;min-height:48px;display:inline-flex;align-items:center;justify-content:center}
 .ob-back:hover{color:var(--ink);background:var(--hover,#f4f5f7)}
-.ob-next{background:var(--ink);color:#fff;border:0;border-radius:14px;padding:0 20px;font-family:inherit;font-weight:600;font-size:15.5px;cursor:pointer;transition:filter .1s,background .12s;min-height:48px;flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center}
+/* Fix 8 Aug 2026: `.ob-next` was `flex:1 1 auto` so it filled all
+   remaining vertical space when it was the ONLY child of `.ob-step`
+   (screenshot: a giant tall black button). Default to no-grow;
+   only stretch inside `.ob-row` where it's side-by-side with Back. */
+.ob-next{background:var(--ink);color:#fff;border:0;border-radius:14px;padding:0 20px;font-family:inherit;font-weight:600;font-size:15.5px;cursor:pointer;transition:filter .1s,background .12s;min-height:48px;flex:0 0 auto;width:100%;display:inline-flex;align-items:center;justify-content:center}
+.ob-row .ob-next{flex:1 1 auto;width:auto}
 /* When Continue stands alone (no Back), let it stretch full-width so
    the tap target is unmistakable. */
 .ob-step > .ob-next:only-of-type,
@@ -2076,7 +2084,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <label class="ob-label" style="margin-top:18px">Date of birth <span class="ob-age-live" id="obAgeLive"></span></label>
         <input class="ob-underline ob-dob" id="obBirth" type="text" readonly aria-label="Date of birth">
         <p class="ob-sub" style="font-size:12px;margin-top:6px">You must be 18 or over to join.</p>
-        <input type="hidden" id="obEmail">
+        <!-- Email shown read-only so the user can see which account
+             they're setting up. Pre-filled from OAuth / signup. -->
+        <label class="ob-label" style="margin-top:18px">Email</label>
+        <input class="ob-underline" id="obEmail" type="email" readonly aria-label="Email">
       </div>
       <div class="ob-err hidden" id="obErr1"></div>
       <button class="ob-next" onclick="obNext(1)">Continue</button>
