@@ -95,10 +95,13 @@ body.ob-open{overflow:hidden}
 /* Each step absolutely positioned, slide + fade + subtle scale. */
 .ob-step{position:absolute;inset:calc(28px + env(safe-area-inset-top) + 40px) 24px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:flex-start;gap:16px;opacity:0;transform:translateX(28px) scale(.985);pointer-events:none;transition:opacity .32s cubic-bezier(.2,.7,.3,1),transform .32s cubic-bezier(.2,.7,.3,1);overflow-y:auto;overflow-x:hidden}
 .ob-step.show{opacity:1;transform:translateX(0) scale(1);pointer-events:auto}
-.ob-emoji{font-size:58px;line-height:1;margin:4px 0 6px;animation:obEmojiPop .5s cubic-bezier(.34,1.56,.64,1) both}
+.ob-emoji{font-size:48px;line-height:1;margin:4px 0 4px;animation:obEmojiPop .5s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes obEmojiPop{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
-.ob-step h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:28px;font-weight:700;letter-spacing:-.5px;line-height:1.15;color:var(--ink);margin:0}
-.ob-sub{color:var(--sub);font-size:15px;line-height:1.55;margin:0}
+/* Wizard headings — owner ask 8 Aug 2026: smaller + lighter.
+   Was 28px/700; dropped to 22px/500 (Fredoka regular) so each
+   step feels calmer + less shouty. */
+.ob-step h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:22px;font-weight:500;letter-spacing:-.3px;line-height:1.2;color:var(--ink);margin:0}
+.ob-sub{color:var(--sub);font-size:14px;line-height:1.5;margin:0}
 
 /* Logo-splash overlay — shown for ~500ms between steps. Owner ask
    1 Aug 2026: 'a nice animation from screen to other, the [Tandem]
