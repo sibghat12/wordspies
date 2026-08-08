@@ -144,18 +144,51 @@ label.fl{font-weight:800}
     <span class="chips"><span class="chip ppl">4–10+ friends</span></span>
   </a>
 
-  <div class="sect">Language sprint</div>
+  <div class="sect">Language games</div>
   <a class="game" href="/wordrace" data-game="wordrace">
     <span class="gi" style="background:#fff2e5">🏁</span>
     <span class="gt"><b>Word Race</b><span class="gt-line">60-second vocab sprint <button class="gi-info" type="button" data-info="wordrace" aria-label="About Word Race">i</button></span></span>
     <span class="chips"><span class="chip ppl">2–8 friends</span></span>
   </a>
+  <a class="game" href="/wordchain" data-game="wordchain">
+    <span class="gi" style="background:#e6f6ef">🔗</span>
+    <span class="gt"><b>Word Chain</b><span class="gt-line">Last letter starts the next <button class="gi-info" type="button" data-info="wordchain" aria-label="About Word Chain">i</button></span></span>
+    <span class="chips"><span class="chip ppl">2–8 friends</span></span>
+  </a>
+  <a class="game" href="/guessword" data-game="guessword">
+    <span class="gi" style="background:#fff2d9">❓</span>
+    <span class="gt"><b>Guess the Word</b><span class="gt-line">Describe. Race to guess. <button class="gi-info" type="button" data-info="guessword" aria-label="About Guess the Word">i</button></span></span>
+    <span class="chips"><span class="chip ppl">3–10 friends</span></span>
+  </a>
+  <a class="game" href="/spy" data-game="spy">
+    <span class="gi" style="background:#f0edff">🎭</span>
+    <span class="gt"><b>Who is the Spy?</b><span class="gt-line">Find the imposter <button class="gi-info" type="button" data-info="spy" aria-label="About Who is the Spy?">i</button></span></span>
+    <span class="chips"><span class="chip ppl">4–10 friends</span></span>
+  </a>
 
-  <!-- Ludo, 8-Ball Pool, Connect 4 and Mind Meld were removed from
-       the /games shelf 5 Aug 2026 (owner ask). The game surfaces
-       themselves are still live at their own URLs (/ludo, /pool,
-       /four, /meld) — just no longer promoted here now that the
-       app is leaning fully into language-learning games. -->
+  <div class="sect">Quick 2-player</div>
+  <a class="game" href="/meld" data-game="meld">
+    <span class="gi" style="background:#f3f1fe">🧠</span>
+    <span class="gt"><b>Mind Meld</b><span class="gt-line">Type the same word together <button class="gi-info" type="button" data-info="meld" aria-label="About Mind Meld">i</button></span></span>
+    <span class="chips"><span class="chip ppl">exactly 2</span></span>
+  </a>
+  <a class="game" href="/four" data-game="four">
+    <span class="gi" style="background:#eef2fd">🔴</span>
+    <span class="gt"><b>Connect 4</b><span class="gt-line">Four in a row wins <button class="gi-info" type="button" data-info="four" aria-label="About Connect 4">i</button></span></span>
+    <span class="chips"><span class="chip ppl">2 friends</span><span class="chip bot">or vs the bot</span></span>
+  </a>
+  <a class="game" href="/pool" data-game="pool">
+    <span class="gi" style="background:#e8f6ee">🎱</span>
+    <span class="gt"><b>8-Ball Pool</b><span class="gt-line">Sink your balls first <button class="gi-info" type="button" data-info="pool" aria-label="About 8-Ball Pool">i</button></span></span>
+    <span class="chips"><span class="chip ppl">2 friends</span><span class="chip bot">or vs the bot</span></span>
+  </a>
+
+  <div class="sect">Board classic</div>
+  <a class="game" href="/ludo" data-game="ludo">
+    <span class="gi" style="background:#fff4e5">🎲</span>
+    <span class="gt"><b>Ludo</b><span class="gt-line">Classic board race <button class="gi-info" type="button" data-info="ludo" aria-label="About Ludo">i</button></span></span>
+    <span class="chips"><span class="chip ppl">2–4 friends</span><span class="chip bot">or vs bots</span></span>
+  </a>
 
   <div class="foot">
     Signed in? You’re seated under your own name and photo automatically.<br>
@@ -198,6 +231,15 @@ const GAME_INFO = {
   wordrace: { name:'Word Race', icon:'🏁', bg:'#fff2e5', href:'/wordrace',
     body:'A category shows up — Animals, Foods, Verbs, Colours — and you have 60 seconds to type as many words as you can that fit. Most words wins the round. Best of 3 wins the match. Works in any language you\'re learning.',
     meta:'2–8 players · 60-second rounds · any language' },
+  wordchain: { name:'Word Chain', icon:'🔗', bg:'#e6f6ef', href:'/wordchain',
+    body:'Take turns typing a word. Each new word must start with the last letter of the previous one — GARDEN → NURSE → ECHO. No repeats. Three lives each. Last one standing wins. Great warm-up for a language exchange.',
+    meta:'2–8 players · three lives · any language' },
+  guessword: { name:'Guess the Word', icon:'❓', bg:'#fff2d9', href:'/guessword',
+    body:'One player is the describer — they get a secret word and drop hints in the chat. Everyone else races to guess. First correct guess gets 2 points, the describer gets 1. Rounds rotate. Highest score at the end wins.',
+    meta:'3–10 players · describe & guess' },
+  spy: { name:'Who is the Spy?', icon:'🎭', bg:'#f0edff', href:'/spy',
+    body:'Everyone gets a secret word — except the spy, who gets a similar-but-different one. Take turns dropping a one-word hint. Vote out who you think is the imposter. Civilians win if the spy is caught; the spy wins if only two players remain.',
+    meta:'4–10 players · social deduction' },
 };
 function openGameInfo(id){
   const g = GAME_INFO[id]; if (!g) return;

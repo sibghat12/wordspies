@@ -1101,6 +1101,30 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .playcard-guess .playcard-cta{color:var(--sub);font-weight:700}
 .playcard-chain:hover .playcard-cta,
 .playcard-guess:hover .playcard-cta{color:var(--ink)}
+
+/* Mind Meld — two brains meeting in the middle. Owner ask 8 Aug 2026: all 8 games on the shelf. */
+.playcard-meld .playcard-art{background:linear-gradient(135deg,#a48cff,#5b3fe0);padding:18px;display:flex;align-items:center;justify-content:center;gap:20px}
+.pc-meld-brain{font-size:44px;line-height:1;filter:drop-shadow(0 3px 8px rgba(0,0,0,.24))}
+.pc-meld-flash{font-size:26px;color:#fff;font-weight:800;opacity:.85;text-shadow:0 3px 8px rgba(0,0,0,.24)}
+
+/* Ludo — a big die on a warm board-game amber. */
+.playcard-ludo .playcard-art{background:linear-gradient(135deg,#ffc067,#e08a1c);padding:18px;display:flex;align-items:center;justify-content:center}
+.pc-die{font-size:80px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.28))}
+
+/* Connect 4 — mini 3x3 grid showing a partial diagonal to hint at the win pattern. */
+.playcard-four .playcard-art{background:linear-gradient(135deg,#5b8bff,#2f57d4);padding:18px;display:flex;align-items:center;justify-content:center}
+.pc-four-grid{display:grid;grid-template-columns:repeat(3,26px);gap:6px}
+.pc-four-grid > span{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.18)}
+.pc-four-grid > span.r{background:#ff5a72}
+.pc-four-grid > span.y{background:#ffcc4d}
+
+/* 8-Ball Pool — the 8-ball on billiard green. Real 8-ball look:
+   black sphere with a white circle sitting on top of it that holds
+   the numeral. The circle sits ABOVE the number so we set z-index. */
+.playcard-pool .playcard-art{background:linear-gradient(135deg,#2fa66b,#177140);padding:18px;display:flex;align-items:center;justify-content:center;position:relative}
+.pc-pool-ball{position:relative;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 32% 30%, #4a4a4a 0%, #1a1a1a 60%, #050505 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(0,0,0,.35), inset 0 -8px 12px rgba(0,0,0,.4)}
+.pc-pool-ball.pc-pool-8{color:#111;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:22px;line-height:1}
+.pc-pool-ball.pc-pool-8::after{content:'8';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#111;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:18px}
 .ggrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:16px 20px 26px}
 .ggrid .gcard{width:auto}
 .ggrid .g-spy{grid-column:1/-1}
@@ -2489,6 +2513,60 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <div class="playcard-badge">Describe & Guess · 3+ players</div>
           <h3>Guess the Word <button class="pc-info" type="button" data-pcinfo="guessword" aria-label="About Guess the Word">i</button></h3>
           <p>Describe it. Everyone races to guess.</p>
+          <span class="playcard-cta">Start a room →</span>
+        </div>
+      </a>
+      <!-- 6 · Mind Meld (say the same word) -->
+      <a class="playcard playcard-meld" href="/meld" onclick="return wsPlayStart(this,event)">
+        <div class="playcard-art">
+          <div class="pc-meld-brain">🧠</div>
+          <div class="pc-meld-flash">↔︎</div>
+          <div class="pc-meld-brain">🧠</div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Together · exactly 2</div>
+          <h3>Mind Meld <button class="pc-info" type="button" data-pcinfo="meld" aria-label="About Mind Meld">i</button></h3>
+          <p>Type the same word at the same time.</p>
+          <span class="playcard-cta">Start a room →</span>
+        </div>
+      </a>
+      <!-- 7 · Ludo -->
+      <a class="playcard playcard-ludo" href="/ludo" onclick="return wsPlayStart(this,event)">
+        <div class="playcard-art">
+          <div class="pc-die">🎲</div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Classic · 2–4 players</div>
+          <h3>Ludo <button class="pc-info" type="button" data-pcinfo="ludo" aria-label="About Ludo">i</button></h3>
+          <p>Roll, race, send them home.</p>
+          <span class="playcard-cta">Start a room →</span>
+        </div>
+      </a>
+      <!-- 8 · Connect 4 -->
+      <a class="playcard playcard-four" href="/four" onclick="return wsPlayStart(this,event)">
+        <div class="playcard-art">
+          <div class="pc-four-grid">
+            <span></span><span class="r"></span><span></span>
+            <span class="y"></span><span class="r"></span><span></span>
+            <span class="y"></span><span class="y"></span><span class="r"></span>
+          </div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Strategy · 2 players</div>
+          <h3>Connect 4 <button class="pc-info" type="button" data-pcinfo="four" aria-label="About Connect 4">i</button></h3>
+          <p>Four in a row, up down or diagonal.</p>
+          <span class="playcard-cta">Start a room →</span>
+        </div>
+      </a>
+      <!-- 9 · 8-Ball Pool -->
+      <a class="playcard playcard-pool" href="/pool" onclick="return wsPlayStart(this,event)">
+        <div class="playcard-art">
+          <div class="pc-pool-ball pc-pool-8"></div>
+        </div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Physics · 2 players</div>
+          <h3>8-Ball Pool <button class="pc-info" type="button" data-pcinfo="pool" aria-label="About 8-Ball Pool">i</button></h3>
+          <p>Sink your set, then the 8. Not the cue.</p>
           <span class="playcard-cta">Start a room →</span>
         </div>
       </a>
@@ -4803,6 +4881,18 @@ const PCINFO = {
   wordrace: { name:'Word Race', href:'/wordrace',
     body:'You get 60 seconds. A category shows up (Animals, Foods, Verbs, Colours…). Type as many words as you can in the language you\'re learning. Most words wins the round; best of 3 wins the match.',
     meta:'2–8 players · 60-second rounds · any language' },
+  meld: { name:'Mind Meld', href:'/meld',
+    body:'Both players type a word at the same time. If you both type the same word, you win. If not, the two words become the next hint — try again. Silly, fast, weirdly bonding.',
+    meta:'2 players only · no bot' },
+  ludo: { name:'Ludo', href:'/ludo',
+    body:'Classic Ludo. Roll the die, move your four tokens around the board, land on an opponent to send them home. First to get all four tokens home wins. 2–4 players; bots fill empty seats.',
+    meta:'2–4 players · vs friends or bots' },
+  four: { name:'Connect 4', href:'/four',
+    body:'Drop pieces into columns. Get four in a row — up, down, sideways, diagonal — before your opponent. Two players; play a friend or the bot.',
+    meta:'2 players · vs a friend or the bot' },
+  pool: { name:'8-Ball Pool', href:'/pool',
+    body:'Real physics 8-ball. Break, call your set (stripes or solids), pot them all, then the 8 — but don\'t sink the cue on the way. Aim by dragging, tap to shoot. 2 players or vs bot.',
+    meta:'2 players · vs a friend or the bot' },
 };
 function openPcInfo(id){
   const g = PCINFO[id]; if (!g) return;
