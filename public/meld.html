@@ -474,6 +474,25 @@ $('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('createB
 const urlCode = (new URLSearchParams(location.search).get('room') || '').trim().toUpperCase();
 if (/^[A-Z0-9]{4}$/.test(urlCode)) {
   $('codeIn').value = urlCode;
+  // Owner ask 7 Aug 2026: URL carries a room code → invite-link visitor.
+  // Hide the 'Start a game' button so they can't accidentally spin up
+  // a fresh room instead of joining the one they were invited to.
+  try {
+    const createBtnEl = document.getElementById('createBtn');
+    if (createBtnEl) createBtnEl.style.display = 'none';
+    document.querySelectorAll('.ordiv, .or-divider, .or').forEach(d => {
+      const t = (d.textContent || '').trim();
+      if (/^or\s*join/i.test(t) || d.classList.contains('ordiv')) d.style.display = 'none';
+    });
+    const nameInput = document.getElementById('nameIn');
+    if (nameInput && nameInput.parentNode && !document.getElementById('inviteHint')) {
+      const hint = document.createElement('div');
+      hint.id = 'inviteHint';
+      hint.style.cssText = 'font-size:13.5px;color:var(--sub,#5c6270);margin:6px 0 12px;text-align:center';
+      hint.innerHTML = "You've been invited to room <b>" + urlCode + "</b>. Type your name to join.";
+      nameInput.parentNode.insertBefore(hint, nameInput);
+    }
+  } catch(_){}
   // Silent refresh recovery: if we have a saved session for this exact
   // code, try to rejoin without waiting for a button tap.
   let __savedSess = null;

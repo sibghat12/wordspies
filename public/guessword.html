@@ -446,8 +446,21 @@ $('waShare').onclick = () => {
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 };
 $('startBtn').onclick = () => socket.emit('start');
-function leaveGame(){ if (!confirm('Leave this game?')) return; try { socket.emit('leave'); } catch(e){} setTimeout(() => location.href = '/', 150); }
-function endRoom(){ if (!confirm('End the game for everyone in the room?')) return; try { socket.emit('endRoom'); } catch(e){} setTimeout(() => location.href = '/', 200); }
+function leaveGame(){
+  if (!confirm('Leave this game?')) return;
+  try { socket.emit('leave'); } catch(e){}
+  // Owner ask 7 Aug 2026 — 'if I left I can join again'. Clearing
+  // the saved rejoin token ensures the next visit lands on a fresh
+  // join instead of a rejected token rejoin.
+  try { localStorage.removeItem('gw_sess'); } catch(e){}
+  setTimeout(() => location.href = '/', 150);
+}
+function endRoom(){
+  if (!confirm('End the game for everyone in the room?')) return;
+  try { socket.emit('endRoom'); } catch(e){}
+  try { localStorage.removeItem('gw_sess'); } catch(e){}
+  setTimeout(() => location.href = '/', 200);
+}
 $('leaveBtn').onclick = leaveGame;
 $('leaveBtn2').onclick = leaveGame;
 $('endRoomBtn').onclick = endRoom;
@@ -495,6 +508,25 @@ socket.on('state', (state) => { S = state; render(); });
   if (rcode) {
     const code = rcode.toUpperCase();
     $('codeIn').value = code;
+    // Owner ask 7 Aug 2026: URL carries a room code → invite-link visitor.
+    // Hide the 'Create a room' button so they can't accidentally spin up
+    // a fresh room instead of joining the one they were invited to.
+    try {
+      const createBtnEl = document.getElementById('createBtn');
+      if (createBtnEl) createBtnEl.style.display = 'none';
+      document.querySelectorAll('.ordiv, .or-divider, .or').forEach(d => {
+        const t = (d.textContent || '').trim();
+        if (/^or\s*join/i.test(t) || d.classList.contains('ordiv')) d.style.display = 'none';
+      });
+      const nameInput = document.getElementById('nameIn');
+      if (nameInput && nameInput.parentNode && !document.getElementById('inviteHint')) {
+        const hint = document.createElement('div');
+        hint.id = 'inviteHint';
+        hint.style.cssText = 'font-size:13.5px;color:var(--sub,#5c6270);margin:6px 0 12px;text-align:center';
+        hint.innerHTML = "You've been invited to room <b>" + code + "</b>. Type your name to join.";
+        nameInput.parentNode.insertBefore(hint, nameInput);
+      }
+    } catch(_){}
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem('gw_sess') || 'null'); } catch(e){}
     const tryFresh = () => {

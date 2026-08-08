@@ -364,7 +364,7 @@ function tryJoin(){
   });
 }
 $('btnStart').onclick = () => socket.emit('start');
-$('btnLeave').onclick = () => { location.href = '/games'; };
+$('btnLeave').onclick = () => { try { socket.emit('leave'); } catch(e){} try { localStorage.removeItem('wr_sess'); } catch(e){} location.href = '/games'; };
 $('btnAgain').onclick = () => socket.emit('again');
 $('btnSubmit').onclick = () => submitWord();
 $('wordIn').addEventListener('keydown', ev => { if (ev.key === 'Enter') submitWord(); });
@@ -399,6 +399,26 @@ function copyLink(){
   if (!m) return;
   const code = m[1].toUpperCase();
   $('cdIn').value = code;
+  // Owner ask 7 Aug 2026: if the URL carries a room code, the user
+  // arrived via someone's invite link — hide the 'Create a new room'
+  // button so they can't accidentally spin up a fresh room instead
+  // of joining the one they were invited to.
+  try {
+    const createBtnEl = document.getElementById('btnNew');
+    if (createBtnEl) createBtnEl.style.display = 'none';
+    document.querySelectorAll('.ordiv, .or-divider, .or').forEach(d => {
+      const t = (d.textContent || '').trim();
+      if (/^or\s*join/i.test(t) || d.classList.contains('ordiv')) d.style.display = 'none';
+    });
+    const nameInput = document.getElementById('nmIn');
+    if (nameInput && nameInput.parentNode && !document.getElementById('inviteHint')) {
+      const hint = document.createElement('div');
+      hint.id = 'inviteHint';
+      hint.style.cssText = 'font-size:13.5px;color:var(--sub,#5c6270);margin:6px 0 12px;text-align:center';
+      hint.innerHTML = "You've been invited to room <b>" + code + "</b>. Type your name to join.";
+      nameInput.parentNode.insertBefore(hint, nameInput);
+    }
+  } catch(_){}
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem('wr_sess') || 'null'); } catch(e){}
   socket.on('connect', () => {
