@@ -139,10 +139,20 @@ textarea.ob-input{resize:none;line-height:1.45;min-height:92px}
    placeholder'. Bigger + friendlier than .ob-lite-input, meant to
    sit under a large H2 question and be the only thing on the page.
    No placeholder, no label chrome — the H2 IS the label. */
-.ob-underline{width:100%;border:0;border-bottom:2px solid var(--line);background:transparent;padding:14px 0 12px;font-family:inherit;font-size:22px;font-weight:500;color:var(--ink);outline:none;transition:border-color .18s;text-align:left !important;margin-top:6px}
-/* DOB overrides — some browsers / flatpickr default to center-align
-   on date inputs. Force left so it matches the name field above. */
-.ob-underline.ob-dob{text-align:left !important}
+/* Step 1 fields — owner ask 8 Aug 2026: smaller + lighter + gray,
+   less black. Was 22px/500 in ink; now 18px/400 in sub-grey. */
+.ob-underline{width:100%;border:0;border-bottom:2px solid var(--line);background:transparent;padding:12px 0 10px;font-family:'Inter',system-ui,sans-serif;font-size:18px;font-weight:400;color:var(--sub);outline:none;transition:border-color .18s,color .18s;text-align:left !important;margin-top:6px}
+.ob-underline:focus{color:var(--ink)}
+.ob-underline:not(:placeholder-shown){color:var(--ink)}
+.ob-underline[readonly]{color:var(--sub);cursor:pointer}
+/* DOB left-align — override flatpickr's altInput which text-align:
+   centres by default. Chain includes .flatpickr-input (the flatpickr
+   class flag) so we beat its rules by specificity. */
+.ob-underline.ob-dob,
+.ob-underline.ob-dob.flatpickr-input,
+.ob-underline.ob-dob.active,
+.ob-underline.ob-dob.form-control,
+input.flatpickr-input.ob-underline{text-align:left !important}
 .ob-underline:focus{border-bottom-color:var(--accent,#e8506b)}
 .ob-underline[readonly]{color:var(--ink);cursor:pointer}
 textarea.ob-underline,.ob-underline-area{width:100%;border:0;border-bottom:2px solid var(--line);background:transparent;padding:12px 0;font-family:inherit;font-size:18px;font-weight:500;color:var(--ink);outline:none;resize:none;line-height:1.4;min-height:60px;transition:border-bottom-color .18s;margin-top:6px}
@@ -3719,6 +3729,12 @@ function obInitDobWheels(iso){
     if (_obDobFp.altInput) {
       _obDobFp.altInput.className = inp.className;
       _obDobFp.altInput.placeholder = 'Tap to pick';
+      // Force left-align inline — flatpickr's own CSS centres the
+      // altInput and CSS specificity wasn't enough on some Safari
+      // builds. Owner ask 8 Aug 2026 screenshot showed '1 Jan 2001'
+      // still centred despite the class-level !important. Inline
+      // wins guaranteed.
+      _obDobFp.altInput.style.textAlign = 'left';
     }
     // Seed value so obNext(1) sees a date without the user tapping.
     if (iso && /^\d{4}-\d{2}-\d{2}$/.test(String(iso))) _obDobFp.setDate(iso, true);
