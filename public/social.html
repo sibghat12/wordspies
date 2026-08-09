@@ -1661,7 +1661,12 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 }
 .mb{position:relative}
 .mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:6px;box-shadow:none}
-.mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:6px}
+.mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:6px;margin-right:42px}
+/* Inline 🇦 translate button — sits just outside the right edge of the
+   peer bubble. Owner ask 9 Aug 2026 v8. */
+.mb .mb-xlat-btn{position:absolute;right:-40px;bottom:6px;width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;color:var(--sub);box-shadow:0 1px 3px rgba(0,0,0,.08);padding:0;transition:background .12s}
+.mb .mb-xlat-btn:hover{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
+.mb .mb-xlat-btn:active{transform:scale(.92)}
 .mb img{max-width:220px;border-radius:10px;display:block}
 /* Chat image messages — bigger than GIFs so photos are actually
    visible. Tap opens the full image in a new tab. */
@@ -5756,11 +5761,18 @@ async function refreshChat(first){
         const gone = m.d ? ' gone' : '';
         const idAttr = esc(m.id || String(m.t));
         const edited = m.e ? '<span class="edited">edited</span>' : '';
+        // Inline 🇦 translate button next to every peer text bubble.
+        // Owner ask 9 Aug 2026 v8. Absolutely positioned via CSS so it
+        // doesn't touch the existing flex-column layout of #msgs.
+        const xlatBtn = (!mine && (m.k || 'text') === 'text' && !m.d)
+          ? `<button class="mb-xlat-btn" type="button" title="Translate" aria-label="Translate">🇦</button>`
+          : '';
         return sep + `
         <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
           ${replyBlock(m, j.user && j.user.name)}
           ${msgBody(m)}
           <div class="mtime">${edited}${clockT(m.t)}${tick}</div>
+          ${xlatBtn}
         </div>
         ${reactionsRow(m, side)}`;
       }).join('');
@@ -7055,6 +7067,18 @@ function wireBubbleGestures(){
       const tgt = document.querySelector('#msgs .mb[data-id="' + CSS.escape(q.dataset.scroll) + '"]');
       if (tgt) { tgt.scrollIntoView({ behavior:'smooth', block:'center' }); tgt.classList.add('selected'); setTimeout(() => tgt.classList.remove('selected'), 900); }
     }));
+    // Inline 🇦 translate button — one-tap translate on peer bubbles.
+    // Stops propagation so the long-press / context-menu handlers on
+    // the bubble don't also fire.
+    const xb = el.querySelector('.mb-xlat-btn');
+    if (xb) {
+      xb.addEventListener('click', ev => {
+        ev.stopPropagation();
+        curActMsg = { id: el.dataset.id, el, mine: false, kind: el.dataset.k || 'text' };
+        msTranslate();
+      });
+      ['touchstart','contextmenu'].forEach(t => xb.addEventListener(t, ev => ev.stopPropagation()));
+    }
   });
 }
 
