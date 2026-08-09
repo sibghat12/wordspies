@@ -2946,7 +2946,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="cbtn micrec hidden" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
         <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
       </button>
-      <button class="cbtn send hidden" id="sendBtn" onclick="sendMsg()" aria-label="Send">
+      <!-- Send button is now ALWAYS visible (owner ask 9 Aug 2026 v6 —
+           'keep show the send button not show on type show default as
+           well'). Guarded by sendMsg() ignoring empty input. -->
+      <button class="cbtn send" id="sendBtn" onclick="sendMsg()" aria-label="Send">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3l0 7 15 2-15 2z"/></svg>
       </button>
     </div>
@@ -6140,14 +6143,10 @@ $('msgIn').addEventListener('keydown', e => {
 });
 $('msgIn').addEventListener('input', () => {
   sendTypingSoon();
-  const el = $('msgIn');
-  const hasText = !!el.value.trim();
-  const send = document.getElementById('sendBtn');
-  const mic  = document.getElementById('micRecBtn');
-  if (send) send.classList.toggle('hidden', !hasText);
-  // Mic is now inside the + menu — the composer's inline mic button
-  // stays hidden by default. Only Send toggles here.
-  if (mic)  mic.classList.add('hidden');
+  // Send button is always visible now (owner ask 9 Aug 2026 v6).
+  // Mic is inside the + menu; keep the inline one hidden.
+  const mic = document.getElementById('micRecBtn');
+  if (mic) mic.classList.add('hidden');
   autoGrowMsgIn();
 });
 function autoGrowMsgIn(){
@@ -6178,17 +6177,15 @@ document.addEventListener('click', ev => {
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closePlusMenu(); });
 
-// Launch the existing hold-to-record flow from a menu tap. The old
-// button lived in the composer and used pointer down/up on the button
-// itself; from the menu we synthesise the recording flow directly.
+// Launch the existing recording pipeline from the + menu (owner ask
+// 9 Aug 2026 v6 — 'if click voice note it should show the bar continue
+// until i stop i listen and than submit'). The recBar already has a
+// pulsing red dot, timer, ✕ cancel and ■ stop button. On stop, the
+// recPreview bar appears with Play / Send / 🗑 controls — that's the
+// listen-then-submit flow the owner wants.
 function startVoiceFromMenu(){
-  // If startRec / stopRec exist (defined by the voice module), open a
-  // simple recording overlay. Fallback: reveal the inline mic so users
-  // can hold it the old-fashioned way.
-  const mic = document.getElementById('micRecBtn');
-  if (!mic) return;
-  mic.classList.remove('hidden');
-  toast('Hold the mic to record ·  release to send');
+  if (typeof startVoice === 'function') startVoice();
+  else toast('Voice recording not available here.');
 }
 
 // Shared upload path used by the 📷 picker + drag-drop + paste.
@@ -6504,7 +6501,35 @@ $('msgs').addEventListener('scroll', () => { if (atBottom($('msgs'))) $('jumpNew
 // ---------- emoji + GIF pickers ----------
 const EMOJIS = '😀 😁 😂 🤣 😊 😍 🥰 😘 😜 🤪 🤩 🥳 😎 🤓 🤔 🙃 😅 😇 😋 🤗 🤭 😏 😴 🥱 🤯 😱 😭 🥺 😢 😤 😡 🙄 😬 🤢 🥶 🥵 😈 🤡 👻 💀 👽 🤖 💩 😺 🙈 🙉 🙊 💪 👍 👎 👏 🙌 🤝 🙏 ✌️ 🤞 🤟 🤘 🤙 👋 ✋ 👌 🤌 👈 👉 👆 👇 ❤️ 🧡 💛 💚 💙 💜 🖤 🤍 💔 💖 💘 💝 💯 💢 💥 💫 ⭐ 🌟 ✨ ⚡ 🔥 🌈 ☀️ 🌙 🎉 🎊 🎈 🎁 🏆 🥇 🎮 🎲 🎯 🕵️ 🔎 🧠 🍕 🍔 🍟 🌮 🍩 🍪 🎂 🍺 ☕ 🚀 ✈️ 🏝 ⚽ 🏀 🎸 🎧 📸'.split(' ').filter(Boolean);
 function buildEmojis(){
-  $('emojiPick').innerHTML = EMOJIS.map(e => `<button class="em" onclick="$('msgIn').value += '${e}';$('msgIn').focus()">${e}</button>`).join('');
+  const host = $('emojiPick');
+  host.innerHTML = '';
+  EMOJIS.forEach(e => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'em';
+    b.textContent = e;
+    b.addEventListener('click', ev => {
+      ev.stopPropagation();
+      pickEmoji(e);
+    });
+    host.appendChild(b);
+  });
+}
+// Insert emoji at the caret + close the picker (owner ask 9 Aug 2026 v6
+// — 'emoji popup open and stuck if i click one it should disappear').
+// Also fires a synthetic input event so the textarea auto-grows and
+// the mic/send toggle stays in sync.
+function pickEmoji(e){
+  const inp = $('msgIn');
+  if (!inp) return;
+  const start = inp.selectionStart != null ? inp.selectionStart : inp.value.length;
+  const end   = inp.selectionEnd   != null ? inp.selectionEnd   : inp.value.length;
+  inp.value = inp.value.slice(0, start) + e + inp.value.slice(end);
+  const caret = start + e.length;
+  inp.selectionStart = inp.selectionEnd = caret;
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+  inp.focus();
+  hidePickers();
 }
 function togglePicker(){
   const em = $('emojiPick');
