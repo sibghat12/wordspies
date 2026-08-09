@@ -1671,8 +1671,10 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb img{max-width:220px;border-radius:10px;display:block}
 /* Chat image messages — bigger than GIFs so photos are actually
    visible. Tap opens the full image in a new tab. */
-.mb img.chatimg{max-width:280px;max-height:360px;object-fit:cover;cursor:zoom-in;transition:transform .1s}
-.mb img.chatimg:hover{transform:scale(1.02)}
+.mb img.chatimg{max-width:280px;max-height:360px;object-fit:cover;user-select:none;-webkit-user-drag:none}
+/* Reply-preview thumbnail — small square of the original photo. */
+.replybar .rbthumb{width:34px;height:34px;border-radius:8px;object-fit:cover;flex-shrink:0;margin-right:2px}
+.mb .qref .qthumb{width:26px;height:26px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:6px}
 
 /* Drag-drop overlay — appears when a file is dragged over the chat. */
 .chat-drop-overlay{position:absolute;inset:0;background:rgba(90,123,255,.10);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:180;display:flex;align-items:center;justify-content:center;pointer-events:none;border:3px dashed var(--accent);border-radius:16px;margin:12px}
@@ -5835,7 +5837,13 @@ function msgBody(m){
   if (m.k === 'voice') return voiceBubble(m);
   if (m.k === 'call') return callLogBubble(m);
   if (m.k === 'gif') return `<img src="${esc(m.x)}" loading="lazy">`;
-  if (m.k === 'image') return `<a href="${esc(m.x)}" target="_blank" rel="noopener"><img class="chatimg" src="${esc(m.x)}" loading="lazy" alt="photo"></a>`;
+  // Owner ask 9 Aug 2026 — 'image should be clickable but not zoom or
+  // open, just can reply on that only'. Dropped the <a> wrapper so
+  // clicks don't open the raw URL. Long-press / right-click still
+  // brings up the message action menu (Reply etc). Removed lazy
+  // loading + added decoding=async to stop the blink caused by the
+  // chat's periodic re-render destroying and re-creating the <img>.
+  if (m.k === 'image') return `<img class="chatimg" src="${esc(m.x)}" decoding="async" alt="photo" draggable="false">`;
   // Any game invite — WordSpies or the arcade — becomes a big tappable Join
   // card, and a message can hold several of them. The regex runs on the
   // escaped text, so & in the URL appears as &amp; here.
@@ -5868,7 +5876,17 @@ function msgBody(m){
 function replyBlock(m, chatUserName){
   if (!m.qp) return '';
   const who = m.qp.f === (ME && ME.id) ? 'You' : (chatUserName || 'Them');
-  const preview = m.qp.k === 'gif' ? '🖼 GIF' : esc(String(m.qp.x || '').slice(0, 80));
+  // Owner ask 9 Aug 2026 — 'if you reply it should show the small
+  // image as it is'. For image and gif quotes, render a tiny thumb;
+  // for text, the trimmed text.
+  let preview;
+  if (m.qp.k === 'image') {
+    preview = `<img class="qthumb" src="${esc(m.qp.x || '')}" alt="photo">📷 Photo`;
+  } else if (m.qp.k === 'gif') {
+    preview = `<img class="qthumb" src="${esc(m.qp.x || '')}" alt="gif">🖼 GIF`;
+  } else {
+    preview = esc(String(m.qp.x || '').slice(0, 80));
+  }
   return `<span class="qref" data-scroll="${esc(m.q || '')}"><span class="qwho">${esc(who)}</span>${preview}</span>`;
 }
 
@@ -6683,15 +6701,25 @@ async function toggleReact(ev, id, emoji){
 function msReply(){
   if (!curActMsg) return;
   const el = curActMsg.el;
-  const preview = el.querySelector('.gone-txt') ? '(deleted)'
-                : curActMsg.kind === 'gif' ? '🖼 GIF'
-                : (el.querySelector('.qref') ? el.childNodes[1] && el.childNodes[1].textContent : el.textContent).trim();
-  // Rip out the timestamp line and cap length
-  const clean = preview.replace(/\d{1,2}:\d{2}\s*(AM|PM)?\s*$/i, '').trim().slice(0, 100);
+  const kind = curActMsg.kind;
   replyingTo = curActMsg.id;
   cancelEdit();
   $('rbWho').textContent = curActMsg.mine ? 'Replying to yourself' : 'Reply';
-  $('rbTxt').textContent = clean || '(message)';
+  // Owner ask 9 Aug 2026 — image/gif replies show the small image
+  // thumbnail in the reply-preview bar. Text replies keep the plain
+  // trimmed text.
+  const rbTxt = $('rbTxt');
+  if (kind === 'image' || kind === 'gif') {
+    const img = el.querySelector('img.chatimg') || el.querySelector('img');
+    const src = img ? img.getAttribute('src') : '';
+    const label = kind === 'gif' ? '🖼 GIF' : '📷 Photo';
+    rbTxt.innerHTML = (src ? `<img class="rbthumb" src="${esc(src)}" alt="${label}"> ` : '') + label;
+  } else {
+    const preview = el.querySelector('.gone-txt') ? '(deleted)'
+                  : (el.querySelector('.qref') ? el.childNodes[1] && el.childNodes[1].textContent : el.textContent).trim();
+    const clean = preview.replace(/\d{1,2}:\d{2}\s*(AM|PM)?\s*$/i, '').trim().slice(0, 100);
+    rbTxt.textContent = clean || '(message)';
+  }
   $('replyBar').classList.add('show');
   closeMsAct();
   $('msgIn').focus();
