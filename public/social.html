@@ -1785,11 +1785,10 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 @keyframes tp{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
 /* message-actions sheet — appears on long-press or tap-more */
 /* Message actions menu — VERTICAL popover, floated near the tapped
-   bubble (owner ask 9 Aug 2026 — no more horizontal bar). Positioned
-   via JS at right-below the bubble, with viewport clamps. */
-.msmenu{position:fixed;top:-9999px;left:0;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.08);z-index:60;opacity:0;pointer-events:none;transition:opacity .14s;border:1px solid var(--line);min-width:200px;max-width:260px;display:flex;flex-direction:column}
+   bubble (owner ask 9 Aug 2026 — no border, lighter font weight). */
+.msmenu{position:fixed;top:-9999px;left:0;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);z-index:60;opacity:0;pointer-events:none;transition:opacity .14s;border:0;min-width:200px;max-width:260px;display:flex;flex-direction:column}
 .msmenu.show{opacity:1;pointer-events:auto}
-.msmi{background:transparent;border:0;padding:10px 12px;border-radius:8px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:15px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;transition:background .08s;width:100%}
+.msmi{background:transparent;border:0;padding:10px 12px;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'Inter',system-ui,sans-serif;font-size:15px;font-weight:400;color:var(--ink);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;transition:background .08s;width:100%}
 .msmi:hover{background:var(--caccent-soft)}
 .msmi:active{background:#dbe6ff}
 .msmi-ic{font-size:16px;line-height:1;width:22px;text-align:center;flex-shrink:0}
@@ -6627,7 +6626,6 @@ function openMsAct(el, ev){
   $('msActSpeak').style.display     = (kind === 'text') ? '' : 'none';
   $('msActEdit').style.display      = (mine && kind === 'text') ? '' : 'none';
   $('msActDel').style.display       = mine ? '' : 'none';
-  $('msActReport').style.display    = !mine ? '' : 'none';
   document.querySelectorAll('.mb.selected').forEach(x => x.classList.remove('selected'));
   el.classList.add('selected');
   const menu = $('msAct');
@@ -6741,14 +6739,17 @@ function extractBubbleText(bub){
   return clone.textContent.trim();
 }
 
-// Read the message aloud via the browser's built-in SpeechSynthesis.
-// Free, offline, works on every modern browser. If a translation chip
-// is attached below the bubble, speaks the translated text instead so
-// the user hears the language they're learning.
-function msSpeak(){
+// Read the message aloud using ElevenLabs (beautiful voices) via the
+// existing /api/social/ai/voice endpoint. Falls back to the browser's
+// SpeechSynthesis if the server voice is unavailable (no key, quota
+// reached, network error). Owner ask 9 Aug 2026 — 'use the message
+// or speech api we already have in a beautiful voice'.
+async function msSpeak(){
   if (!curActMsg) return;
   const bub = curActMsg.el;
   let text = extractBubbleText(bub);
+  // If a translation chip is attached below the bubble, speak the
+  // translated version so the user hears the language they're learning.
   const chip = bub.nextElementSibling;
   if (chip && chip.classList && chip.classList.contains('mb-xlat')) {
     const t = chip.querySelector('.txt');
@@ -6756,10 +6757,32 @@ function msSpeak(){
   }
   closeMsAct();
   if (!text) return;
+  const cleaned = String(text).slice(0, 500);
+  // Kill any in-flight audio first.
+  stopServerVoice();
+  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch(e){} }
+  // Try ElevenLabs first (persona=ai_amy → Rachel voice, warm British).
+  try {
+    const res = await fetch('/api/social/ai/voice', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ persona: 'ai_amy', text: cleaned })
+    });
+    if (!res.ok) throw new Error('server voice ' + res.status);
+    const blob = await res.blob();
+    _voiceUrl = URL.createObjectURL(blob);
+    _voiceAudio = new Audio(_voiceUrl);
+    _voiceAudio.onended = stopServerVoice;
+    _voiceAudio.onerror = stopServerVoice;
+    await _voiceAudio.play().catch(() => { throw new Error('play blocked'); });
+    return;
+  } catch(e) {
+    // Silently fall through to the browser voice.
+  }
+  // Fallback: browser SpeechSynthesis.
   if (!window.speechSynthesis) return toast('Speech not supported here.');
   try {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
+    const u = new SpeechSynthesisUtterance(cleaned);
     u.rate = 1.0; u.pitch = 1.0;
     window.speechSynthesis.speak(u);
   } catch(e){ toast('Could not speak.'); }
@@ -8161,7 +8184,6 @@ function maybeWelcome(){ /* retired — no popup */ }
   <button class="msmi" id="msActSpeak" onclick="msSpeak()"><span class="msmi-ic">🔊</span>Speak</button>
   <div class="msmi-div"></div>
   <button class="msmi" id="msActEdit" onclick="msEdit()"><span class="msmi-ic">✎</span>Edit</button>
-  <button class="msmi" id="msActReport" onclick="msReport()"><span class="msmi-ic">🚩</span>Report</button>
   <button class="msmi danger" id="msActDel" onclick="msDelete()"><span class="msmi-ic">🗑</span>Delete</button>
 </div>
 
