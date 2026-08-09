@@ -58,11 +58,25 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .overcard .ghost:hover{background:#e5e7eb}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
+/* Shoot button — big pill overlay at the bottom of the court. Owner
+   ask 9 Aug 2026: 'confusing … make sure the line is already there and
+   can be selected first and then a button like a shoot'. Kills the
+   release-to-fire model — user aims freely, taps SHOOT to release. */
+.shootbtn{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:linear-gradient(180deg,#ff6b1a,#e34a2e);color:#fff;border:0;border-radius:999px;padding:14px 34px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:17px;letter-spacing:.5px;cursor:pointer;box-shadow:0 6px 18px rgba(227,74,46,.45);z-index:6;display:inline-flex;align-items:center;gap:8px;transition:transform .1s ease,filter .12s ease}
+.shootbtn:hover{filter:brightness(1.08)}
+.shootbtn:active{transform:translateX(-50%) scale(.96)}
+.shootbtn[disabled]{opacity:.45;filter:grayscale(.6);cursor:not-allowed;box-shadow:none}
+.shootbtn .ball{font-size:20px;line-height:1}
+/* Aim-power indicator that sits next to Shoot */
+.aimpad{position:absolute;left:16px;bottom:22px;background:rgba(255,255,255,.85);border-radius:12px;padding:6px 10px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:11px;color:var(--ink);z-index:6;letter-spacing:.4px;backdrop-filter:blur(4px);box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;align-items:center;gap:6px}
+.aimpad .bar{width:60px;height:6px;background:#e6e8ef;border-radius:99px;overflow:hidden;position:relative}
+.aimpad .bar > i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#ff6b1a,#e34a2e);width:0%;transition:width .08s ease}
+
 /* Embed mode — parent Community app provides the top nav. */
 body.embed header{display:none}
 body.embed{padding-top:0}
 
-@media(max-height:640px){.stat .val{font-size:19px}.hint{bottom:96px}}
+@media(max-height:640px){.stat .val{font-size:19px}.hint{bottom:96px}.shootbtn{padding:12px 28px;font-size:15px}}
 </style>
 </head>
 <body>
@@ -82,7 +96,9 @@ body.embed{padding-top:0}
 <div class="court">
   <canvas id="cv"></canvas>
   <button class="howto-btn" type="button" onclick="document.getElementById('howtoBd').classList.add('on')" aria-label="How to play">?</button>
-  <div class="hint" id="hint">Drag the ball back, release to shoot</div>
+  <div class="hint" id="hint">Drag anywhere to aim · tap Shoot</div>
+  <div class="aimpad" id="aimpad">POWER <div class="bar"><i id="aimpower"></i></div></div>
+  <button class="shootbtn" id="shootBtn" type="button"><span class="ball">🏀</span> SHOOT</button>
   <div class="over" id="over">
     <div class="overcard">
       <div class="newhi" id="newhi" style="display:none">🎉 New best score!</div>
@@ -99,7 +115,7 @@ body.embed{padding-top:0}
   <div class="howto" role="dialog" aria-modal="true">
     <h3>🏀 How to play Hoop</h3>
     <p>You have 60 seconds to sink as many free throws as possible.</p>
-    <p><b>Drag the ball back</b> to aim — a guide line shows your throw. <b>Release</b> to shoot. The ball follows real physics: too soft and it drops short, too hard and it clangs off the back.</p>
+    <p><b>Drag anywhere on the court</b> to aim — a dotted line shows your throw arc. Adjust as much as you like. When you're happy, <b>tap SHOOT</b>. The ball follows real physics: too soft and it drops short, too hard and it clangs off the back.</p>
     <p>The hoop moves after every basket. Streaks earn bonus points — three in a row is worth an extra one.</p>
     <button class="howto-ok" onclick="document.getElementById('howtoBd').classList.remove('on')">Got it</button>
   </div>
@@ -136,10 +152,16 @@ body.embed{padding-top:0}
   let score = 0, best = +(localStorage.getItem(BEST_KEY) || 0);
   let streak = 0;
   let roundEnd = 0, timerId = null, rafId = null, lastT = 0;
-  let dragging = false, aimStart = null, aimNow = null;
+  let dragging = false;
+  // Persistent aim state — the throw the user is *setting up*. The
+  // dotted trajectory line ALWAYS shows this, even before any drag,
+  // so a new player sees exactly what will happen when they tap Shoot.
+  let aim = { vx: 0, vy: -900 };   // seeded per shot by resetAim()
   let scoredThisShot = false;
   let ballPrevY = 0;
   let effects = [];        // floating +1 / +2 text
+  const shootBtn = document.getElementById('shootBtn');
+  const aimBar   = document.getElementById('aimpower');
   bestV.textContent = best;
 
   function resize(){
@@ -158,6 +180,32 @@ body.embed{padding-top:0}
     ball = { x: W/2, y: H - FLOOR_PAD/2, vx: 0, vy: 0, live: false };
     ballPrevY = ball.y;
     scoredThisShot = false;
+    resetAim();
+    updateShootBtn();
+  }
+
+  // Seed the aim so the trajectory line points at the rim with a
+  // medium-strong power. Solves 'confusing' — the user sees exactly
+  // what will happen before touching anything.
+  function resetAim(){
+    if (!ball || !rim) return;
+    const dx = rim.x - ball.x, dy = rim.y - ball.y;
+    // vy needs to be negative (up). Pick a starting arc that clears the
+    // rim height with reasonable initial speed.
+    const dist = Math.max(80, Math.hypot(dx, dy));
+    const speed = Math.min(1500, 700 + dist * 0.9);
+    const ang = Math.atan2(dy - 80, dx);   // aim slightly above the rim
+    aim = { vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed };
+    if (aimBar) aimBar.style.width = aimPowerPct() + '%';
+  }
+  function aimPowerPct(){
+    const MAX_V = 1700;
+    return Math.min(100, Math.round(Math.hypot(aim.vx, aim.vy) / MAX_V * 100));
+  }
+  function updateShootBtn(){
+    if (!shootBtn) return;
+    const disabled = !ball || ball.live || over.classList.contains('on');
+    shootBtn.disabled = disabled;
   }
 
   // Random rim placement — always above the ball, never too close to the sides.
@@ -253,6 +301,7 @@ body.embed{padding-top:0}
         }
       }
     }
+    updateShootBtn();
     draw();
   }
 
@@ -333,18 +382,19 @@ body.embed{padding-top:0}
       ctx.stroke();
     }
 
-    // Aim guide when dragging
-    if (dragging && aimStart && aimNow) {
-      const vx = (aimStart.x - aimNow.x) * 3;
-      const vy = (aimStart.y - aimNow.y) * 3;
-      const power = Math.min(1, Math.hypot(vx, vy) / 1400);
-      ctx.strokeStyle = `rgba(227,74,46,${.35 + power*.5})`;
+    // Persistent aim guide — always visible while the ball is idle so
+    // the user can SEE the throw before committing to it. Colour + line
+    // opacity intensify with power (visual power meter).
+    if (!ball.live) {
+      const power = Math.min(1, Math.hypot(aim.vx, aim.vy) / 1700);
+      ctx.strokeStyle = dragging
+        ? `rgba(227,74,46,${.55 + power*.35})`
+        : `rgba(227,74,46,${.35 + power*.35})`;
       ctx.lineWidth = 2.5;
       ctx.setLineDash([6, 6]);
-      // Draw dotted trajectory prediction
-      let px = ball.x, py = ball.y, pvx = vx, pvy = vy;
+      let px = ball.x, py = ball.y, pvx = aim.vx, pvy = aim.vy;
       ctx.beginPath(); ctx.moveTo(px, py);
-      for (let i = 0; i < 24; i++) {
+      for (let i = 0; i < 28; i++) {
         pvy += G * 0.033;
         px += pvx * 0.033; py += pvy * 0.033;
         if (py > H) break;
@@ -352,6 +402,14 @@ body.embed{padding-top:0}
       }
       ctx.stroke();
       ctx.setLineDash([]);
+      // Small arrowhead at the ball to show initial direction
+      const mag = Math.hypot(aim.vx, aim.vy) || 1;
+      const ah = 22;
+      const ax = ball.x + (aim.vx / mag) * ah;
+      const ay = ball.y + (aim.vy / mag) * ah;
+      ctx.strokeStyle = `rgba(227,74,46,.85)`;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(ball.x, ball.y); ctx.lineTo(ax, ay); ctx.stroke();
     }
 
     // Ball
@@ -398,39 +456,48 @@ body.embed{padding-top:0}
     ctx.beginPath(); ctx.arc(x, y, r, Math.PI - 0.35, Math.PI + 0.35); ctx.stroke();
   }
 
-  // Pointer input — drag from anywhere on the court to aim from the ball.
+  // Pointer input — drag anywhere on the court to POINT the aim. Unlike
+  // the old release-to-shoot model, releasing does nothing: the aim
+  // stays where you left it so you can tweak. Tap SHOOT to fire.
   function pt(e){
     const r = cv.getBoundingClientRect();
     const p = e.touches ? e.touches[0] : e;
     return { x: p.clientX - r.left, y: p.clientY - r.top };
   }
+  function aimTowards(p){
+    // Vector from ball → touch point. That's the direction of the throw;
+    // magnitude sets power. Cap so a full-screen drag doesn't launch it
+    // off the map.
+    if (!ball) return;
+    const dx = p.x - ball.x, dy = p.y - ball.y;
+    const dist = Math.hypot(dx, dy);
+    // Below-and-close taps aren't a natural aim — ignore small pulls
+    // rather than aim into the ground.
+    if (dist < 20) return;
+    const MAX_V = 1700, MIN_V = 350;
+    // Scale distance to velocity. A drag of ~250px → about MAX_V.
+    let speed = Math.min(MAX_V, Math.max(MIN_V, dist * 6));
+    aim.vx = (dx / dist) * speed;
+    aim.vy = (dy / dist) * speed;
+    if (aimBar) aimBar.style.width = aimPowerPct() + '%';
+    if (!hint_dismissed) { hint.classList.add('gone'); hint_dismissed = true; }
+  }
   function startDrag(e){
-    if (over.classList.contains('on')) return;
-    if (ball.live) return;
+    if (over.classList.contains('on') || ball.live) return;
     e.preventDefault();
     dragging = true;
-    aimStart = pt(e);
-    aimNow = aimStart;
+    aimTowards(pt(e));
   }
   function moveDrag(e){
     if (!dragging) return;
     e.preventDefault();
-    aimNow = pt(e);
+    aimTowards(pt(e));
   }
   function endDrag(e){
     if (!dragging) return;
     e.preventDefault();
     dragging = false;
-    if (!aimStart || !aimNow) return;
-    const dx = aimStart.x - aimNow.x, dy = aimStart.y - aimNow.y;
-    if (Math.hypot(dx, dy) < 12) { aimStart = aimNow = null; return; }
-    ball.vx = dx * 3;
-    ball.vy = dy * 3;
-    // Cap speed so a wild fling can't rocket offscreen too fast
-    const sp = Math.hypot(ball.vx, ball.vy), MAX_V = 1700;
-    if (sp > MAX_V) { ball.vx *= MAX_V / sp; ball.vy *= MAX_V / sp; }
-    ball.live = true;
-    aimStart = aimNow = null;
+    // Aim persists — user can tweak, or hit SHOOT.
   }
   cv.addEventListener('mousedown', startDrag);
   window.addEventListener('mousemove', moveDrag);
@@ -438,6 +505,21 @@ body.embed{padding-top:0}
   cv.addEventListener('touchstart', startDrag, { passive: false });
   cv.addEventListener('touchmove', moveDrag, { passive: false });
   cv.addEventListener('touchend', endDrag, { passive: false });
+
+  function shoot(){
+    if (!ball || ball.live) return;
+    ball.vx = aim.vx;
+    ball.vy = aim.vy;
+    ball.live = true;
+    updateShootBtn();
+    if (!hint_dismissed) { hint.classList.add('gone'); hint_dismissed = true; }
+  }
+  shootBtn.addEventListener('click', shoot);
+  // Also allow Space / Enter to shoot (helpful on desktop)
+  window.addEventListener('keydown', e => {
+    if (over.classList.contains('on')) return;
+    if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); shoot(); }
+  });
 
   window.addEventListener('resize', () => {
     resize();
