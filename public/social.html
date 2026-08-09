@@ -6830,10 +6830,13 @@ function closeXlatPicker(){
 // First-run + Manage popup: shows every common language as a toggleable
 // chip. On Save we PATCH the profile and call the callback with the new
 // list so the caller can continue (e.g. finish a translation).
+// Owner ask 9 Aug 2026 v9 — one-tap flow. Tap a language chip →
+// immediately save that language as the new default AND run the
+// pending action (e.g. translate the message). No Save button, no
+// Cancel button, no Other input. Dismiss = tap outside the modal.
 function openXlatSetup(cb){
   const bd = document.getElementById('xlatSetupBd');
   const list = document.getElementById('xlatSetupList');
-  const custom = document.getElementById('xlatSetupCustom');
   const cur = new Set(((ME && ME.xlatLangs) || []).map(s => s.toLowerCase()));
   const known = new Set(LANG_NAMES.map(s => s.toLowerCase()));
   // Anything the user already saved that isn't in COMMON_LANGS → show it too.
@@ -6846,31 +6849,22 @@ function openXlatSetup(cb){
     chip.type = 'button';
     chip.className = 'xlat-chip' + (cur.has(name.toLowerCase()) ? ' on' : '');
     chip.innerHTML = `<span class="fl">${flag}</span> ${escapeHtml(name)}`;
-    chip.onclick = () => {
-      const k = name.toLowerCase();
-      if (cur.has(k)) cur.delete(k); else cur.add(k);
-      chip.classList.toggle('on');
+    chip.onclick = async () => {
+      // Promote the tapped language to the front of the saved list.
+      const picked = [name];
+      ((ME && ME.xlatLangs) || []).forEach(existing => {
+        if (existing.toLowerCase() !== name.toLowerCase()) picked.push(existing);
+      });
+      try {
+        const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ xlatLangs: picked.slice(0, 5) }) });
+        if (j && j.me) ME = j.me;
+        closeXlatSetup();
+        if (typeof cb === 'function') cb((ME && ME.xlatLangs) || []);
+      } catch (e) { toast(e.message || 'Could not save.'); }
     };
     list.appendChild(chip);
   });
-  custom.value = '';
-  document.getElementById('xlatSetupSave').onclick = async () => {
-    // Preserve the original casing the user first typed for extras; for
-    // common ones use the display casing from COMMON_LANGS.
-    const picked = [];
-    all.forEach(o => { if (cur.has(o.name.toLowerCase())) picked.push(o.name); });
-    const c = custom.value.trim();
-    if (c && !cur.has(c.toLowerCase())) picked.push(c);
-    if (!picked.length) return toast('Pick at least one language.');
-    try {
-      const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ xlatLangs: picked.slice(0, 5) }) });
-      if (j && j.me) ME = j.me;
-      closeXlatSetup();
-      if (typeof cb === 'function') cb((ME && ME.xlatLangs) || []);
-    } catch (e) { toast(e.message || 'Could not save.'); }
-  };
-  document.getElementById('xlatSetupCancel').onclick = () => closeXlatSetup();
   bd.classList.add('show');
 }
 function closeXlatSetup(){
@@ -8087,18 +8081,15 @@ function maybeWelcome(){ /* retired — no popup */ }
   <button class="xlat-manage" id="xlatManage" type="button">＋ Manage languages</button>
 </div>
 
-<!-- Translate: first-run + Manage popup. Choose one or more target
-     languages. Shown once until the user has ≥1 saved. -->
+<!-- Translate: first-run popup. Owner ask 9 Aug 2026 v9 — tap ONE
+     language chip → immediately save as default AND translate the
+     pending message. Change any time via Avatar menu → Translation
+     languages. No Save / Cancel / Other input. Dismiss = tap outside. -->
 <div class="xlat-setup-bd" id="xlatSetupBd" onclick="if(event.target===this)closeXlatSetup()">
   <div class="xlat-setup" role="dialog" aria-modal="true">
-    <h3>🌐 Translation languages</h3>
-    <p>Which languages do you want messages translated into? Pick one or more — you can change this later from your profile.</p>
+    <h3>🌐 Translate into</h3>
+    <p>Tap a language — we'll use it every time from now on. You can change this later from your profile.</p>
     <div class="xlat-setup-chips" id="xlatSetupList"></div>
-    <label class="xlat-setup-add">Other <input type="text" id="xlatSetupCustom" placeholder="e.g. Swedish" maxlength="40" autocomplete="off"></label>
-    <div class="xlat-setup-actions">
-      <button type="button" class="ghost" id="xlatSetupCancel">Cancel</button>
-      <button type="button" class="primary" id="xlatSetupSave">Save</button>
-    </div>
   </div>
 </div>
 
