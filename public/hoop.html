@@ -77,6 +77,39 @@ body.embed header{display:none}
 body.embed{padding-top:0}
 
 @media(max-height:640px){.stat .val{font-size:19px}.hint{bottom:96px}.shootbtn{padding:12px 28px;font-size:15px}}
+
+/* ── Multiplayer overlays + live leaderboard (owner ask 10 Aug 2026 —
+   'let 2 or multiple people play the game and show their score') ── */
+.lobby-bd,.results-bd{position:absolute;inset:0;background:rgba(22,24,31,.72);display:none;align-items:center;justify-content:center;z-index:30;padding:24px;animation:fadeIn .25s}
+.lobby-bd.on,.results-bd.on{display:flex}
+.lobby,.results{background:#fff;border-radius:22px;padding:24px 22px 20px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.32)}
+.lobby h2,.results h2{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:22px;margin-bottom:8px}
+.lobby .code{display:inline-block;background:#fff2d9;color:#a25a00;font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:26px;letter-spacing:6px;padding:8px 18px;border-radius:12px;margin:6px 0 14px}
+.lobby .sub,.results .sub{color:var(--sub);font-size:13.5px;font-weight:500;margin-bottom:16px}
+.lobby .plist,.results .plist{list-style:none;padding:0;margin:0 0 14px;max-height:200px;overflow-y:auto;text-align:left}
+.lobby .plist li,.results .plist li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;color:var(--ink)}
+.lobby .plist li:nth-child(odd){background:#f5f5f7}
+.lobby .plist .host,.results .plist .host{background:#e7fbe9;color:#0f5b1a}
+.lobby .plist .badge{font-size:10px;font-weight:800;letter-spacing:.5px;color:#a25a00;background:#fff2d9;padding:2px 6px;border-radius:6px;margin-left:auto}
+.results .plist li{justify-content:space-between}
+.results .plist li b{font-family:'Fredoka','Inter',sans-serif;font-weight:700;color:var(--ink);font-size:16px}
+.results .plist li.medal-1{background:#fff4d0}
+.results .plist li.medal-2{background:#eef1f5}
+.results .plist li.medal-3{background:#fde5d1}
+.lobby button,.results button{width:100%;background:var(--orange);color:#fff;border:0;border-radius:14px;padding:13px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:16px;cursor:pointer;margin-top:6px}
+.lobby button:hover,.results button:hover{filter:brightness(1.08)}
+.lobby button[disabled]{opacity:.5;cursor:not-allowed;filter:grayscale(.5)}
+.lobby .ghost,.results .ghost{background:#f3f4f6;color:var(--ink);margin-top:8px}
+.lobby .ghost:hover,.results .ghost:hover{background:#e5e7eb}
+
+/* Live leaderboard while playing — a small floating chip on the left */
+.livelead{position:absolute;top:96px;left:12px;background:rgba(255,255,255,.9);border-radius:12px;padding:8px 10px;font-family:'Inter',sans-serif;font-size:12.5px;box-shadow:0 2px 6px rgba(0,0,0,.08);backdrop-filter:blur(6px);z-index:5;min-width:120px;max-width:160px;display:none}
+.livelead.on{display:block}
+.livelead .llhdr{font-family:'Fredoka','Inter',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--sub);margin-bottom:4px}
+.livelead .llrow{display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-weight:600;color:var(--ink)}
+.livelead .llrow.me{color:var(--red)}
+.livelead .llrow b{font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:14px}
+.livelead .llrow span{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -99,6 +132,33 @@ body.embed{padding-top:0}
   <div class="hint" id="hint">Drag anywhere to aim · tap Shoot</div>
   <div class="aimpad" id="aimpad">POWER <div class="bar"><i id="aimpower"></i></div></div>
   <button class="shootbtn" id="shootBtn" type="button"><span class="ball">🏀</span> SHOOT</button>
+  <!-- Live leaderboard (multiplayer only) — shows every player's current
+       score while the round is in flight. Hidden in solo mode. -->
+  <div class="livelead" id="liveLead">
+    <div class="llhdr">Live scores</div>
+    <div id="liveRows"></div>
+  </div>
+  <!-- Lobby overlay (multiplayer only) — before the host starts. -->
+  <div class="lobby-bd" id="lobbyBd">
+    <div class="lobby" role="dialog">
+      <h2>🏀 Hoop room</h2>
+      <div class="code" id="lbCode">----</div>
+      <div class="sub">Share this code with friends. Everyone plays the same 60-second round together.</div>
+      <ul class="plist" id="lbList"></ul>
+      <button id="lbStart" disabled>Start round</button>
+      <button class="ghost" onclick="location.href='/games'">Leave</button>
+    </div>
+  </div>
+  <!-- Final results (multiplayer only) — after the timer expires. -->
+  <div class="results-bd" id="resBd">
+    <div class="results" role="dialog">
+      <h2 id="resHead">🏆 Final scores</h2>
+      <div class="sub" id="resSub">Round over</div>
+      <ul class="plist" id="resList"></ul>
+      <button id="resAgain" style="display:none">Play again</button>
+      <button class="ghost" onclick="location.href='/games'">Back to games</button>
+    </div>
+  </div>
   <div class="over" id="over">
     <div class="overcard">
       <div class="newhi" id="newhi" style="display:none">🎉 New best score!</div>
@@ -526,9 +586,128 @@ body.embed{padding-top:0}
     if (ball && !ball.live) resetBall();
   });
 
+  // ───────────── Multiplayer wiring (owner ask 10 Aug 2026) ─────────────
+  // If ?room=CODE is in the URL, run in multiplayer mode:
+  //   - Show lobby (list of players + Start button for the host)
+  //   - Wait for server 'start' event to run the same 60s round
+  //   - Emit 'score' on every basket → server broadcasts leaderboard
+  //   - Show final results screen on 'end'
+  // Solo (no room) is unchanged — startRound() fires immediately.
+  const params = new URLSearchParams(location.search);
+  const ROOM = (params.get('room') || '').trim().toUpperCase();
+  const MULTI = !!ROOM;
+
+  let socket = null, MY_ID = null, HOST_ID = null, playersById = {};
+
+  function multiJoin(){
+    // Grab a friendly name — logged-in users typically have one in a
+    // WordSpies cookie; guests get prompted once.
+    let name = '';
+    try { name = decodeURIComponent(((document.cookie.match(/(?:^|;\s*)soc_name=([^;]+)/) || [])[1] || '')); } catch(e){}
+    if (!name) {
+      try { name = localStorage.getItem('hoop_name') || ''; } catch(e){}
+    }
+    if (!name) name = prompt('Your name?', '') || 'Player';
+    try { localStorage.setItem('hoop_name', name); } catch(e){}
+    socket = io('/hoop');
+    socket.on('connect', () => socket.emit('join', { code: ROOM, name }));
+    socket.on('error', ({ error }) => alert(error || 'Room error.'));
+    socket.on('joined', ({ you, hostId, state, players }) => {
+      MY_ID = you; HOST_ID = hostId;
+      paintRoster(players);
+      if (state === 'lobby') showLobby();
+    });
+    socket.on('roster', ({ hostId, players, state }) => {
+      HOST_ID = hostId;
+      paintRoster(players);
+      if (state === 'lobby' && !document.getElementById('resBd').classList.contains('on')) showLobby();
+    });
+    socket.on('start', ({ players }) => {
+      hideLobby(); hideResults();
+      paintRoster(players);
+      document.getElementById('liveLead').classList.add('on');
+      startRound();
+    });
+    socket.on('leaderboard', ({ players }) => paintLeaderboard(players));
+    socket.on('end', ({ players }) => {
+      document.getElementById('liveLead').classList.remove('on');
+      showResults(players);
+      // Hide the solo 'Time's up' overlay if it snuck in.
+      over.classList.remove('on');
+    });
+  }
+  function paintRoster(players){
+    playersById = {};
+    players.forEach(p => { playersById[p.id] = p; });
+    const list = document.getElementById('lbList');
+    if (!list) return;
+    list.innerHTML = players.map(p => {
+      const isHost = p.id === HOST_ID;
+      const isMe = p.id === MY_ID;
+      return `<li class="${isHost ? 'host' : ''}">${isMe ? '👉 ' : ''}${escapeHtml(p.name)}${isHost ? ' <span class="badge">HOST</span>' : ''}</li>`;
+    }).join('');
+    const startBtn = document.getElementById('lbStart');
+    if (startBtn) {
+      const iAmHost = MY_ID && MY_ID === HOST_ID;
+      startBtn.disabled = !iAmHost;
+      startBtn.textContent = iAmHost
+        ? (players.length >= 2 ? 'Start round' : 'Start (waiting for others)')
+        : 'Waiting for host to start…';
+    }
+  }
+  function paintLeaderboard(players){
+    const rows = document.getElementById('liveRows');
+    if (!rows) return;
+    const sorted = players.slice().sort((a, b) => b.score - a.score);
+    rows.innerHTML = sorted.map(p =>
+      `<div class="llrow ${p.id === MY_ID ? 'me' : ''}"><span>${escapeHtml(p.name)}</span><b>${p.score}</b></div>`
+    ).join('');
+  }
+  function showLobby(){ document.getElementById('lobbyBd').classList.add('on'); document.getElementById('lbCode').textContent = ROOM; }
+  function hideLobby(){ document.getElementById('lobbyBd').classList.remove('on'); }
+  function showResults(players){
+    const list = document.getElementById('resList');
+    list.innerHTML = players.map((p, i) => `<li class="medal-${i+1}"><span>${i+1}. ${escapeHtml(p.name)}${p.id === MY_ID ? ' (you)' : ''}</span><b>${p.score}</b></li>`).join('');
+    const iAmHost = MY_ID && MY_ID === HOST_ID;
+    const again = document.getElementById('resAgain');
+    again.style.display = iAmHost ? '' : 'none';
+    again.onclick = () => { socket.emit('rematch'); hideResults(); };
+    document.getElementById('resSub').textContent = iAmHost ? 'Tap Play again to run another round.' : 'Waiting for host…';
+    document.getElementById('resBd').classList.add('on');
+  }
+  function hideResults(){ document.getElementById('resBd').classList.remove('on'); }
+  function escapeHtml(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // Emit score updates in multi mode. Wrap the existing registerBasket
+  // via a monkey-patch so we don't have to touch the physics code.
+  if (MULTI) {
+    const originalRegisterBasket = registerBasket;
+    registerBasket = function(){
+      originalRegisterBasket.apply(this, arguments);
+      if (socket && socket.connected) socket.emit('score', { n: score });
+    };
+    // Multi mode: don't show the solo overlay when the timer ends —
+    // server sends its own end event with the leaderboard.
+    const originalEndRound = endRound;
+    endRound = function(){
+      originalEndRound.apply(this, arguments);
+      over.classList.remove('on');
+    };
+  }
+
   window.startRound = startRound;
   resize();
-  startRound();
+
+  if (MULTI) {
+    // Lazy-load socket.io only when we need it (solo mode stays lean).
+    const s = document.createElement('script');
+    s.src = '/socket.io/socket.io.js';
+    s.onload = multiJoin;
+    s.onerror = () => alert('Could not load multiplayer. Try refreshing.');
+    document.head.appendChild(s);
+  } else {
+    startRound();
+  }
 })();
 </script>
 </body>
