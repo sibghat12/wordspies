@@ -335,6 +335,133 @@ const articles = {
 <p>The community wall shows real members by default. To find the Chat Experts, tap the "✦ Chat Experts" filter above the wall. <a href="/">Sign up free</a> to start chatting with them and everyone else.</p>`
   },
 
+  'learn-spanish-free-with-real-people': {
+    title: 'How to Learn Spanish Free by Chatting With Real People (2026)',
+    desc: 'The fastest way to learn Spanish is by talking to real Spanish speakers — free. Here is how to find them, what to say first, and how AI corrections keep you improving.',
+    date: '2026-08-09',
+    html: `
+<p>Spanish is the second-most-spoken native language on the planet, and thousands of native speakers are online right now who genuinely want to talk to you — because they're learning English. That mutual exchange is the fastest, cheapest way to actually learn Spanish. Here's how to do it, free.</p>
+<h2>Why chatting with real people beats apps</h2>
+<p>Duolingo teaches you sentences you'll never say. A real conversation with a Mexican, Spaniard, Argentine or Colombian teaches you the phrases they actually use — <em>"¿qué tal?"</em> not <em>"¿cómo está usted?"</em>. You also pick up slang, rhythm, and confidence, all of which classroom Spanish never gives you.</p>
+<h2>Where to find real Spanish speakers online, free</h2>
+<p><a href="/social">WordSpies</a> has thousands of Spanish speakers looking for English practice — you pick your language pair once at signup and the community wall filters to people who match. Send a message, no accounts to trade, no phone numbers, no fee.</p>
+<h2>What to say in your first message</h2>
+<p>Keep it short and specific. Bad first message: <em>"Hola, quieres practicar?"</em> (Everyone gets thirty of these a day.) Good first message: <em>"Hola! Vi que te gusta el cine mexicano — ¿qué película recomiendas para alguien aprendiendo español?"</em> A specific question about their profile earns a real reply.</p>
+<h2>Use AI corrections without breaking the flow</h2>
+<p>You'll make mistakes. Every chat message on WordSpies has a "Correct" button — tap it and Claude AI shows the fixed version underneath yours with a short note ("past tense", "missing article"). Your original stays visible so you learn from the mistake instead of hiding it.</p>
+<h2>Voice practice from day one</h2>
+<p>Text is safe, voice is where you actually learn to speak. Voice parties on WordSpies let you drop into a Spanish-speaking room and just listen at first — no pressure to talk. When you're ready, raise a hand and jump in. Doing this once a week for a month will do more for your Spanish than a year of flashcards.</p>
+<h2>The realistic path</h2>
+<p>Two 15-minute chats a day, one voice party a week, and one game with your language partner (Word Race in Spanish is unfair fun). Do that for three months and you'll be conversational. Do it for six and you'll be fluent enough to travel.</p>
+<p><a href="/social">Start free on WordSpies</a> — pick Spanish as your target language and you're talking to a real speaker within minutes.</p>`
+  },
+
+  'best-free-language-exchange-apps': {
+    title: 'Best Free Language Exchange Apps in 2026 (Honest Comparison)',
+    desc: 'Tandem, HelloTalk, Speaky, Bilingua and WordSpies compared — free features, hidden paywalls, AI corrections, voice, and which is best for your goal.',
+    date: '2026-08-09',
+    html: `
+<p>"Free" means different things depending on the app. Some limit how many messages you can send. Some hide voice behind a paywall. Some are ad-swamped. Here's the honest state of language-exchange apps in 2026 — what's actually free, what's not, and which fits which learner.</p>
+<h2>Tandem</h2>
+<p>The pioneer. Huge user base — you'll find speakers of almost any language. Downsides: profile approval takes hours-to-days, most useful features (unlimited translations, voice-message translation, VIP filters) are behind Tandem Pro. Corrections exist but rely on the other person actually correcting you. Free tier is usable but limited.</p>
+<h2>HelloTalk</h2>
+<p>Feature-rich free tier — the "moments" feed (public posts) is a genuine strength for casual practice. Paywalled: translation of long messages, more than one target language, group audio. AI is baked in more than Tandem. Free is workable if you can live with the ads.</p>
+<h2>Speaky</h2>
+<p>Simpler, lighter than Tandem. Free tier is generous but the user base is smaller — you'll wait longer for replies in less-common language pairs. Web-first, which some people prefer.</p>
+<h2>Bilingua</h2>
+<p>Focused on matching you with compatible partners rather than a big browsable feed. Works well if you like a small number of deeper conversations. Free tier has hard limits on daily matches.</p>
+<h2>WordSpies</h2>
+<p><a href="/">WordSpies</a> is genuinely free — no paywall, no premium tier. AI corrections built into every message (tap Correct, get the fix + explanation). Voice parties for group practice. And 8 multiplayer language games you can play with the person you're chatting with — Word Race in Spanish beats a formal flashcard session every time. Downside: user base is smaller than Tandem or HelloTalk (we're newer).</p>
+<h2>Which should you pick?</h2>
+<p>For sheer volume of potential partners, Tandem or HelloTalk. For a genuinely free experience with modern AI baked in, <a href="/">WordSpies</a>. For quality-over-quantity matching, Bilingua. Most serious learners end up using two — one big pool for practice partners, one specialised tool for something they use every day. WordSpies pairs well as the "actually free with AI" side of that pair.</p>
+<p><a href="/social">Try WordSpies free</a> — 30-second signup, no email required, all features open from day one.</p>`
+  },
+
+  'ai-corrections-for-language-learning': {
+    title: 'How to Get Your Writing Corrected in Any Language (Free AI Tool)',
+    desc: 'Get instant AI corrections on any sentence in any language, free. How AI corrections work, how they compare to native-speaker feedback, and when to use each.',
+    date: '2026-08-09',
+    html: `
+<p>Learning a language without correction is like practising darts blindfolded — you'll get comfortable doing it wrong. Getting corrected used to mean hiring a tutor or nagging a native-speaker friend. Now AI does it instantly, in every language, for free.</p>
+<h2>Why corrections matter more than lessons</h2>
+<p>Textbooks teach rules. Corrections show you which rule you personally keep breaking. That's the actual learning — the feedback loop between your mistake and someone (or something) telling you why.</p>
+<h2>How AI corrections work</h2>
+<p>You type a sentence. The AI proposes the corrected version and — critically — explains what changed. "I go to store yesterday" → "I <u>went</u> to <u>the</u> store yesterday" (past tense, missing article). Modern models like Claude are shockingly good at this in dozens of languages.</p>
+<h2>AI vs native-speaker corrections</h2>
+<p>Natives catch nuance — the phrase that's grammatically correct but nobody actually says. AI catches grammar and vocabulary with near-perfect consistency, and it never gets tired of correcting you. Both are valuable. AI is the daily driver; a native speaker is the polish.</p>
+<h2>Where to get free AI corrections</h2>
+<p>On <a href="/">WordSpies</a>, every message in every chat has a "Correct" button. Tap it, get the corrected version underneath yours, plus a one-line explanation of what changed. Your original stays visible so you're learning from your own mistake, not hiding it.</p>
+<h2>Getting the most from AI corrections</h2>
+<p>Three habits: (1) write first, correct after — don't lean on AI while composing or you'll never learn to think in the language. (2) re-read the correction out loud before moving on. (3) if the same mistake shows up three times, write it in a note — that's your personal weak spot to drill.</p>
+<h2>When AI corrections aren't enough</h2>
+<p>Register (formal vs casual), regional variation, idioms, and cultural fit — these are where you still need a human. Do most of your daily correcting with AI, then swap voice notes with a real person once a week to polish everything AI misses.</p>
+<p><a href="/social">Try free AI corrections on WordSpies</a> — send a message in any language, tap Correct, and see how it works. No signup fee.</p>`
+  },
+
+  'practise-speaking-a-language-online': {
+    title: 'How to Practise Speaking a Language Online Without Awkwardness',
+    desc: 'Terrified of speaking your target language? Here is how to practise speaking online without the awkward silences — from AI voice to listen-first voice parties.',
+    date: '2026-08-09',
+    html: `
+<p>Speaking is the scariest part of learning a language. Reading is easy. Writing gives you time to think. Speaking — with someone hearing your mistakes in real time — is where most learners stall for years. Here's how to break through that wall without dying of embarrassment.</p>
+<h2>Rule 1: You must speak from the very beginning</h2>
+<p>Skipping speaking practice until you "feel ready" means you'll never feel ready. Speaking builds a different skill from reading or listening — the pathway from thought to mouth. That pathway only develops through use.</p>
+<h2>Start with AI, not people</h2>
+<p>An AI conversation partner doesn't judge, doesn't get bored, and doesn't watch you struggle. <a href="/social">WordSpies has three AI Chat Experts</a> — Amy (British), Matthew (American), Ashley (Australian) — who speak with real voices and remember what you said earlier in the conversation. Warm up with them before any real chat.</p>
+<h2>Move to voice parties as a listener</h2>
+<p>Voice parties are group audio rooms where anyone can join. Here's the trick: on WordSpies you can join as a <em>listener</em> — you can hear everyone, but nobody hears you until you raise your hand. Spend your first three parties just listening. You'll pick up rhythm, slang, common phrases — and lose the fear of the accent.</p>
+<h2>Raise your hand for one sentence</h2>
+<p>When you're ready, join a party and raise your hand to say one thing. Not a monologue — one sentence. "Hi, I'm learning Spanish from Manchester" is enough. Do this once and the fear evaporates.</p>
+<h2>Send voice notes, not perfect speech</h2>
+<p>Voice notes are half-speech, half-writing — you can re-record, and there's no live pressure. Every chat on WordSpies supports voice notes. Send them badly. The other person will send one back, and now you're having a real conversation.</p>
+<h2>The 3-week plan</h2>
+<p>Week 1: 10 minutes a day with an AI partner. Week 2: join one voice party as a listener, send one voice note to a real person. Week 3: raise your hand in a party for one sentence. By the end of week 3, speaking will still feel new but no longer terrifying.</p>
+<p><a href="/social">Start free on WordSpies</a> — AI voice partners and live voice parties are open from day one.</p>`
+  },
+
+  'games-to-learn-a-language': {
+    title: '6 Free Games to Learn a Language (2026): Play Your Way to Fluency',
+    desc: 'Language-learning games are the fastest way to build vocabulary — because you use words in context. Here are six free games that actually teach a language.',
+    date: '2026-08-09',
+    html: `
+<p>Every fluent speaker will tell you the same thing: vocabulary sticks when you use it, not when you memorise it. Games force you to use it — under time pressure, with real stakes (winning or losing to a friend). Here are six free games that are secretly excellent language teachers.</p>
+<h2>1. Word Race — 60-second vocab sprint</h2>
+<p><a href="/wordrace">Word Race</a> is exactly what it sounds like: a one-minute race to type as many valid words as you can. Pick your target language and every letter combo, every recall, every "wait, how do I spell this again?" is real vocabulary training. Solo or against friends.</p>
+<h2>2. Word Chain — last letter starts the next</h2>
+<p><a href="/wordchain">Word Chain</a> makes you produce vocabulary on demand. Someone plays "gato" (cat), you have to play a word starting with O. Deceptively hard, addictive, and it trains active recall — the hardest kind of vocabulary skill to develop.</p>
+<h2>3. Guess the Word — describe without saying</h2>
+<p><a href="/guessword">Guess the Word</a> is Taboo for language learners. One player knows the word, the rest ask questions to figure it out — in the target language. Being forced to describe "elephant" without using "elephant" builds paraphrasing skills faster than any textbook exercise.</p>
+<h2>4. WordSpies — team clue game</h2>
+<p><a href="/play">WordSpies</a> (Codenames-style) is brilliant for learners with intermediate vocabulary. Giving a one-word clue that links "APPLE" and "TREE" is a real vocabulary puzzle in any language. Play in your target language and every clue is a mini-lesson in association.</p>
+<h2>5. Mind Meld — say the same word</h2>
+<p><a href="/meld">Mind Meld</a> is two players typing simultaneously, trying to say the same word. The lost rounds ("MOON" + "SKY" → what word links them?) teach you semantic clusters — words that feel related in a language, which is exactly what fluency feels like.</p>
+<h2>6. Spy — social deduction, in any language</h2>
+<p><a href="/spy">Spy</a> is a social deduction game where one player doesn't know the secret word. Playing it in your target language turns it into an oral-comprehension workout — you have to listen carefully to what everyone says to catch the fake.</p>
+<h2>How to actually learn from games</h2>
+<p>Two rules: play in your target language (not English with target-language decorations), and play with real people when possible — a game against a native speaker beats one against a bot for learning value every time. <a href="/social">Start free on WordSpies</a> and every game is one tap away.</p>`
+  },
+
+  'find-a-language-exchange-partner': {
+    title: 'How to Find a Language Exchange Partner Online (Free, 2026)',
+    desc: 'Finding a language exchange partner is easier than ever in 2026. Here is where to look, what to say in your first message, and how to keep them replying.',
+    date: '2026-08-09',
+    html: `
+<p>The best language teacher is a native speaker who's learning your language too — a language exchange partner. You help each other, both languages get practised, nobody pays. The tricky part isn't the concept, it's finding one who actually replies. Here's the 2026 playbook.</p>
+<h2>Where to look</h2>
+<p>Language exchange lives on dedicated apps — <a href="/blog/best-free-language-exchange-apps">Tandem, HelloTalk, Speaky, WordSpies</a>. Sub-reddits work in a pinch (r/language_exchange). Discord servers for specific languages have voice channels but skew younger and less structured.</p>
+<h2>Build a profile that gets replies</h2>
+<p>Three details do the heavy lifting: a real photo (not a landscape), your specific interests (not "I like everything"), and what you want from the exchange ("weekly voice calls, casual chat"). Vague profiles get ignored. Specific ones get twenty messages a week.</p>
+<h2>The first message that works</h2>
+<p>Don't say "Hi, want to practise?" — they get thirty of those a day. Instead, react to something specific in their profile: <em>"Saw you're into indie music from Buenos Aires — any bands I should try?"</em> A specific question in their native language earns a genuine reply almost every time.</p>
+<h2>Set the exchange format early</h2>
+<p>Most exchanges die because one person gets all the practice and the other gets none. Agree in the first few messages: 15 min in their language, 15 min in yours. Alternate days if that's easier. Formal rules feel awkward until they save the friendship.</p>
+<h2>Use tools that fill the awkward silences</h2>
+<p>Play a game together while you chat. <a href="/wordrace">Word Race</a>, <a href="/wordchain">Word Chain</a>, or <a href="/guessword">Guess the Word</a> in the target language give you something to talk about when you run out of small talk. A five-minute game breaks the ice and turns a stiff first call into an easy one.</p>
+<h2>How to keep them replying</h2>
+<p>Reply within a day. Ask questions about them (people love talking about themselves). Send voice notes — they feel more personal than text. And be forgiving: language exchange is a hobby for both of you, not a job.</p>
+<p><a href="/social">Start free on WordSpies</a> — the community wall filters to people learning your language and speaking theirs. First real conversation possible today.</p>`
+  },
+
   'party-games-shelf': {
     title: 'The WordSpies Games Shelf: One Place, Free, No Sign-Up',
     desc: 'Codenames-style word game, Ludo, 8-ball pool, Connect 4, Mind Meld and Who is the Spy — all free, in the browser, with friends or against the bot.',
@@ -418,9 +545,9 @@ footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 .more:hover{text-decoration:underline;text-underline-offset:3px}
 .pagetitle{font-size:28px;margin:0 0 4px}
 .pagesub{color:#6b7280;font-size:15.5px;margin:0 0 8px}
-.bband{background:linear-gradient(135deg,#128a04,#0f7500);color:#fff;padding:42px 0 46px}
-.bband h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:36px;letter-spacing:-.5px;margin:0 0 8px;color:#fff}
-.bband p{margin:0;font-size:16.5px;font-weight:600;color:#eafbe7}
+.bband{background:#fff;border-bottom:1px solid #e5e7eb;padding:44px 0 32px}
+.bband h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:36px;letter-spacing:-.5px;margin:0 0 8px;color:#1c1e21}
+.bband p{margin:0;font-size:16.5px;font-weight:500;color:#5f6675;max-width:640px}
 .relh{font-size:19px;font-weight:800;margin:38px 0 14px}
 .relgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:560px){.relgrid{grid-template-columns:1fr}}
@@ -471,11 +598,11 @@ function indexPage() {
   const items = Object.entries(articles).map(([slug, a]) =>
     `<div class="post"><a class="postthumb" href="/blog/${slug}" aria-label="${esc(a.title)}"><img src="/blog-img/${slug}.jpg" alt="${esc(a.title)}" loading="lazy" width="1200" height="630"></a><div class="postbody"><h2><a href="/blog/${slug}">${a.title}</a></h2><p>${a.desc}</p><a class="more" href="/blog/${slug}">Read article &rarr;</a></div></div>`).join('');
   const body = items;
-  const banner = `<div class="bband"><div class="hwrap"><h1>WordSpies Blog</h1><p>Guides, strategies and tips for word games with friends.</p></div></div>`;
+  const banner = `<div class="bband"><div class="hwrap"><h1>WordSpies Blog</h1><p>Language-learning tips, game guides, and stories from a community of speakers practising together.</p></div></div>`;
   const blogItems = Object.entries(articles).map(([slug, a]) =>
     `{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}"}`).join(',');
-  const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"${SITE}/blog","name":"WordSpies Blog","description":"Guides, strategies and tips for Codenames-style word games and online party games.","url":"${SITE}/blog","publisher":{"@type":"Organization","name":"WordSpies","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"blogPost":[${blogItems}]}</script>`;
-  return layout('WordSpies Blog — Word Game Guides & Tips', 'Guides, strategies and tips for Codenames-style word games and online party games with friends.', body, '/blog', banner, schema);
+  const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"${SITE}/blog","name":"WordSpies Blog","description":"Language-learning tips, game guides, and stories from a global community practising languages through chat, voice, and games.","url":"${SITE}/blog","publisher":{"@type":"Organization","name":"WordSpies","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"blogPost":[${blogItems}]}</script>`;
+  return layout('WordSpies Blog — Language Learning, Games & Community Tips', 'Language-learning tips, game guides, and stories from a global community practising languages together — chat, voice parties, AI corrections, and free games.', body, '/blog', banner, schema);
 }
 
 module.exports = { articles, articlePage, indexPage };

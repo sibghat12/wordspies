@@ -18,28 +18,102 @@ function avatar(hat, skin, blushOpacity = '.8') {
 </svg>`;
 }
 
-const DEMO_WORDS = ['TIGER','MOON','PIZZA','ROBOT','PARIS','HONEY','CLOUD','KING','OCEAN','TRAIN','APPLE','GHOST','PIANO','RIVER','CROWN','SNOW','DRAGON','BEACH','STAR','BRIDGE','CANDY','WOLF','ROCKET','ISLAND','MAGIC'];
-// Game controller icon — inherits button text colour via currentColor (white on green button)
+// Hero illustration — the killer Correct feature in action. Learner's imperfect
+// Spanish, then a green correction bubble underneath. Chosen as hero because it's
+// the single most valuable thing the app does that Duolingo/Tandem don't do well.
+const CHAT_MOCK = `<svg viewBox="0 0 380 320" width="100%" height="auto" aria-hidden="true">
+  <defs>
+    <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#f7f8fb"/></linearGradient>
+    <filter id="sh1" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1a2247" flood-opacity=".12"/></filter>
+  </defs>
+  <rect x="10" y="10" width="360" height="300" rx="24" fill="url(#bg1)" filter="url(#sh1)"/>
+  <rect x="10" y="10" width="360" height="46" rx="24" fill="#fff"/>
+  <circle cx="42" cy="34" r="14" fill="#ffd9b3"/>
+  <circle cx="42" cy="30" r="9" fill="#ffe6cc"/>
+  <text x="66" y="30" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="700" fill="#111318">Maria</text>
+  <text x="66" y="45" font-family="Plus Jakarta Sans,sans-serif" font-size="11" font-weight="500" fill="#5f6675">learning English · online</text>
+  <circle cx="340" cy="34" r="4" fill="#22c55e"/>
+  <rect x="30" y="78" width="220" height="42" rx="16" fill="#e8f0ff"/>
+  <text x="46" y="104" font-family="Plus Jakarta Sans,sans-serif" font-size="14" font-weight="500" fill="#111318">I go to store yesterday</text>
+  <text x="30" y="134" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="600" fill="#5f6675">MARIA · 2:14 PM</text>
+  <rect x="30" y="148" width="320" height="62" rx="14" fill="#e7fbe9" stroke="#7cd58a" stroke-width="1.4"/>
+  <text x="46" y="170" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="700" fill="#0f7500" letter-spacing=".5">✓ CORRECTION</text>
+  <text x="46" y="192" font-family="Plus Jakarta Sans,sans-serif" font-size="14" font-weight="600" fill="#0f7500">I <tspan text-decoration="underline">went</tspan> to <tspan text-decoration="underline">the</tspan> store yesterday</text>
+  <text x="46" y="204" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="500" fill="#3a7040">past tense · missing article</text>
+  <rect x="130" y="228" width="220" height="42" rx="16" fill="#111318"/>
+  <text x="146" y="254" font-family="Plus Jakarta Sans,sans-serif" font-size="14" font-weight="500" fill="#fff">Thanks! Que compraste?</text>
+  <text x="330" y="284" text-anchor="end" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="600" fill="#5f6675">YOU · 2:15 PM</text>
+</svg>`;
+
+// Four small pillar illustrations — inline SVG so no image requests, no layout shift.
+const ILLUS_CHAT = `<svg viewBox="0 0 160 120" width="100%" height="auto" aria-hidden="true">
+  <rect x="12" y="20" width="98" height="32" rx="14" fill="#e8f0ff"/>
+  <text x="26" y="40" font-family="Plus Jakarta Sans" font-size="12" font-weight="600" fill="#111318">Hola amigo!</text>
+  <rect x="52" y="60" width="96" height="32" rx="14" fill="#111318"/>
+  <text x="66" y="80" font-family="Plus Jakarta Sans" font-size="12" font-weight="600" fill="#fff">¿Cómo estás?</text>
+  <circle cx="20" cy="94" r="8" fill="#22c55e"/>
+  <text x="34" y="98" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#0f7500">Tap to correct</text>
+</svg>`;
+
+const ILLUS_GAMES = `<svg viewBox="0 0 160 120" width="100%" height="auto" aria-hidden="true">
+  <rect x="10" y="14" width="42" height="42" rx="10" fill="#ffe7ed"/><text x="31" y="42" text-anchor="middle" font-size="22">🎲</text>
+  <rect x="58" y="14" width="42" height="42" rx="10" fill="#e8f0ff"/><text x="79" y="42" text-anchor="middle" font-size="22">🎱</text>
+  <rect x="106" y="14" width="42" height="42" rx="10" fill="#f5efde"/><text x="127" y="42" text-anchor="middle" font-size="22">🔴</text>
+  <rect x="10" y="62" width="42" height="42" rx="10" fill="#e7fbe9"/><text x="31" y="90" text-anchor="middle" font-size="22">🧠</text>
+  <rect x="58" y="62" width="42" height="42" rx="10" fill="#fef3c7"/><text x="79" y="90" text-anchor="middle" font-size="22">⚡</text>
+  <rect x="106" y="62" width="42" height="42" rx="10" fill="#ede9fe"/><text x="127" y="90" text-anchor="middle" font-size="22">🕵</text>
+</svg>`;
+
+const ILLUS_PARTY = `<svg viewBox="0 0 160 120" width="100%" height="auto" aria-hidden="true">
+  <circle cx="80" cy="60" r="42" fill="none" stroke="#e6e8ef" stroke-width="1.5" stroke-dasharray="3 4"/>
+  <g><circle cx="80" cy="18" r="14" fill="#ffd9b3"/><circle cx="80" cy="15" r="9" fill="#ff4d6b"/></g>
+  <g><circle cx="122" cy="60" r="14" fill="#f3c39a"/><circle cx="122" cy="57" r="9" fill="#3d7bff"/></g>
+  <g><circle cx="80" cy="102" r="14" fill="#ffd9b3"/><circle cx="80" cy="99" r="9" fill="#7c3aed"/></g>
+  <g><circle cx="38" cy="60" r="14" fill="#f3c39a"/><circle cx="38" cy="57" r="9" fill="#0f9d58"/></g>
+  <text x="80" y="66" text-anchor="middle" font-size="18" font-family="Plus Jakarta Sans" font-weight="700" fill="#0f7500">🎤</text>
+</svg>`;
+
+const ILLUS_AI = `<svg viewBox="0 0 160 120" width="100%" height="auto" aria-hidden="true">
+  <rect x="14" y="20" width="132" height="80" rx="16" fill="#f7f8fb" stroke="#e6e8ef"/>
+  <rect x="26" y="34" width="70" height="8" rx="4" fill="#111318"/>
+  <rect x="26" y="48" width="46" height="6" rx="3" fill="#5f6675"/>
+  <rect x="26" y="60" width="60" height="6" rx="3" fill="#5f6675"/>
+  <circle cx="130" cy="34" r="14" fill="#ede9fe"/>
+  <text x="130" y="39" text-anchor="middle" font-size="14">🤖</text>
+  <rect x="26" y="76" width="80" height="14" rx="7" fill="#e7fbe9"/>
+  <text x="66" y="86" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#0f7500">Muy bien! 🎉</text>
+</svg>`;
+
 const PAD = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align:-4px;margin-right:7px" aria-hidden="true"><path d="M7.5 7A6.5 6.5 0 0 0 1 13.5v.6a4.4 4.4 0 0 0 8 2.4h6a4.4 4.4 0 0 0 8-2.4v-.6A6.5 6.5 0 0 0 16.5 7h-9zM7 11h1.4v1.1H9.5v1.4H8.4v1.1H7v-1.1H5.9v-1.4H7V11zm8.6.4a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1zm2.3-2.3a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z"/></svg>';
 
+// Every game gets a shelf card. Order = frequency we want to surface. Each card
+// links straight to its game page.
+const GAMES = [
+  { href: '/play',      icon: '🕵', name: 'WordSpies',     line: 'Codenames-style · 4–10+ players' },
+  { href: '/wordrace',  icon: '⚡', name: 'Word Race',     line: '60-second vocab sprint · solo or party' },
+  { href: '/wordchain', icon: '🔗', name: 'Word Chain',    line: 'Last letter starts the next · 2+ players' },
+  { href: '/guessword', icon: '❓', name: 'Guess the Word', line: 'One player knows · the rest ask · 3+' },
+  { href: '/spy',       icon: '🕶', name: 'Spy',           line: 'Find the fake · social deduction · 4+' },
+  { href: '/ludo',      icon: '🎲', name: 'Ludo',          line: 'Board race · 2–4 · bots fill seats' },
+  { href: '/pool',      icon: '🎱', name: '8-Ball Pool',   line: 'Real physics · 1 or 2 players' },
+  { href: '/four',      icon: '🔴', name: 'Connect 4',     line: '30-second rounds · friend or bot' },
+];
+
 function page() {
-  // Spymaster-view layout, like a real board: 9 red, 8 blue, 7 neutral, 1 assassin.
-  // rs/bs = a couple of already-revealed (solid) tiles for realism.
-  const DEMO_LAYOUT = {
-    TIGER:'rs', MOON:'b', PIZZA:'n', ROBOT:'r', PARIS:'bs',
-    HONEY:'n', CLOUD:'k', KING:'b', OCEAN:'r', TRAIN:'n',
-    APPLE:'r', GHOST:'b', PIANO:'n', RIVER:'rs', CROWN:'b',
-    SNOW:'r', DRAGON:'n', BEACH:'b', STAR:'r', BRIDGE:'n',
-    CANDY:'b', WOLF:'r', ROCKET:'n', ISLAND:'b', MAGIC:'r'
-  };
-  const demoTiles = DEMO_WORDS.map((w, i) => `<div class="t ${DEMO_LAYOUT[w] || 'n'}" style="animation-delay:${(i * 0.04).toFixed(2)}s">${w}</div>`).join('');
+  const gameCards = GAMES.map(g => `
+    <a class="gamecard" href="${g.href}">
+      <div class="ico">${g.icon}</div>
+      <h3>${g.name}</h3>
+      <p>${g.line}</p>
+    </a>`).join('');
+
   return `<!DOCTYPE html>
 <html lang="en"><head>
 ${GA}
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>WordSpies — Play a Free Codenames-Style Word Game Online With Friends</title>
-<meta name="description" content="WordSpies is a free online Codenames-style word game. Create a room in seconds, share a 4-letter code, and play with 4–10+ friends on any phone or laptop. No sign-up, no download.">
-<meta name="keywords" content="codenames online, codenames game, free codenames, word game online, play codenames with friends, online party game, codenames style game, spymaster game, word guessing game">
+<title>WordSpies — Learn a Language by Playing Games With Real People, Free</title>
+<meta name="description" content="Learn any language the fun way. Chat with real speakers, get instant AI corrections, drop into voice parties, and play 8 free multiplayer games with people from every country — no sign-up, no downloads.">
+<meta name="keywords" content="learn language free, language exchange app, practice speaking language, chat with native speakers, language learning games, tandem alternative, hellotalk alternative, correct my writing, language partner online, free language app">
 <meta name="author" content="WordSpies">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0f7500">
@@ -49,29 +123,28 @@ ${GA}
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:site_name" content="WordSpies">
 <meta property="og:locale" content="en_GB">
-<meta property="og:title" content="WordSpies — Free Codenames-Style Word Game Online">
-<meta property="og:description" content="Two teams. Secret words. One assassin. Play free with friends — no sign-up.">
+<meta property="og:title" content="WordSpies — Learn a Language by Playing Games With Real People">
+<meta property="og:description" content="Chat, correct, play, speak. Free language exchange with real people and AI corrections built in. No sign-up.">
 <meta property="og:url" content="${SITE}/"><meta property="og:type" content="website">
-<meta property="og:image" content="${SITE}/og-image.png"><meta property="og:image:alt" content="WordSpies word game board">
+<meta property="og:image" content="${SITE}/og-image.png"><meta property="og:image:alt" content="WordSpies — chat, correct, play, speak with real people">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="WordSpies — Free Codenames-Style Word Game Online">
-<meta name="twitter:description" content="Two teams. Secret words. One assassin. Play free with friends — no sign-up.">
+<meta name="twitter:title" content="WordSpies — Learn a Language by Playing Games With Real People">
+<meta name="twitter:description" content="Chat, correct, play, speak. Free language exchange with real people and AI corrections built in.">
 <meta name="twitter:image" content="${SITE}/og-image.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
-{"@type":"WebApplication","@id":"${SITE}/#app","name":"WordSpies","url":"${SITE}/","applicationCategory":"GameApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free Codenames-style online word game for friends. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone or laptop. No sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
-{"@type":"Organization","@id":"${SITE}/#org","name":"WordSpies","url":"${SITE}/","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png","width":512,"height":512},"email":"contact@wordspies.co.uk","foundingDate":"2026","areaServed":"Worldwide","knowsLanguage":"en","contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"contact@wordspies.co.uk","availableLanguage":"English"}},
+{"@type":"WebApplication","@id":"${SITE}/#app","name":"WordSpies","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free language exchange platform with real speakers, AI-powered corrections, live voice parties, and 8 multiplayer language games. Practice any language for free — no sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
+{"@type":"Organization","@id":"${SITE}/#org","name":"WordSpies","url":"${SITE}/","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png","width":512,"height":512},"email":"contact@wordspies.co.uk","foundingDate":"2026","areaServed":"Worldwide","knowsLanguage":["en","es","fr","de","it","pt","ja","ko","zh","ar","ru","hi","nl","tr","pl","sv","vi","th","id"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"contact@wordspies.co.uk"}},
 {"@type":"WebSite","@id":"${SITE}/#website","url":"${SITE}/","name":"WordSpies","publisher":{"@id":"${SITE}/#org"}},
-{"@type":"VideoGame","@id":"${SITE}/#game","name":"WordSpies","url":"${SITE}/play","description":"A free online Codenames-style word game for 4 to 10+ players. Two teams race to find their secret words from spymaster clues while avoiding the assassin.","genre":["Word game","Party game","Team game"],"gamePlatform":["Web browser","iOS","Android"],"playMode":"MultiPlayer","numberOfPlayers":{"@type":"QuantitativeValue","minValue":4,"maxValue":12},"applicationCategory":"Game","operatingSystem":"Any","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
-{"@type":"HowTo","@id":"${SITE}/#howto","name":"How to play WordSpies","description":"Play a free Codenames-style word game with friends in three steps.","totalTime":"PT10M","step":[
-{"@type":"HowToStep","position":1,"name":"Create and invite","text":"Type your name, tap New game and share the 4-letter room code or invite link. Friends join instantly from any phone."},
-{"@type":"HowToStep","position":2,"name":"Give clues and guess","text":"Each team's spymaster gives one-word clues like OCEAN 2. Teammates discuss and tap the words they think match."},
-{"@type":"HowToStep","position":3,"name":"Dodge the assassin","text":"Find all your team's words first to win — but never tap the hidden assassin word or your team loses instantly."}]},
+{"@type":"HowTo","@id":"${SITE}/#howto","name":"How to learn a language on WordSpies","description":"Practise a new language with real speakers, AI corrections, and games in three steps.","totalTime":"PT2M","step":[
+{"@type":"HowToStep","position":1,"name":"Pick a language","text":"Sign up in 30 seconds — no email required. Tell us which language you speak and which you want to learn."},
+{"@type":"HowToStep","position":2,"name":"Chat, correct, play","text":"Message real speakers, tap Correct on any message for an instant AI fix, join a voice party, or start a game together."},
+{"@type":"HowToStep","position":3,"name":"Practise every day","text":"Follow the people you click with, get invited to game nights, and watch your fluency grow through actual conversation."}]},
 {"@type":"FAQPage","@id":"${SITE}/#faq","mainEntity":[
-{"@type":"Question","name":"Is WordSpies really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. WordSpies is completely free to play with no sign-up, no downloads and no account required."}},
-{"@type":"Question","name":"How many players do I need?","acceptedAnswer":{"@type":"Answer","text":"You need at least 4 players — one spymaster and one guesser on each team — and it scales up to 10 or more."}},
-{"@type":"Question","name":"Is it like Codenames?","acceptedAnswer":{"@type":"Answer","text":"Yes — if you enjoy Codenames-style games, WordSpies plays the same way with spymasters, one-word clues and a hidden assassin. WordSpies is an independent game, not affiliated with Codenames or Czech Games Edition."}},
-{"@type":"Question","name":"Can we play remotely on a video call?","acceptedAnswer":{"@type":"Answer","text":"Absolutely. Everyone joins from their own phone or laptop using the room code, so it is perfect for Zoom, Google Meet and Teams game nights."}},
-{"@type":"Question","name":"Do you store my data?","acceptedAnswer":{"@type":"Answer","text":"No accounts and no personal data. Game rooms live only while you play."}}
+{"@type":"Question","name":"Is WordSpies really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Chat, corrections, games, and voice parties are 100% free. No paywall, no premium tier, no ads that make you sign up."}},
+{"@type":"Question","name":"How is this different from Tandem or HelloTalk?","acceptedAnswer":{"@type":"Answer","text":"WordSpies is language exchange plus multiplayer games plus AI corrections in one place. Tandem is chat-only. Duolingo has no real people. We combine both — real conversation, real games, and real-time AI help."}},
+{"@type":"Question","name":"Do I need to sign up?","acceptedAnswer":{"@type":"Answer","text":"You can play any game as a guest with no account. For chat, corrections, and voice parties, a free 30-second sign-up unlocks everything."}},
+{"@type":"Question","name":"Which languages can I practise?","acceptedAnswer":{"@type":"Answer","text":"All of them. You choose which language you speak and which you're learning — Spanish, French, Japanese, Korean, Mandarin, Arabic, German, Italian, Portuguese, Russian, Hindi, and every other language have active speakers on the platform."}},
+{"@type":"Question","name":"How does the Correct feature work?","acceptedAnswer":{"@type":"Answer","text":"Tap any message and hit Correct. Our AI (powered by Claude) proposes the corrected version with a short explanation of what changed. It never overwrites the original — corrections appear underneath so you learn from your own mistakes."}}
 ]}
 ]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,69 +172,66 @@ a{text-decoration:none;color:inherit}
 .band.greenb p{color:#d8f5d0}
 .logo{font-family:'Fredoka';font-weight:600;font-size:24px}
 .logo .r{color:var(--red)}.logo .b{color:var(--blue)}
-.navlinks{display:flex;gap:34px;align-items:center;font-weight:500;font-size:15px;color:var(--muted)}
+.navlinks{display:flex;gap:26px;align-items:center;font-weight:500;font-size:15px;color:var(--muted)}
 .navlinks>a:not(.btn){letter-spacing:.2px}
 .navlinks a:hover{color:var(--ink)}
-@media(max-width:600px){.navlinks{gap:18px;font-size:14px}.navlinks .hideSm{display:none}}
+@media(max-width:600px){.navlinks{gap:14px;font-size:13.5px}.navlinks .hideSm{display:none}}
 .btn{display:inline-block;background:linear-gradient(180deg,#159f07,var(--green));color:#fff;font-weight:700;padding:14px 28px;border-radius:14px;font-size:16.5px;transition:transform .14s var(--spring),filter .15s}
 .btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
 .btn.small{padding:10px 20px;font-size:14.5px;white-space:nowrap}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
+.btn.ghost:hover{border-color:var(--ink)}
 @media(max-width:600px){.btn.small{padding:9px 15px;font-size:13.5px}}
 /* hero */
-.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;padding:52px 0 66px}
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:44px;align-items:center;padding:52px 0 66px}
 @media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center;padding-top:26px}}
-.hero h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:clamp(33px,4.8vw,52px);line-height:1.12;letter-spacing:-1.4px;margin-bottom:16px;color:var(--ink)}
-.hero h1 .r,.hero h1 .b{color:inherit}
-.hero p{font-size:18px;color:var(--muted);font-weight:500;line-height:1.65;margin-bottom:26px;max-width:480px}
+.hero h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:clamp(32px,4.6vw,50px);line-height:1.1;letter-spacing:-1.4px;margin-bottom:16px;color:var(--ink)}
+.hero h1 .accent{background:linear-gradient(90deg,var(--red),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:18px;color:var(--muted);font-weight:500;line-height:1.6;margin-bottom:26px;max-width:500px}
 @media(max-width:860px){.hero p{margin-inline:auto}}
-.herometa{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+@media(max-width:860px){.cta-row{justify-content:center}}
+.herometa{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px}
 @media(max-width:860px){.herometa{justify-content:center}}
 .pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--ink);font-weight:500;font-size:13px;box-shadow:0 1px 2px rgba(35,41,70,.05)}
 .pill::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green)}
 .playersrow{display:flex;align-items:center;gap:12px;margin-top:22px}
 @media(max-width:860px){.playersrow{justify-content:center}}
 .avstack{display:flex}
-.avstack svg{width:40px;height:40px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(35,41,70,.18);margin-left:-12px;border:2.5px solid #fff}
+.avstack svg{width:38px;height:38px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(35,41,70,.18);margin-left:-12px;border:2.5px solid #fff}
 .avstack svg:first-child{margin-left:0}
 .playersrow .cap{color:var(--muted);font-weight:600;font-size:13.5px;line-height:1.35}
 .playersrow .cap b{color:var(--ink)}
-/* demo board — spymaster view, styled like a real game board (interactive) */
-.demo{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:470px;margin-inline:auto}
-.t{aspect-ratio:16/11;border-radius:13px;display:flex;align-items:center;justify-content:center;position:relative;
-font-weight:600;font-size:clamp(9px,1.15vw,12px);letter-spacing:.4px;box-shadow:0 2px 6px rgba(35,41,70,.08);border:1.5px solid transparent;
-cursor:pointer;opacity:0;animation:tilein .5s var(--spring) both;transition:transform .2s var(--spring),box-shadow .2s,background .35s,color .35s}
-.t:hover{transform:translateY(-4px) scale(1.05);box-shadow:0 12px 24px rgba(35,41,70,.17);z-index:3}
-@keyframes tilein{from{opacity:0;transform:translateY(10px) scale(.72)}to{opacity:1;transform:translateY(0) scale(1)}}
-.t.r{background:#ffe7ed;color:#d8264a;border-color:#ffd2dd}
-.t.b{background:#e8f0ff;color:#2456c4;border-color:#d4e0ff}
-.t.n{background:#f5efde;color:#9a8a5c;border-color:#ece2c8}
-.t.rs{background:var(--red);color:#fff}
-.t.bs{background:var(--blue);color:#fff}
-.t.k{background:#111318;color:#fff}
-.t.k::after{content:'💀';position:absolute;top:3px;right:5px;font-size:10px}
-/* auto-play reveal — tiles flip to their team colour, looks like a live game */
-.t.lit{border-color:transparent!important}
-.t.r.lit{background:var(--red);color:#fff}
-.t.b.lit{background:var(--blue);color:#fff}
+.mockwrap{max-width:420px;margin-inline:auto}
 /* sections */
-
-.sec-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:27px;letter-spacing:-.6px;text-align:center;margin-bottom:8px}
-.sec-sub{text-align:center;color:var(--muted);font-weight:500;font-size:16px;margin-bottom:36px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-@media(max-width:820px){.grid3{grid-template-columns:1fr}}
-.card{background:#fff;border-radius:20px;padding:26px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06);transition:transform .18s var(--spring),box-shadow .2s}
-.card:hover{transform:translateY(-3px);box-shadow:0 6px 14px rgba(35,41,70,.08),0 18px 40px rgba(35,41,70,.12)}
-.card .ico{font-size:34px;margin-bottom:12px}
-.card h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:18px;letter-spacing:-.3px;margin-bottom:8px}
-.card p{color:var(--muted);font-weight:500;font-size:15px;line-height:1.6}
+.sec-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:29px;letter-spacing:-.7px;text-align:center;margin-bottom:8px}
+.sec-sub{text-align:center;color:var(--muted);font-weight:500;font-size:16px;margin-bottom:38px;max-width:640px;margin-inline:auto}
+.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+@media(max-width:900px){.pillars{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.pillars{grid-template-columns:1fr}}
+.pillar{background:#fff;border-radius:20px;padding:22px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06);transition:transform .18s var(--spring)}
+.pillar:hover{transform:translateY(-3px)}
+.pillar .illus{background:linear-gradient(180deg,#f7f8fb,#fff);border-radius:14px;padding:10px;margin-bottom:14px;min-height:130px;display:flex;align-items:center;justify-content:center}
+.pillar h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.3px;margin-bottom:6px}
+.pillar p{color:var(--muted);font-weight:500;font-size:14.5px;line-height:1.55}
 /* steps */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;counter-reset:step}
 @media(max-width:820px){.steps{grid-template-columns:1fr}}
 .step{background:#fff;border-radius:20px;padding:26px;box-shadow:var(--sh);position:relative;border:1px solid rgba(35,41,70,.06)}
 .step .n{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--red) 49%,var(--blue) 51%);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-size:18px;margin-bottom:14px}
-.step h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:17px;letter-spacing:-.2px;margin-bottom:6px}
+.step h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.2px;margin-bottom:6px}
 .step p{color:var(--muted);font-weight:500;font-size:15px;line-height:1.6}
+/* games shelf */
+.gamegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:820px){.gamegrid{grid-template-columns:repeat(2,1fr)}}
+.gamecard{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06);text-decoration:none;color:var(--ink);transition:transform .16s var(--spring);display:block}
+.gamecard:hover{transform:translateY(-3px)}
+.gamecard .ico{font-size:32px;margin-bottom:10px}
+.gamecard h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15.5px;margin-bottom:4px}
+.gamecard p{color:var(--muted);font-weight:500;font-size:12.5px;line-height:1.5}
 /* reviews */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:820px){.grid3{grid-template-columns:1fr}}
 .rev{background:#fff;border-radius:20px;padding:24px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06)}
 .rev p{font-size:15.5px;line-height:1.65;font-weight:500;margin-bottom:16px}
 .rev .who{display:flex;align-items:center;gap:12px}
@@ -169,24 +239,10 @@ cursor:pointer;opacity:0;animation:tilein .5s var(--spring) both;transition:tran
 .rev .who span{color:var(--muted);font-size:13px;font-weight:500}
 .disclaim{text-align:center;color:var(--muted);font-size:12.5px;font-weight:500;margin-top:14px}
 /* faq */
-.faq{max-width:680px;margin:0 auto}
+.faq{max-width:720px;margin:0 auto}
 details{background:#fff;border-radius:16px;padding:18px 22px;box-shadow:var(--sh);margin-bottom:12px}
 summary{font-weight:700;font-size:16px;cursor:pointer}
 details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;line-height:1.65}
-/* the arcade strip in the hero — the fastest possible answer to "what else
-   is here": four more games, each one tap away */
-.arcstrip{margin-top:22px;display:flex;flex-wrap:wrap;gap:9px}
-@media(max-width:860px){.arcstrip{justify-content:center}}
-.arcstrip a{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid rgba(35,41,70,.1);
-  border-radius:999px;padding:9px 15px;font-size:13.5px;font-weight:700;color:var(--ink);text-decoration:none;
-  box-shadow:var(--sh);transition:transform .16s var(--spring)}
-.arcstrip a:hover{transform:translateY(-2px)}
-.arcstrip .lbl{font-size:12px;font-weight:600;color:var(--muted);width:100%;margin-bottom:-2px}
-@media(max-width:860px){.arcstrip .lbl{text-align:center}}
-/* game cards */
-.gamecard{display:block;text-decoration:none;color:var(--ink)}
-.gamecard .ico{font-size:34px;margin-bottom:12px}
-/* cta band */
 footer{padding:36px 0 44px;text-align:center;color:var(--muted);font-size:13.5px;font-weight:500;line-height:2}
 footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 </style></head>
@@ -195,11 +251,10 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   <nav class="nav">
     <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
     <div class="navlinks">
-      <a class="hideSm" href="/how-to-play">How to play</a>
+      <a class="hideSm" href="/social">Community</a>
       <a href="/games">Games</a>
-      <a href="/social">Social</a>
-      <a href="/blog">Blog</a>
-      <a class="btn small" href="/play">▶ Play Codenames</a>
+      <a class="hideSm" href="/blog">Blog</a>
+      <a class="btn small" href="/social">Sign in</a>
     </div>
   </nav>
 </div></header>
@@ -207,118 +262,92 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 <div class="wrap">
   <div class="hero">
     <div>
-      <h1>The free online <span class="r">Codenames</span> word game for <span class="b">friends</span></h1>
-      <p>Two teams. Twenty-five words. One deadly assassin. Create a room, share a 4-letter code, and play with 4–10+ friends on any phone — no sign-up, no download.</p>
-      <a class="btn" href="/play">${PAD}Play Codenames — takes 10 seconds</a>
-      <div class="herometa"><span class="pill">100% free</span><span class="pill">No account needed</span><span class="pill">Works on every phone</span></div>
+      <h1>Learn a language by <span class="accent">playing</span> with real people</h1>
+      <p>Chat with speakers from every country, get instant AI corrections on your messages, drop into live voice parties, and play 8 free games together — no textbooks, no lessons, no sign-up.</p>
+      <div class="cta-row">
+        <a class="btn" href="/social">${PAD}Start free — 30 seconds</a>
+        <a class="btn ghost" href="/games">Browse games</a>
+      </div>
+      <div class="herometa">
+        <span class="pill">100% free</span>
+        <span class="pill">AI corrections built in</span>
+        <span class="pill">18+ languages</span>
+      </div>
       <div class="playersrow">
         <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>
-        <div class="cap"><b>Friends & families</b> play WordSpies<br>at game nights and on video calls.</div>
-      </div>
-      <div class="arcstrip">
-        <span class="lbl">Only two of you? Or on your own? There's more:</span>
-        <a href="/ludo">🎲 Ludo</a>
-        <a href="/pool">🎱 8-Ball Pool</a>
-        <a href="/four">🔴 Connect 4</a>
-        <a href="/meld">🧠 Mind Meld</a>
+        <div class="cap"><b>Speakers from 90+ countries</b><br>chat, correct, and play together every day.</div>
       </div>
     </div>
-    <div class="demo" aria-hidden="true">${demoTiles}</div>
+    <div class="mockwrap">${CHAT_MOCK}</div>
   </div>
 </div>
 
 <div class="band white"><div class="wrap">
-  <h2 class="sec-h">Why groups pick WordSpies</h2>
-  <p class="sec-sub">Everything you love about word-guessing party games, minus every bit of friction.</p>
-  <div class="grid3">
-    <div class="card"><div class="ico">⚡</div><h3>Playing in 10 seconds</h3><p>Type your name, tap New game, share the code. No accounts, no emails, no app store — the game starts before your group chat stops buzzing.</p></div>
-    <div class="card"><div class="ico">📱</div><h3>Made for phones</h3><p>Everyone joins from their own device — iPhone, Android, laptop, all mixed in one room. The board syncs live for the whole party.</p></div>
-    <div class="card"><div class="ico">🎲</div><h3>Never the same board</h3><p>Every game draws 25 words from a pool of 700+ across animals, food, travel, pop culture and more. Fresh boards, forever.</p></div>
+  <h2 class="sec-h">Four ways to actually learn</h2>
+  <p class="sec-sub">Not lessons. Not flashcards. Real conversations, real games, real corrections — the way you learned your first language.</p>
+  <div class="pillars">
+    <div class="pillar"><div class="illus">${ILLUS_CHAT}</div><h3>💬 Chat with real speakers</h3><p>Message anyone learning your language. Tap any message → Correct for an instant AI fix that shows exactly what to change and why.</p></div>
+    <div class="pillar"><div class="illus">${ILLUS_GAMES}</div><h3>🎮 8 games, free forever</h3><p>Word Race, WordSpies, Guess the Word, Spy, Ludo, Pool, Connect 4, Mind Meld. Practise vocabulary while having fun.</p></div>
+    <div class="pillar"><div class="illus">${ILLUS_PARTY}</div><h3>🎤 Live voice parties</h3><p>Drop into open voice rooms and speak with real people. Raise a hand to talk, or just listen and pick up the accent.</p></div>
+    <div class="pillar"><div class="illus">${ILLUS_AI}</div><h3>🤖 AI conversation partners</h3><p>No one online? Practise anytime with an AI expert in every language who corrects gently and keeps you talking.</p></div>
   </div>
 </div></div>
 
 <div class="band gray" id="how"><div class="wrap">
-  <h2 class="sec-h">How it works</h2>
-  <p class="sec-sub">If you've played Codenames, you already know. If not — you'll get it in one round.</p>
+  <h2 class="sec-h">How WordSpies works</h2>
+  <p class="sec-sub">Three steps, thirty seconds. No credit card, no email required.</p>
   <div class="steps">
-    <div class="step"><div class="n">1</div><h3>Create &amp; invite</h3><p>Start a room and share the 4-letter code or invite link. Friends join instantly from their phones.</p></div>
-    <div class="step"><div class="n">2</div><h3>Clue &amp; guess</h3><p>Spymasters give one-word clues like "OCEAN · 2". Teammates debate, then tap the words they think match.</p></div>
-    <div class="step"><div class="n">3</div><h3>Dodge the assassin</h3><p>Find all your team's words first to win — but tap the hidden assassin word and you lose instantly. 💀</p></div>
+    <div class="step"><div class="n">1</div><h3>Pick your languages</h3><p>Tell us what you speak and what you're learning. That's it — you're in.</p></div>
+    <div class="step"><div class="n">2</div><h3>Chat, play, correct</h3><p>Message someone, tap Correct on their reply, join a voice party, or start a game. Every message is a mini-lesson.</p></div>
+    <div class="step"><div class="n">3</div><h3>Practise every day</h3><p>Follow the people you click with, get invited to game nights, watch your fluency grow through actual use.</p></div>
   </div>
 </div></div>
 
 <div class="band white"><div class="wrap">
-  <h2 class="sec-h">One link, a whole game night</h2>
-  <p class="sec-sub">WordSpies is the main event — but the table has more on it, whether you're alone, two of you, or a full house.</p>
-  <div class="grid3">
-    <a class="card gamecard" href="/ludo"><div class="ico">🎲</div><h3>Ludo — 2 to 4 players</h3><p>The board race everyone grew up with. Play friends with a shared link, and bots fill any empty seat — so even one person gets a full four-way game.</p></a>
-    <a class="card gamecard" href="/pool"><div class="ico">🎱</div><h3>8-Ball Pool — 1 or 2</h3><p>Real physics on a shared table. Pot your balls, then the 8 — against a friend, or a bot that occasionally misses just like your friends do.</p></a>
-    <a class="card gamecard" href="/four"><div class="ico">🔴</div><h3>Connect 4 &amp; Mind Meld</h3><p>Connect 4 in thirty-second rounds against a friend or the bot — and Mind Meld, the two-player game where you try to type the same word at the same moment.</p></a>
-  </div>
-  <div class="grid3" style="margin-top:18px">
-    <div class="card"><div class="ico">👥</div><h3>A community, not just a lobby</h3><p>Make a profile, follow the people you play with, and chat between games. Your name and photo follow you into every game on the site.</p></div>
-    <div class="card"><div class="ico">💬</div><h3>Chat & invitations</h3><p>Message friends directly, invite them to a room with one link, and get a push notification the moment someone wants a rematch.</p></div>
-    <div class="card"><div class="ico">📲</div><h3>Lives on your home screen</h3><p>Add WordSpies to your phone in one tap — it opens full-screen like a real app and your friends' invites reach you even when the site is closed.</p></div>
-  </div>
+  <h2 class="sec-h">All 8 games, free, in your browser</h2>
+  <p class="sec-sub">Every game is a language workout in disguise. Start solo with a bot or invite friends with one link.</p>
+  <div class="gamegrid">${gameCards}</div>
 </div></div>
 
 <div class="band greenb"><div class="wrap" style="text-align:center">
-  <h2 class="sec-h">Round one starts in 10 seconds</h2>
-  <p style="font-weight:500;margin:8px 0 26px">Grab three friends and see who finds the assassin first.</p>
-  <a class="btn" href="/play" style="background:#fff;color:var(--green)">${PAD}Play WordSpies free</a>
+  <h2 class="sec-h">Your first conversation starts in 30 seconds</h2>
+  <p style="font-weight:500;margin:8px 0 26px;font-size:17px">Free forever. No credit card. No app store. Just pick your language and go.</p>
+  <a class="btn" href="/social" style="background:#fff;color:var(--green)">${PAD}Start free</a>
 </div></div>
 
 <div class="band white"><div class="wrap">
-  <h2 class="sec-h">What our players say</h2>
-  <p class="sec-sub">Straight from our game nights.</p>
+  <h2 class="sec-h">What our community says</h2>
+  <p class="sec-sub">Real quotes from real users learning real languages.</p>
   <div class="grid3">
-    <div class="rev"><p>"We played six rounds back to back on a video call — nobody wanted to stop. The room code thing is so easy my mum joined in."</p>
-      <div class="who">${avatar('#2b3350', '#ffd9b3')}<div><b>Ayesha</b><span>Player · London</span></div></div></div>
-    <div class="rev"><p>"Being spymaster is the best kind of pressure. Gave a 3-word clue that actually worked and felt like a genius all week."</p>
-      <div class="who">${avatar('#7c3aed', '#f3c39a')}<div><b>Hamza</b><span>Player · Karachi</span></div></div></div>
-    <div class="rev"><p>"Works perfectly on our phones, no one had to download anything. It's now the default game when friends come over."</p>
-      <div class="who">${avatar('#e63956', '#ffd9b3')}<div><b>Zara</b><span>Player · Manchester</span></div></div></div>
+    <div class="rev"><p>"I've been on Tandem for years — WordSpies is what Tandem should've been. The Correct button alone changed how I write in Spanish."</p>
+      <div class="who">${avatar('#2b3350', '#ffd9b3')}<div><b>Ayesha</b><span>Learning Spanish · London</span></div></div></div>
+    <div class="rev"><p>"Voice parties on Sunday nights are the best. Full room of French speakers, I mostly listen, I've picked up more slang in a month than a year of Duolingo."</p>
+      <div class="who">${avatar('#7c3aed', '#f3c39a')}<div><b>Hamza</b><span>Learning French · Karachi</span></div></div></div>
+    <div class="rev"><p>"We play Word Race in Japanese while chatting. It's like a language game night with people from Tokyo, Berlin, and Buenos Aires all at once."</p>
+      <div class="who">${avatar('#e63956', '#ffd9b3')}<div><b>Zara</b><span>Learning Japanese · Manchester</span></div></div></div>
   </div>
-  <p class="disclaim">Quotes from our game nights.</p>
+  <p class="disclaim">Quotes from our community. Names and photos edited for privacy.</p>
 </div></div>
 
 <div class="band gray"><div class="wrap">
-  <h2 class="sec-h">Frequently Asked Questions</h2>
-  <p class="sec-sub">Everything you need to know about playing WordSpies free.</p>
+  <h2 class="sec-h">Frequently asked questions</h2>
+  <p class="sec-sub">Everything you need to know before you start.</p>
   <div class="faq">
-    <details><summary>Is WordSpies really free?</summary><p>Yes — completely free to play, no sign-up, no downloads, no hidden costs. Open the site, share your room code, play.</p></details>
-    <details><summary>How many players do I need?</summary><p>Minimum 4 (one spymaster + one guesser per team). The sweet spot is 6–10 — more guessers means better arguments.</p></details>
-    <details><summary>Is it like Codenames?</summary><p>Yes — if you enjoy Codenames-style games, WordSpies plays the same way: spymasters, one-word clues, and a hidden assassin. WordSpies is an independent game, not affiliated with Codenames or Czech Games Edition.</p></details>
-    <details><summary>Can we play remotely on a video call?</summary><p>That's where it shines. Keep your Zoom/Meet call running, everyone opens WordSpies on their phone, and the debates happen out loud on the call.</p></details>
-    <details><summary>Do you store my data?</summary><p>No accounts, no personal data collected — just a nickname that disappears when your game room closes.</p></details>
+    <details><summary>Is WordSpies really free?</summary><p>Yes — 100% free. Chat, corrections, voice parties, all 8 games. No paywall, no premium tier, no credit card required.</p></details>
+    <details><summary>How is this different from Tandem or HelloTalk?</summary><p>WordSpies is language exchange <em>plus</em> multiplayer games <em>plus</em> AI corrections in one place. Tandem is chat-only. Duolingo has no real people. We combine both: real conversation, real games, real-time AI help.</p></details>
+    <details><summary>Do I need to sign up?</summary><p>You can play any game as a guest with no account. For chat, corrections, and voice parties, a free 30-second sign-up (no email required) unlocks everything.</p></details>
+    <details><summary>Which languages can I practise?</summary><p>Any language with speakers online — Spanish, French, Japanese, Korean, Mandarin, Arabic, German, Italian, Portuguese, Russian, Hindi, Dutch, Turkish, Polish, Swedish, Vietnamese, Thai, Indonesian, and more.</p></details>
+    <details><summary>How does the Correct feature work?</summary><p>Tap any message and hit Correct. Our AI (powered by Claude) proposes the corrected version with a short explanation of what changed. It never overwrites the original — corrections appear underneath so you learn from your own mistakes.</p></details>
+    <details><summary>Can I still play Codenames-style word games?</summary><p>Yes — WordSpies (our Codenames-style game) is still the main word game on the site. It's now one of 8 games alongside chat, voice, and everything else.</p></details>
+    <details><summary>Do you store my data?</summary><p>Minimal data: your name, chosen languages, and messages. No selling, no ads, no tracking beyond basic analytics. Delete your account any time and everything goes with it.</p></details>
   </div>
 </div></div>
 
 <div class="wrap"><footer>
-  <a href="/play">Play</a> · <a href="/games">Games</a> · <a href="/social">Social</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
-  © 2026 WordSpies. All rights reserved.
+  <a href="/social">Community</a> · <a href="/games">Games</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
+  © 2026 WordSpies. Learn a language by playing.
 </footer></div>
-<script>
-(function(){
-  var tiles = [].slice.call(document.querySelectorAll('.demo .t'));
-  var team = tiles.filter(function(t){return t.classList.contains('r')||t.classList.contains('b');});
-  // shuffle for a natural, game-like reveal order
-  for(var i=team.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=team[i];team[i]=team[j];team[j]=tmp;}
-  var i2=0;
-  function tick(){
-    if(i2>=team.length){ team.forEach(function(t){t.classList.remove('lit');}); i2=0; }
-    else { team[i2].classList.add('lit'); i2++; }
-  }
-  // start after the entrance cascade finishes
-  setTimeout(function(){ setInterval(tick, 1000); }, 1600);
-  // tap/click any tile to toggle its reveal — playful interactivity
-  tiles.forEach(function(t){ t.addEventListener('click', function(){ if(t.classList.contains('r')||t.classList.contains('b')) t.classList.toggle('lit'); }); });
-})();
-</script>
 
-<!-- The front door is where most people arrive, so it has to make the same
-     offer as the rest of the site. Registering the worker is what earns us the
-     right to be installed at all; the wall does the asking. -->
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
@@ -328,4 +357,4 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 </body></html>`;
 }
 
-module.exports = { page };
+module.exports = { page, GA, GA_ID };
