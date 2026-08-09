@@ -2876,6 +2876,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="chmore-wrap">
         <button class="chmore" id="chMore" onclick="toggleChatMore(event)" title="More" aria-label="More options">⋯</button>
         <div class="chmore-menu hidden" id="chMoreMenu">
+          <button onclick="closeChatMore();openXlatSetup(function(){})">🌐 Translation language</button>
           <button onclick="reportChatPeer();closeChatMore()">🚩 Report</button>
           <button id="chBlockBtn" onclick="toggleChatBlock();closeChatMore()">🚫 Block</button>
         </div>
@@ -6823,25 +6824,22 @@ async function msCorrect(){
   if (!curActMsg) return;
   const bub = curActMsg.el;
   const mine = curActMsg.mine;
-  const text = extractBubbleText(bub);
+  const msgId = bub && bub.dataset ? bub.dataset.id : null;
+  const text = extractBubbleText(bubForMsgId(msgId) || bub);
   closeMsAct();
-  if (!text) return;
-  const msgId = bub.dataset.id;
-  const loading = { kind:'correct', mine, text: 'Checking…' };
-  if (msgId) xlatChipCache.set(msgId, loading);
-  renderXlatChip(bub, loading);
-  const loadingChip = bub.nextElementSibling;
-  if (loadingChip) loadingChip.classList.add('loading');
+  if (!text || !msgId) return;
+  xlatChipCache.set(msgId, { kind:'correct', mine, text: 'Checking…', loading: true });
+  renderXlatChip(msgId, xlatChipCache.get(msgId));
   try {
     const j = await api('/correct', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ text }) });
     if (!j.text) throw new Error('No correction');
-    const done = { kind:'correct', mine, text: j.text, note: j.note || '' };
-    if (msgId) xlatChipCache.set(msgId, done);
-    renderXlatChip(bub, done);
+    xlatChipCache.set(msgId, { kind:'correct', mine, text: j.text, note: j.note || '' });
+    renderXlatChip(msgId, xlatChipCache.get(msgId));
   } catch(e){
-    if (msgId) xlatChipCache.delete(msgId);
-    const stale = bub.nextElementSibling;
+    xlatChipCache.delete(msgId);
+    const live = bubForMsgId(msgId);
+    const stale = live && live.nextElementSibling;
     if (stale && stale.classList && stale.classList.contains('mb-xlat')) stale.remove();
     toast(e.message || 'Could not check.');
   }
@@ -7022,12 +7020,20 @@ function closeXlatSetup(){
 // live chips after every render in wireBubbleGestures().
 const xlatChipCache = new Map();  // msgId → { kind:'translate'|'correct', mine, target?, text, note? }
 
-function renderXlatChip(bub, entry){
+// Look up the LIVE .mb element for a message id — the reference held by
+// the click handler might be stale (a previous poll replaced innerHTML).
+function bubForMsgId(msgId){
+  if (!msgId) return null;
+  return document.querySelector('#msgs .mb[data-id="' + CSS.escape(msgId) + '"]');
+}
+function renderXlatChip(msgId, entry){
+  const bub = bubForMsgId(msgId);
+  if (!bub) return;                     // message not on screen right now
   // Remove any prior chip attached to this bubble.
   const existing = bub.nextElementSibling;
   if (existing && existing.classList && existing.classList.contains('mb-xlat')) existing.remove();
   const chip = document.createElement('div');
-  chip.className = 'mb-xlat ' + (entry.mine ? 'me' : 'them');
+  chip.className = 'mb-xlat ' + (entry.mine ? 'me' : 'them') + (entry.loading ? ' loading' : '');
   const label = entry.kind === 'correct'
     ? '✓ Correction'
     : `${flagFor(entry.target || '')} ${escapeHtml(entry.target || '')}`;
@@ -7035,8 +7041,7 @@ function renderXlatChip(bub, entry){
   chip.querySelector('.txt').textContent = entry.text || '';
   if (entry.note) chip.querySelector('.note').textContent = entry.note;
   chip.querySelector('.x').onclick = () => {
-    const id = bub.dataset.id;
-    if (id) xlatChipCache.delete(id);
+    xlatChipCache.delete(msgId);
     chip.remove();
   };
   bub.after(chip);
@@ -7045,40 +7050,31 @@ function renderXlatChip(bub, entry){
 // Re-hydrate cached chips whenever the message thread re-renders.
 function reattachXlatChips(){
   if (!xlatChipCache.size) return;
-  document.querySelectorAll('#msgs .mb').forEach(el => {
-    const id = el.dataset.id;
-    if (!id) return;
-    const entry = xlatChipCache.get(id);
-    if (entry) renderXlatChip(el, entry);
-  });
+  xlatChipCache.forEach((entry, msgId) => renderXlatChip(msgId, entry));
 }
 
 async function doTranslate(bub, mine, targetLang){
-  // Pull plain text from the ORIGINAL bubble (skip reply-quote refs +
-  // timestamp + inline translate button + any previously-appended chip).
-  const clone = bub.cloneNode(true);
+  // Snapshot the msg id up-front — the bub reference itself may become
+  // detached mid-request when a background poll re-renders the thread.
+  const msgId = bub && bub.dataset ? bub.dataset.id : null;
+  const clone = (bubForMsgId(msgId) || bub).cloneNode(true);
   clone.querySelectorAll('.qref, .mtime, .rxrow, .mb-xlat-btn').forEach(x => x.remove());
   const text = clone.textContent.trim();
-  if (!text) return;
-  const msgId = bub.dataset.id;
-  // Show a loading chip immediately.
-  const loading = { kind:'translate', mine, target: targetLang, text: 'Translating…' };
-  if (msgId) xlatChipCache.set(msgId, loading);
-  renderXlatChip(bub, loading);
-  // Add .loading class for the pulsing animation.
-  const loadingChip = bub.nextElementSibling;
-  if (loadingChip) loadingChip.classList.add('loading');
+  if (!text || !msgId) return;
+  // Loading state → cache + render.
+  xlatChipCache.set(msgId, { kind:'translate', mine, target: targetLang, text: 'Translating…', loading: true });
+  renderXlatChip(msgId, xlatChipCache.get(msgId));
   try {
     const j = await api('/translate', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ text, to: targetLang }) });
     if (!j.text) throw new Error('No translation');
     const final = j.target || targetLang;
-    const done = { kind:'translate', mine, target: final, text: j.text };
-    if (msgId) xlatChipCache.set(msgId, done);
-    renderXlatChip(bub, done);
+    xlatChipCache.set(msgId, { kind:'translate', mine, target: final, text: j.text });
+    renderXlatChip(msgId, xlatChipCache.get(msgId));
   } catch (e) {
-    if (msgId) xlatChipCache.delete(msgId);
-    const stale = bub.nextElementSibling;
+    xlatChipCache.delete(msgId);
+    const live = bubForMsgId(msgId);
+    const stale = live && live.nextElementSibling;
     if (stale && stale.classList && stale.classList.contains('mb-xlat')) stale.remove();
     toast(e.message || 'Could not translate.');
   }
