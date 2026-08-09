@@ -169,6 +169,9 @@ function mount(app, redis) {
     partnerType: u.partnerType || '',
     speaks: Array.isArray(u.speaks) ? u.speaks : [],
     learns: Array.isArray(u.learns) ? u.learns : [],
+    // Owner ask 9 Aug 2026: expose the saved translation targets so
+    // the client can gate the first-run picker + skip it on next taps.
+    xlatLangs: Array.isArray(u.xlatLangs) ? u.xlatLangs : [],
     interests: Array.isArray(u.interests) ? u.interests : [],
     goals: Array.isArray(u.goals) ? u.goals : [],
     recs: u.recs || '',
