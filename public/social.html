@@ -1635,7 +1635,10 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 /* Owner ask 2 Aug 2026: 'make the chat compact please'. Tighter
    vertical rhythm across the msgs list + inside each bubble. */
 .msgs{padding:6px 14px 150px;display:flex;flex-direction:column;gap:14px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-.mb{max-width:78%;padding:9px 14px;border-radius:18px;font-size:14.5px;font-weight:500;line-height:1.42;word-break:break-word;overflow-wrap:anywhere;min-width:0}
+/* iMessage-inspired bubbles (owner ask 9 Aug 2026 v4 — reference
+   screenshot: bigger, rounder, cleaner). System font stack so it looks
+   native on iOS/macOS and still crisp on Android/Windows. */
+.mb{max-width:76%;padding:10px 15px;border-radius:20px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;font-size:16.5px;font-weight:400;line-height:1.36;word-break:break-word;overflow-wrap:anywhere;min-width:0;letter-spacing:-.01em}
 .chatmode .gamelink{display:none}
 .chatfull .tabbar{display:none}
 .chatfull{padding-top:0 !important;padding-bottom:0}
@@ -1647,16 +1650,27 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 /* Chat palette — cool blue-violet, iMessage-y. Kept scoped to chat components
    so the rest of the app keeps its coral WordSpies accent. */
 :root{
-  --cme-1:#5a7bff; --cme-2:#7c5cff;         /* your bubble gradient */
-  --cme-shadow:0 6px 18px rgba(96,88,255,.22);
-  --cthem:#f2f4f8;                          /* their bubble background */
-  --cthem-ink:#1a1d24;                      /* their bubble text */
-  --caccent:#5a7bff;                        /* chat accents (send btn, links) */
-  --caccent-soft:#eef1ff;                   /* soft bg for reactions/actions */
+  --cme-1:#007AFF; --cme-2:#007AFF;         /* iMessage blue */
+  --cme-shadow:none;
+  --cthem:#E9E9EB;                          /* iMessage grey */
+  --cthem-ink:#000;                         /* their bubble text (near-black) */
+  --caccent:#007AFF;                        /* chat accents (send btn, links) */
+  --caccent-soft:#e8f0ff;                   /* soft bg for reactions/actions */
 }
 .mb{position:relative}
-.mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:6px;box-shadow:none}
+.mb.me{align-self:flex-end;background:var(--cme-1);color:#fff;border-bottom-right-radius:6px;box-shadow:none}
 .mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:6px}
+/* Row wrapper so we can place the inline translate icon next to
+   the incoming bubble without breaking the flex column of #msgs. */
+.mrow{display:flex;align-items:flex-end;gap:6px;max-width:100%}
+.mrow.them{align-self:flex-start;justify-content:flex-start}
+.mrow.me{align-self:flex-end;justify-content:flex-end}
+.mrow .mb{align-self:auto}
+/* Inline translate icon — the small circular 🇦 next to every
+   incoming bubble. Owner ask 9 Aug 2026 v4 (reference screenshot). */
+.mb-xlat-btn{flex:none;width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;color:var(--sub);box-shadow:0 1px 3px rgba(0,0,0,.06);transition:.12s;padding:0}
+.mb-xlat-btn:hover{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
+.mb-xlat-btn:active{transform:scale(.92)}
 .mb img{max-width:220px;border-radius:10px;display:block}
 /* Chat image messages — bigger than GIFs so photos are actually
    visible. Tap opens the full image in a new tab. */
@@ -1697,6 +1711,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb-xlat.them{align-self:flex-start;border-bottom-left-radius:6px}
 .mb-xlat .lbl{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.7;margin-bottom:3px}
 .mb-xlat .txt{font-weight:500;white-space:pre-wrap;word-wrap:break-word}
+.mb-xlat .note{font-size:11.5px;font-weight:500;color:#3a7040;margin-top:4px;font-style:italic;opacity:.9}
 .mb-xlat .x{position:absolute;top:4px;right:6px;background:transparent;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.55;padding:2px 6px;line-height:1;border-radius:6px}
 .mb-xlat .x:hover{opacity:1;background:rgba(15,91,26,.08)}
 .mb-xlat.loading{opacity:.75}
@@ -1772,18 +1787,23 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .typing span:nth-child(3){animation-delay:.3s}
 @keyframes tp{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
 /* message-actions sheet — appears on long-press or tap-more */
-.msact{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:20px;background:#fff;border-radius:22px;padding:8px;box-shadow:0 20px 60px rgba(0,0,0,.25);display:flex;gap:6px;z-index:60;opacity:0;pointer-events:none;transition:.18s;border:1px solid var(--line)}
-.msact.show{opacity:1;pointer-events:auto;transform:translateX(-50%)}
-.msact .mact{background:transparent;border:0;padding:10px 12px;border-radius:14px;font-size:12.5px;font-weight:700;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-width:56px}
-.msact .mact:hover{background:var(--caccent-soft)}
-.msact .mact .mai{font-size:20px;line-height:1}
-.msact .mact .mal{font-size:10.5px;font-weight:600;color:var(--sub)}
-.msact .mact.danger .mal{color:var(--err)}
-.msact .macthr{width:1px;background:var(--line);margin:6px 2px}
-.msact .rxpick{display:flex;gap:2px;padding:4px 4px}
-.msact .rxpick .rxb{background:transparent;border:0;font-size:22px;padding:6px;border-radius:12px;cursor:pointer;line-height:1}
-.msact .rxpick .rxb:hover{background:var(--caccent-soft);transform:scale(1.1)}
-.msshade{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:59;opacity:0;pointer-events:none;transition:.18s;backdrop-filter:blur(2px)}
+/* Message context menu — floating popover positioned at the cursor /
+   long-press point via JS. Small, clean, iOS-style. Owner ask 9 Aug
+   2026 v4: 'remove the horizontal bar'. */
+.msmenu{position:fixed;top:-9999px;left:0;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.08);z-index:60;opacity:0;pointer-events:none;transition:opacity .14s;border:1px solid var(--line);min-width:200px;max-width:260px}
+.msmenu.show{opacity:1;pointer-events:auto}
+.msmenu .rxpick{display:flex;gap:2px;padding:4px 4px 6px;border-bottom:1px solid var(--line);margin-bottom:4px;justify-content:space-between}
+.msmenu .rxpick .rxb{background:transparent;border:0;font-size:22px;padding:6px;border-radius:12px;cursor:pointer;line-height:1;flex:1}
+.msmenu .rxpick .rxb:hover{background:var(--caccent-soft);transform:scale(1.1)}
+.msmenu-list{display:flex;flex-direction:column}
+.msmi{background:transparent;border:0;padding:9px 12px;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'Inter',system-ui,sans-serif;font-size:15px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;transition:background .08s}
+.msmi:hover{background:var(--caccent-soft)}
+.msmi:active{background:#dbe6ff}
+.msmi-ic{font-size:16px;line-height:1;width:22px;text-align:center}
+.msmi.danger{color:var(--err)}
+.msmi.danger:hover{background:#ffeeef}
+.msmi-div{height:1px;background:var(--line);margin:4px 0}
+.msshade{position:fixed;inset:0;background:transparent;z-index:59;opacity:0;pointer-events:none;transition:opacity .18s}
 .msshade.show{opacity:1;pointer-events:auto}
 /* highlight the bubble whose actions are open */
 .mb.selected{outline:2px solid var(--caccent);outline-offset:2px}
@@ -5728,11 +5748,20 @@ async function refreshChat(first){
         const gone = m.d ? ' gone' : '';
         const idAttr = esc(m.id || String(m.t));
         const edited = m.e ? '<span class="edited">edited</span>' : '';
+        // Inline translate icon on incoming text bubbles only. Owner ask
+        // 9 Aug 2026 v4 — reference screenshot shows a 🇦 pill beside
+        // the peer bubble. onclick is delegated by wireBubbleGestures.
+        const xlatBtn = (!mine && (m.k || 'text') === 'text' && !m.d)
+          ? `<button class="mb-xlat-btn" type="button" title="Translate" aria-label="Translate">🇦</button>`
+          : '';
         return sep + `
-        <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
-          ${replyBlock(m, j.user && j.user.name)}
-          ${msgBody(m)}
-          <div class="mtime">${edited}${clockT(m.t)}${tick}</div>
+        <div class="mrow ${side}${cont}">
+          <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
+            ${replyBlock(m, j.user && j.user.name)}
+            ${msgBody(m)}
+            <div class="mtime">${edited}${clockT(m.t)}${tick}</div>
+          </div>
+          ${xlatBtn}
         </div>
         ${reactionsRow(m, side)}`;
       }).join('');
@@ -6533,24 +6562,58 @@ function hidePickers(){ const em = $('emojiPick'); if (em) em.classList.add('hid
 // bubble opened it so every button knows what to operate on.
 let curActMsg = null;
 
-function openMsAct(el){
+function openMsAct(el, ev){
   const id = el.dataset.id;
   const mine = el.dataset.mine === '1';
   const kind = el.dataset.k || 'text';
   const gone = el.classList.contains('gone');
   if (gone) return;                                       // deleted bubbles are inert
   curActMsg = { id, el, mine, kind };
-  // Only the sender can edit or delete. Non-text can't be edited.
-  $('msActEdit').style.display = (mine && kind === 'text') ? '' : 'none';
-  $('msActDel').style.display = mine ? '' : 'none';
-  // Translate is only for OTHER people's messages — you can already read
-  // your own. Owner ask 9 Aug 2026.
+  // Ownership-gated actions:
+  //   Edit    — only your own text messages
+  //   Delete  — only your own messages
+  //   Report  — only the other person's
+  //   Translate — only other person's text (you can already read yours)
+  //   Correct   — any text message (fixing your own OR studying theirs)
+  //   Speak     — any text message (browser SpeechSynthesis)
+  //   Copy      — any text message
+  $('msActEdit').style.display    = (mine && kind === 'text') ? '' : 'none';
+  $('msActDel').style.display     = mine ? '' : 'none';
+  $('msActReport').style.display  = !mine ? '' : 'none';
   $('msActTranslate').style.display = (!mine && kind === 'text') ? '' : 'none';
+  $('msActCorrect').style.display   = (kind === 'text') ? '' : 'none';
+  $('msActSpeak').style.display     = (kind === 'text') ? '' : 'none';
+  $('msActCopy').style.display      = (kind === 'text') ? '' : 'none';
   document.querySelectorAll('.mb.selected').forEach(x => x.classList.remove('selected'));
   el.classList.add('selected');
+  const menu = $('msAct');
   $('msShade').classList.add('show');
-  $('msAct').classList.add('show');
-  $('msAct').setAttribute('aria-hidden', 'false');
+  menu.classList.add('show');
+  menu.setAttribute('aria-hidden', 'false');
+  positionMsMenu(el, ev);
+}
+
+// Anchor the menu at the tap/right-click point when we have coords,
+// otherwise fall back to sitting under the bubble.
+function positionMsMenu(bub, ev){
+  const menu = document.getElementById('msAct');
+  menu.style.top = '-9999px'; menu.style.left = '0px'; // reset to measure
+  const mRect = menu.getBoundingClientRect();
+  const bRect = bub.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight, pad = 8;
+  let cx, cy;
+  if (ev && (ev.clientX != null)) { cx = ev.clientX; cy = ev.clientY; }
+  else if (ev && ev.touches && ev.touches[0]) { cx = ev.touches[0].clientX; cy = ev.touches[0].clientY; }
+  else { cx = bRect.left + bRect.width/2; cy = bRect.bottom; }
+  // Prefer BELOW the tap point. Fallback above if there isn't room.
+  let top = cy + 8;
+  if (top + mRect.height + pad > vh) top = Math.max(pad, cy - mRect.height - 8);
+  // Horizontal: center on cursor, clamp to viewport.
+  let left = cx - mRect.width/2;
+  if (left < pad) left = pad;
+  if (left + mRect.width > vw - pad) left = vw - mRect.width - pad;
+  menu.style.top = Math.round(top) + 'px';
+  menu.style.left = Math.round(left) + 'px';
 }
 function closeMsAct(){
   document.querySelectorAll('.mb.selected').forEach(x => x.classList.remove('selected'));
@@ -6624,11 +6687,74 @@ async function msDelete(){
 }
 function msCopy(){
   if (!curActMsg) return;
-  const clone = curActMsg.el.cloneNode(true);
-  clone.querySelectorAll('.qref, .mtime, .mb-orig, .mb-trans').forEach(x => x.remove());
-  const text = clone.textContent.trim();
+  const text = extractBubbleText(curActMsg.el);
   try { navigator.clipboard.writeText(text); toast('Copied'); } catch(e){ toast('Copy failed'); }
   closeMsAct();
+}
+
+// Read the message aloud via the browser's built-in SpeechSynthesis.
+// Free, offline, works on every modern browser. Auto-picks a voice
+// matching the user's target language if available.
+function msSpeak(){
+  if (!curActMsg) return;
+  const bub = curActMsg.el;
+  const text = extractBubbleText(bub);
+  closeMsAct();
+  if (!text) return;
+  if (!window.speechSynthesis) return toast('Speech not supported here.');
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    // If a translation chip is attached, speak the translated text and
+    // set the voice to a matching-language voice when possible.
+    const chip = bub.nextElementSibling;
+    if (chip && chip.classList && chip.classList.contains('mb-xlat')) {
+      const t = chip.querySelector('.txt');
+      if (t && t.textContent.trim()) u.text = t.textContent.trim();
+    }
+    u.rate = 1.0; u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  } catch(e){ toast('Could not speak.'); }
+}
+
+// AI-powered writing correction. Same pipeline as translate but with a
+// "fix my language" system prompt. Renders in a green chip below the
+// bubble, same shape as the translation chip.
+async function msCorrect(){
+  if (!curActMsg) return;
+  const bub = curActMsg.el;
+  const mine = curActMsg.mine;
+  const text = extractBubbleText(bub);
+  closeMsAct();
+  if (!text) return;
+  // Reuse the mb-xlat chip so styling stays consistent.
+  const existing = bub.nextElementSibling;
+  if (existing && existing.classList && existing.classList.contains('mb-xlat')) existing.remove();
+  const chip = document.createElement('div');
+  chip.className = 'mb-xlat ' + (mine ? 'me' : 'them') + ' loading';
+  chip.innerHTML = `<div class="lbl">✓ Correction</div><div class="txt">Checking…</div>`;
+  bub.after(chip);
+  try {
+    const j = await api('/correct', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text }) });
+    if (!j.text) throw new Error('No correction');
+    chip.classList.remove('loading');
+    chip.innerHTML = `<div class="lbl">✓ Correction</div><div class="txt"></div>${j.note ? `<div class="note"></div>` : ''}<button type="button" class="x" aria-label="Dismiss">×</button>`;
+    chip.querySelector('.txt').textContent = j.text;
+    if (j.note && chip.querySelector('.note')) chip.querySelector('.note').textContent = j.note;
+    chip.querySelector('.x').onclick = () => chip.remove();
+  } catch(e){
+    chip.remove();
+    toast(e.message || 'Could not check.');
+  }
+}
+
+// Pull just the message text from a bubble — no reply refs, no time,
+// no attached translation/correction chip contents.
+function extractBubbleText(bub){
+  const clone = bub.cloneNode(true);
+  clone.querySelectorAll('.qref, .mtime, .mb-orig, .mb-trans, .mb-xlat-btn').forEach(x => x.remove());
+  return clone.textContent.trim();
 }
 
 // Translate the selected message into ME's native language. Owner ask
@@ -6978,16 +7104,21 @@ async function showBlocked(){
   } catch(e){ toast(e.message); }
 }
 
-// Long-press on mobile, right-click on desktop, both open the action sheet.
+// Long-press on mobile, right-click on desktop → open the context menu
+// at the tap point. The inline 🇦 button opens the translate picker.
 // Live-wired every render because innerHTML replaces the whole thread.
-let pressTimer = null;
+let pressTimer = null, pressStart = null;
 function wireBubbleGestures(){
   document.querySelectorAll('#msgs .mb').forEach(el => {
     if (el._wired) return; el._wired = 1;
-    el.addEventListener('contextmenu', ev => { ev.preventDefault(); openMsAct(el); });
-    el.addEventListener('touchstart', () => {
-      clearTimeout(pressTimer); el.classList.add('pressing');
-      pressTimer = setTimeout(() => { el.classList.remove('pressing'); if (navigator.vibrate) navigator.vibrate(12); openMsAct(el); }, 380);
+    el.addEventListener('contextmenu', ev => { ev.preventDefault(); openMsAct(el, ev); });
+    el.addEventListener('touchstart', ev => {
+      pressStart = ev; clearTimeout(pressTimer); el.classList.add('pressing');
+      pressTimer = setTimeout(() => {
+        el.classList.remove('pressing');
+        if (navigator.vibrate) navigator.vibrate(12);
+        openMsAct(el, pressStart);
+      }, 380);
     }, { passive: true });
     ['touchend','touchmove','touchcancel'].forEach(t => el.addEventListener(t, () => { clearTimeout(pressTimer); el.classList.remove('pressing'); }, { passive: true }));
     // click a quote strip to scroll to the source bubble if it's still on screen
@@ -6996,6 +7127,17 @@ function wireBubbleGestures(){
       const tgt = document.querySelector('#msgs .mb[data-id="' + CSS.escape(q.dataset.scroll) + '"]');
       if (tgt) { tgt.scrollIntoView({ behavior:'smooth', block:'center' }); tgt.classList.add('selected'); setTimeout(() => tgt.classList.remove('selected'), 900); }
     }));
+  });
+  // Inline translate icon (🇦 next to peer bubbles) — one-tap translate.
+  document.querySelectorAll('#msgs .mrow .mb-xlat-btn').forEach(btn => {
+    if (btn._wired) return; btn._wired = 1;
+    btn.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const bub = btn.parentElement && btn.parentElement.querySelector('.mb');
+      if (!bub) return;
+      curActMsg = { id: bub.dataset.id, el: bub, mine: false, kind: bub.dataset.k || 'text' };
+      msTranslate();
+    });
   });
 }
 
@@ -7975,9 +8117,12 @@ function maybeWelcome(){ /* retired — no popup */ }
 })();
 </script>
 
-<!-- Message action sheet — one instance shared by every bubble -->
+<!-- Message context menu — right-click / long-press opens this near the
+     bubble (owner ask 9 Aug 2026 v4: 'remove the horizontal bar'). Six
+     rows: Copy, Reply, Correct, Translate, Speak — plus Edit / Delete /
+     Report which show/hide based on message ownership. -->
 <div class="msshade" id="msShade" onclick="closeMsAct()"></div>
-<div class="msact" id="msAct" role="menu" aria-hidden="true">
+<div class="msmenu" id="msAct" role="menu" aria-hidden="true">
   <div class="rxpick">
     <button class="rxb" onclick="msReact('❤️')" title="Heart">❤️</button>
     <button class="rxb" onclick="msReact('😂')" title="Laugh">😂</button>
@@ -7986,13 +8131,17 @@ function maybeWelcome(){ /* retired — no popup */ }
     <button class="rxb" onclick="msReact('👍')" title="Like">👍</button>
     <button class="rxb" onclick="msReact('🔥')" title="Fire">🔥</button>
   </div>
-  <div class="macthr"></div>
-  <button class="mact" onclick="msReply()"><span class="mai">↩︎</span><span class="mal">Reply</span></button>
-  <button class="mact" id="msActTranslate" onclick="msTranslate()"><span class="mai">🌐</span><span class="mal">Translate</span></button>
-  <button class="mact" id="msActEdit" onclick="msEdit()"><span class="mai">✎</span><span class="mal">Edit</span></button>
-  <button class="mact" id="msActCopy" onclick="msCopy()"><span class="mai">⧉</span><span class="mal">Copy</span></button>
-  <button class="mact" id="msActReport" onclick="msReport()"><span class="mai">🚩</span><span class="mal">Report</span></button>
-  <button class="mact danger" id="msActDel" onclick="msDelete()"><span class="mai">🗑</span><span class="mal">Delete</span></button>
+  <div class="msmenu-list">
+    <button class="msmi" id="msActCopy" onclick="msCopy()"><span class="msmi-ic">⧉</span>Copy</button>
+    <button class="msmi" onclick="msReply()"><span class="msmi-ic">↩︎</span>Reply</button>
+    <button class="msmi" id="msActCorrect" onclick="msCorrect()"><span class="msmi-ic">✎</span>Correct</button>
+    <button class="msmi" id="msActTranslate" onclick="msTranslate()"><span class="msmi-ic">🌐</span>Translate</button>
+    <button class="msmi" id="msActSpeak" onclick="msSpeak()"><span class="msmi-ic">🔊</span>Speak</button>
+    <div class="msmi-div"></div>
+    <button class="msmi" id="msActEdit" onclick="msEdit()"><span class="msmi-ic">✏️</span>Edit</button>
+    <button class="msmi" id="msActReport" onclick="msReport()"><span class="msmi-ic">🚩</span>Report</button>
+    <button class="msmi danger" id="msActDel" onclick="msDelete()"><span class="msmi-ic">🗑</span>Delete</button>
+  </div>
 </div>
 
 <!-- Translate: small language picker (only shown when the user has 2+

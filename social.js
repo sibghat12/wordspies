@@ -2269,6 +2269,65 @@ Reply as ${bot.name}. No preamble, just the reply.`;
     }
   });
 
+  // POST /api/social/correct — AI writing correction. Mirrors /translate
+  // but with a "fix this sentence" system prompt. Returns { text, note }:
+  //   text — the corrected sentence
+  //   note — one short line describing what changed ("past tense",
+  //          "missing article"). Empty string if the input was already fine.
+  // Owner ask 9 Aug 2026 v4 — Correct action in the message context menu.
+  api.post('/correct', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (process.env.BOT_ENABLED === 'false') return res.status(503).json({ error: 'Correction is off.' });
+      const client = getAnthropic();
+      if (!client) return res.status(503).json({ error: 'Correction is not configured yet.' });
+      if (limited(req, 'xlat', 30)) return res.status(429).json({ error: 'Slow down a little ✋' });
+
+      const text = String((req.body || {}).text || '').trim().slice(0, 1200);
+      if (!text) return res.status(400).json({ error: 'Nothing to correct.' });
+
+      const startTime = Date.now();
+      let raw = '', usage = { input_tokens: 0, output_tokens: 0 };
+      try {
+        const result = await client.messages.create({
+          model: process.env.BOT_MODEL || 'claude-haiku-4-5',
+          max_tokens: 400,
+          temperature: 0.2,
+          // Two-line contract: line 1 = the corrected sentence exactly,
+          // line 2 = one short note ("past tense · missing article") OR
+          // the literal token "OK" if the input was already fine.
+          system: `You are a language-learning writing assistant. Given a chat message, reply with EXACTLY two lines and nothing else:
+Line 1: the corrected sentence — preserve emoji, punctuation, and line breaks. If the input is already correct, repeat it unchanged.
+Line 2: a very short label (max 8 words) naming what changed (e.g. "past tense · missing article"). If nothing changed, write only "OK".
+Do NOT add quotes, preambles, or explanations.`,
+          messages: [{ role: 'user', content: text }]
+        });
+        raw = (result.content && result.content[0] && result.content[0].text || '').trim();
+        usage = result.usage || usage;
+      } catch (e) {
+        console.error('[correct] Anthropic error:', e.message);
+        return res.status(502).json({ error: 'Correction service unreachable — try again in a moment.' });
+      }
+      const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      const corrected = lines[0] || '';
+      let note = lines[1] || '';
+      if (note.toUpperCase() === 'OK') note = '';
+      if (!corrected) return res.status(502).json({ error: 'No correction returned.' });
+
+      const day = new Date().toISOString().slice(0, 10);
+      const cost = ((usage.input_tokens || 0) * 0.80 + (usage.output_tokens || 0) * 4.00) / 1_000_000;
+      const logEntry = { u: me.id, chars: text.length, tIn: usage.input_tokens || 0, tOut: usage.output_tokens || 0, $: cost.toFixed(6), ms: Date.now() - startTime, kind: 'correct', t: Date.now() };
+      await db.rpush('soc:translate-usage:' + day, JSON.stringify(logEntry));
+      await db.ltrim('soc:translate-usage:' + day, -1000, -1);
+
+      res.json({ text: corrected, note });
+    } catch (e) {
+      console.error('[correct] error:', e.message);
+      res.status(500).json({ error: 'Something went wrong.' });
+    }
+  });
+
   // Called by the game server when a match ends: winners/losers are social
   // profile ids. Everyone gets +1 game played; winners also get +1 win.
   async function recordResult(winnerIds, loserIds) {
