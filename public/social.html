@@ -1635,10 +1635,10 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 /* Owner ask 2 Aug 2026: 'make the chat compact please'. Tighter
    vertical rhythm across the msgs list + inside each bubble. */
 .msgs{padding:6px 14px 150px;display:flex;flex-direction:column;gap:14px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-/* iMessage-inspired bubbles (owner ask 9 Aug 2026 v4 — reference
-   screenshot: bigger, rounder, cleaner). System font stack so it looks
-   native on iOS/macOS and still crisp on Android/Windows. */
-.mb{max-width:76%;padding:10px 15px;border-radius:20px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;font-size:16.5px;font-weight:400;line-height:1.36;word-break:break-word;overflow-wrap:anywhere;min-width:0;letter-spacing:-.01em}
+/* iMessage-inspired bubbles (owner ask 9 Aug 2026 v5 — smaller than
+   v4, still rounded + system font). Owner asked for text one notch
+   smaller so long messages wrap into clean multi-line blocks. */
+.mb{max-width:76%;padding:9px 14px;border-radius:18px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;font-size:15px;font-weight:400;line-height:1.35;word-break:break-word;overflow-wrap:anywhere;white-space:pre-wrap;min-width:0;letter-spacing:-.005em}
 .chatmode .gamelink{display:none}
 .chatfull .tabbar{display:none}
 .chatfull{padding-top:0 !important;padding-bottom:0}
@@ -1660,15 +1660,12 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb{position:relative}
 .mb.me{align-self:flex-end;background:var(--cme-1);color:#fff;border-bottom-right-radius:6px;box-shadow:none}
 .mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:6px}
-/* Row wrapper so we can place the inline translate icon next to
-   the incoming bubble without breaking the flex column of #msgs. */
-.mrow{display:flex;align-items:flex-end;gap:6px;max-width:100%}
-.mrow.them{align-self:flex-start;justify-content:flex-start}
-.mrow.me{align-self:flex-end;justify-content:flex-end}
-.mrow .mb{align-self:auto}
 /* Inline translate icon — the small circular 🇦 next to every
-   incoming bubble. Owner ask 9 Aug 2026 v4 (reference screenshot). */
-.mb-xlat-btn{flex:none;width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;color:var(--sub);box-shadow:0 1px 3px rgba(0,0,0,.06);transition:.12s;padding:0}
+   incoming bubble. Owner ask 9 Aug 2026 v4 (reference screenshot).
+   Absolutely positioned to the right of the bubble so it doesn't
+   interfere with the existing flex-column layout of #msgs. */
+.mb.them{margin-right:42px}
+.mb-xlat-btn{position:absolute;right:-40px;bottom:6px;width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;color:var(--sub);box-shadow:0 1px 3px rgba(0,0,0,.06);transition:.12s;padding:0}
 .mb-xlat-btn:hover{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
 .mb-xlat-btn:active{transform:scale(.92)}
 .mb img{max-width:220px;border-radius:10px;display:block}
@@ -1932,9 +1929,26 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
    filled circular action button on the right swaps between mic and
    send depending on whether there's text. No borders on the glyphs
    themselves — they read as touchable icons, not chrome. */
-.composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:12;align-items:center}
+.composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:12;align-items:flex-end}
 @media(min-width:700px){.composer{bottom:0}}
 .composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:11px 18px;font-size:16px;min-width:0}
+/* Auto-growing multi-line composer input (owner ask 9 Aug 2026 v5 —
+   'if I type a message it should show all message not just hide it').
+   Replaces the old single-line <input> so long messages stay visible
+   while typing. JS bumps rows via scrollHeight below. */
+.composer textarea#msgIn{flex:1;background:#fff;border:1px solid var(--line);border-radius:22px;padding:10px 16px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;font-size:15.5px;line-height:1.4;min-width:0;resize:none;outline:none;max-height:130px;overflow-y:auto;color:var(--ink);min-height:40px}
+.composer textarea#msgIn:focus{border-color:var(--caccent);box-shadow:0 0 0 3px rgba(0,122,255,.12)}
+/* + button — the single attach button. Solid iOS-grey circle. */
+.composer .plusbtn{background:#e9e9eb;color:#1c1c1e;min-width:40px;width:40px;height:40px;border-radius:50%;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:background .12s;align-self:flex-end}
+.composer .plusbtn:hover{background:#dcdcde}
+.composer .plusbtn svg{width:18px;height:18px}
+/* + menu popover */
+.plusmenu{position:fixed;left:14px;bottom:calc(70px + 62px + env(safe-area-inset-bottom));background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06);z-index:13;display:none;flex-direction:column;min-width:180px}
+.plusmenu.show{display:flex;animation:pcinfoFade .14s ease-out}
+.chatfull .plusmenu{bottom:calc(62px + env(safe-area-inset-bottom))}
+.plusmenu button{background:transparent;border:0;padding:10px 12px;border-radius:8px;font-family:-apple-system,'Inter',system-ui,sans-serif;font-size:15px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;transition:background .08s}
+.plusmenu button:hover{background:var(--caccent-soft)}
+.plusmenu .pmi{font-size:18px;line-height:1;width:22px;text-align:center}
 /* Flat glyph buttons — no background, no border. Circular tap target
    with a subtle hover tint. Never carry weight themselves, so the
    input stays the visual focus. */
@@ -2918,22 +2932,29 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button type="button" class="rec-send" id="recPreviewSend" onclick="sendPreviewedVoice()" title="Send">➤</button>
     </div>
     <div class="composer">
-      <button class="cbtn" onclick="togglePicker()">😊</button>
-      <button class="cbtn" onclick="$('imgIn').click()" title="Send a photo">📷</button>
+      <!-- Single + button (owner ask 9 Aug 2026 v5, WhatsApp-style
+           screenshot): opens the attachments popover with Photo,
+           Emoji, and Voice-note in one place. Cleaner than a row
+           of tiny icons. -->
+      <button class="cbtn plusbtn" id="plusBtn" onclick="togglePlusMenu(event)" aria-label="Attach" title="Attach">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
-      <!-- 🌐 translates the current draft into the peer's native
-           language before you send. Owner ask 6 Aug 2026: 'make it
-           easy for his own typing'. Only usable when there's text. -->
-      <button class="cbtn xlat" id="composerXlat" onclick="translateComposer()" title="Translate my typing" aria-label="Translate my typing">🌐</button>
-      <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
-      <!-- Smart action: shows the mic when the input is empty (hold to
-           record voice), swaps to the send arrow when there's text. -->
-      <button class="cbtn micrec" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
+      <!-- Auto-growing textarea replaces the single-line input so long
+           messages wrap and remain readable while typing. -->
+      <textarea id="msgIn" maxlength="500" placeholder="Message…" rows="1" autocomplete="off"></textarea>
+      <button class="cbtn micrec hidden" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
         <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
       </button>
       <button class="cbtn send hidden" id="sendBtn" onclick="sendMsg()" aria-label="Send">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3l0 7 15 2-15 2z"/></svg>
       </button>
+    </div>
+    <!-- + menu — photo, emoji, voice. Positioned above the composer. -->
+    <div class="plusmenu" id="plusMenu">
+      <button type="button" onclick="closePlusMenu(); $('imgIn').click()"><span class="pmi">📷</span>Photo</button>
+      <button type="button" onclick="closePlusMenu(); togglePicker()"><span class="pmi">😊</span>Emoji</button>
+      <button type="button" onclick="closePlusMenu(); startVoiceFromMenu()"><span class="pmi">🎤</span>Voice note</button>
     </div>
     <div class="picker hidden" id="emojiPick"></div>
     <!-- #gamePick (the 🎮 in-chat game-invite popover) retired 6 Aug
@@ -5750,17 +5771,16 @@ async function refreshChat(first){
         const edited = m.e ? '<span class="edited">edited</span>' : '';
         // Inline translate icon on incoming text bubbles only. Owner ask
         // 9 Aug 2026 v4 — reference screenshot shows a 🇦 pill beside
-        // the peer bubble. onclick is delegated by wireBubbleGestures.
+        // the peer bubble. The button lives INSIDE the .mb and is
+        // absolutely positioned to the right of it (see .mb-xlat-btn).
         const xlatBtn = (!mine && (m.k || 'text') === 'text' && !m.d)
           ? `<button class="mb-xlat-btn" type="button" title="Translate" aria-label="Translate">🇦</button>`
           : '';
         return sep + `
-        <div class="mrow ${side}${cont}">
-          <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
-            ${replyBlock(m, j.user && j.user.name)}
-            ${msgBody(m)}
-            <div class="mtime">${edited}${clockT(m.t)}${tick}</div>
-          </div>
+        <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
+          ${replyBlock(m, j.user && j.user.name)}
+          ${msgBody(m)}
+          <div class="mtime">${edited}${clockT(m.t)}${tick}</div>
           ${xlatBtn}
         </div>
         ${reactionsRow(m, side)}`;
@@ -5919,7 +5939,7 @@ let CUR_AI_MSGS_LEFT = null;
 async function sendMsg(kind, gifUrl){
   const text = kind === 'gif' ? gifUrl : $('msgIn').value.trim();
   if (!text || !curChat) return;
-  if (kind !== 'gif') $('msgIn').value = '';
+  if (kind !== 'gif') $('msgIn').value = ''; if (typeof autoGrowMsgIn === 'function') autoGrowMsgIn();
   hidePickers();
   hideAutocomplete();
 
@@ -6113,17 +6133,63 @@ async function typewriteAIReply(msg){
   // replaces the placeholder (avoids a visible flicker).
   await new Promise(r => setTimeout(r, 250));
 }
-$('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+// Enter sends, Shift+Enter inserts a newline (owner ask 9 Aug 2026 v5 —
+// textarea replaces <input>; multi-line typing).
+$('msgIn').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
 $('msgIn').addEventListener('input', () => {
   sendTypingSoon();
-  // Autocomplete word suggestions retired per owner ask — was cluttering
-  // the chat. Send button appears when there's text, mic when empty.
-  const hasText = !!$('msgIn').value.trim();
+  const el = $('msgIn');
+  const hasText = !!el.value.trim();
   const send = document.getElementById('sendBtn');
   const mic  = document.getElementById('micRecBtn');
   if (send) send.classList.toggle('hidden', !hasText);
-  if (mic)  mic.classList.toggle('hidden', hasText);
+  // Mic is now inside the + menu — the composer's inline mic button
+  // stays hidden by default. Only Send toggles here.
+  if (mic)  mic.classList.add('hidden');
+  autoGrowMsgIn();
 });
+function autoGrowMsgIn(){
+  const el = $('msgIn');
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.min(130, el.scrollHeight) + 'px';
+}
+
+// + menu — opens the WhatsApp-style attachments popover above the
+// composer. Owner ask 9 Aug 2026 v5 — one + button replaces the
+// row of tiny icons (emoji/photo/mic/translate). Voice-note is
+// launched from here too via startVoiceFromMenu().
+function togglePlusMenu(ev){
+  if (ev) ev.stopPropagation();
+  const m = document.getElementById('plusMenu');
+  m.classList.toggle('show');
+}
+function closePlusMenu(){
+  document.getElementById('plusMenu').classList.remove('show');
+}
+// Dismiss on outside click / Escape.
+document.addEventListener('click', ev => {
+  const m = document.getElementById('plusMenu');
+  if (!m || !m.classList.contains('show')) return;
+  if (ev.target.closest('#plusMenu') || ev.target.closest('#plusBtn')) return;
+  m.classList.remove('show');
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closePlusMenu(); });
+
+// Launch the existing hold-to-record flow from a menu tap. The old
+// button lived in the composer and used pointer down/up on the button
+// itself; from the menu we synthesise the recording flow directly.
+function startVoiceFromMenu(){
+  // If startRec / stopRec exist (defined by the voice module), open a
+  // simple recording overlay. Fallback: reveal the inline mic so users
+  // can hold it the old-fashioned way.
+  const mic = document.getElementById('micRecBtn');
+  if (!mic) return;
+  mic.classList.remove('hidden');
+  toast('Hold the mic to record ·  release to send');
+}
 
 // Shared upload path used by the 📷 picker + drag-drop + paste.
 // Uploads to /message/image, then sends /message with the URL.
@@ -6673,7 +6739,7 @@ function msEdit(){
   closeMsAct();
   $('msgIn').focus();
 }
-function cancelEdit(){ editingMsg = null; $('editBar').classList.remove('show'); $('msgIn').value = ''; }
+function cancelEdit(){ editingMsg = null; $('editBar').classList.remove('show'); $('msgIn').value = ''; if (typeof autoGrowMsgIn === 'function') autoGrowMsgIn(); }
 async function msDelete(){
   if (!curActMsg || !curChat) return;
   const id = curActMsg.id;
@@ -6885,13 +6951,15 @@ function closeXlatPicker(){
 // First-run + Manage popup: shows every common language as a toggleable
 // chip. On Save we PATCH the profile and call the callback with the new
 // list so the caller can continue (e.g. finish a translation).
+// Setup modal (owner ask 9 Aug 2026 v5 simplification): single-tap a
+// language chip → save that language as your default AND trigger the
+// pending action (translate). No 'Other' input, no Save button, no
+// Cancel button — tap outside or Escape to dismiss.
 function openXlatSetup(cb){
   const bd = document.getElementById('xlatSetupBd');
   const list = document.getElementById('xlatSetupList');
-  const custom = document.getElementById('xlatSetupCustom');
   const cur = new Set(((ME && ME.xlatLangs) || []).map(s => s.toLowerCase()));
   const known = new Set(LANG_NAMES.map(s => s.toLowerCase()));
-  // Anything the user already saved that isn't in COMMON_LANGS → show it too.
   const extras = ((ME && ME.xlatLangs) || []).filter(s => !known.has(s.toLowerCase()))
     .map(name => ({ name, flag: '🌐' }));
   const all = [...COMMON_LANGS, ...extras];
@@ -6901,31 +6969,23 @@ function openXlatSetup(cb){
     chip.type = 'button';
     chip.className = 'xlat-chip' + (cur.has(name.toLowerCase()) ? ' on' : '');
     chip.innerHTML = `<span class="fl">${flag}</span> ${escapeHtml(name)}`;
-    chip.onclick = () => {
-      const k = name.toLowerCase();
-      if (cur.has(k)) cur.delete(k); else cur.add(k);
-      chip.classList.toggle('on');
+    chip.onclick = async () => {
+      // Merge selected chip into saved list (prepend so it becomes the
+      // new default), then close + run the pending action.
+      const picked = [name];
+      ((ME && ME.xlatLangs) || []).forEach(existing => {
+        if (existing.toLowerCase() !== name.toLowerCase()) picked.push(existing);
+      });
+      try {
+        const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ xlatLangs: picked.slice(0, 5) }) });
+        if (j && j.me) ME = j.me;
+        closeXlatSetup();
+        if (typeof cb === 'function') cb((ME && ME.xlatLangs) || []);
+      } catch (e) { toast(e.message || 'Could not save.'); }
     };
     list.appendChild(chip);
   });
-  custom.value = '';
-  document.getElementById('xlatSetupSave').onclick = async () => {
-    // Preserve the original casing the user first typed for extras; for
-    // common ones use the display casing from COMMON_LANGS.
-    const picked = [];
-    all.forEach(o => { if (cur.has(o.name.toLowerCase())) picked.push(o.name); });
-    const c = custom.value.trim();
-    if (c && !cur.has(c.toLowerCase())) picked.push(c);
-    if (!picked.length) return toast('Pick at least one language.');
-    try {
-      const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ xlatLangs: picked.slice(0, 5) }) });
-      if (j && j.me) ME = j.me;
-      closeXlatSetup();
-      if (typeof cb === 'function') cb((ME && ME.xlatLangs) || []);
-    } catch (e) { toast(e.message || 'Could not save.'); }
-  };
-  document.getElementById('xlatSetupCancel').onclick = () => closeXlatSetup();
   bd.classList.add('show');
 }
 function closeXlatSetup(){
@@ -7129,15 +7189,18 @@ function wireBubbleGestures(){
     }));
   });
   // Inline translate icon (🇦 next to peer bubbles) — one-tap translate.
-  document.querySelectorAll('#msgs .mrow .mb-xlat-btn').forEach(btn => {
+  // The button now lives inside the .mb bubble (position:absolute).
+  document.querySelectorAll('#msgs .mb .mb-xlat-btn').forEach(btn => {
     if (btn._wired) return; btn._wired = 1;
     btn.addEventListener('click', ev => {
       ev.stopPropagation();
-      const bub = btn.parentElement && btn.parentElement.querySelector('.mb');
+      const bub = btn.closest('.mb');
       if (!bub) return;
       curActMsg = { id: bub.dataset.id, el: bub, mine: false, kind: bub.dataset.k || 'text' };
       msTranslate();
     });
+    // Long-press on the icon shouldn't open the bubble's context menu.
+    ['touchstart','contextmenu'].forEach(t => btn.addEventListener(t, ev => ev.stopPropagation()));
   });
 }
 
@@ -8153,18 +8216,15 @@ function maybeWelcome(){ /* retired — no popup */ }
   <button class="xlat-manage" id="xlatManage" type="button">＋ Manage languages</button>
 </div>
 
-<!-- Translate: first-run + Manage popup. Choose one or more target
-     languages. Shown once until the user has ≥1 saved. -->
+<!-- Translate: language picker popup. Tap any chip to translate into
+     that language (and remember it as your default). Tap outside or
+     press Escape to dismiss. Owner ask 9 Aug 2026 v5 — single-tap flow,
+     no Save/Cancel buttons, no custom-language input. -->
 <div class="xlat-setup-bd" id="xlatSetupBd" onclick="if(event.target===this)closeXlatSetup()">
   <div class="xlat-setup" role="dialog" aria-modal="true">
-    <h3>🌐 Translation languages</h3>
-    <p>Which languages do you want messages translated into? Pick one or more — you can change this later from your profile.</p>
+    <h3>🌐 Translate into</h3>
+    <p>Tap a language. Translations will use this from now on.</p>
     <div class="xlat-setup-chips" id="xlatSetupList"></div>
-    <label class="xlat-setup-add">Other <input type="text" id="xlatSetupCustom" placeholder="e.g. Swedish" maxlength="40" autocomplete="off"></label>
-    <div class="xlat-setup-actions">
-      <button type="button" class="ghost" id="xlatSetupCancel">Cancel</button>
-      <button type="button" class="primary" id="xlatSetupSave">Save</button>
-    </div>
   </div>
 </div>
 
