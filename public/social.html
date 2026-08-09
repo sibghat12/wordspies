@@ -1734,12 +1734,15 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .xlat-setup-add{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);font-weight:600;margin-bottom:14px;flex:none}
 .xlat-setup-add input{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);outline:none;transition:border-color .12s;min-width:0}
 .xlat-setup-add input:focus{border-color:var(--caccent)}
-.xlat-setup-actions{display:flex;gap:8px;justify-content:flex-end;flex:none;border-top:1px solid var(--line);padding-top:14px}
-.xlat-setup-actions button{border:0;border-radius:12px;padding:10px 22px;font-family:'Fredoka','Inter',sans-serif;font-weight:500;font-size:14.5px;cursor:pointer;transition:.12s}
-.xlat-setup-actions .ghost{background:#f3f4f6;color:var(--ink)}
-.xlat-setup-actions .ghost:hover{background:#e5e7eb}
-.xlat-setup-actions .primary{background:var(--caccent, #0f7500);color:#fff}
+/* Force stacked, full-width actions so Save is always the loud, obvious
+   choice at the bottom of the modal — reported missing on iOS. Cancel
+   goes underneath as a low-key secondary link. */
+.xlat-setup-actions{display:flex !important;flex-direction:column;gap:8px;flex:none;border-top:1px solid var(--line);padding-top:14px;align-items:stretch}
+.xlat-setup-actions button{border:0;border-radius:14px;padding:14px 22px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:16px;cursor:pointer;transition:.12s;width:100%;display:block;text-align:center}
+.xlat-setup-actions .primary{background:#0f7500;color:#fff;box-shadow:0 4px 12px rgba(15,117,0,.25);order:1}
 .xlat-setup-actions .primary:hover{filter:brightness(1.08)}
+.xlat-setup-actions .ghost{background:transparent;color:var(--sub);font-weight:500;font-size:14px;padding:8px;box-shadow:none;order:2}
+.xlat-setup-actions .ghost:hover{color:var(--ink)}
 /* Compose translate button — the small 🌐 that lets a user type in
    their native + hand the peer a version in the peer's language. */
 .composer .cbtn.xlat{color:var(--sub)}
