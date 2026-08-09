@@ -1661,11 +1661,12 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 }
 .mb{position:relative}
 .mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:6px;box-shadow:none}
-.mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:6px;margin-right:42px}
-/* Inline 🇦 translate button — sits just outside the right edge of the
-   peer bubble. Owner ask 9 Aug 2026 v8. */
-.mb .mb-xlat-btn{position:absolute;right:-40px;bottom:6px;width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;color:var(--sub);box-shadow:0 1px 3px rgba(0,0,0,.08);padding:0;transition:background .12s}
-.mb .mb-xlat-btn:hover{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
+.mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:6px;margin-right:28px}
+/* Inline translate button — plain glyph sitting flush against the
+   right edge of the peer bubble. Owner ask 9 Aug 2026 — no border,
+   no circle, stick close to the bubble. */
+.mb .mb-xlat-btn{position:absolute;right:-26px;bottom:6px;width:24px;height:24px;background:transparent;border:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--sub);padding:0;opacity:.75;transition:opacity .12s,color .12s}
+.mb .mb-xlat-btn:hover{opacity:1;color:var(--caccent)}
 .mb .mb-xlat-btn:active{transform:scale(.92)}
 .mb img{max-width:220px;border-radius:10px;display:block}
 /* Chat image messages — bigger than GIFs so photos are actually
@@ -1707,6 +1708,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb-xlat.them{align-self:flex-start;border-bottom-left-radius:6px}
 .mb-xlat .lbl{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.7;margin-bottom:3px}
 .mb-xlat .txt{font-weight:500;white-space:pre-wrap;word-wrap:break-word}
+.mb-xlat .note{font-size:11.5px;font-weight:500;color:#3a7040;margin-top:4px;font-style:italic;opacity:.9}
 .mb-xlat .x{position:absolute;top:4px;right:6px;background:transparent;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.55;padding:2px 6px;line-height:1;border-radius:6px}
 .mb-xlat .x:hover{opacity:1;background:rgba(15,91,26,.08)}
 .mb-xlat.loading{opacity:.75}
@@ -1782,18 +1784,19 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .typing span:nth-child(3){animation-delay:.3s}
 @keyframes tp{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
 /* message-actions sheet — appears on long-press or tap-more */
-.msact{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:20px;background:#fff;border-radius:22px;padding:8px;box-shadow:0 20px 60px rgba(0,0,0,.25);display:flex;gap:6px;z-index:60;opacity:0;pointer-events:none;transition:.18s;border:1px solid var(--line)}
-.msact.show{opacity:1;pointer-events:auto;transform:translateX(-50%)}
-.msact .mact{background:transparent;border:0;padding:10px 12px;border-radius:14px;font-size:12.5px;font-weight:700;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-width:56px}
-.msact .mact:hover{background:var(--caccent-soft)}
-.msact .mact .mai{font-size:20px;line-height:1}
-.msact .mact .mal{font-size:10.5px;font-weight:600;color:var(--sub)}
-.msact .mact.danger .mal{color:var(--err)}
-.msact .macthr{width:1px;background:var(--line);margin:6px 2px}
-.msact .rxpick{display:flex;gap:2px;padding:4px 4px}
-.msact .rxpick .rxb{background:transparent;border:0;font-size:22px;padding:6px;border-radius:12px;cursor:pointer;line-height:1}
-.msact .rxpick .rxb:hover{background:var(--caccent-soft);transform:scale(1.1)}
-.msshade{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:59;opacity:0;pointer-events:none;transition:.18s;backdrop-filter:blur(2px)}
+/* Message actions menu — VERTICAL popover, floated near the tapped
+   bubble (owner ask 9 Aug 2026 — no more horizontal bar). Positioned
+   via JS at right-below the bubble, with viewport clamps. */
+.msmenu{position:fixed;top:-9999px;left:0;background:#fff;border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.08);z-index:60;opacity:0;pointer-events:none;transition:opacity .14s;border:1px solid var(--line);min-width:200px;max-width:260px;display:flex;flex-direction:column}
+.msmenu.show{opacity:1;pointer-events:auto}
+.msmi{background:transparent;border:0;padding:10px 12px;border-radius:8px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:15px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;transition:background .08s;width:100%}
+.msmi:hover{background:var(--caccent-soft)}
+.msmi:active{background:#dbe6ff}
+.msmi-ic{font-size:16px;line-height:1;width:22px;text-align:center;flex-shrink:0}
+.msmi.danger{color:var(--err)}
+.msmi.danger:hover{background:#ffeeef}
+.msmi-div{height:1px;background:var(--line);margin:4px 0}
+.msshade{position:fixed;inset:0;background:transparent;z-index:59;opacity:0;pointer-events:none;transition:opacity .18s}
 .msshade.show{opacity:1;pointer-events:auto}
 /* highlight the bubble whose actions are open */
 .mb.selected{outline:2px solid var(--caccent);outline-offset:2px}
@@ -6603,24 +6606,55 @@ function hidePickers(){ const em = $('emojiPick'); if (em) em.classList.add('hid
 // bubble opened it so every button knows what to operate on.
 let curActMsg = null;
 
-function openMsAct(el){
+function openMsAct(el, ev){
   const id = el.dataset.id;
   const mine = el.dataset.mine === '1';
   const kind = el.dataset.k || 'text';
   const gone = el.classList.contains('gone');
   if (gone) return;                                       // deleted bubbles are inert
   curActMsg = { id, el, mine, kind };
-  // Only the sender can edit or delete. Non-text can't be edited.
-  $('msActEdit').style.display = (mine && kind === 'text') ? '' : 'none';
-  $('msActDel').style.display = mine ? '' : 'none';
-  // Translate is only for OTHER people's messages — you can already read
-  // your own. Owner ask 9 Aug 2026.
+  // Ownership-gated actions:
+  //   Reply / Copy — every text message
+  //   Correct     — every text message (any language, own or peer)
+  //   Translate   — peer text messages only (you can already read yours)
+  //   Speak       — every text message (browser SpeechSynthesis)
+  //   Edit / Delete — own messages only
+  //   Report      — peer messages only
+  $('msActReply').style.display     = '';
+  $('msActCopy').style.display      = (kind === 'text') ? '' : 'none';
+  $('msActCorrect').style.display   = (kind === 'text') ? '' : 'none';
   $('msActTranslate').style.display = (!mine && kind === 'text') ? '' : 'none';
+  $('msActSpeak').style.display     = (kind === 'text') ? '' : 'none';
+  $('msActEdit').style.display      = (mine && kind === 'text') ? '' : 'none';
+  $('msActDel').style.display       = mine ? '' : 'none';
+  $('msActReport').style.display    = !mine ? '' : 'none';
   document.querySelectorAll('.mb.selected').forEach(x => x.classList.remove('selected'));
   el.classList.add('selected');
+  const menu = $('msAct');
   $('msShade').classList.add('show');
-  $('msAct').classList.add('show');
-  $('msAct').setAttribute('aria-hidden', 'false');
+  menu.classList.add('show');
+  menu.setAttribute('aria-hidden', 'false');
+  positionMsMenu(el, ev);
+}
+
+// Anchor the menu right below the bubble (owner ask — vertical menu
+// right below the message). Clamps to viewport so it never spills off.
+function positionMsMenu(bub, ev){
+  const menu = $('msAct');
+  menu.style.top = '-9999px'; menu.style.left = '0px';   // reset for measurement
+  const mRect = menu.getBoundingClientRect();
+  const bRect = bub.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight, pad = 8, gap = 6;
+  let top = bRect.bottom + gap;
+  if (top + mRect.height + pad > vh) top = Math.max(pad, bRect.top - mRect.height - gap);
+  // Horizontal: align to the bubble's start edge (them-side left,
+  // me-side right), clamp to viewport.
+  const mine = bub.dataset.mine === '1';
+  let left = mine ? bRect.right - mRect.width : bRect.left;
+  if (left < pad) left = pad;
+  if (left + mRect.width > vw - pad) left = vw - mRect.width - pad;
+  menu.style.top = Math.round(top) + 'px';
+  menu.style.left = Math.round(left) + 'px';
 }
 function closeMsAct(){
   document.querySelectorAll('.mb.selected').forEach(x => x.classList.remove('selected'));
@@ -6694,11 +6728,72 @@ async function msDelete(){
 }
 function msCopy(){
   if (!curActMsg) return;
-  const clone = curActMsg.el.cloneNode(true);
-  clone.querySelectorAll('.qref, .mtime, .mb-orig, .mb-trans').forEach(x => x.remove());
-  const text = clone.textContent.trim();
+  const text = extractBubbleText(curActMsg.el);
   try { navigator.clipboard.writeText(text); toast('Copied'); } catch(e){ toast('Copy failed'); }
   closeMsAct();
+}
+
+// Pull just the message text from a bubble — no reply refs, no time,
+// no translation chip, no inline translate button.
+function extractBubbleText(bub){
+  const clone = bub.cloneNode(true);
+  clone.querySelectorAll('.qref, .mtime, .mb-orig, .mb-trans, .mb-xlat-btn').forEach(x => x.remove());
+  return clone.textContent.trim();
+}
+
+// Read the message aloud via the browser's built-in SpeechSynthesis.
+// Free, offline, works on every modern browser. If a translation chip
+// is attached below the bubble, speaks the translated text instead so
+// the user hears the language they're learning.
+function msSpeak(){
+  if (!curActMsg) return;
+  const bub = curActMsg.el;
+  let text = extractBubbleText(bub);
+  const chip = bub.nextElementSibling;
+  if (chip && chip.classList && chip.classList.contains('mb-xlat')) {
+    const t = chip.querySelector('.txt');
+    if (t && t.textContent.trim()) text = t.textContent.trim();
+  }
+  closeMsAct();
+  if (!text) return;
+  if (!window.speechSynthesis) return toast('Speech not supported here.');
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.0; u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  } catch(e){ toast('Could not speak.'); }
+}
+
+// AI-powered writing correction. Same Claude pipeline as translate but
+// with a "fix my language" system prompt. Result renders in a green
+// chip below the bubble alongside a one-line note about what changed.
+async function msCorrect(){
+  if (!curActMsg) return;
+  const bub = curActMsg.el;
+  const mine = curActMsg.mine;
+  const text = extractBubbleText(bub);
+  closeMsAct();
+  if (!text) return;
+  const existing = bub.nextElementSibling;
+  if (existing && existing.classList && existing.classList.contains('mb-xlat')) existing.remove();
+  const chip = document.createElement('div');
+  chip.className = 'mb-xlat ' + (mine ? 'me' : 'them') + ' loading';
+  chip.innerHTML = `<div class="lbl">✓ Correction</div><div class="txt">Checking…</div>`;
+  bub.after(chip);
+  try {
+    const j = await api('/correct', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text }) });
+    if (!j.text) throw new Error('No correction');
+    chip.classList.remove('loading');
+    chip.innerHTML = `<div class="lbl">✓ Correction</div><div class="txt"></div>${j.note ? `<div class="note"></div>` : ''}<button type="button" class="x" aria-label="Dismiss">×</button>`;
+    chip.querySelector('.txt').textContent = j.text;
+    if (j.note && chip.querySelector('.note')) chip.querySelector('.note').textContent = j.note;
+    chip.querySelector('.x').onclick = () => chip.remove();
+  } catch(e){
+    chip.remove();
+    toast(e.message || 'Could not check.');
+  }
 }
 
 // Translate the selected message into ME's native language. Owner ask
@@ -8052,23 +8147,22 @@ function maybeWelcome(){ /* retired — no popup */ }
 </script>
 
 <!-- Message action sheet — one instance shared by every bubble -->
+<!-- Message actions menu — vertical list floated near the tapped
+     bubble (owner ask 9 Aug 2026 — 'make it vertical right below the
+     message, no emoji reactions'). Five main items: Reply, Copy,
+     Correct, Translate, Speak. Edit/Delete on own messages, Report
+     on others'. -->
 <div class="msshade" id="msShade" onclick="closeMsAct()"></div>
-<div class="msact" id="msAct" role="menu" aria-hidden="true">
-  <div class="rxpick">
-    <button class="rxb" onclick="msReact('❤️')" title="Heart">❤️</button>
-    <button class="rxb" onclick="msReact('😂')" title="Laugh">😂</button>
-    <button class="rxb" onclick="msReact('😮')" title="Wow">😮</button>
-    <button class="rxb" onclick="msReact('😢')" title="Sad">😢</button>
-    <button class="rxb" onclick="msReact('👍')" title="Like">👍</button>
-    <button class="rxb" onclick="msReact('🔥')" title="Fire">🔥</button>
-  </div>
-  <div class="macthr"></div>
-  <button class="mact" onclick="msReply()"><span class="mai">↩︎</span><span class="mal">Reply</span></button>
-  <button class="mact" id="msActTranslate" onclick="msTranslate()"><span class="mai">🌐</span><span class="mal">Translate</span></button>
-  <button class="mact" id="msActEdit" onclick="msEdit()"><span class="mai">✎</span><span class="mal">Edit</span></button>
-  <button class="mact" id="msActCopy" onclick="msCopy()"><span class="mai">⧉</span><span class="mal">Copy</span></button>
-  <button class="mact" id="msActReport" onclick="msReport()"><span class="mai">🚩</span><span class="mal">Report</span></button>
-  <button class="mact danger" id="msActDel" onclick="msDelete()"><span class="mai">🗑</span><span class="mal">Delete</span></button>
+<div class="msmenu" id="msAct" role="menu" aria-hidden="true">
+  <button class="msmi" id="msActReply" onclick="msReply()"><span class="msmi-ic">↩︎</span>Reply</button>
+  <button class="msmi" id="msActCopy" onclick="msCopy()"><span class="msmi-ic">⧉</span>Copy</button>
+  <button class="msmi" id="msActCorrect" onclick="msCorrect()"><span class="msmi-ic">✓</span>Correct</button>
+  <button class="msmi" id="msActTranslate" onclick="msTranslate()"><span class="msmi-ic">🌐</span>Translate</button>
+  <button class="msmi" id="msActSpeak" onclick="msSpeak()"><span class="msmi-ic">🔊</span>Speak</button>
+  <div class="msmi-div"></div>
+  <button class="msmi" id="msActEdit" onclick="msEdit()"><span class="msmi-ic">✎</span>Edit</button>
+  <button class="msmi" id="msActReport" onclick="msReport()"><span class="msmi-ic">🚩</span>Report</button>
+  <button class="msmi danger" id="msActDel" onclick="msDelete()"><span class="msmi-ic">🗑</span>Delete</button>
 </div>
 
 <!-- Translate: small language picker (only shown when the user has 2+
