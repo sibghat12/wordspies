@@ -2934,7 +2934,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="cbtn micrec" style="display:none" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
         <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
       </button>
-      <button class="cbtn send hidden" id="sendBtn" onclick="sendMsg()" aria-label="Send">
+      <!-- Send button always visible now (owner ask 9 Aug 2026 —
+           'keep show the send button'). sendMsg() bails on empty. -->
+      <button class="cbtn send" id="sendBtn" onclick="sendMsg()" aria-label="Send">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3l0 7 15 2-15 2z"/></svg>
       </button>
     </div>
@@ -5761,11 +5763,12 @@ async function refreshChat(first){
         const gone = m.d ? ' gone' : '';
         const idAttr = esc(m.id || String(m.t));
         const edited = m.e ? '<span class="edited">edited</span>' : '';
-        // Inline 🇦 translate button next to every peer text bubble.
-        // Owner ask 9 Aug 2026 v8. Absolutely positioned via CSS so it
-        // doesn't touch the existing flex-column layout of #msgs.
+        // Inline translate button next to every peer text bubble.
+        // Uses a clean SVG glyph (Google-Translate-style A→文) because
+        // the 🇦 emoji renders as a broken 'A in a square' on iOS —
+        // it's only half a flag code point.
         const xlatBtn = (!mine && (m.k || 'text') === 'text' && !m.d)
-          ? `<button class="mb-xlat-btn" type="button" title="Translate" aria-label="Translate">🇦</button>`
+          ? `<button class="mb-xlat-btn" type="button" title="Translate" aria-label="Translate"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg></button>`
           : '';
         return sep + `
         <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
@@ -6127,13 +6130,9 @@ async function typewriteAIReply(msg){
 $('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
 $('msgIn').addEventListener('input', () => {
   sendTypingSoon();
-  // Autocomplete word suggestions retired per owner ask — was cluttering
-  // the chat. Send button appears when there's text, mic when empty.
-  const hasText = !!$('msgIn').value.trim();
-  const send = document.getElementById('sendBtn');
-  const mic  = document.getElementById('micRecBtn');
-  if (send) send.classList.toggle('hidden', !hasText);
-  if (mic)  mic.classList.toggle('hidden', hasText);
+  // Send button is now ALWAYS visible (owner ask 9 Aug 2026); mic
+  // lives inside the + menu, so we no longer toggle either button
+  // based on whether there's text.
 });
 
 // Shared upload path used by the 📷 picker + drag-drop + paste.
