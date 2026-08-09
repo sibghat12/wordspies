@@ -6826,23 +6826,23 @@ async function msCorrect(){
   const text = extractBubbleText(bub);
   closeMsAct();
   if (!text) return;
-  const existing = bub.nextElementSibling;
-  if (existing && existing.classList && existing.classList.contains('mb-xlat')) existing.remove();
-  const chip = document.createElement('div');
-  chip.className = 'mb-xlat ' + (mine ? 'me' : 'them') + ' loading';
-  chip.innerHTML = `<div class="lbl">✓ Correction</div><div class="txt">Checking…</div>`;
-  bub.after(chip);
+  const msgId = bub.dataset.id;
+  const loading = { kind:'correct', mine, text: 'Checking…' };
+  if (msgId) xlatChipCache.set(msgId, loading);
+  renderXlatChip(bub, loading);
+  const loadingChip = bub.nextElementSibling;
+  if (loadingChip) loadingChip.classList.add('loading');
   try {
     const j = await api('/correct', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ text }) });
     if (!j.text) throw new Error('No correction');
-    chip.classList.remove('loading');
-    chip.innerHTML = `<div class="lbl">✓ Correction</div><div class="txt"></div>${j.note ? `<div class="note"></div>` : ''}<button type="button" class="x" aria-label="Dismiss">×</button>`;
-    chip.querySelector('.txt').textContent = j.text;
-    if (j.note && chip.querySelector('.note')) chip.querySelector('.note').textContent = j.note;
-    chip.querySelector('.x').onclick = () => chip.remove();
+    const done = { kind:'correct', mine, text: j.text, note: j.note || '' };
+    if (msgId) xlatChipCache.set(msgId, done);
+    renderXlatChip(bub, done);
   } catch(e){
-    chip.remove();
+    if (msgId) xlatChipCache.delete(msgId);
+    const stale = bub.nextElementSibling;
+    if (stale && stale.classList && stale.classList.contains('mb-xlat')) stale.remove();
     toast(e.message || 'Could not check.');
   }
 }
@@ -7016,31 +7016,70 @@ function closeXlatSetup(){
   document.getElementById('xlatSetupBd').classList.remove('show');
 }
 
-async function doTranslate(bub, mine, targetLang){
-  // Pull plain text from the ORIGINAL bubble (skip any reply-quote refs +
-  // timestamp + previously-appended translation chip).
-  const clone = bub.cloneNode(true);
-  clone.querySelectorAll('.qref, .mtime, .rxrow').forEach(x => x.remove());
-  const text = clone.textContent.trim();
-  if (!text) return;
-  // Loading chip appears immediately so the user sees a response.
+// Translation / correction chips need to survive the chat's periodic
+// re-render (owner ask 10 Aug 2026 — 'it should not disappear until
+// user clicks the cross'). We cache by message id, then re-attach any
+// live chips after every render in wireBubbleGestures().
+const xlatChipCache = new Map();  // msgId → { kind:'translate'|'correct', mine, target?, text, note? }
+
+function renderXlatChip(bub, entry){
+  // Remove any prior chip attached to this bubble.
   const existing = bub.nextElementSibling;
   if (existing && existing.classList && existing.classList.contains('mb-xlat')) existing.remove();
   const chip = document.createElement('div');
-  chip.className = 'mb-xlat ' + (mine ? 'me' : 'them') + ' loading';
-  chip.innerHTML = `<div class="lbl">${flagFor(targetLang)} ${escapeHtml(targetLang)}</div><div class="txt">Translating…</div>`;
+  chip.className = 'mb-xlat ' + (entry.mine ? 'me' : 'them');
+  const label = entry.kind === 'correct'
+    ? '✓ Correction'
+    : `${flagFor(entry.target || '')} ${escapeHtml(entry.target || '')}`;
+  chip.innerHTML = `<div class="lbl">${label}</div><div class="txt"></div>${entry.note ? '<div class="note"></div>' : ''}<button type="button" class="x" aria-label="Dismiss">×</button>`;
+  chip.querySelector('.txt').textContent = entry.text || '';
+  if (entry.note) chip.querySelector('.note').textContent = entry.note;
+  chip.querySelector('.x').onclick = () => {
+    const id = bub.dataset.id;
+    if (id) xlatChipCache.delete(id);
+    chip.remove();
+  };
   bub.after(chip);
+}
+
+// Re-hydrate cached chips whenever the message thread re-renders.
+function reattachXlatChips(){
+  if (!xlatChipCache.size) return;
+  document.querySelectorAll('#msgs .mb').forEach(el => {
+    const id = el.dataset.id;
+    if (!id) return;
+    const entry = xlatChipCache.get(id);
+    if (entry) renderXlatChip(el, entry);
+  });
+}
+
+async function doTranslate(bub, mine, targetLang){
+  // Pull plain text from the ORIGINAL bubble (skip reply-quote refs +
+  // timestamp + inline translate button + any previously-appended chip).
+  const clone = bub.cloneNode(true);
+  clone.querySelectorAll('.qref, .mtime, .rxrow, .mb-xlat-btn').forEach(x => x.remove());
+  const text = clone.textContent.trim();
+  if (!text) return;
+  const msgId = bub.dataset.id;
+  // Show a loading chip immediately.
+  const loading = { kind:'translate', mine, target: targetLang, text: 'Translating…' };
+  if (msgId) xlatChipCache.set(msgId, loading);
+  renderXlatChip(bub, loading);
+  // Add .loading class for the pulsing animation.
+  const loadingChip = bub.nextElementSibling;
+  if (loadingChip) loadingChip.classList.add('loading');
   try {
     const j = await api('/translate', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ text, to: targetLang }) });
     if (!j.text) throw new Error('No translation');
     const final = j.target || targetLang;
-    chip.classList.remove('loading');
-    chip.innerHTML = `<div class="lbl">${flagFor(final)} ${escapeHtml(final)}</div><div class="txt"></div><button type="button" class="x" aria-label="Dismiss">×</button>`;
-    chip.querySelector('.txt').textContent = j.text;
-    chip.querySelector('.x').onclick = () => chip.remove();
+    const done = { kind:'translate', mine, target: final, text: j.text };
+    if (msgId) xlatChipCache.set(msgId, done);
+    renderXlatChip(bub, done);
   } catch (e) {
-    chip.remove();
+    if (msgId) xlatChipCache.delete(msgId);
+    const stale = bub.nextElementSibling;
+    if (stale && stale.classList && stale.classList.contains('mb-xlat')) stale.remove();
     toast(e.message || 'Could not translate.');
   }
 }
@@ -7192,6 +7231,10 @@ async function showBlocked(){
 // Live-wired every render because innerHTML replaces the whole thread.
 let pressTimer = null;
 function wireBubbleGestures(){
+  // Restore any translation/correction chips whose message is still on
+  // screen. Owner ask 10 Aug 2026 — chips should persist across the
+  // chat's ~2s polling re-render until the user taps ×.
+  reattachXlatChips();
   document.querySelectorAll('#msgs .mb').forEach(el => {
     if (el._wired) return; el._wired = 1;
     el.addEventListener('contextmenu', ev => { ev.preventDefault(); openMsAct(el); });
