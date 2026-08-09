@@ -1415,6 +1415,11 @@ body.in-game .topnav{display:none !important}
 body.in-game .partybar{display:none !important}
 body.in-game .wsfoot,body.in-game .wshead{display:none !important}
 .ghost.fs .ghost-bar{padding:10px 14px;border-bottom:1px solid var(--line);flex:0 0 auto;display:flex;align-items:center;gap:10px;background:#fff}
+/* Hide the game-shell top bar for WordSpies specifically — owner ask
+   9 Aug 2026: players kept tapping ✕ / ▲ mid-round and losing the
+   game. WordSpies has its own in-game leave button in the corner. */
+.ghost.fs[data-game="wordspies"] .ghost-bar{display:none}
+.ghost.fs[data-game="wordspies"] .ghost-frame{height:100%}
 .ghost.fs .ghost-frame{flex:1;min-height:0;display:block;background:#fff}
 .ghost .ghost-dot{width:9px;height:9px;border-radius:50%;background:#ff3d5b;animation:gcpulse 1.4s ease-in-out infinite;flex-shrink:0}
 .ghost .ghost-text{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
@@ -5112,6 +5117,10 @@ function openGameInApp(game, code, title){
   GHOST_GAME = game; GHOST_CODE = code;
   const t = $('ghostTitle');
   if (t) t.textContent = (title || GAME_LABEL[game] || 'Game').toUpperCase();
+  // Tag the host with the game slug so CSS can hide the shell bar for
+  // specific games (owner ask 9 Aug 2026 — WordSpies players kept
+  // accidentally tapping ✕ mid-round and losing the game).
+  host.dataset.game = game;
   host.classList.remove('hidden');
   host.classList.add('fs');
   host.classList.remove('mini');
