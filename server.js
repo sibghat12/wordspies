@@ -713,6 +713,13 @@ let wordRaceMod = null;
 try { wordRaceMod = require('./wordrace').mount(app, io, gameOpts) || null; }
 catch (e) { console.error('wordrace module failed to load (game unaffected):', e.message); }
 
+// 🏀 Hoop — arcade free-throw solo score attack at /hoop. All physics
+// client-side; module only registers the route + a stub /api/hoop/new so
+// the shared game-shell flow doesn't 404.
+let hoopMod = null;
+try { hoopMod = require('./hoop').mount(app, io, gameOpts) || null; }
+catch (e) { console.error('hoop module failed to load (game unaffected):', e.message); }
+
 // 🎉 Parties — audio rooms with speakers + listeners + rationed listener chat.
 // Uses the same Cloudflare Realtime pipeline the games do. Own namespace at
 // /party, own rooms map, own REST endpoints under /api/parties.

@@ -2594,6 +2594,16 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <span class="playcard-cta">Start a room →</span>
         </div>
       </a>
+      <!-- 10 · Hoop -->
+      <a class="playcard playcard-hoop" href="/hoop" onclick="return wsPlayStart(this,event)" style="background:linear-gradient(160deg,#ffcf70 0%,#ff8f2c 100%)">
+        <div class="playcard-art" style="font-size:56px;line-height:1">🏀</div>
+        <div class="playcard-body">
+          <div class="playcard-badge">Arcade · solo · 60s</div>
+          <h3>Hoop <button class="pc-info" type="button" data-pcinfo="hoop" aria-label="About Hoop">i</button></h3>
+          <p>Drag to aim. Release to shoot. Beat your best.</p>
+          <span class="playcard-cta">Play →</span>
+        </div>
+      </a>
     </div>
   </div>
 
@@ -4923,6 +4933,9 @@ const PCINFO = {
   pool: { name:'8-Ball Pool', href:'/pool',
     body:'Real physics 8-ball. Break, call your set (stripes or solids), pot them all, then the 8 — but don\'t sink the cue on the way. Aim by dragging, tap to shoot. 2 players or vs bot.',
     meta:'2 players · vs a friend or the bot' },
+  hoop: { name:'Hoop', href:'/hoop',
+    body:'Arcade free-throw. You have 60 seconds to sink as many baskets as possible — drag the ball back to aim, release to shoot. Real physics arc, rim bounces, streak bonuses. Beat your best score.',
+    meta:'solo · 60-second round · best score saved' },
 };
 function openPcInfo(id){
   const g = PCINFO[id]; if (!g) return;
@@ -5014,10 +5027,10 @@ function togglePartyExpand(){
 // 2026: 'stay in the site, one-click end, mini-player at the bottom'.
 const GAME_LABEL = { wordspies:'WordSpies', wordrace:'Word Race', wordchain:'Word Chain',
   guessword:'Guess the Word', spy:'Who is the Spy?', meld:'Mind Meld',
-  ludo:'Ludo', four:'Connect 4', pool:'8-Ball Pool' };
+  ludo:'Ludo', four:'Connect 4', pool:'8-Ball Pool', hoop:'Hoop' };
 const GAME_ROUTE = { wordspies:'/play', wordrace:'/wordrace', wordchain:'/wordchain',
   guessword:'/guessword', spy:'/spy', meld:'/meld',
-  ludo:'/ludo', four:'/four', pool:'/pool' };
+  ludo:'/ludo', four:'/four', pool:'/pool', hoop:'/hoop' };
 let GHOST_GAME = null, GHOST_CODE = null;
 function openGameInApp(game, code, title){
   game = String(game || '').toLowerCase();

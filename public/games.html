@@ -190,6 +190,13 @@ label.fl{font-weight:800}
     <span class="chips"><span class="chip ppl">2–4 friends</span><span class="chip bot">or vs bots</span></span>
   </a>
 
+  <div class="sect">Arcade</div>
+  <a class="game" href="/hoop" data-game="hoop">
+    <span class="gi" style="background:#fff2d9">🏀</span>
+    <span class="gt"><b>Hoop</b><span class="gt-line">60-second free-throw arcade <button class="gi-info" type="button" data-info="hoop" aria-label="About Hoop">i</button></span></span>
+    <span class="chips"><span class="chip bot">solo · beat your best</span></span>
+  </a>
+
   <div class="foot">
     Signed in? You’re seated under your own name and photo automatically.<br>
     <a href="/social">Meet people to play with in the Community →</a>
@@ -240,6 +247,9 @@ const GAME_INFO = {
   spy: { name:'Who is the Spy?', icon:'🎭', bg:'#f0edff', href:'/spy',
     body:'Everyone gets a secret word — except the spy, who gets a similar-but-different one. Take turns dropping a one-word hint. Vote out who you think is the imposter. Civilians win if the spy is caught; the spy wins if only two players remain.',
     meta:'4–10 players · social deduction' },
+  hoop: { name:'Hoop', icon:'🏀', bg:'#fff2d9', href:'/hoop',
+    body:'Arcade free-throw. You have 60 seconds to sink as many baskets as possible. Drag the ball back to aim, release to shoot — real physics arc, rim bounces, streak bonuses. Beat your personal best.',
+    meta:'solo · 60-second round · beat your best' },
 };
 function openGameInfo(id){
   const g = GAME_INFO[id]; if (!g) return;

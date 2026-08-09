@@ -97,6 +97,7 @@ const GAMES = [
   { href: '/ludo',      icon: '🎲', name: 'Ludo',          line: 'Board race · 2–4 · bots fill seats' },
   { href: '/pool',      icon: '🎱', name: '8-Ball Pool',   line: 'Real physics · 1 or 2 players' },
   { href: '/four',      icon: '🔴', name: 'Connect 4',     line: '30-second rounds · friend or bot' },
+  { href: '/hoop',      icon: '🏀', name: 'Hoop',          line: '60-second free-throw arcade · solo' },
 ];
 
 function page() {
