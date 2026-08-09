@@ -1702,38 +1702,44 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb-xlat.loading{opacity:.75}
 .mb-xlat.loading .txt::after{content:'…';animation:tload 1s ease-in-out infinite;margin-left:2px}
 @keyframes xlatIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-/* Language picker sheet — sits above the msAct sheet visually. */
-.xlat-shade{position:fixed;inset:0;background:rgba(0,0,0,.32);opacity:0;pointer-events:none;transition:opacity .16s;z-index:60}
+/* Language picker — floating popover anchored to the tapped bubble
+   (owner ask 9 Aug 2026 v3, "open in the message not in the bottom
+   horizontal line"). JS positions it above/below via top/left. */
+.xlat-shade{position:fixed;inset:0;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .16s;z-index:60}
 .xlat-shade.show{opacity:1;pointer-events:auto}
-.xlat-sh{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#fff;border-radius:20px;padding:14px 14px 12px;box-shadow:0 20px 60px rgba(0,0,0,.28);z-index:61;opacity:0;pointer-events:none;transition:.2s;border:1px solid var(--line);max-width:340px;width:calc(100% - 40px);display:flex;flex-direction:column;gap:8px}
-.xlat-sh.show{opacity:1;pointer-events:auto;transform:translateX(-50%)}
-.xlat-sh-title{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:14px;color:var(--sub);text-align:center;padding:2px 0 4px;letter-spacing:.2px}
-.xlat-sh-list{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.xlat-opt{background:#f5f5f7;border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:.12s}
+.xlat-sh{position:fixed;top:-9999px;left:0;background:#fff;border-radius:16px;padding:10px 10px 8px;box-shadow:0 12px 40px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.08);z-index:61;opacity:0;pointer-events:none;transition:opacity .14s;border:1px solid var(--line);max-width:290px;display:flex;flex-direction:column;gap:6px}
+.xlat-sh.show{opacity:1;pointer-events:auto}
+.xlat-sh-title{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:12.5px;color:var(--sub);text-align:center;padding:2px 0 2px;letter-spacing:.3px}
+.xlat-sh-list{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-width:270px}
+.xlat-opt{background:#f5f5f7;border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-family:'Inter',system-ui,sans-serif;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;transition:.12s;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
+.xlat-opt .fl{font-size:15px;line-height:1}
 .xlat-opt:hover{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
 .xlat-opt.primary{background:#e7fbe9;border-color:#a8d8b0;color:#0f5b1a}
 .xlat-opt.primary:hover{background:#d8f0dc;border-color:#7cd58a}
-.xlat-manage{background:transparent;border:0;color:var(--caccent);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:6px;cursor:pointer;border-top:1px solid var(--line);margin-top:2px}
+.xlat-manage{background:transparent;border:0;color:var(--caccent);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:4px;cursor:pointer;border-top:1px solid var(--line);margin-top:2px}
 .xlat-manage:hover{color:var(--ink)}
-/* Setup modal — first-run + Manage flow. */
+/* Setup modal — first-run + Manage flow. Constrained height with a
+   scrollable chip area so Save/Cancel are always visible even on the
+   shortest phones. */
 .xlat-setup-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:12000;padding:20px}
 .xlat-setup-bd.show{display:flex;animation:pcinfoFade .16s ease}
-.xlat-setup{background:#fff;border-radius:22px;max-width:460px;width:100%;padding:24px 22px 18px;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:wpop .22s var(--spring, ease)}
-.xlat-setup h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0 0 8px}
-.xlat-setup p{font-size:14px;line-height:1.55;color:var(--sub);margin:0 0 16px;font-weight:500}
-.xlat-setup-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.xlat-chip{background:#f5f5f7;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;transition:.12s}
+.xlat-setup{background:#fff;border-radius:22px;max-width:460px;width:100%;max-height:90vh;padding:22px 22px 18px;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:wpop .22s var(--spring, ease);display:flex;flex-direction:column;min-height:0}
+.xlat-setup h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0 0 8px;flex:none}
+.xlat-setup p{font-size:14px;line-height:1.55;color:var(--sub);margin:0 0 14px;font-weight:500;flex:none}
+.xlat-setup-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;overflow-y:auto;padding:2px;min-height:0;flex:1 1 auto;align-content:flex-start}
+.xlat-chip{background:#f5f5f7;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;transition:.12s;display:inline-flex;align-items:center;gap:7px;line-height:1.2}
+.xlat-chip .fl{font-size:15px;line-height:1}
 .xlat-chip:hover{border-color:#c9cfe3}
 .xlat-chip.on{background:#e7fbe9;border-color:#7cd58a;color:#0f5b1a}
-.xlat-setup-add{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);font-weight:600;margin-bottom:16px}
-.xlat-setup-add input{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);outline:none;transition:border-color .12s}
+.xlat-setup-add{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);font-weight:600;margin-bottom:14px;flex:none}
+.xlat-setup-add input{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);outline:none;transition:border-color .12s;min-width:0}
 .xlat-setup-add input:focus{border-color:var(--caccent)}
-.xlat-setup-actions{display:flex;gap:8px;justify-content:flex-end}
-.xlat-setup-actions button{border:0;border-radius:12px;padding:10px 20px;font-family:'Fredoka','Inter',sans-serif;font-weight:500;font-size:14.5px;cursor:pointer;transition:.12s}
+.xlat-setup-actions{display:flex;gap:8px;justify-content:flex-end;flex:none;border-top:1px solid var(--line);padding-top:14px}
+.xlat-setup-actions button{border:0;border-radius:12px;padding:10px 22px;font-family:'Fredoka','Inter',sans-serif;font-weight:500;font-size:14.5px;cursor:pointer;transition:.12s}
 .xlat-setup-actions .ghost{background:#f3f4f6;color:var(--ink)}
 .xlat-setup-actions .ghost:hover{background:#e5e7eb}
-.xlat-setup-actions .primary{background:var(--ink);color:#fff}
-.xlat-setup-actions .primary:hover{background:#000}
+.xlat-setup-actions .primary{background:var(--caccent, #0f7500);color:#fff}
+.xlat-setup-actions .primary:hover{filter:brightness(1.08)}
 /* Compose translate button — the small 🌐 that lets a user type in
    their native + hand the peer a version in the peer's language. */
 .composer .cbtn.xlat{color:var(--sub)}
@@ -6534,6 +6540,9 @@ function openMsAct(el){
   // Only the sender can edit or delete. Non-text can't be edited.
   $('msActEdit').style.display = (mine && kind === 'text') ? '' : 'none';
   $('msActDel').style.display = mine ? '' : 'none';
+  // Translate is only for OTHER people's messages — you can already read
+  // your own. Owner ask 9 Aug 2026.
+  $('msActTranslate').style.display = (!mine && kind === 'text') ? '' : 'none';
   document.querySelectorAll('.mb.selected').forEach(x => x.classList.remove('selected'));
   el.classList.add('selected');
   $('msShade').classList.add('show');
@@ -6624,22 +6633,49 @@ function msCopy(){
 // translation and a small "Show original" pill; second tap on the
 // bubble → collapses back to the original. Cached per bubble in a
 // data-* attribute so we don't re-hit the API for the same message.
-// Translate flow (owner ask 9 Aug 2026 v2):
+// Translate flow (owner ask 9 Aug 2026 v3):
 //   Preference is stored on the profile as ME.xlatLangs = [String,...].
 //   0 languages → first-run setup popup (once). User picks, we save, then
 //                 we translate. Never nags again.
 //   1 language  → skip the picker. Translate directly to that language.
-//   2+          → small picker with those languages + "Manage" link.
-//   Manage from the avatar menu opens the same setup popup.
+//   2+          → small picker anchored to the bubble + "Manage" link.
+//   Only offered on OTHER people's messages (msActTranslate is hidden
+//   when curActMsg.mine, and msTranslate re-guards it).
 //   Original bubble is never touched; the translation appears as a new
 //   element right after it (green tint, small header, × to dismiss).
-const COMMON_LANGS = ['English','Spanish','French','German','Italian','Portuguese','Japanese','Korean','Mandarin','Arabic','Russian','Hindi','Turkish','Dutch','Polish'];
+const COMMON_LANGS = [
+  { name:'English',    flag:'🇬🇧' },
+  { name:'Spanish',    flag:'🇪🇸' },
+  { name:'French',     flag:'🇫🇷' },
+  { name:'German',     flag:'🇩🇪' },
+  { name:'Italian',    flag:'🇮🇹' },
+  { name:'Portuguese', flag:'🇵🇹' },
+  { name:'Japanese',   flag:'🇯🇵' },
+  { name:'Korean',     flag:'🇰🇷' },
+  { name:'Mandarin',   flag:'🇨🇳' },
+  { name:'Arabic',     flag:'🇸🇦' },
+  { name:'Russian',    flag:'🇷🇺' },
+  { name:'Hindi',      flag:'🇮🇳' },
+  { name:'Turkish',    flag:'🇹🇷' },
+  { name:'Dutch',      flag:'🇳🇱' },
+  { name:'Polish',     flag:'🇵🇱' },
+];
+const LANG_NAMES = COMMON_LANGS.map(l => l.name);
+function flagFor(name){
+  const k = String(name || '').toLowerCase();
+  const m = COMMON_LANGS.find(l => l.name.toLowerCase() === k);
+  return m ? m.flag : '🌐';
+}
 
 async function msTranslate(){
   if (!curActMsg) return;
   const bub = curActMsg.el;
   const mine = curActMsg.mine;
   closeMsAct();
+  // Guard: translate is for peer messages only. The msAct button is
+  // hidden on our own bubbles, but re-guard here in case something else
+  // ever calls msTranslate() directly.
+  if (mine) return;
   const langs = (ME && Array.isArray(ME.xlatLangs)) ? ME.xlatLangs : [];
   if (langs.length === 0) {
     // Never asked before → run the one-time setup, then continue.
@@ -6654,7 +6690,10 @@ async function msTranslate(){
   openXlatPicker(bub, mine);
 }
 
-// The small picker: only the user's chosen languages + a Manage link.
+// Small picker: only the user's chosen languages + a Manage link.
+// Anchored to the bubble (owner ask 9 Aug 2026 v3 — 'open in the message
+// not in the bottom horizontal line'). Positioned right above the bubble
+// when there's room; falls back to below.
 function openXlatPicker(bub, mine){
   const langs = (ME && Array.isArray(ME.xlatLangs)) ? ME.xlatLangs : [];
   const sh = document.getElementById('xlatSh');
@@ -6663,7 +6702,7 @@ function openXlatPicker(bub, mine){
   langs.forEach(name => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'xlat-opt primary';
-    b.textContent = name;
+    b.innerHTML = `<span class="fl">${flagFor(name)}</span> ${escapeHtml(name)}`;
     b.onclick = () => { closeXlatPicker(); doTranslate(bub, mine, name); };
     list.appendChild(b);
   });
@@ -6672,8 +6711,42 @@ function openXlatPicker(bub, mine){
     closeXlatPicker();
     openXlatSetup(() => {});
   };
-  sh.classList.add('show');
   document.getElementById('xlatShade').classList.add('show');
+  sh.classList.add('show');
+  // Position relative to the bubble. Prefer ABOVE (more natural — the
+  // bubble is what you tapped). Below is a fallback if there's no room.
+  positionXlatPicker(bub);
+}
+function positionXlatPicker(bub){
+  const sh = document.getElementById('xlatSh');
+  // Reset any prior positioning before measuring
+  sh.style.top = '';
+  sh.style.bottom = '';
+  sh.style.left = '';
+  sh.style.right = '';
+  sh.style.transform = '';
+  const bRect = bub.getBoundingClientRect();
+  const sRect = sh.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const gap = 8, pad = 10;
+  // Vertical: above if room, else below.
+  const roomAbove = bRect.top;
+  const roomBelow = vh - bRect.bottom;
+  let top;
+  if (roomAbove >= sRect.height + gap + pad) {
+    top = bRect.top - sRect.height - gap;
+  } else if (roomBelow >= sRect.height + gap + pad) {
+    top = bRect.bottom + gap;
+  } else {
+    // Neither fits cleanly — pin near the top of the bubble as a compromise.
+    top = Math.max(pad, Math.min(bRect.top - sRect.height/2, vh - sRect.height - pad));
+  }
+  // Horizontal: try to align to the bubble's centre, clamp to viewport.
+  let left = bRect.left + bRect.width/2 - sRect.width/2;
+  if (left < pad) left = pad;
+  if (left + sRect.width > vw - pad) left = vw - sRect.width - pad;
+  sh.style.top = Math.round(top) + 'px';
+  sh.style.left = Math.round(left) + 'px';
 }
 function closeXlatPicker(){
   document.getElementById('xlatSh').classList.remove('show');
@@ -6688,16 +6761,17 @@ function openXlatSetup(cb){
   const list = document.getElementById('xlatSetupList');
   const custom = document.getElementById('xlatSetupCustom');
   const cur = new Set(((ME && ME.xlatLangs) || []).map(s => s.toLowerCase()));
-  const known = new Set(COMMON_LANGS.map(s => s.toLowerCase()));
+  const known = new Set(LANG_NAMES.map(s => s.toLowerCase()));
   // Anything the user already saved that isn't in COMMON_LANGS → show it too.
-  const extras = ((ME && ME.xlatLangs) || []).filter(s => !known.has(s.toLowerCase()));
+  const extras = ((ME && ME.xlatLangs) || []).filter(s => !known.has(s.toLowerCase()))
+    .map(name => ({ name, flag: '🌐' }));
   const all = [...COMMON_LANGS, ...extras];
   list.innerHTML = '';
-  all.forEach(name => {
+  all.forEach(({ name, flag }) => {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'xlat-chip' + (cur.has(name.toLowerCase()) ? ' on' : '');
-    chip.textContent = name;
+    chip.innerHTML = `<span class="fl">${flag}</span> ${escapeHtml(name)}`;
     chip.onclick = () => {
       const k = name.toLowerCase();
       if (cur.has(k)) cur.delete(k); else cur.add(k);
@@ -6710,7 +6784,7 @@ function openXlatSetup(cb){
     // Preserve the original casing the user first typed for extras; for
     // common ones use the display casing from COMMON_LANGS.
     const picked = [];
-    all.forEach(n => { if (cur.has(n.toLowerCase())) picked.push(n); });
+    all.forEach(o => { if (cur.has(o.name.toLowerCase())) picked.push(o.name); });
     const c = custom.value.trim();
     if (c && !cur.has(c.toLowerCase())) picked.push(c);
     if (!picked.length) return toast('Pick at least one language.');
@@ -6741,14 +6815,15 @@ async function doTranslate(bub, mine, targetLang){
   if (existing && existing.classList && existing.classList.contains('mb-xlat')) existing.remove();
   const chip = document.createElement('div');
   chip.className = 'mb-xlat ' + (mine ? 'me' : 'them') + ' loading';
-  chip.innerHTML = `<div class="lbl">🌐 ${escapeHtml(targetLang)}</div><div class="txt">Translating…</div>`;
+  chip.innerHTML = `<div class="lbl">${flagFor(targetLang)} ${escapeHtml(targetLang)}</div><div class="txt">Translating…</div>`;
   bub.after(chip);
   try {
     const j = await api('/translate', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ text, to: targetLang }) });
     if (!j.text) throw new Error('No translation');
+    const final = j.target || targetLang;
     chip.classList.remove('loading');
-    chip.innerHTML = `<div class="lbl">🌐 ${escapeHtml(j.target || targetLang)}</div><div class="txt"></div><button type="button" class="x" aria-label="Dismiss">×</button>`;
+    chip.innerHTML = `<div class="lbl">${flagFor(final)} ${escapeHtml(final)}</div><div class="txt"></div><button type="button" class="x" aria-label="Dismiss">×</button>`;
     chip.querySelector('.txt').textContent = j.text;
     chip.querySelector('.x').onclick = () => chip.remove();
   } catch (e) {
