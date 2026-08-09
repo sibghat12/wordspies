@@ -1688,6 +1688,52 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb.them.is-translated .mb-orig{border-top-color:rgba(90,123,255,.18)}
 .mb-trans-loading{display:inline-block;margin-left:6px;font-size:11px;opacity:.7;animation:tload 1s ease-in-out infinite}
 @keyframes tload{0%,100%{opacity:.4}50%{opacity:.9}}
+/* Translation chip — owner ask 9 Aug 2026. Original bubble stays
+   untouched; the translation appears as a separate element right
+   after it, in the same me/them alignment. Green-tinted like the
+   Correct feature so it reads as "AI helper output". */
+.mb-xlat{max-width:78%;margin-top:3px;background:#e7fbe9;border:1px solid #a8d8b0;border-radius:14px;padding:8px 32px 8px 12px;font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.42;color:#0f5b1a;position:relative;animation:xlatIn .18s ease-out}
+.mb-xlat.me{align-self:flex-end;border-bottom-right-radius:6px}
+.mb-xlat.them{align-self:flex-start;border-bottom-left-radius:6px}
+.mb-xlat .lbl{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.7;margin-bottom:3px}
+.mb-xlat .txt{font-weight:500;white-space:pre-wrap;word-wrap:break-word}
+.mb-xlat .x{position:absolute;top:4px;right:6px;background:transparent;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.55;padding:2px 6px;line-height:1;border-radius:6px}
+.mb-xlat .x:hover{opacity:1;background:rgba(15,91,26,.08)}
+.mb-xlat.loading{opacity:.75}
+.mb-xlat.loading .txt::after{content:'…';animation:tload 1s ease-in-out infinite;margin-left:2px}
+@keyframes xlatIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* Language picker sheet — sits above the msAct sheet visually. */
+.xlat-shade{position:fixed;inset:0;background:rgba(0,0,0,.32);opacity:0;pointer-events:none;transition:opacity .16s;z-index:60}
+.xlat-shade.show{opacity:1;pointer-events:auto}
+.xlat-sh{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#fff;border-radius:20px;padding:14px 14px 12px;box-shadow:0 20px 60px rgba(0,0,0,.28);z-index:61;opacity:0;pointer-events:none;transition:.2s;border:1px solid var(--line);max-width:340px;width:calc(100% - 40px);display:flex;flex-direction:column;gap:8px}
+.xlat-sh.show{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+.xlat-sh-title{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:14px;color:var(--sub);text-align:center;padding:2px 0 4px;letter-spacing:.2px}
+.xlat-sh-list{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.xlat-opt{background:#f5f5f7;border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;transition:.12s}
+.xlat-opt:hover{background:var(--caccent-soft);border-color:var(--caccent);color:var(--caccent)}
+.xlat-opt.primary{background:#e7fbe9;border-color:#a8d8b0;color:#0f5b1a}
+.xlat-opt.primary:hover{background:#d8f0dc;border-color:#7cd58a}
+.xlat-manage{background:transparent;border:0;color:var(--caccent);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:6px;cursor:pointer;border-top:1px solid var(--line);margin-top:2px}
+.xlat-manage:hover{color:var(--ink)}
+/* Setup modal — first-run + Manage flow. */
+.xlat-setup-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:12000;padding:20px}
+.xlat-setup-bd.show{display:flex;animation:pcinfoFade .16s ease}
+.xlat-setup{background:#fff;border-radius:22px;max-width:460px;width:100%;padding:24px 22px 18px;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:wpop .22s var(--spring, ease)}
+.xlat-setup h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0 0 8px}
+.xlat-setup p{font-size:14px;line-height:1.55;color:var(--sub);margin:0 0 16px;font-weight:500}
+.xlat-setup-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.xlat-chip{background:#f5f5f7;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;transition:.12s}
+.xlat-chip:hover{border-color:#c9cfe3}
+.xlat-chip.on{background:#e7fbe9;border-color:#7cd58a;color:#0f5b1a}
+.xlat-setup-add{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);font-weight:600;margin-bottom:16px}
+.xlat-setup-add input{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);outline:none;transition:border-color .12s}
+.xlat-setup-add input:focus{border-color:var(--caccent)}
+.xlat-setup-actions{display:flex;gap:8px;justify-content:flex-end}
+.xlat-setup-actions button{border:0;border-radius:12px;padding:10px 20px;font-family:'Fredoka','Inter',sans-serif;font-weight:500;font-size:14.5px;cursor:pointer;transition:.12s}
+.xlat-setup-actions .ghost{background:#f3f4f6;color:var(--ink)}
+.xlat-setup-actions .ghost:hover{background:#e5e7eb}
+.xlat-setup-actions .primary{background:var(--ink);color:#fff}
+.xlat-setup-actions .primary:hover{background:#000}
 /* Compose translate button — the small 🌐 that lets a user type in
    their native + hand the peer a version in the peer's language. */
 .composer .cbtn.xlat{color:var(--sub)}
@@ -2317,6 +2363,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <a class="avitem" role="menuitem" onclick="avGo('profile')"><span class="avic">👤</span>My profile</a>
         <a class="avitem" role="menuitem" onclick="avGo('share')"><span class="avic">🔗</span>Share my profile</a>
         <a class="avitem" role="menuitem" onclick="avGo('langs')"><span class="avic">🌐</span>My languages</a>
+        <a class="avitem" role="menuitem" onclick="avGo('xlat')"><span class="avic">🔤</span>Translation languages</a>
         <a class="avitem" role="menuitem" onclick="avGo('community')"><span class="avic">🏘️</span>Community</a>
         <div class="avdiv"></div>
         <a class="avitem" role="menuitem" onclick="avGo('settings')"><span class="avic">⚙️</span>Settings</a>
@@ -6577,77 +6624,142 @@ function msCopy(){
 // translation and a small "Show original" pill; second tap on the
 // bubble → collapses back to the original. Cached per bubble in a
 // data-* attribute so we don't re-hit the API for the same message.
+// Translate flow (owner ask 9 Aug 2026 v2):
+//   Preference is stored on the profile as ME.xlatLangs = [String,...].
+//   0 languages → first-run setup popup (once). User picks, we save, then
+//                 we translate. Never nags again.
+//   1 language  → skip the picker. Translate directly to that language.
+//   2+          → small picker with those languages + "Manage" link.
+//   Manage from the avatar menu opens the same setup popup.
+//   Original bubble is never touched; the translation appears as a new
+//   element right after it (green tint, small header, × to dismiss).
+const COMMON_LANGS = ['English','Spanish','French','German','Italian','Portuguese','Japanese','Korean','Mandarin','Arabic','Russian','Hindi','Turkish','Dutch','Polish'];
+
 async function msTranslate(){
   if (!curActMsg) return;
-  // Snapshot everything we need BEFORE closeMsAct(), because closeMsAct
-  // sets curActMsg = null and the fetch below runs async — reading
-  // curActMsg.mine after that throws "cannot read properties of null".
   const bub = curActMsg.el;
   const mine = curActMsg.mine;
   closeMsAct();
-  // If a translation is already showing → collapse back to original.
-  if (bub.classList.contains('is-translated')) {
-    const orig = bub.querySelector('.mb-orig');
-    const trans = bub.querySelector('.mb-trans');
-    if (orig) orig.remove();
-    if (trans) trans.remove();
-    // Restore original text node we squirrelled away.
-    if (bub.dataset.origHtml) {
-      const time = bub.querySelector('.mtime');
-      bub.innerHTML = bub.dataset.origHtml + (time ? time.outerHTML : '');
-    }
-    bub.classList.remove('is-translated');
+  const langs = (ME && Array.isArray(ME.xlatLangs)) ? ME.xlatLangs : [];
+  if (langs.length === 0) {
+    // Never asked before → run the one-time setup, then continue.
+    openXlatSetup((saved) => {
+      if (!saved || !saved.length) return;
+      if (saved.length === 1) return doTranslate(bub, mine, saved[0]);
+      openXlatPicker(bub, mine);
+    });
     return;
   }
-  // Cache hit? Just render.
-  if (bub.dataset.translation) {
-    renderTranslation(bub, bub.dataset.translation);
-    return;
-  }
-  // Fresh translation. Pull the plain text (skip reply refs + timestamp).
+  if (langs.length === 1) return doTranslate(bub, mine, langs[0]);
+  openXlatPicker(bub, mine);
+}
+
+// The small picker: only the user's chosen languages + a Manage link.
+function openXlatPicker(bub, mine){
+  const langs = (ME && Array.isArray(ME.xlatLangs)) ? ME.xlatLangs : [];
+  const sh = document.getElementById('xlatSh');
+  const list = document.getElementById('xlatList');
+  list.innerHTML = '';
+  langs.forEach(name => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'xlat-opt primary';
+    b.textContent = name;
+    b.onclick = () => { closeXlatPicker(); doTranslate(bub, mine, name); };
+    list.appendChild(b);
+  });
+  const manage = document.getElementById('xlatManage');
+  manage.onclick = () => {
+    closeXlatPicker();
+    openXlatSetup(() => {});
+  };
+  sh.classList.add('show');
+  document.getElementById('xlatShade').classList.add('show');
+}
+function closeXlatPicker(){
+  document.getElementById('xlatSh').classList.remove('show');
+  document.getElementById('xlatShade').classList.remove('show');
+}
+
+// First-run + Manage popup: shows every common language as a toggleable
+// chip. On Save we PATCH the profile and call the callback with the new
+// list so the caller can continue (e.g. finish a translation).
+function openXlatSetup(cb){
+  const bd = document.getElementById('xlatSetupBd');
+  const list = document.getElementById('xlatSetupList');
+  const custom = document.getElementById('xlatSetupCustom');
+  const cur = new Set(((ME && ME.xlatLangs) || []).map(s => s.toLowerCase()));
+  const known = new Set(COMMON_LANGS.map(s => s.toLowerCase()));
+  // Anything the user already saved that isn't in COMMON_LANGS → show it too.
+  const extras = ((ME && ME.xlatLangs) || []).filter(s => !known.has(s.toLowerCase()));
+  const all = [...COMMON_LANGS, ...extras];
+  list.innerHTML = '';
+  all.forEach(name => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'xlat-chip' + (cur.has(name.toLowerCase()) ? ' on' : '');
+    chip.textContent = name;
+    chip.onclick = () => {
+      const k = name.toLowerCase();
+      if (cur.has(k)) cur.delete(k); else cur.add(k);
+      chip.classList.toggle('on');
+    };
+    list.appendChild(chip);
+  });
+  custom.value = '';
+  document.getElementById('xlatSetupSave').onclick = async () => {
+    // Preserve the original casing the user first typed for extras; for
+    // common ones use the display casing from COMMON_LANGS.
+    const picked = [];
+    all.forEach(n => { if (cur.has(n.toLowerCase())) picked.push(n); });
+    const c = custom.value.trim();
+    if (c && !cur.has(c.toLowerCase())) picked.push(c);
+    if (!picked.length) return toast('Pick at least one language.');
+    try {
+      const j = await api('/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ xlatLangs: picked.slice(0, 5) }) });
+      if (j && j.me) ME = j.me;
+      closeXlatSetup();
+      if (typeof cb === 'function') cb((ME && ME.xlatLangs) || []);
+    } catch (e) { toast(e.message || 'Could not save.'); }
+  };
+  document.getElementById('xlatSetupCancel').onclick = () => closeXlatSetup();
+  bd.classList.add('show');
+}
+function closeXlatSetup(){
+  document.getElementById('xlatSetupBd').classList.remove('show');
+}
+
+async function doTranslate(bub, mine, targetLang){
+  // Pull plain text from the ORIGINAL bubble (skip any reply-quote refs +
+  // timestamp + previously-appended translation chip).
   const clone = bub.cloneNode(true);
   clone.querySelectorAll('.qref, .mtime, .rxrow').forEach(x => x.remove());
   const text = clone.textContent.trim();
   if (!text) return;
-  const badge = document.createElement('span');
-  badge.className = 'mb-trans-loading';
-  badge.textContent = '🌐 …';
-  bub.appendChild(badge);
+  // Loading chip appears immediately so the user sees a response.
+  const existing = bub.nextElementSibling;
+  if (existing && existing.classList && existing.classList.contains('mb-xlat')) existing.remove();
+  const chip = document.createElement('div');
+  chip.className = 'mb-xlat ' + (mine ? 'me' : 'them') + ' loading';
+  chip.innerHTML = `<div class="lbl">🌐 ${escapeHtml(targetLang)}</div><div class="txt">Translating…</div>`;
+  bub.after(chip);
   try {
     const j = await api('/translate', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ text, peerId: mine ? curChat : null }) });
-    badge.remove();
+      body: JSON.stringify({ text, to: targetLang }) });
     if (!j.text) throw new Error('No translation');
-    bub.dataset.translation = j.text;
-    renderTranslation(bub, j.text);
+    chip.classList.remove('loading');
+    chip.innerHTML = `<div class="lbl">🌐 ${escapeHtml(j.target || targetLang)}</div><div class="txt"></div><button type="button" class="x" aria-label="Dismiss">×</button>`;
+    chip.querySelector('.txt').textContent = j.text;
+    chip.querySelector('.x').onclick = () => chip.remove();
   } catch (e) {
-    badge.remove();
+    chip.remove();
     toast(e.message || 'Could not translate.');
   }
 }
-function renderTranslation(bub, translated){
-  // Freeze the original html once so we can toggle back.
-  if (!bub.dataset.origHtml) {
-    const time = bub.querySelector('.mtime');
-    const timeHtml = time ? time.outerHTML : '';
-    // Everything except the timestamp is 'the original text'.
-    const inner = bub.innerHTML.replace(timeHtml, '').trim();
-    bub.dataset.origHtml = inner;
-  }
-  const time = bub.querySelector('.mtime');
-  const origWrap = document.createElement('div');
-  origWrap.className = 'mb-orig';
-  origWrap.innerHTML = bub.dataset.origHtml;
-  const transWrap = document.createElement('div');
-  transWrap.className = 'mb-trans';
-  transWrap.textContent = translated;
-  // Wipe + rebuild: translation on top, original underneath (smaller/dim),
-  // timestamp at the very end.
-  bub.innerHTML = '';
-  bub.appendChild(transWrap);
-  bub.appendChild(origWrap);
-  if (time) bub.appendChild(time);
-  bub.classList.add('is-translated');
+
+// Small local HTML-escape for the language name (user-typed via Other…).
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
 // Report the currently-selected message. Sends a note the moderator can
@@ -7350,6 +7462,7 @@ function avGo(kind){
     case 'profile':   showTab('me'); break;
     case 'share':     shareMyProfile(); break;
     case 'langs':     showTab('me'); scrollTo('pfLangSection'); break;
+    case 'xlat':      openXlatSetup(() => {}); break;
     case 'settings':  showTab('me'); scrollTo('pfSettingsSection'); break;
     case 'support':   showTab('me'); scrollTo('pfSettingsSection'); break;
     case 'community': showTab('wall'); break;
@@ -7803,6 +7916,31 @@ function maybeWelcome(){ /* retired — no popup */ }
   <button class="mact" id="msActReport" onclick="msReport()"><span class="mai">🚩</span><span class="mal">Report</span></button>
   <button class="mact danger" id="msActDel" onclick="msDelete()"><span class="mai">🗑</span><span class="mal">Delete</span></button>
 </div>
+
+<!-- Translate: small language picker (only shown when the user has 2+
+     saved languages). Sits above the msAct sheet visually. -->
+<div class="xlat-shade" id="xlatShade" onclick="closeXlatPicker()"></div>
+<div class="xlat-sh" id="xlatSh" role="menu" aria-hidden="true">
+  <div class="xlat-sh-title">Translate to…</div>
+  <div class="xlat-sh-list" id="xlatList"></div>
+  <button class="xlat-manage" id="xlatManage" type="button">＋ Manage languages</button>
+</div>
+
+<!-- Translate: first-run + Manage popup. Choose one or more target
+     languages. Shown once until the user has ≥1 saved. -->
+<div class="xlat-setup-bd" id="xlatSetupBd" onclick="if(event.target===this)closeXlatSetup()">
+  <div class="xlat-setup" role="dialog" aria-modal="true">
+    <h3>🌐 Translation languages</h3>
+    <p>Which languages do you want messages translated into? Pick one or more — you can change this later from your profile.</p>
+    <div class="xlat-setup-chips" id="xlatSetupList"></div>
+    <label class="xlat-setup-add">Other <input type="text" id="xlatSetupCustom" placeholder="e.g. Swedish" maxlength="40" autocomplete="off"></label>
+    <div class="xlat-setup-actions">
+      <button type="button" class="ghost" id="xlatSetupCancel">Cancel</button>
+      <button type="button" class="primary" id="xlatSetupSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <script src="/wsbrand.js" defer></script>
 </body>
 </html>

@@ -153,6 +153,17 @@ function mount(api, ctx) {
       if (b.partnerType !== undefined) u.partnerType = String(b.partnerType || '').slice(0, 500);
       if (b.speaks    !== undefined) u.speaks    = cleanLangArr(b.speaks, 5);
       if (b.learns    !== undefined) u.learns    = cleanLangArr(b.learns, 5);
+      // xlatLangs (owner ask 9 Aug 2026): user's preferred target
+      // languages for chat translation. Free-text names (e.g. "English",
+      // "Spanish", "Mandarin") — not language codes — because Haiku
+      // translates fine on the name and we don't need to maintain a code
+      // registry. Cap 5 + 40 chars each.
+      if (b.xlatLangs !== undefined) {
+        u.xlatLangs = (Array.isArray(b.xlatLangs) ? b.xlatLangs : [])
+          .map(s => String(s || '').trim().slice(0, 40))
+          .filter(Boolean)
+          .slice(0, 5);
+      }
       if (b.interests !== undefined) u.interests = cleanArr(b.interests, 30, 12);
       if (b.goals     !== undefined) u.goals     = cleanArr(b.goals,     30, 6);
       if (b.recs      !== undefined) u.recs      = String(b.recs || '').slice(0, 500);
