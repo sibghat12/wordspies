@@ -1920,6 +1920,13 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 .composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:12;align-items:center}
 @media(min-width:700px){.composer{bottom:0}}
 .composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:11px 18px;font-size:16px;min-width:0}
+/* + menu — floats above the composer (owner ask 9 Aug 2026 v7). */
+.plusmenu{position:fixed;left:14px;bottom:calc(70px + 62px + env(safe-area-inset-bottom));background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06);z-index:14;display:none;flex-direction:column;min-width:180px}
+.plusmenu.show{display:flex;animation:pcinfoFade .14s ease-out}
+.chatfull .plusmenu{bottom:calc(62px + env(safe-area-inset-bottom))}
+.plusmenu button{background:transparent;border:0;padding:10px 12px;border-radius:8px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:15px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;transition:background .08s}
+.plusmenu button:hover{background:var(--caccent-soft)}
+.plusmenu .pmi{font-size:18px;line-height:1;width:22px;text-align:center}
 /* Flat glyph buttons — no background, no border. Circular tap target
    with a subtle hover tint. Never carry weight themselves, so the
    input stays the visual focus. */
@@ -2903,17 +2910,23 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button type="button" class="rec-send" id="recPreviewSend" onclick="sendPreviewedVoice()" title="Send">➤</button>
     </div>
     <div class="composer">
-      <button class="cbtn" onclick="togglePicker()">😊</button>
-      <button class="cbtn" onclick="$('imgIn').click()" title="Send a photo">📷</button>
+      <!-- One + button opens a menu with Photo / Emoji / Voice.
+           Owner ask 9 Aug 2026 v7 — cleaner than a row of icons.
+           The old buttons (😊 📷 🎤) still exist below with
+           style="display:none" so all their JS references + IDs keep
+           working; we just don't show them in the composer row. -->
+      <button class="cbtn" type="button" id="plusBtn" onclick="togglePlusMenu(event)" title="More" aria-label="More">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button class="cbtn" style="display:none" onclick="togglePicker()">😊</button>
+      <button class="cbtn" style="display:none" onclick="$('imgIn').click()" title="Send a photo">📷</button>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
-      <!-- 🌐 translates the current draft into the peer's native
-           language before you send. Owner ask 6 Aug 2026: 'make it
-           easy for his own typing'. Only usable when there's text. -->
-      <button class="cbtn xlat" id="composerXlat" onclick="translateComposer()" title="Translate my typing" aria-label="Translate my typing">🌐</button>
+      <button class="cbtn xlat" style="display:none" id="composerXlat" onclick="translateComposer()" title="Translate my typing" aria-label="Translate my typing">🌐</button>
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
-      <!-- Smart action: shows the mic when the input is empty (hold to
-           record voice), swaps to the send arrow when there's text. -->
-      <button class="cbtn micrec" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
+      <!-- Mic stays in DOM (voice recording flow references #micRecBtn)
+           but is hidden from the composer — Voice launches from the +
+           menu now. -->
+      <button class="cbtn micrec" style="display:none" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
         <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
       </button>
       <button class="cbtn send hidden" id="sendBtn" onclick="sendMsg()" aria-label="Send">
@@ -2921,6 +2934,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </button>
     </div>
     <div class="picker hidden" id="emojiPick"></div>
+    <!-- + menu popover — floats above the composer. -->
+    <div class="plusmenu" id="plusMenu">
+      <button type="button" onclick="closePlusMenu(); $('imgIn').click()"><span class="pmi">📷</span>Photo</button>
+      <button type="button" onclick="closePlusMenu(); togglePicker()"><span class="pmi">😊</span>Emoji</button>
+      <button type="button" onclick="closePlusMenu(); startVoiceFromMenu()"><span class="pmi">🎤</span>Voice note</button>
+    </div>
     <!-- #gamePick (the 🎮 in-chat game-invite popover) retired 6 Aug
          2026 (owner ask). Game invites still work — you send a
          /wordrace or /play link from the games shelf — this just
@@ -6418,8 +6437,39 @@ $('msgs').addEventListener('scroll', () => { if (atBottom($('msgs'))) $('jumpNew
 // ---------- emoji + GIF pickers ----------
 const EMOJIS = '😀 😁 😂 🤣 😊 😍 🥰 😘 😜 🤪 🤩 🥳 😎 🤓 🤔 🙃 😅 😇 😋 🤗 🤭 😏 😴 🥱 🤯 😱 😭 🥺 😢 😤 😡 🙄 😬 🤢 🥶 🥵 😈 🤡 👻 💀 👽 🤖 💩 😺 🙈 🙉 🙊 💪 👍 👎 👏 🙌 🤝 🙏 ✌️ 🤞 🤟 🤘 🤙 👋 ✋ 👌 🤌 👈 👉 👆 👇 ❤️ 🧡 💛 💚 💙 💜 🖤 🤍 💔 💖 💘 💝 💯 💢 💥 💫 ⭐ 🌟 ✨ ⚡ 🔥 🌈 ☀️ 🌙 🎉 🎊 🎈 🎁 🏆 🥇 🎮 🎲 🎯 🕵️ 🔎 🧠 🍕 🍔 🍟 🌮 🍩 🍪 🎂 🍺 ☕ 🚀 ✈️ 🏝 ⚽ 🏀 🎸 🎧 📸'.split(' ').filter(Boolean);
 function buildEmojis(){
-  $('emojiPick').innerHTML = EMOJIS.map(e => `<button class="em" onclick="$('msgIn').value += '${e}';$('msgIn').focus()">${e}</button>`).join('');
+  // Owner ask 9 Aug 2026 v7 — tap an emoji → insert + auto-close the
+  // picker. Also fires an input event so the mic/send swap picks up
+  // the change (previously .value += bypassed the listener).
+  $('emojiPick').innerHTML = EMOJIS.map(e =>
+    `<button class="em" onclick="$('msgIn').value += '${e}';$('msgIn').dispatchEvent(new Event('input'));$('msgIn').focus();hidePickers()">${e}</button>`
+  ).join('');
 }
+// + menu — one attachments popover with Photo / Emoji / Voice.
+function togglePlusMenu(ev){
+  if (ev) ev.stopPropagation();
+  const m = document.getElementById('plusMenu');
+  if (m) m.classList.toggle('show');
+}
+function closePlusMenu(){
+  const m = document.getElementById('plusMenu');
+  if (m) m.classList.remove('show');
+}
+// Close on outside click / Escape.
+document.addEventListener('click', ev => {
+  const m = document.getElementById('plusMenu');
+  if (!m || !m.classList.contains('show')) return;
+  if (ev.target.closest('#plusMenu') || ev.target.closest('#plusBtn')) return;
+  m.classList.remove('show');
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closePlusMenu(); });
+// Kick off the existing hold-to-record flow from the + menu → Voice.
+// startVoice() shows the recBar with a live timer; the ■ button in
+// that bar stops + opens the preview (Play / ➤ Send / 🗑).
+function startVoiceFromMenu(){
+  if (typeof startVoice === 'function') startVoice();
+  else toast('Voice recording not available.');
+}
+
 function togglePicker(){
   const em = $('emojiPick');
   em.classList.toggle('hidden');
