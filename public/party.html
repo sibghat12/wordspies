@@ -22,7 +22,7 @@
   --green:#22c07a; --err:#d93025;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;overscroll-behavior:none}
 body{font-family:'Nunito',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
   -webkit-font-smoothing:antialiased;height:100dvh;overflow:hidden}
 a{color:inherit;text-decoration:none}
@@ -200,7 +200,7 @@ a{color:inherit;text-decoration:none}
    without breaking the unified colour rule. */
 .pav.host::before{content:'👑';position:absolute;top:-2px;right:calc(50% - 32px);font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,.2)}
 /* Little tap-to-talk hint over my own avatar */
-.pav.tapMe .circ::before{content:'Tap to talk';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap}
+.pav.tapMe .circ::before{content:'';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);background:transparent;color:transparent;font-size:9.5px;padding:2px 6px;border-radius:6px;opacity:0;pointer-events:none}
 .pav.tapMe:hover .circ::before{opacity:.9}
 .pav.tapMe.live .circ::before{content:'Tap to mute';background:var(--green)}
 .pav .nm{font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
@@ -357,7 +357,6 @@ a{color:inherit;text-decoration:none}
       <p id="pSub"></p>
     </div>
     <div class="phead-btns">
-      <button class="pheadLeave" onclick="leaveAndGo()" title="Leave the party and return to Community">Back to Community</button>
       <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
     </div>
   </header>
@@ -419,9 +418,9 @@ a{color:inherit;text-decoration:none}
 
 <!-- Big always-visible action pills above the chat bar. Only one shows
      at a time depending on my role. -->
-<button class="micfab" id="pMicFab" onclick="toggleMyMic()">
+<button class="micfab" id="pMicFab" onclick="toggleMyMic()" aria-label="Toggle mic">
   <span class="mfico">🎤</span>
-  <span id="pMicFabLbl">Tap to talk</span>
+  <span id="pMicFabLbl" style="display:none"></span>
 </button>
 <button class="handfab" id="pHandFab" onclick="toggleHand()">
   <span class="hfico">✋</span>

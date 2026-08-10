@@ -119,6 +119,7 @@ function mount(app, io, options = {}) {
       const listeners = all.filter(m => m.role === 'listener');
       out.push({
         code: r.code, title: r.title, subtitle: r.subtitle || '',
+        langs: Array.isArray(r.langs) ? r.langs : [],
         count: r.members.size, cap: r.cap,
         speakerCount: speakers.length,
         listenerCount: listeners.length,
@@ -138,10 +139,16 @@ function mount(app, io, options = {}) {
     const title    = cleanText((req.body || {}).title,    60) || 'Untitled party';
     const subtitle = cleanText((req.body || {}).subtitle, 120);
     const vis = ((req.body || {}).visibility === 'private') ? 'private' : 'public';
+    // Owner ask 10 Aug 2026 — host tags the party with the languages
+    // being practised so the archive card can show flags. Free text so
+    // the client picks up new languages without a server release.
+    const langs = (Array.isArray((req.body || {}).langs) ? (req.body || {}).langs : [])
+      .map(s => String(s || '').trim().slice(0, 40))
+      .filter(Boolean).slice(0, 6);
     const code = makeUniqueCode(rooms);
     console.log('[party] create', code, 'vis=' + vis, 'host=' + uid.slice(0, 8), 'title=' + title.slice(0, 40));
     const room = {
-      code, title, subtitle, visibility: vis,
+      code, title, subtitle, visibility: vis, langs,
       hostUid: uid, hostId: null,
       cap: CAP,
       members: new Map(),       // socketId → { id, uid, name, photo, role, connected, msgsUsed, cfSession }
