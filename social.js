@@ -159,7 +159,11 @@ function mount(app, redis) {
 
   const pub = u => ({ id: u.id, name: u.name, bio: u.bio || '', location: u.location || '',
     country: u.country || '', cc: u.cc || '',
-    photo: u.photo || null, createdAt: u.createdAt, games: u.games || 0, wins: u.wins || 0,
+    photo: u.photo || null,
+    // Extra profile-gallery photos (owner ask 10 Aug 2026 — 'let user
+    // add more images'). Same file store as the avatar, just multiple.
+    photos: Array.isArray(u.photos) ? u.photos : [],
+    createdAt: u.createdAt, games: u.games || 0, wins: u.wins || 0,
     age: calcAge(u.birthdate), birthdate: u.birthdate || null,
     // Speaky-style profile fields — languages spoken/learning, interests,
     // goals, a short "Let's talk about" quote, and recommendations.

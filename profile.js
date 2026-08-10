@@ -234,10 +234,11 @@ function mount(api, ctx) {
         const isWebp = sig.slice(8, 12).toString() === 'WEBP';
         if (!isJpg && !isPng && !isWebp) return res.status(400).json({ error: 'Use a JPG, PNG or WebP image.' });
         const ext = isJpg ? 'jpg' : isPng ? 'png' : 'webp';
-        // Remove any previous photo files for this user; then write the new one.
-        // Deleted BEFORE the write so a crash mid-op leaves us with either
-        // (a) nothing, or (b) exactly the new file — never two.
-        for (const old of fs.readdirSync(PHOTO_DIR)) if (old.startsWith(u.id + '.')) fs.unlinkSync(path.join(PHOTO_DIR, old));
+        // Remove any previous AVATAR files for this user (uid.XXXXX.ext),
+        // but leave gallery photos (uid.g.XXXXX.ext) alone.
+        for (const old of fs.readdirSync(PHOTO_DIR)) {
+          if (old.startsWith(u.id + '.') && !old.startsWith(u.id + '.g.')) fs.unlinkSync(path.join(PHOTO_DIR, old));
+        }
         const fname = `${u.id}.${Date.now().toString(36)}.${ext}`;
         fs.writeFileSync(path.join(PHOTO_DIR, fname), f.buffer);
         u.photo = '/social-photos/' + fname;
@@ -245,6 +246,57 @@ function mount(api, ctx) {
         res.json({ me: pub(u) });
       } catch (e) { console.error('social photo:', e.message); res.status(500).json({ error: 'Upload failed.' }); }
     });
+  });
+
+  // POST /photos/add — Tandem-style multi-photo gallery (owner ask 10
+  // Aug 2026 — 'let user add more images'). Separate from /photo (the
+  // avatar) so the primary photo isn't lost. Cap 6 photos per user;
+  // filename convention uid.g.<ts>.<ext> so we can distinguish from
+  // the avatar filename in the cleanup loop.
+  const GALLERY_CAP = 6;
+  api.post('/photos/add', (req, res) => {
+    upload.single('photo')(req, res, async err => {
+      try {
+        if (err) return res.status(400).json({ error: 'Photo too large (max 2 MB).' });
+        const u = await userFromReq(req);
+        if (!u) return res.status(401).json({ error: 'Please log in.' });
+        const list = Array.isArray(u.photos) ? u.photos.slice() : [];
+        if (list.length >= GALLERY_CAP) return res.status(400).json({ error: `You can add up to ${GALLERY_CAP} photos.` });
+        const f = req.file;
+        if (!f) return res.status(400).json({ error: 'No photo received.' });
+        const sig = f.buffer.slice(0, 12);
+        const isJpg  = sig[0] === 0xFF && sig[1] === 0xD8;
+        const isPng  = sig[0] === 0x89 && sig[1] === 0x50;
+        const isWebp = sig.slice(8, 12).toString() === 'WEBP';
+        if (!isJpg && !isPng && !isWebp) return res.status(400).json({ error: 'Use a JPG, PNG or WebP image.' });
+        const ext = isJpg ? 'jpg' : isPng ? 'png' : 'webp';
+        const fname = `${u.id}.g.${Date.now().toString(36)}.${ext}`;
+        fs.writeFileSync(path.join(PHOTO_DIR, fname), f.buffer);
+        list.push('/social-photos/' + fname);
+        u.photos = list;
+        await db.set('soc:user:' + u.id, JSON.stringify(u));
+        res.json({ me: pub(u) });
+      } catch (e) { console.error('social photos/add:', e.message); res.status(500).json({ error: 'Upload failed.' }); }
+    });
+  });
+
+  // POST /photos/remove — { url } — drop one gallery photo. Rejects
+  // any URL that doesn't belong to the caller (safety belt: even a
+  // manipulated body can only affect the caller's own uid prefix).
+  api.post('/photos/remove', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      const url = String((req.body || {}).url || '');
+      if (!url) return res.status(400).json({ error: 'No photo specified.' });
+      const base = url.split('/').pop() || '';
+      if (!base.startsWith(u.id + '.g.')) return res.status(400).json({ error: 'That\'s not one of your photos.' });
+      const list = Array.isArray(u.photos) ? u.photos.filter(p => p !== url) : [];
+      u.photos = list;
+      try { fs.unlinkSync(path.join(PHOTO_DIR, base)); } catch (e) {}
+      await db.set('soc:user:' + u.id, JSON.stringify(u));
+      res.json({ me: pub(u) });
+    } catch (e) { console.error('social photos/remove:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 }
 
