@@ -644,6 +644,19 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const entry = { t: Date.now(), uid: (me && me.id) || null, name: (me && me.name) || null, idea };
       await db.rpush('soc:learn-ideas', JSON.stringify(entry));
       await db.ltrim('soc:learn-ideas', -1000, -1);   // cap at last 1000
+      // Owner ask 10 Aug 2026 — email each new learn-tab idea straight
+      // to the owner's inbox so they can see requests without visiting
+      // an admin page. Fire-and-forget: never let a mail failure break
+      // the response for the user.
+      (async () => {
+        try {
+          const who = entry.name ? entry.name : 'A visitor';
+          const subject = `📚 New Learn request from ${who}`;
+          const text = `${who} wants to learn:\n\n${entry.idea}\n\n—\nWordSpies · ${new Date(entry.t).toISOString()}`;
+          const html = `<p><strong>${esc(who)}</strong> wants to learn:</p><blockquote style="border-left:3px solid #0f7500;padding:6px 12px;margin:12px 0;color:#333">${esc(entry.idea).replace(/\n/g, '<br>')}</blockquote><p style="color:#888;font-size:12px">WordSpies · ${new Date(entry.t).toISOString()}</p>`;
+          await sendMail('sibikhan1234@gmail.com', subject, text, html);
+        } catch (e) { console.error('learn-idea mail:', e.message); }
+      })();
       res.json({ ok: true });
     } catch (e) { console.error('learn-idea:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });

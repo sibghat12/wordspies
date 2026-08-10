@@ -20,7 +20,7 @@ function avatar(hat, skin, blushOpacity = '.8') {
 
 // Hero illustration — the killer Correct feature in action. Learner's imperfect
 // Spanish, then a green correction bubble underneath. Chosen as hero because it's
-// the single most valuable thing the app does that Duolingo/Tandem don't do well.
+// the single most valuable thing the app does that lesson apps don't do well.
 const CHAT_MOCK = `<svg viewBox="0 0 380 320" width="100%" height="auto" aria-hidden="true">
   <defs>
     <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#f7f8fb"/></linearGradient>
@@ -114,7 +114,7 @@ ${GA}
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>WordSpies — Learn a Language by Playing Games With Real People, Free</title>
 <meta name="description" content="Learn any language the fun way. Chat with real speakers, get instant AI corrections, drop into voice parties, and play 8 free multiplayer games with people from every country — no sign-up, no downloads.">
-<meta name="keywords" content="learn language free, language exchange app, practice speaking language, chat with native speakers, language learning games, tandem alternative, hellotalk alternative, correct my writing, language partner online, free language app">
+<meta name="keywords" content="learn language free, language exchange app, practice speaking language, chat with native speakers, language learning games, ai grammar correction, correct my writing, language partner online, free language app, voice chat language practice">
 <meta name="author" content="WordSpies">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0f7500">
@@ -142,7 +142,7 @@ ${GA}
 {"@type":"HowToStep","position":3,"name":"Practise every day","text":"Follow the people you click with, get invited to game nights, and watch your fluency grow through actual conversation."}]},
 {"@type":"FAQPage","@id":"${SITE}/#faq","mainEntity":[
 {"@type":"Question","name":"Is WordSpies really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Chat, corrections, games, and voice parties are 100% free. No paywall, no premium tier, no ads that make you sign up."}},
-{"@type":"Question","name":"How is this different from Tandem or HelloTalk?","acceptedAnswer":{"@type":"Answer","text":"WordSpies is language exchange plus multiplayer games plus AI corrections in one place. Tandem is chat-only. Duolingo has no real people. We combine both — real conversation, real games, and real-time AI help."}},
+{"@type":"Question","name":"How is WordSpies different from other language apps?","acceptedAnswer":{"@type":"Answer","text":"WordSpies is language exchange plus multiplayer games plus AI corrections in one place — real conversations with real speakers, plus games you play together, plus one-tap grammar corrections powered by AI. Free forever."}},
 {"@type":"Question","name":"Do I need to sign up?","acceptedAnswer":{"@type":"Answer","text":"You can play any game as a guest with no account. For chat, corrections, and voice parties, a free 30-second sign-up unlocks everything."}},
 {"@type":"Question","name":"Which languages can I practise?","acceptedAnswer":{"@type":"Answer","text":"All of them. You choose which language you speak and which you're learning — Spanish, French, Japanese, Korean, Mandarin, Arabic, German, Italian, Portuguese, Russian, Hindi, and every other language have active speakers on the platform."}},
 {"@type":"Question","name":"How does the Correct feature work?","acceptedAnswer":{"@type":"Answer","text":"Tap any message and hit Correct. Our AI (powered by Claude) proposes the corrected version with a short explanation of what changed. It never overwrites the original — corrections appear underneath so you learn from your own mistakes."}}
@@ -320,7 +320,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   <h2 class="sec-h">What our community says</h2>
   <p class="sec-sub">Real quotes from real users learning real languages.</p>
   <div class="grid3">
-    <div class="rev"><p>"I've been on Tandem for years — WordSpies is what Tandem should've been. The Correct button alone changed how I write in Spanish."</p>
+    <div class="rev"><p>"I've tried loads of language apps — WordSpies is the first one that mixes real people with proper AI corrections. The Correct button alone changed how I write in Spanish."</p>
       <div class="who">${avatar('#2b3350', '#ffd9b3')}<div><b>Ayesha</b><span>Learning Spanish · London</span></div></div></div>
     <div class="rev"><p>"Voice parties on Sunday nights are the best. Full room of French speakers, I mostly listen, I've picked up more slang in a month than a year of Duolingo."</p>
       <div class="who">${avatar('#7c3aed', '#f3c39a')}<div><b>Hamza</b><span>Learning French · Karachi</span></div></div></div>
@@ -335,7 +335,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   <p class="sec-sub">Everything you need to know before you start.</p>
   <div class="faq">
     <details><summary>Is WordSpies really free?</summary><p>Yes — 100% free. Chat, corrections, voice parties, all 8 games. No paywall, no premium tier, no credit card required.</p></details>
-    <details><summary>How is this different from Tandem or HelloTalk?</summary><p>WordSpies is language exchange <em>plus</em> multiplayer games <em>plus</em> AI corrections in one place. Tandem is chat-only. Duolingo has no real people. We combine both: real conversation, real games, real-time AI help.</p></details>
+    <details><summary>How is WordSpies different from other language apps?</summary><p>WordSpies is language exchange <em>plus</em> multiplayer games <em>plus</em> AI corrections in one place — real conversations with real speakers, games you play together, and one-tap grammar corrections powered by AI. Free forever.</p></details>
     <details><summary>Do I need to sign up?</summary><p>You can play any game as a guest with no account. For chat, corrections, and voice parties, a free 30-second sign-up (no email required) unlocks everything.</p></details>
     <details><summary>Which languages can I practise?</summary><p>Any language with speakers online — Spanish, French, Japanese, Korean, Mandarin, Arabic, German, Italian, Portuguese, Russian, Hindi, Dutch, Turkish, Polish, Swedish, Vietnamese, Thai, Indonesian, and more.</p></details>
     <details><summary>How does the Correct feature work?</summary><p>Tap any message and hit Correct. Our AI (powered by Claude) proposes the corrected version with a short explanation of what changed. It never overwrites the original — corrections appear underneath so you learn from your own mistakes.</p></details>
