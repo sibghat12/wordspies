@@ -1223,6 +1223,74 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .gcard2.g-pool .gicon{background:#e8f9ef;color:#159f5d}
 
 /* ══ Parties tab ══ */
+/* Social subtabs (Language Parties / Language Clubs) — owner ask
+   10 Aug 2026 v3 based on Tandem screenshots. Light font weight
+   throughout so the design breathes. */
+.socsub{display:flex;justify-content:center;gap:24px;padding:14px 20px 4px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.socsub-btn{background:transparent;border:0;padding:12px 4px;font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:400;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;transition:color .12s,border-color .12s;letter-spacing:-.1px}
+.socsub-btn.on{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
+.clubchips{display:flex;gap:8px;padding:8px 20px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.clubchips::-webkit-scrollbar{display:none}
+.clubchips .chip{flex-shrink:0;background:#f4f5f7;border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:400;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.12s}
+.clubchips .chip:hover{background:#e6e8ef}
+.clubchips .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.clubchips .chip .fl{font-size:15px;line-height:1}
+.clublist{display:flex;flex-direction:column;gap:12px;padding:4px 16px 100px}
+.clubempty{color:var(--sub);font-size:14px;text-align:center;padding:32px 20px;font-weight:400}
+.clubcard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .16s,box-shadow .16s}
+.clubcard:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.clubcard-cover{height:140px;position:relative;display:flex;align-items:flex-end;padding:14px 16px;color:#fff}
+.clubcard-cover h3{font-family:'Inter',system-ui,sans-serif;font-weight:500;font-size:19px;line-height:1.25;margin:0;letter-spacing:-.3px;text-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;gap:6px}
+.clubcard-body{padding:12px 16px 14px}
+.clubcard-lang{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:12px;color:var(--sub);font-weight:400;margin-bottom:6px}
+.clubcard-lang .fl{font-size:14px}
+.clubcard-desc{font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;color:var(--ink);font-weight:400;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.clubcard-foot{display:flex;justify-content:space-between;align-items:center;font-family:'Inter',sans-serif;font-size:12px;color:var(--sub);font-weight:400}
+.clubcard-foot .members{display:inline-flex;align-items:center;gap:4px}
+
+/* Club detail overlay — full-page inside the app iframe */
+.clubdetail{position:fixed;inset:0;background:var(--bg);z-index:180;overflow-y:auto;padding-bottom:80px}
+.clubdetail.hidden{display:none}
+.cd-cover{height:180px;background:#0f7500;background-size:cover;background-position:center}
+.cd-back{position:fixed;top:16px;left:16px;background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:99px;padding:8px 14px;font-family:'Inter',sans-serif;font-weight:500;font-size:13px;cursor:pointer;backdrop-filter:blur(4px);z-index:5}
+.cd-back:hover{background:rgba(0,0,0,.75)}
+.cd-body{max-width:640px;margin:0 auto;padding:22px 18px 40px}
+.cd-body h1{font-family:'Inter',system-ui,sans-serif;font-size:26px;font-weight:500;letter-spacing:-.4px;line-height:1.15;margin:0 0 10px;color:var(--ink)}
+.cd-desc{font-family:'Inter',sans-serif;font-size:15px;line-height:1.55;color:var(--sub);font-weight:400;margin:0 0 16px}
+.cd-meta{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--sub);font-weight:400;margin-bottom:16px;display:flex;align-items:center;gap:4px}
+.cd-flag{font-size:16px;line-height:1;margin-right:2px}
+.cd-actions{display:flex;gap:10px;margin-bottom:20px}
+.cd-actions button{flex:1;background:#22c07a;color:#fff;border:0;border-radius:99px;padding:12px;font-family:'Inter',sans-serif;font-weight:500;font-size:15px;cursor:pointer;transition:filter .12s}
+.cd-actions button:hover{filter:brightness(1.05)}
+.cd-actions .cd-join.joined{background:#f4f5f7;color:var(--ink)}
+.cd-actions .cd-share{background:#22c07a}
+.cd-composer{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start}
+.cd-cavatar{width:36px;height:36px;border-radius:50%;background:#e6e8ef;flex-shrink:0;background-size:cover;background-position:center}
+.cd-cinput{flex:1;display:flex;flex-direction:column;gap:8px}
+.cd-cinput textarea{border:0;padding:6px 4px;font-family:'Inter',sans-serif;font-size:14.5px;line-height:1.4;color:var(--ink);outline:none;resize:none;background:transparent;font-weight:400}
+.cd-cinput button{align-self:flex-end;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:7px 18px;font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;cursor:pointer}
+.cd-cinput button:disabled{opacity:.5;cursor:not-allowed}
+.cd-feed{display:flex;flex-direction:column;gap:14px}
+.cd-post{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.cd-post-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.cd-post-head .cd-cavatar{width:34px;height:34px}
+.cd-post-who{font-family:'Inter',sans-serif;font-weight:500;font-size:14px;color:var(--ink)}
+.cd-post-when{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--faint);font-weight:400}
+.cd-post-body{font-family:'Inter',sans-serif;font-size:14.5px;line-height:1.55;color:var(--ink);font-weight:400;margin:0 0 10px;white-space:pre-wrap;word-wrap:break-word}
+.cd-post-actions{display:flex;gap:16px;padding-top:8px;border-top:1px solid #f0f0f2;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;color:var(--sub)}
+.cd-post-actions button{background:transparent;border:0;padding:4px 0;color:inherit;cursor:pointer;font-family:inherit;font-size:inherit;font-weight:inherit;display:inline-flex;align-items:center;gap:4px}
+.cd-post-actions button:hover{color:var(--ink)}
+.cd-post-actions .liked{color:#e74c3c;font-weight:500}
+.cd-post-comments{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.cd-comment{display:flex;gap:8px;padding:8px 10px;background:#f8f9fb;border-radius:10px}
+.cd-comment .cd-cavatar{width:28px;height:28px;flex-shrink:0}
+.cd-comment-b{flex:1;font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.45;color:var(--ink);font-weight:400}
+.cd-comment-b b{font-weight:500;margin-right:6px}
+.cd-comment-add{display:flex;gap:6px;margin-top:6px}
+.cd-comment-add input{flex:1;border:1px solid var(--line);border-radius:14px;padding:7px 12px;font-family:'Inter',sans-serif;font-size:13.5px;outline:none;background:#fff}
+.cd-comment-add input:focus{border-color:var(--ink)}
+.cd-comment-add button{background:var(--ink);color:#fff;border:0;border-radius:99px;padding:6px 14px;font-family:'Inter',sans-serif;font-weight:500;font-size:12.5px;cursor:pointer}
+
 .pt-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;padding:14px 20px 6px;flex-wrap:wrap}
 .pt-hero h2{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.5px;color:var(--ink)}
 .pt-hero p{color:var(--sub);font-size:13px;line-height:1.55;margin-top:6px;max-width:420px}
@@ -2826,11 +2894,22 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
   </div>
 
-  <!-- ═══ PARTIES — audio rooms with speakers + listeners ═══ -->
+  <!-- ═══ SOCIAL — Language Parties + Language Clubs (owner ask 10 Aug 2026) ═══ -->
   <div id="tabParties" class="hidden">
-    <!-- Slim header: just the create-party button. Owner ask
-         2 Aug 2026: 'remove the Parties heading and the "Drop into
-         a live audio…" text entirely'. -->
+    <!-- Two subtabs at the top like the Tandem screenshots. -->
+    <div class="socsub">
+      <button class="socsub-btn on" id="socsubParties" onclick="showSocSub('parties')">Language Parties</button>
+      <button class="socsub-btn"    id="socsubClubs"   onclick="showSocSub('clubs')">Language Clubs</button>
+    </div>
+    <!-- Clubs subtab: filter chips + card grid. Detail view opens
+         inline via #clubDetail overlay below. -->
+    <div id="socClubs" class="hidden">
+      <div class="clubchips" id="clubChips"></div>
+      <div class="clublist" id="clubList"><div class="clubempty">Loading clubs…</div></div>
+    </div>
+    <!-- Parties subtab: existing content -->
+    <div id="socParties">
+    <!-- Slim header: just the create-party button. -->
     <div class="pt-hero pt-hero-slim">
       <button class="pt-create-btn" onclick="openCreateParty()">
         <span>+</span> Create party
@@ -2861,6 +2940,31 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
       <div class="pt-err hidden" id="ptErr"></div>
       <button class="pt-mgo" id="ptGoBtn" onclick="submitCreateParty()">🎉 Start party</button>
+    </div>
+  </div>
+    </div><!-- /#socParties -->
+  </div><!-- /#tabParties (Social) -->
+
+  <!-- Club detail overlay (opens when a card is tapped) -->
+  <div id="clubDetail" class="clubdetail hidden">
+    <div class="cd-cover" id="cdCover"></div>
+    <button class="cd-back" onclick="closeClub()">← Back</button>
+    <div class="cd-body">
+      <h1 id="cdName"></h1>
+      <p class="cd-desc" id="cdDesc"></p>
+      <div class="cd-meta"><span class="cd-flag" id="cdFlag"></span> <span id="cdLang"></span> · <span id="cdMembers"></span> members</div>
+      <div class="cd-actions">
+        <button class="cd-join" id="cdJoin" onclick="toggleJoinClub()">Join</button>
+        <button class="cd-share" onclick="shareClub()">Share</button>
+      </div>
+      <div class="cd-composer" id="cdComposer">
+        <div class="cd-cavatar" id="cdMyAvatar"></div>
+        <div class="cd-cinput">
+          <textarea id="cdPostText" placeholder="Write something…" rows="2" maxlength="1200"></textarea>
+          <button id="cdPostBtn" onclick="submitClubPost()">Post</button>
+        </div>
+      </div>
+      <div id="cdFeed" class="cd-feed"></div>
     </div>
   </div>
 
@@ -4715,6 +4819,228 @@ function headphoneIconSVG(){
 }
 
 let _ptLangs = new Set();
+// ═══ LANGUAGE CLUBS (owner ask 10 Aug 2026) ═══════════════════════════
+let _clubLang = 'All';
+let _clubs = [];
+let _curClub = null;
+
+function showSocSub(which){
+  document.getElementById('socsubParties').classList.toggle('on', which === 'parties');
+  document.getElementById('socsubClubs').classList.toggle('on', which === 'clubs');
+  document.getElementById('socParties').classList.toggle('hidden', which !== 'parties');
+  document.getElementById('socClubs').classList.toggle('hidden', which !== 'clubs');
+  if (which === 'clubs' && !_clubs.length) loadClubs();
+}
+function flagFromLang(lang){
+  const m = {
+    'English':'🇬🇧','Spanish':'🇪🇸','French':'🇫🇷','German':'🇩🇪','Italian':'🇮🇹',
+    'Portuguese':'🇧🇷','Russian':'🇷🇺','Japanese':'🇯🇵','Korean':'🇰🇷','Mandarin':'🇨🇳',
+    'Arabic':'🇸🇦','Any':'🌍'
+  };
+  return m[lang] || '🌐';
+}
+async function loadClubs(){
+  const list = document.getElementById('clubList');
+  list.innerHTML = '<div class="clubempty">Loading clubs…</div>';
+  try {
+    const j = await api('/clubs' + (_clubLang && _clubLang !== 'All' ? '?lang=' + encodeURIComponent(_clubLang) : ''));
+    _clubs = j.clubs || [];
+    paintClubChips(j.langs || []);
+    paintClubList();
+  } catch(e){ list.innerHTML = '<div class="clubempty">Couldn\'t load clubs. Refresh to try again.</div>'; }
+}
+function paintClubChips(langs){
+  const host = document.getElementById('clubChips');
+  const all = ['All', ...Array.from(new Set(langs))];
+  host.innerHTML = all.map(l => {
+    const on = l === _clubLang ? 'on' : '';
+    const fl = l === 'All' ? '🌍' : flagFromLang(l);
+    return `<button class="chip ${on}" onclick="pickClubLang('${l.replace(/'/g,"\\'")}')"><span class="fl">${fl}</span> ${l}</button>`;
+  }).join('');
+}
+function pickClubLang(lang){
+  _clubLang = lang;
+  loadClubs();
+}
+function paintClubList(){
+  const list = document.getElementById('clubList');
+  if (!_clubs.length) { list.innerHTML = '<div class="clubempty">No clubs found for this filter.</div>'; return; }
+  list.innerHTML = _clubs.map(c => `
+    <div class="clubcard" onclick="openClub('${c.id}')">
+      <div class="clubcard-cover" style="background:${c.cover || 'linear-gradient(135deg,#3d7bff,#7c5cff)'}">
+        <h3>${esc(c.name)} ${c.emoji || ''}</h3>
+      </div>
+      <div class="clubcard-body">
+        <div class="clubcard-lang"><span class="fl">${flagFromLang(c.lang)}</span> ${esc(c.lang)}</div>
+        <p class="clubcard-desc">${esc(c.desc || '')}</p>
+        <div class="clubcard-foot"><span class="members">👥 ${(c.memberCount || 0).toLocaleString()}</span></div>
+      </div>
+    </div>
+  `).join('');
+}
+async function openClub(id){
+  try {
+    const j = await api('/clubs/' + id);
+    _curClub = { ...j.club, isMember: j.isMember, posts: j.posts || [] };
+    paintClubDetail();
+    document.getElementById('clubDetail').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  } catch(e){ toast('Could not open club.'); }
+}
+function closeClub(){
+  document.getElementById('clubDetail').classList.add('hidden');
+  _curClub = null;
+}
+function paintClubDetail(){
+  const c = _curClub; if (!c) return;
+  document.getElementById('cdCover').style.background = c.cover || 'linear-gradient(135deg,#3d7bff,#7c5cff)';
+  document.getElementById('cdName').textContent = (c.name || '') + ' ' + (c.emoji || '');
+  document.getElementById('cdDesc').textContent = c.desc || '';
+  document.getElementById('cdFlag').textContent = flagFromLang(c.lang);
+  document.getElementById('cdLang').textContent = c.lang || '';
+  document.getElementById('cdMembers').textContent = (c.memberCount || 0).toLocaleString();
+  const joinBtn = document.getElementById('cdJoin');
+  joinBtn.textContent = c.isMember ? '✓ Joined' : 'Join';
+  joinBtn.classList.toggle('joined', !!c.isMember);
+  // Composer avatar
+  const av = document.getElementById('cdMyAvatar');
+  if (ME && ME.photo) av.style.backgroundImage = `url('${ME.photo}')`;
+  else av.style.backgroundImage = '';
+  paintClubFeed();
+}
+function paintClubFeed(){
+  const feed = document.getElementById('cdFeed');
+  const posts = (_curClub && _curClub.posts) || [];
+  if (!posts.length) {
+    feed.innerHTML = '<div class="clubempty">No posts yet — be the first!</div>';
+    return;
+  }
+  feed.innerHTML = posts.map(p => renderPost(p)).join('');
+  // Wire comment inputs
+  posts.forEach(p => {
+    const inp = document.getElementById('cdCommentInp_' + p.id);
+    if (inp) inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') submitComment(p.id); });
+  });
+}
+function renderPost(p){
+  const liked = (ME && (p.likes || []).indexOf(ME.id) >= 0);
+  const photoBg = p.photo ? `url('${p.photo}')` : '';
+  const commentsHtml = (p.comments || []).map(cm => `
+    <div class="cd-comment">
+      <div class="cd-cavatar" style="${cm.photo ? `background-image:url('${cm.photo}')` : ''}"></div>
+      <div class="cd-comment-b"><b>${esc(cm.name)}</b>${esc(cm.text)}</div>
+    </div>
+  `).join('');
+  return `
+    <div class="cd-post" data-id="${p.id}">
+      <div class="cd-post-head">
+        <div class="cd-cavatar" style="background-image:${photoBg}"></div>
+        <div><div class="cd-post-who">${esc(p.name)}</div><div class="cd-post-when">${_clubWhen(p.createdAt)}</div></div>
+      </div>
+      <p class="cd-post-body">${esc(p.text)}</p>
+      <div class="cd-post-actions">
+        <button onclick="likePost('${p.id}')" class="${liked ? 'liked' : ''}">${liked ? '❤️' : '🤍'} ${(p.likes || []).length || ''} Like</button>
+        <button onclick="focusComment('${p.id}')">💬 ${(p.comments || []).length || ''} Comment</button>
+        <button onclick="correctPost('${p.id}')">✓ Correct</button>
+      </div>
+      ${commentsHtml ? '<div class="cd-post-comments">' + commentsHtml + '</div>' : ''}
+      <div class="cd-comment-add">
+        <input id="cdCommentInp_${p.id}" type="text" placeholder="Write a comment…" maxlength="400">
+        <button onclick="submitComment('${p.id}')">Send</button>
+      </div>
+    </div>
+  `;
+}
+function _clubWhen(ts){
+  const d = Date.now() - ts;
+  if (d < 60000) return 'just now';
+  if (d < 3600000) return Math.floor(d/60000) + 'm ago';
+  if (d < 86400000) return Math.floor(d/3600000) + 'h ago';
+  return Math.floor(d/86400000) + 'd ago';
+}
+async function toggleJoinClub(){
+  if (!_curClub) return;
+  if (GUEST) { requireLogin('👥 Log in to join a club'); return; }
+  try {
+    const j = await api('/clubs/' + _curClub.id + '/join', { method:'POST' });
+    _curClub.isMember = !!j.joined;
+    _curClub.memberCount = j.memberCount || 0;
+    paintClubDetail();
+    // Refresh the card list count too
+    const idx = _clubs.findIndex(c => c.id === _curClub.id);
+    if (idx >= 0) _clubs[idx].memberCount = j.memberCount || 0;
+  } catch(e){ toast(e.message || 'Something went wrong.'); }
+}
+function shareClub(){
+  const url = location.origin + '/social#club=' + (_curClub ? _curClub.id : '');
+  try { navigator.clipboard.writeText(url); toast('Link copied'); } catch(e){ toast('Could not copy.'); }
+}
+async function submitClubPost(){
+  if (!_curClub) return;
+  if (GUEST) { requireLogin('📝 Log in to post'); return; }
+  const el = document.getElementById('cdPostText');
+  const text = el.value.trim();
+  if (!text) return;
+  const btn = document.getElementById('cdPostBtn');
+  btn.disabled = true;
+  try {
+    const j = await api('/clubs/' + _curClub.id + '/posts', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text }) });
+    el.value = '';
+    _curClub.posts.unshift(j.post);
+    paintClubFeed();
+  } catch(e){ toast(e.message || 'Could not post.'); }
+  btn.disabled = false;
+}
+async function likePost(pid){
+  if (!_curClub) return;
+  if (GUEST) { requireLogin('❤️ Log in to like'); return; }
+  try {
+    const j = await api('/clubs/' + _curClub.id + '/posts/' + pid + '/like', { method:'POST' });
+    const p = _curClub.posts.find(x => x.id === pid);
+    if (p) {
+      p.likes = p.likes || [];
+      const idx = p.likes.indexOf(ME.id);
+      if (j.liked && idx < 0) p.likes.push(ME.id);
+      else if (!j.liked && idx >= 0) p.likes.splice(idx, 1);
+      paintClubFeed();
+    }
+  } catch(e){ toast(e.message || 'Something went wrong.'); }
+}
+function focusComment(pid){
+  const inp = document.getElementById('cdCommentInp_' + pid);
+  if (inp) inp.focus();
+}
+async function submitComment(pid){
+  if (!_curClub) return;
+  if (GUEST) { requireLogin('💬 Log in to comment'); return; }
+  const inp = document.getElementById('cdCommentInp_' + pid);
+  const text = inp.value.trim();
+  if (!text) return;
+  try {
+    const j = await api('/clubs/' + _curClub.id + '/posts/' + pid + '/comments', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text }) });
+    const p = _curClub.posts.find(x => x.id === pid);
+    if (p) {
+      p.comments = p.comments || [];
+      p.comments.push(j.comment);
+      inp.value = '';
+      paintClubFeed();
+    }
+  } catch(e){ toast(e.message || 'Could not comment.'); }
+}
+async function correctPost(pid){
+  if (!_curClub) return;
+  const p = _curClub.posts.find(x => x.id === pid);
+  if (!p) return;
+  try {
+    const j = await api('/correct', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text: p.text }) });
+    if (!j.text) throw new Error('No correction');
+    swAlert('✓ Suggested correction:\n\n' + j.text + (j.note ? '\n\n(' + j.note + ')' : ''), 'AI Correction', 'ok');
+  } catch(e){ toast(e.message || 'Could not check.'); }
+}
+
 function openCreateParty(){
   if (GUEST) { requireLogin('🎉 Log in to host a party'); return; }
   if (!ME) { requireLogin('🎉 Log in to host a party'); return; }
