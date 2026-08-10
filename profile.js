@@ -98,8 +98,15 @@ function mount(api, ctx) {
       }
 
       if (bio !== undefined) u.bio = String(bio).slice(0, 200);
-      if (location !== undefined) u.location = String(location).slice(0, 40);
-      if (birthdate !== undefined) {
+      // Owner ask 10 Aug 2026 — location + birthdate lock. Once the
+      // user has set these (via signup / wizard), they cannot be
+      // changed from the profile page. Silently ignore attempts to
+      // change them — an old client still sending the field won't
+      // 400. Support can still clear them server-side manually.
+      if (location !== undefined && !u.location) u.location = String(location).slice(0, 40);
+      if (birthdate !== undefined && u.birthdate) {
+        // already set → ignore write, drop through to Speaky extras
+      } else if (birthdate !== undefined) {
         const bd = String(birthdate).trim();
         if (bd && !/^\d{4}-\d{2}-\d{2}$/.test(bd)) return res.status(400).json({ error: 'Invalid birthdate format.' });
         // Owner ask 2 Aug 2026: Gmail signups now defer DOB to the

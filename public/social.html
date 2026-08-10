@@ -859,6 +859,8 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    date field by default which looks odd against the left-aligned
    text inputs above/below. */
 .me-input[type="date"]{text-align:left;-webkit-appearance:none;appearance:none}
+.me-input[readonly]{color:var(--sub);cursor:not-allowed;pointer-events:none;opacity:.85}
+.me-lockmsg{font-size:11px;color:var(--faint);font-weight:400;margin-top:6px;letter-spacing:.1px}
 .me-area{resize:vertical;min-height:60px;line-height:1.5}
 .me-help{font-size:11.5px;color:var(--faint);margin-top:6px;font-weight:500}
 /* Settings-wrap under the mp-grid — matches mp-grid's max-width +
@@ -2726,6 +2728,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
                these rows — the label was doing all the work anyway,
                the icons just added visual noise. -->
           <div class="mp-info-row"><span id="mLoc"></span></div>
+          <div class="mp-info-row"><span id="mLocalTime"></span></div>
           <div class="mp-info-row"><span id="mHandle"></span></div>
           <div class="mp-counts">
             <div><b id="mFollowers">0</b><span>Followers</span></div>
@@ -3045,11 +3048,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <div class="mp-2col">
           <section class="mp-card">
             <h3>Date of birth</h3>
-            <input class="me-input" id="fBirth" type="date">
+            <input class="me-input" id="fBirth" type="date" readonly title="Contact support to change your date of birth">
+            <div class="me-lockmsg">🔒 Locked — contact support to change</div>
           </section>
           <section class="mp-card">
             <h3>City</h3>
-            <input class="me-input" id="fLoc" maxlength="40" placeholder="Your city">
+            <input class="me-input" id="fLoc" maxlength="40" placeholder="Your city" readonly title="Contact support to change your city">
+            <div class="me-lockmsg">🔒 Locked — contact support to change</div>
           </section>
         </div>
 
@@ -7701,6 +7706,35 @@ async function loadMembers(){
   } catch(e){}
 }
 const flag = cc => (cc && cc.length === 2) ? [...cc.toUpperCase()].map(c => String.fromCodePoint(127397 + c.charCodeAt(0))).join('') : '🌍';
+
+// Rough country → representative IANA timezone map. Not exhaustive
+// (big countries have many zones) but good enough for the profile
+// "🕐 <time> in their country" header. Falls back to UTC when unknown.
+const CC_TZ = {
+  GB:'Europe/London', IE:'Europe/Dublin', FR:'Europe/Paris', DE:'Europe/Berlin',
+  ES:'Europe/Madrid', IT:'Europe/Rome', PT:'Europe/Lisbon', NL:'Europe/Amsterdam',
+  BE:'Europe/Brussels', SE:'Europe/Stockholm', NO:'Europe/Oslo', DK:'Europe/Copenhagen',
+  FI:'Europe/Helsinki', PL:'Europe/Warsaw', CZ:'Europe/Prague', AT:'Europe/Vienna',
+  CH:'Europe/Zurich', GR:'Europe/Athens', TR:'Europe/Istanbul', RU:'Europe/Moscow',
+  UA:'Europe/Kyiv', US:'America/New_York', CA:'America/Toronto', MX:'America/Mexico_City',
+  BR:'America/Sao_Paulo', AR:'America/Argentina/Buenos_Aires', CL:'America/Santiago',
+  CO:'America/Bogota', PE:'America/Lima', VE:'America/Caracas',
+  IN:'Asia/Kolkata', PK:'Asia/Karachi', BD:'Asia/Dhaka', LK:'Asia/Colombo',
+  NP:'Asia/Kathmandu', ID:'Asia/Jakarta', TH:'Asia/Bangkok', VN:'Asia/Ho_Chi_Minh',
+  MY:'Asia/Kuala_Lumpur', SG:'Asia/Singapore', PH:'Asia/Manila',
+  JP:'Asia/Tokyo', KR:'Asia/Seoul', CN:'Asia/Shanghai', HK:'Asia/Hong_Kong',
+  TW:'Asia/Taipei', SA:'Asia/Riyadh', AE:'Asia/Dubai', IL:'Asia/Jerusalem',
+  IR:'Asia/Tehran', IQ:'Asia/Baghdad', EG:'Africa/Cairo', ZA:'Africa/Johannesburg',
+  NG:'Africa/Lagos', KE:'Africa/Nairobi', MA:'Africa/Casablanca',
+  AU:'Australia/Sydney', NZ:'Pacific/Auckland'
+};
+function localTimeForCC(cc){
+  const tz = CC_TZ[(cc || '').toUpperCase()];
+  try {
+    if (tz) return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz });
+  } catch(e){}
+  return '—';
+}
 const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 6; };
 let wallFilter = 'all';
 // Wall pagination was retired 4 Aug 2026 — owner ask: 'show all the
@@ -7949,8 +7983,12 @@ function openMemberObj(m){
   // Active status placeholder — replaced by API call below if online.
   $('mActive').textContent = 'Active: recently';
   // Location + handle rows.
-  $('mLoc').innerHTML = flag(m.cc) + ' ' + esc(m.location || m.country || 'Somewhere on Earth');
-  $('mHandle').textContent = (m.name || '').toLowerCase().replace(/\s+/g,'-') + m.id.slice(0,4);
+  // Tandem-style profile header (owner ask 10 Aug 2026): 📍 location,
+  // 🕐 local time in their country, and @ username — three things.
+  $('mLoc').innerHTML = '📍 ' + flag(m.cc) + ' ' + esc(m.location || m.country || 'Somewhere on Earth');
+  $('mLocalTime').innerHTML = '🕐 ' + esc(localTimeForCC(m.cc));
+  const handle = '@' + (m.name || '').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,20) + (m.id || '').slice(0, 4);
+  $('mHandle').textContent = handle;
   // Counts default while we fetch the real numbers.
   $('mFollowers').textContent = '—'; $('mFollowing').textContent = '—'; $('mRecCount').textContent = '0';
   // Content cards — each block self-hides when empty.
