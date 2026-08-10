@@ -2375,26 +2375,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
            and better' + 'i dont like the community one' + 'keep the
            parties and the learn as it is ok' (so Parties + Learn keep
            their emoji glyphs). -->
-      <!-- Chats + Community stay on monochrome SVG (owner: keep them
-           'better and cleaner'). Parties + Learn back to the original
-           emoji glyphs per owner ask. -->
-      <!-- Owner ask 1 Aug 2026: 'make the community as first tab please'.
-           Order: Community · Chats · Parties · Learn. -->
-      <button id="tbWall" class="tnt on" onclick="showTab('wall')">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a13.5 13.5 0 0 1 0 18"/><path d="M12 3a13.5 13.5 0 0 0 0 18"/></svg></span>
-        Social<span class="badge hidden" id="wallBadge"></span>
-      </button>
-      <button id="tbChats" class="tnt" onclick="showTab('chats')">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><circle cx="9" cy="11" r=".7" fill="currentColor" stroke="none"/><circle cx="12" cy="11" r=".7" fill="currentColor" stroke="none"/><circle cx="15" cy="11" r=".7" fill="currentColor" stroke="none"/></svg></span>
-        Chats<span class="badge hidden" id="chatBadge"></span>
-      </button>
-      <button id="tbParties" class="tnt" onclick="showTab('parties')"><span class="ico">🎉</span>Parties<span class="badge hidden" id="partyBadge"></span></button>
-      <button id="tbLearn" class="tnt" onclick="showTab('learn')"><span class="ico">📚</span>Learn</button>
-      <!-- 'Play' tab restored 1 Aug 2026 per owner ask 'bring the
-           games back — Codenames and the Imposter and 8-ball pool
-           in a very nice layout'. Shows a curated 3-card shelf
-           instead of the old 5-way list. -->
-      <button id="tbGames" class="tnt" onclick="showTab('games')"><span class="ico">🕹️</span>Games</button>
+      <!-- Owner ask 10 Aug 2026 — remove Learn + drop all tab icons
+           for a cleaner text-only nav. Order: Community · Chats ·
+           Parties · Games. Learn tab hidden until we have real content. -->
+      <button id="tbWall" class="tnt on" onclick="showTab('wall')">Community<span class="badge hidden" id="wallBadge"></span></button>
+      <button id="tbChats" class="tnt" onclick="showTab('chats')">Chats<span class="badge hidden" id="chatBadge"></span></button>
+      <button id="tbParties" class="tnt" onclick="showTab('parties')">Parties<span class="badge hidden" id="partyBadge"></span></button>
+      <button id="tbGames" class="tnt" onclick="showTab('games')">Games</button>
     </div>
     <div class="tnright">
       <!-- LIVE chip: pulsing red pill in the corner, only when there's a
