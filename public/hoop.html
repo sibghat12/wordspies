@@ -622,16 +622,28 @@ body.embed{padding-top:0}
 
   let socket = null, MY_ID = null, HOST_ID = null, playersById = {};
 
-  function multiJoin(){
-    // Grab a friendly name — logged-in users typically have one in a
-    // WordSpies cookie; guests get prompted once.
+  async function multiJoin(){
+    // Grab a friendly name — logged-in users get theirs from the WordSpies
+    // profile API, everyone else falls back to a saved localStorage name,
+    // and only if BOTH are missing do we prompt (guests, no cookie).
     let name = '';
-    try { name = decodeURIComponent(((document.cookie.match(/(?:^|;\s*)soc_name=([^;]+)/) || [])[1] || '')); } catch(e){}
-    if (!name) {
-      try { name = localStorage.getItem('hoop_name') || ''; } catch(e){}
-    }
+    try {
+      const r = await fetch('/api/social/me', { credentials: 'include' });
+      if (r.ok) {
+        const j = await r.json();
+        if (j && j.me && j.me.name) name = j.me.name;
+      }
+    } catch(e){}
+    if (!name) { try { name = localStorage.getItem('hoop_name') || ''; } catch(e){} }
     if (!name) name = prompt('Your name?', '') || 'Player';
     try { localStorage.setItem('hoop_name', name); } catch(e){}
+    // Wire the lobby Start button (owner-reported bug 10 Aug 2026 —
+    // 'when user joins it still not start the game'; the button had
+    // no onclick handler, so nothing was emitted).
+    const startBtn = document.getElementById('lbStart');
+    if (startBtn) startBtn.onclick = () => {
+      if (!startBtn.disabled) socket.emit('start');
+    };
     socket = io('/hoop');
     socket.on('connect', () => socket.emit('join', { code: ROOM, name }));
     socket.on('error', ({ error }) => alert(error || 'Room error.'));
