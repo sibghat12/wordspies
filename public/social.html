@@ -2416,21 +2416,18 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <span class="mename" id="meName"></span>
         <span id="meAvSmall" class="meav"></span>
       </div>
+      <!-- Owner ask 10 Aug 2026 — minimal avatar dropdown: profile,
+           settings, log out, delete account. Icons dropped for a
+           cleaner text-only menu. Removed items still reachable
+           elsewhere in the app (Community = nav tab; Translation
+           languages = chat ⋯ menu; Share my profile = profile page;
+           Blocked users / Support = inside Settings; About = footer). -->
       <div class="avmenu" id="avMenu" role="menu" aria-hidden="true">
-        <a class="avitem" role="menuitem" onclick="avGo('profile')"><span class="avic">👤</span>My profile</a>
-        <a class="avitem" role="menuitem" onclick="avGo('share')"><span class="avic">🔗</span>Share my profile</a>
-        <a class="avitem" role="menuitem" onclick="avGo('langs')"><span class="avic">🌐</span>My languages</a>
-        <a class="avitem" role="menuitem" onclick="avGo('xlat')"><span class="avic">🔤</span>Translation languages</a>
-        <a class="avitem" role="menuitem" onclick="avGo('community')"><span class="avic">🏘️</span>Community</a>
+        <a class="avitem" role="menuitem" onclick="avGo('profile')">My profile</a>
+        <a class="avitem" role="menuitem" onclick="avGo('settings')">Settings</a>
         <div class="avdiv"></div>
-        <a class="avitem" role="menuitem" onclick="avGo('settings')"><span class="avic">⚙️</span>Settings</a>
-        <a class="avitem" role="menuitem" onclick="avGo('blocked')"><span class="avic">🚫</span>Blocked users</a>
-        <div class="avdiv"></div>
-        <a class="avitem" role="menuitem" href="/home" target="_blank" rel="noopener"><span class="avic">ℹ️</span>About WordSpies</a>
-        <a class="avitem" role="menuitem" onclick="avGo('support')"><span class="avic">💬</span>Support &amp; contact</a>
-        <div class="avdiv"></div>
-        <a class="avitem" role="menuitem" onclick="avGo('logout')"><span class="avic">🚪</span>Log out</a>
-        <a class="avitem danger" role="menuitem" onclick="avGo('delete')"><span class="avic">🗑️</span>Delete account</a>
+        <a class="avitem" role="menuitem" onclick="avGo('logout')">Log out</a>
+        <a class="avitem danger" role="menuitem" onclick="avGo('delete')">Delete account</a>
       </div>
     </div>
   </nav>
