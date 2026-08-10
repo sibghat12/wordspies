@@ -1372,13 +1372,12 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 @keyframes phostDot{0%,100%{opacity:1}50%{opacity:.55}}
 /* Fullscreen mode owns the whole viewport on mobile and a generous
    panel on desktop — no borders/inset, no shadow, just the party. */
-/* Party sheet — Tandem-style bottom-sheet popup. 10% peek at the top
-   shows the community app behind so the party doesn't feel like a
-   destination lock. Owner ask 10 Aug 2026 — 'popup like 90% of the
-   screen from 10% space from the top'. */
-.phost.fs{top:10%;left:0;right:0;bottom:0;border-radius:22px 22px 0 0;border:0;box-shadow:0 -12px 40px rgba(0,0,0,.28);height:auto}
+/* Party sheet — Tandem-style bottom-sheet popup. 96% viewport / 4%
+   peek at the top (owner ask 10 Aug 2026 v2 — 'make the sheet 96%
+   percent please'). */
+.phost.fs{top:4%;left:0;right:0;bottom:0;border-radius:22px 22px 0 0;border:0;box-shadow:0 -12px 40px rgba(0,0,0,.28);height:auto}
 @media(min-width:900px){
-  .phost.fs{top:10%;left:14px;right:14px;bottom:14px;border-radius:22px;box-shadow:0 12px 60px rgba(0,0,0,.28)}
+  .phost.fs{top:4%;left:14px;right:14px;bottom:14px;border-radius:22px;box-shadow:0 12px 60px rgba(0,0,0,.28)}
 }
 /* Grab handle at the top of the sheet — tap or swipe down to minimise. */
 .phost.fs::before{content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);width:44px;height:5px;border-radius:99px;background:#d0d3dc;z-index:2}
@@ -5269,9 +5268,16 @@ document.addEventListener('click', (ev) => {
 document.addEventListener('DOMContentLoaded', () => {
   const ex = $('phostExpand'); if (ex) ex.onclick = togglePartyExpand;
   const lv = $('phostLeave'); if (lv) lv.onclick = () => {
-    // Tell the iframe to leave cleanly, then close the host.
+    // Owner ask 10 Aug 2026 — confirm before closing so a stray tap
+    // on the ✕ doesn't nuke the party. If confirmed, tell the iframe
+    // to leave cleanly (it POSTs /leave which ends the party if the
+    // host is alone) then close the host + refresh the party card.
+    if (!confirm('End this party for everyone?')) return;
     try { $('phostFrame').contentWindow.postMessage({ type: 'party:leave' }, location.origin); } catch(e){}
-    setTimeout(() => closePartyInApp(false), 200);
+    setTimeout(() => {
+      closePartyInApp(false);
+      if (typeof refreshPartyBar === 'function') refreshPartyBar();
+    }, 200);
   };
   // Tap anywhere on the mini bar (not the buttons) to expand.
   $('phostBar') && $('phostBar').addEventListener('click', (ev) => {
