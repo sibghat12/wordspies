@@ -1226,17 +1226,17 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Social subtabs + Language Clubs — polish pass (owner ask 10 Aug
    2026 v4). Light font weight, generous whitespace, softer shadows,
    smarter cover framing. Inter throughout. */
-.socsub{display:flex;justify-content:center;gap:32px;padding:16px 20px 0;border-bottom:1px solid var(--line);margin-bottom:4px}
+.socsub{display:flex;justify-content:flex-start;gap:28px;padding:16px 0 0;border-bottom:1px solid var(--line);margin-bottom:4px}
 .socsub-btn{background:transparent;border:0;padding:14px 4px 16px;font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:400;color:var(--faint);cursor:pointer;border-bottom:2px solid transparent;transition:color .16s,border-color .16s;letter-spacing:-.1px;position:relative;top:1px}
 .socsub-btn:hover{color:var(--sub)}
 .socsub-btn.on{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
-.clubchips{display:flex;gap:8px;padding:14px 20px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.clubchips{display:flex;gap:8px;padding:14px 0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .clubchips::-webkit-scrollbar{display:none}
 .clubchips .chip{flex-shrink:0;background:#fff;border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .14s;letter-spacing:-.1px}
 .clubchips .chip:hover{border-color:#c9cfe3;background:#fafbfc}
 .clubchips .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .clubchips .chip .fl{font-size:15px;line-height:1}
-.clublist{display:grid;grid-template-columns:1fr;gap:14px;padding:2px 16px 100px}
+.clublist{display:grid;grid-template-columns:1fr;gap:14px;padding:2px 0 100px}
 @media(min-width:760px){.clublist{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1080px){.clublist{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .clubempty{color:var(--sub);font-size:14px;text-align:center;padding:40px 20px;font-weight:400}
@@ -1255,14 +1255,17 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .clubcard-foot .members b{font-weight:600;color:var(--ink)}
 .clubcard-foot .goto{color:var(--ink);opacity:.4;font-size:15px;line-height:1}
 
-/* Club detail overlay — polished with sticky header + cleaner meta */
-.clubdetail{position:fixed;inset:0;background:var(--bg);z-index:180;overflow-y:auto;padding-bottom:80px}
+/* Club detail — INLINE inside the Social tab (owner ask 10 Aug 2026
+   'don't remove the header and logo and other menu items while we go
+   to the club page'). Was a fullscreen fixed overlay; now a normal
+   block that renders inside the tab area so the top nav stays put. */
+.clubdetail{position:relative;padding-bottom:40px}
 .clubdetail.hidden{display:none}
-.cd-cover{height:220px;background:#0f7500;background-size:cover;background-position:center;position:relative}
+.cd-cover{height:220px;background:#0f7500;background-size:cover;background-position:center;position:relative;border-radius:16px;overflow:hidden;margin-top:8px}
 .cd-cover::after{content:'';position:absolute;inset:auto 0 0 0;height:80px;background:linear-gradient(to top,var(--bg),transparent);pointer-events:none}
-.cd-back{position:fixed;top:14px;left:14px;background:rgba(255,255,255,.9);color:var(--ink);border:0;border-radius:99px;width:38px;height:38px;font-size:18px;cursor:pointer;backdrop-filter:blur(8px);z-index:5;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:transform .12s}
+.cd-back{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.9);color:var(--ink);border:0;border-radius:99px;width:38px;height:38px;font-size:18px;cursor:pointer;backdrop-filter:blur(8px);z-index:5;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:transform .12s}
 .cd-back:hover{transform:scale(1.05)}
-.cd-body{max-width:640px;margin:-40px auto 0;padding:0 20px 40px;position:relative}
+.cd-body{max-width:640px;margin:-40px auto 0;padding:0 0 40px;position:relative}
 .cd-body h1{font-family:'Inter',system-ui,sans-serif;font-size:26px;font-weight:500;letter-spacing:-.5px;line-height:1.2;margin:0 0 10px;color:var(--ink)}
 .cd-desc{font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;color:var(--sub);font-weight:400;margin:0 0 18px}
 .cd-meta{font-family:'Inter',sans-serif;font-size:13px;color:var(--sub);font-weight:400;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -2922,8 +2925,35 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <!-- Clubs subtab: filter chips + card grid. Detail view opens
          inline via #clubDetail overlay below. -->
     <div id="socClubs" class="hidden">
-      <div class="clubchips" id="clubChips"></div>
-      <div class="clublist" id="clubList"><div class="clubempty">Loading clubs…</div></div>
+      <!-- The clubs listing (chips + card grid). -->
+      <div id="clubsListView">
+        <div class="clubchips" id="clubChips"></div>
+        <div class="clublist" id="clubList"><div class="clubempty">Loading clubs…</div></div>
+      </div>
+      <!-- Detail view — rendered inline so the top nav / logo / menu
+           stay visible (owner ask 10 Aug 2026). Shown when a card is
+           tapped; hidden by default. -->
+      <div id="clubDetail" class="clubdetail hidden">
+        <div class="cd-cover" id="cdCover"></div>
+        <button class="cd-back" onclick="closeClub()" aria-label="Back">←</button>
+        <div class="cd-body">
+          <h1 id="cdName"></h1>
+          <p class="cd-desc" id="cdDesc"></p>
+          <div class="cd-meta" id="cdMeta"></div>
+          <div class="cd-actions">
+            <button class="cd-join" id="cdJoin" onclick="toggleJoinClub()">Join</button>
+            <button class="cd-share" onclick="shareClub()">Share</button>
+          </div>
+          <div class="cd-composer" id="cdComposer">
+            <div class="cd-cavatar" id="cdMyAvatar"></div>
+            <div class="cd-cinput">
+              <textarea id="cdPostText" placeholder="Write something…" rows="2" maxlength="1200"></textarea>
+              <button id="cdPostBtn" onclick="submitClubPost()">Post</button>
+            </div>
+          </div>
+          <div id="cdFeed" class="cd-feed"></div>
+        </div>
+      </div>
     </div>
     <!-- Parties subtab: existing content -->
     <div id="socParties">
@@ -2962,29 +2992,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   </div>
     </div><!-- /#socParties -->
   </div><!-- /#tabParties (Social) -->
-
-  <!-- Club detail overlay (opens when a card is tapped) -->
-  <div id="clubDetail" class="clubdetail hidden">
-    <div class="cd-cover" id="cdCover"></div>
-    <button class="cd-back" onclick="closeClub()" aria-label="Back">←</button>
-    <div class="cd-body">
-      <h1 id="cdName"></h1>
-      <p class="cd-desc" id="cdDesc"></p>
-      <div class="cd-meta" id="cdMeta"></div>
-      <div class="cd-actions">
-        <button class="cd-join" id="cdJoin" onclick="toggleJoinClub()">Join</button>
-        <button class="cd-share" onclick="shareClub()">Share</button>
-      </div>
-      <div class="cd-composer" id="cdComposer">
-        <div class="cd-cavatar" id="cdMyAvatar"></div>
-        <div class="cd-cinput">
-          <textarea id="cdPostText" placeholder="Write something…" rows="2" maxlength="1200"></textarea>
-          <button id="cdPostBtn" onclick="submitClubPost()">Post</button>
-        </div>
-      </div>
-      <div id="cdFeed" class="cd-feed"></div>
-    </div>
-  </div>
 
   <!-- chats list -->
   <div id="tabChats" class="hidden">
@@ -4936,12 +4943,17 @@ async function openClub(id){
     const j = await api('/clubs/' + id);
     _curClub = { ...j.club, isMember: j.isMember, posts: j.posts || [] };
     paintClubDetail();
+    // Swap views inside the Clubs subtab — the top nav + logo stay
+    // put because we're not covering the viewport (owner ask 10 Aug
+    // 2026: 'don't remove the header and logo').
+    document.getElementById('clubsListView').classList.add('hidden');
     document.getElementById('clubDetail').classList.remove('hidden');
     window.scrollTo(0, 0);
   } catch(e){ toast('Could not open club.'); }
 }
 function closeClub(){
   document.getElementById('clubDetail').classList.add('hidden');
+  document.getElementById('clubsListView').classList.remove('hidden');
   _curClub = null;
 }
 function paintClubDetail(){
