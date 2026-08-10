@@ -1,9 +1,8 @@
 // Blog articles for WordSpies — server-rendered for SEO.
 const SITE = 'https://wordspies.co.uk';
+// Consent-gated GA + cookie modal are single-sourced from landing.js.
+const { GA, CONSENT_MODAL } = require('./landing.js');
 const GA_ID = 'G-JTH809Z8NH';
-const GA = `<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');</script>`;
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 const articles = {
@@ -649,7 +648,9 @@ ${body}
 <a href="/home">Home</a> · <a href="/about">About</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/child-safety">Child safety</a> · <a href="mailto:contact@wordspies.co.uk">Contact</a><br>
 © 2026 WordSpies. All rights reserved.
 </footer>
-</div></body></html>`;
+</div>
+${CONSENT_MODAL}
+</body></html>`;
 }
 
 function articlePage(slug) {

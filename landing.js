@@ -1,11 +1,59 @@
 // WordSpies marketing landing page — server-rendered at "/"
 const SITE = 'https://wordspies.co.uk';
 const GA_ID = 'G-JTH809Z8NH';
-const GA = `<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');</script>`;
+// Consent-gated GA — mirrors pages.js. No analytics/ads cookies until
+// the user taps 'Accept all' in the cookie modal (localStorage.ws_cc_v1).
+const GA = `<script>
+(function(){
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  window.wsLoadAnalytics = function(){
+    if (window._wsGaLoaded) return; window._wsGaLoaded = true;
+    var s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=${GA_ID}';
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', '${GA_ID}', { anonymize_ip: true });
+  };
+  window.wsLoadAds = function(){ if (window._wsAdsLoaded) return; window._wsAdsLoaded = true; };
+  try { var c = localStorage.getItem('ws_cc_v1'); if (c === 'accept') { wsLoadAnalytics(); wsLoadAds(); } } catch(e){}
+})();
+</script>`;
+const CONSENT_MODAL = `
+<style>
+.ws-cc{position:fixed;inset:0;background:rgba(15,17,25,.6);display:none;align-items:center;justify-content:center;z-index:100000;padding:20px;font-family:'Inter',system-ui,sans-serif}
+.ws-cc.on{display:flex;animation:wsccFade .2s ease}
+@keyframes wsccFade{from{opacity:0}to{opacity:1}}
+.ws-cc-card{background:#fff;border-radius:20px;max-width:440px;width:100%;padding:26px 24px 22px;box-shadow:0 24px 60px rgba(0,0,0,.32)}
+.ws-cc-card h3{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:20px;margin:0 0 8px;color:#111318}
+.ws-cc-card p{font-size:14px;line-height:1.55;color:#4b5563;margin:0 0 16px}
+.ws-cc-card p a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.ws-cc-actions{display:flex;flex-direction:column;gap:8px}
+.ws-cc-actions button{border:0;border-radius:12px;padding:12px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:15px;cursor:pointer}
+.ws-cc-actions .ws-cc-accept{background:#0f7500;color:#fff}
+.ws-cc-actions .ws-cc-reject{background:#f3f4f6;color:#111318}
+</style>
+<div class="ws-cc" id="wsCcBd" role="dialog" aria-modal="true"><div class="ws-cc-card">
+  <h3>🍪 Cookies on WordSpies</h3>
+  <p>We use essential cookies to sign you in. With your permission we'd also use analytics + advertising cookies on the home / blog pages. <a href="/privacy">Read the full policy</a>.</p>
+  <div class="ws-cc-actions">
+    <button class="ws-cc-accept" onclick="wsCcSet('accept')">Accept all</button>
+    <button class="ws-cc-reject" onclick="wsCcSet('reject')">Reject all</button>
+  </div>
+</div></div>
+<script>
+(function(){
+  window.wsCcSet = function(c){
+    try { localStorage.setItem('ws_cc_v1', c); } catch(e){}
+    var el = document.getElementById('wsCcBd'); if (el) el.classList.remove('on');
+    if (c === 'accept') { try { wsLoadAnalytics(); wsLoadAds(); } catch(e){} }
+  };
+  try { if (!localStorage.getItem('ws_cc_v1')) setTimeout(function(){ var e=document.getElementById('wsCcBd'); if(e)e.classList.add('on'); }, 350); } catch(e){}
+})();
+</script>`;
 module.exports.GA = GA;
 module.exports.GA_ID = GA_ID;
+module.exports.CONSENT_MODAL = CONSENT_MODAL;
 
 function avatar(hat, skin, blushOpacity = '.8') {
   return `<svg viewBox="0 0 100 100" width="52" height="52" aria-hidden="true">
@@ -436,7 +484,8 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 }
 </script>
 <script src="/a2hs.js" defer></script>
+${CONSENT_MODAL}
 </body></html>`;
 }
 
-module.exports = { page, GA, GA_ID };
+module.exports = { page, GA, GA_ID, CONSENT_MODAL };

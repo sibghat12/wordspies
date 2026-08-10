@@ -2,9 +2,79 @@
 // Required for ad-network (AdSense) approval and general trust/SEO.
 const SITE = 'https://wordspies.co.uk';
 const GA_ID = 'G-JTH809Z8NH';
-const GA = `<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');</script>`;
+// Consent-gated GA. GDPR / UK-GDPR compliant: no analytics or ad
+// cookies until the user taps 'Accept all' in the cookie modal.
+// Choice is persisted in localStorage.ws_cc_v1 ('accept' | 'reject')
+// so we never nag again. Owner ask 10 Aug 2026 v2.
+const GA = `<script>
+(function(){
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  window.wsLoadAnalytics = function(){
+    if (window._wsGaLoaded) return; window._wsGaLoaded = true;
+    var s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=${GA_ID}';
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', '${GA_ID}', { anonymize_ip: true });
+  };
+  window.wsLoadAds = function(){
+    if (window._wsAdsLoaded) return; window._wsAdsLoaded = true;
+    // AdSense loader intentionally left as a hook — inject the
+    // pagead2 script here once the publisher ID is set.
+  };
+  try {
+    var c = localStorage.getItem('ws_cc_v1');
+    if (c === 'accept') { wsLoadAnalytics(); wsLoadAds(); }
+  } catch(e){}
+})();
+</script>`;
+// Cookie consent modal — appended into every public layout. Shows
+// once, remembers choice, dismisses cleanly. Two buttons: Accept all
+// (loads analytics + ads) and Reject all (essential cookies only).
+const CONSENT_MODAL = `
+<style>
+.ws-cc{position:fixed;inset:0;background:rgba(15,17,25,.6);display:none;align-items:center;justify-content:center;z-index:100000;padding:20px;font-family:'Inter',system-ui,sans-serif}
+.ws-cc.on{display:flex;animation:wsccFade .2s ease}
+@keyframes wsccFade{from{opacity:0}to{opacity:1}}
+.ws-cc-card{background:#fff;border-radius:20px;max-width:440px;width:100%;padding:26px 24px 22px;box-shadow:0 24px 60px rgba(0,0,0,.32);text-align:left}
+.ws-cc-card h3{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:20px;margin:0 0 8px;color:#111318}
+.ws-cc-card p{font-size:14px;line-height:1.55;color:#4b5563;margin:0 0 16px}
+.ws-cc-card p a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.ws-cc-actions{display:flex;flex-direction:column;gap:8px}
+.ws-cc-actions button{border:0;border-radius:12px;padding:12px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:filter .12s,background .12s}
+.ws-cc-actions .ws-cc-accept{background:#0f7500;color:#fff}
+.ws-cc-actions .ws-cc-accept:hover{filter:brightness(1.08)}
+.ws-cc-actions .ws-cc-reject{background:#f3f4f6;color:#111318}
+.ws-cc-actions .ws-cc-reject:hover{background:#e5e7eb}
+</style>
+<div class="ws-cc" id="wsCcBd" role="dialog" aria-modal="true" aria-labelledby="wsCcTitle">
+  <div class="ws-cc-card">
+    <h3 id="wsCcTitle">🍪 Cookies on WordSpies</h3>
+    <p>We use essential cookies to sign you in and keep the site working. With your permission we'd also like to use analytics + advertising cookies so we can understand traffic and (soon) show a few relevant ads on the home / blog pages. <a href="/privacy">Read the full policy</a>.</p>
+    <div class="ws-cc-actions">
+      <button class="ws-cc-accept" onclick="wsCcSet('accept')">Accept all</button>
+      <button class="ws-cc-reject" onclick="wsCcSet('reject')">Reject all</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  function show(){ var el = document.getElementById('wsCcBd'); if (el) el.classList.add('on'); }
+  function hide(){ var el = document.getElementById('wsCcBd'); if (el) el.classList.remove('on'); }
+  window.wsCcSet = function(choice){
+    try { localStorage.setItem('ws_cc_v1', choice); } catch(e){}
+    hide();
+    if (choice === 'accept') {
+      try { window.wsLoadAnalytics && wsLoadAnalytics(); } catch(e){}
+      try { window.wsLoadAds && wsLoadAds(); } catch(e){}
+    }
+  };
+  try {
+    if (!localStorage.getItem('ws_cc_v1')) setTimeout(show, 350);
+  } catch(e){ setTimeout(show, 350); }
+})();
+</script>`;
 
 function layout(title, desc, path, body) {
   return `<!DOCTYPE html>
@@ -166,6 +236,7 @@ ${body}
     <a class="fbrand" href="/">Word<em>Spies</em></a>
   </div>
 </div></footer>
+${CONSENT_MODAL}
 </body></html>`;
 }
 
@@ -219,7 +290,16 @@ function privacyPage() {
 <li><strong>Brevo</strong> (Sendinblue SAS) — transactional email (invites, password resets, notifications).</li>
 <li><strong>DigitalOcean</strong> — server hosting (London, UK).</li>
 <li><strong>Google Analytics</strong> — anonymised usage statistics.</li>
+<li><strong>Google AdSense &amp; advertising partners</strong> — if enabled, may display ads on pages such as the homepage and blog. Ad partners (Google and its network) may use cookies to serve ads based on your prior visits and interests. You can opt out of personalised ads at <a href="https://adssettings.google.com" rel="noopener" target="_blank">adssettings.google.com</a>. Ads are never shown on the community, chat, party, or game pages.</li>
 </ul>
+<h2>Cookies &amp; consent</h2>
+<p>We use three kinds of cookies:</p>
+<ul>
+<li><strong>Essential</strong> — session cookies that keep you signed in and remember which chat / party you were in. These load without asking because the site cannot work without them.</li>
+<li><strong>Analytics</strong> — anonymised page-view counts via Google Analytics. Only loaded after you accept cookies.</li>
+<li><strong>Advertising</strong> — cookies set by Google AdSense and its partners to serve ads on marketing pages (home, blog). Only loaded after you accept cookies.</li>
+</ul>
+<p>The first time you visit we ask you to <strong>Accept all</strong> or <strong>Reject all</strong>. If you reject, analytics and advertising cookies never load — you can still use the whole site. You can change your choice any time by clearing site data in your browser settings and reloading.</p>
 <h2>Retention</h2>
 <p>Account data is kept while your account is active. When you delete your account (Me → Delete account) we remove your profile, photo, messages, follows, and session tokens immediately. Server logs are kept for up to 30 days for abuse investigation.</p>
 <h2>Your rights (UK/EU GDPR)</h2>
