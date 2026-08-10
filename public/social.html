@@ -365,9 +365,9 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
 .topnav .tnlogo em{font-style:normal;color:var(--accent)}
 .topnav .tntabs{display:flex;gap:4px;justify-self:center;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .topnav .tntabs::-webkit-scrollbar{display:none}
-.topnav .tntabs .tnt{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;border-radius:12px;padding:8px 12px;font-family:inherit;font-size:13.5px;font-weight:700;color:var(--sub);cursor:pointer;position:relative;white-space:nowrap;transition:background .12s,color .12s;flex-shrink:0}
+.topnav .tntabs .tnt{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;border-radius:12px;padding:8px 12px;font-family:inherit;font-size:13.5px;font-weight:400;color:var(--sub);cursor:pointer;position:relative;white-space:nowrap;transition:background .12s,color .12s;flex-shrink:0;letter-spacing:-.1px}
 .topnav .tntabs .tnt:hover{color:var(--ink);background:#f4f5f7}
-.topnav .tntabs .tnt.on{color:var(--ink);background:#eef1ff}
+.topnav .tntabs .tnt.on{color:var(--ink);background:#eef1ff;font-weight:500}
 .topnav .tntabs .tnt .ico{font-size:15px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 /* SVG glyphs (Chats + Community): match the emoji visual size and
    inherit the tab's active/inactive text colour via currentColor. */
@@ -1223,6 +1223,18 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .gcard2.g-pool .gicon{background:#e8f9ef;color:#159f5d}
 
 /* ══ Parties tab ══ */
+/* Subtab bar inside the Social tab (owner ask 10 Aug 2026 —
+   Language Parties + Language Clubs subtabs). All classes .psub-*
+   namespaced so nothing collides with chat / community wall. */
+.psub-bar{display:flex;justify-content:flex-start;gap:24px;padding:14px 0 0;border-bottom:1px solid var(--line);margin-bottom:4px}
+.psub-btn{background:transparent;border:0;padding:12px 4px 14px;font-family:'Inter',system-ui,sans-serif;font-size:14.5px;font-weight:400;color:var(--faint);cursor:pointer;border-bottom:2px solid transparent;transition:color .14s,border-color .14s;letter-spacing:-.1px;position:relative;top:1px}
+.psub-btn:hover{color:var(--sub)}
+.psub-btn.on{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
+.psub-empty{padding:64px 24px;text-align:center;color:var(--sub)}
+.psub-empty-emoji{font-size:44px;line-height:1;margin-bottom:12px;opacity:.7}
+.psub-empty-title{font-family:'Inter',sans-serif;font-size:16px;font-weight:500;color:var(--ink);margin-bottom:6px;letter-spacing:-.2px}
+.psub-empty-sub{font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.55;font-weight:400;max-width:340px;margin:0 auto}
+
 .pt-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;padding:14px 20px 6px;flex-wrap:wrap}
 .pt-hero h2{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.5px;color:var(--ink)}
 .pt-hero p{color:var(--sub);font-size:13px;line-height:1.55;margin-top:6px;max-width:420px}
@@ -2380,7 +2392,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
            Parties · Games. Learn tab hidden until we have real content. -->
       <button id="tbWall" class="tnt on" onclick="showTab('wall')">Community<span class="badge hidden" id="wallBadge"></span></button>
       <button id="tbChats" class="tnt" onclick="showTab('chats')">Chats<span class="badge hidden" id="chatBadge"></span></button>
-      <button id="tbParties" class="tnt" onclick="showTab('parties')">Parties<span class="badge hidden" id="partyBadge"></span></button>
+      <button id="tbParties" class="tnt" onclick="showTab('parties')">Social<span class="badge hidden" id="partyBadge"></span></button>
       <button id="tbGames" class="tnt" onclick="showTab('games')">Games</button>
     </div>
     <div class="tnright">
@@ -2813,20 +2825,36 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
   </div>
 
-  <!-- ═══ PARTIES — audio rooms with speakers + listeners ═══ -->
+  <!-- ═══ SOCIAL — Language Parties + Language Clubs (owner ask 10 Aug
+       2026: 2 subtabs inside Social) ═══════════════════════════════════ -->
   <div id="tabParties" class="hidden">
-    <!-- Slim header: just the create-party button. Owner ask
-         2 Aug 2026: 'remove the Parties heading and the "Drop into
-         a live audio…" text entirely'. -->
-    <div class="pt-hero pt-hero-slim">
-      <button class="pt-create-btn" onclick="openCreateParty()">
-        <span>+</span> Create party
-      </button>
+    <!-- Subtab bar. Namespaced classes .psub-* to avoid the collision
+         that broke chat when this was tried before (see 901ab12). -->
+    <div class="psub-bar">
+      <button class="psub-btn on" id="psubParties" onclick="showPSub('parties')">Language Parties</button>
+      <button class="psub-btn"    id="psubClubs"   onclick="showPSub('clubs')">Language Clubs</button>
     </div>
-    <div id="ptList" class="pt-list"></div>
-    <div id="ptEmpty" class="pt-empty hidden">
-      <span class="big">🎈</span>
-      <div><b>No parties happening right now.</b><br>Be the first — hit <b>Create party</b> above.</div>
+    <!-- Language Parties (existing content) -->
+    <div id="psubPartiesPane">
+      <div class="pt-hero pt-hero-slim">
+        <button class="pt-create-btn" onclick="openCreateParty()">
+          <span>+</span> Create party
+        </button>
+      </div>
+      <div id="ptList" class="pt-list"></div>
+      <div id="ptEmpty" class="pt-empty hidden">
+        <span class="big">🎈</span>
+        <div><b>No parties happening right now.</b><br>Be the first — hit <b>Create party</b> above.</div>
+      </div>
+    </div>
+    <!-- Language Clubs (placeholder — full feature re-lands in a
+         separate careful commit series per the roadmap Phase 4). -->
+    <div id="psubClubsPane" class="hidden">
+      <div class="psub-empty">
+        <div class="psub-empty-emoji">💬</div>
+        <div class="psub-empty-title">Language Clubs — coming back soon</div>
+        <div class="psub-empty-sub">Topic communities where you post, comment and get corrections. Rebuilding this carefully after a rough first landing — should be ready in the next session.</div>
+      </div>
     </div>
   </div>
 
@@ -4702,6 +4730,14 @@ function headphoneIconSVG(){
 }
 
 let _ptLangs = new Set();
+// Subtab switcher inside the Social (formerly Parties) tab.
+function showPSub(which){
+  document.getElementById('psubParties').classList.toggle('on', which === 'parties');
+  document.getElementById('psubClubs').classList.toggle('on', which === 'clubs');
+  document.getElementById('psubPartiesPane').classList.toggle('hidden', which !== 'parties');
+  document.getElementById('psubClubsPane').classList.toggle('hidden', which !== 'clubs');
+}
+
 function openCreateParty(){
   if (GUEST) { requireLogin('🎉 Log in to host a party'); return; }
   if (!ME) { requireLogin('🎉 Log in to host a party'); return; }
