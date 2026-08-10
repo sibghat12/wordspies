@@ -416,9 +416,11 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
-<!-- Big always-visible action pills above the chat bar. Only one shows
-     at a time depending on my role. -->
-<button class="micfab" id="pMicFab" onclick="toggleMyMic()" aria-label="Toggle mic">
+<!-- Mic FAB removed 10 Aug 2026 — the mic control on the local avatar
+     covers the same action, so the FAB was duplicate. Kept the element
+     with style=display:none so toggleMyMic() and any code that still
+     writes to pMicFab / pMicFabLbl doesn't ReferenceError. -->
+<button class="micfab" id="pMicFab" onclick="toggleMyMic()" aria-label="Toggle mic" style="display:none !important">
   <span class="mfico">🎤</span>
   <span id="pMicFabLbl" style="display:none"></span>
 </button>
