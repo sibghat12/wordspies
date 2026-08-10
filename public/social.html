@@ -1372,16 +1372,19 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 @keyframes phostDot{0%,100%{opacity:1}50%{opacity:.55}}
 /* Fullscreen mode owns the whole viewport on mobile and a generous
    panel on desktop — no borders/inset, no shadow, just the party. */
-.phost.fs{inset:0;border-radius:0;border:0;box-shadow:none}
+/* Party sheet — Tandem-style bottom-sheet popup. 10% peek at the top
+   shows the community app behind so the party doesn't feel like a
+   destination lock. Owner ask 10 Aug 2026 — 'popup like 90% of the
+   screen from 10% space from the top'. */
+.phost.fs{top:10%;left:0;right:0;bottom:0;border-radius:22px 22px 0 0;border:0;box-shadow:0 -12px 40px rgba(0,0,0,.28);height:auto}
 @media(min-width:900px){
-  .phost.fs{inset:0;border-radius:0;box-shadow:0 0 60px rgba(0,0,0,.15)}
+  .phost.fs{top:10%;left:14px;right:14px;bottom:14px;border-radius:22px;box-shadow:0 12px 60px rgba(0,0,0,.28)}
 }
-/* When a party is up in fullscreen, hide the community app's chrome so
-   the party owns the whole screen. Owner ask: "remove the tab header
-   when we are in the party". */
-body.in-party .topnav{display:none !important}
+/* Grab handle at the top of the sheet — tap or swipe down to minimise. */
+.phost.fs::before{content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);width:44px;height:5px;border-radius:99px;background:#d0d3dc;z-index:2}
+/* Community chrome stays visible now that the sheet peeks — the party
+   header still shows a leave button so you can end it explicitly. */
 body.in-party .partybar{display:none !important}
-body.in-party .wsfoot,body.in-party .wshead{display:none !important}
 .phost.fs .phost-bar{padding:10px 14px;border-bottom:1px solid var(--line);flex:0 0 auto;display:flex;align-items:center;gap:10px;background:#fff}
 .phost.fs .phost-frame{flex:1;min-height:0;display:block;background:#fff}
 .phost .phost-dot{width:9px;height:9px;border-radius:50%;background:#22c07a;animation:gcpulse 1.4s ease-in-out infinite;flex-shrink:0}
@@ -5101,10 +5104,41 @@ function minimizePartyInApp(){
   host.classList.remove('fs');
   host.classList.add('mini');
   document.body.classList.remove('in-party');    // mini = community app owns the chrome again
-  // phostSub retired 1 Aug 2026 v6 — pill now shows only party
-  // name + live-dot + arrow. Left the DOM lookup out; null-guard
-  // any downstream writers.
 }
+// Owner ask 10 Aug 2026 — swipe/drag DOWN on the party header should
+// minimise the sheet. Tandem-style bottom-sheet gesture. Attaches once.
+(function(){
+  let sy = 0, dy = 0, active = false;
+  function bindSwipeToMinimise(){
+    const bar = document.getElementById('phostBar');
+    if (!bar || bar._swipeWired) return; bar._swipeWired = 1;
+    bar.addEventListener('touchstart', ev => {
+      const host = document.getElementById('partyHost');
+      if (!host || !host.classList.contains('fs')) return;
+      sy = ev.touches[0].clientY; dy = 0; active = true;
+    }, { passive: true });
+    bar.addEventListener('touchmove', ev => {
+      if (!active) return;
+      dy = ev.touches[0].clientY - sy;
+      if (dy > 6) {
+        const host = document.getElementById('partyHost');
+        host.style.transform = 'translateY(' + Math.min(dy, 220) + 'px)';
+      }
+    }, { passive: true });
+    bar.addEventListener('touchend', () => {
+      if (!active) return;
+      const host = document.getElementById('partyHost');
+      host.style.transform = '';
+      if (dy > 80) minimizePartyInApp();
+      active = false; dy = 0;
+    }, { passive: true });
+  }
+  // Try immediately + on DOM-ready in case the bar renders later.
+  document.addEventListener('DOMContentLoaded', bindSwipeToMinimise);
+  setTimeout(bindSwipeToMinimise, 400);
+  // Also expose so anyone can re-trigger after a party re-mount.
+  window._bindPartySwipe = bindSwipeToMinimise;
+})();
 function togglePartyExpand(){
   const host = $('partyHost'); if (!host || host.classList.contains('hidden')) return;
   if (host.classList.contains('fs')) minimizePartyInApp();
