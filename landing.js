@@ -112,8 +112,8 @@ function page() {
 <html lang="en"><head>
 ${GA}
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>WordSpies — Learn a Language by Playing Games With Real People, Free</title>
-<meta name="description" content="Learn any language the fun way. Chat with real speakers, get instant AI corrections, drop into voice parties, and play 8 free multiplayer games with people from every country — no sign-up, no downloads.">
+<title>WordSpies — Learn Any Language Free: Real People, Voice Chat & AI Corrections</title>
+<meta name="description" content="Free language exchange with real speakers, one-tap AI grammar correction on every message, live voice parties, and 9 multiplayer games — Spanish, French, Japanese, and 20+ more. No sign-up, no downloads, no paywall.">
 <meta name="keywords" content="learn language free, language exchange app, practice speaking language, chat with native speakers, language learning games, ai grammar correction, correct my writing, language partner online, free language app, voice chat language practice">
 <meta name="author" content="WordSpies">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -124,13 +124,13 @@ ${GA}
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:site_name" content="WordSpies">
 <meta property="og:locale" content="en_GB">
-<meta property="og:title" content="WordSpies — Learn a Language by Playing Games With Real People">
-<meta property="og:description" content="Chat, correct, play, speak. Free language exchange with real people and AI corrections built in. No sign-up.">
+<meta property="og:title" content="WordSpies — Learn Any Language Free: Real People, Voice & AI Corrections">
+<meta property="og:description" content="Free language exchange with real speakers, AI grammar corrections on every message, live voice parties, and 9 free games. Spanish, French, Japanese, 20+ more.">
 <meta property="og:url" content="${SITE}/"><meta property="og:type" content="website">
 <meta property="og:image" content="${SITE}/og-image.png"><meta property="og:image:alt" content="WordSpies — chat, correct, play, speak with real people">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="WordSpies — Learn a Language by Playing Games With Real People">
-<meta name="twitter:description" content="Chat, correct, play, speak. Free language exchange with real people and AI corrections built in.">
+<meta name="twitter:title" content="WordSpies — Learn Any Language Free: Real People, Voice & AI Corrections">
+<meta name="twitter:description" content="Free language exchange with real speakers, AI grammar corrections, voice parties, and 9 free games. 20+ languages.">
 <meta name="twitter:image" content="${SITE}/og-image.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"WebApplication","@id":"${SITE}/#app","name":"WordSpies","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free language exchange platform with real speakers, AI-powered corrections, live voice parties, and 8 multiplayer language games. Practice any language for free — no sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},

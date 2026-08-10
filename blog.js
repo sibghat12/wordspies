@@ -462,6 +462,88 @@ const articles = {
 <p><a href="/social">Start free on WordSpies</a> — the community wall filters to people learning your language and speaking theirs. First real conversation possible today.</p>`
   },
 
+  'best-free-language-exchange-sites-2026': {
+    title: 'Best Free Language Exchange Sites in 2026 (Full Comparison)',
+    desc: 'The best free language exchange sites in 2026 — chat, voice, AI corrections, cost, and which fits which kind of learner. Honest comparison, no affiliate spin.',
+    date: '2026-08-10',
+    html: `
+<p>Language exchange has grown up. In 2026 you can find a native speaker of almost any language in seconds, chat by text or voice for free, and get instant AI grammar help on top. Here's the honest state of the space — what's genuinely free, what's paywalled, and which platform fits which kind of learner.</p>
+<h2>WordSpies</h2>
+<p><a href="/">WordSpies</a> is language exchange plus multiplayer games plus AI corrections in one browser tab. Message any member, tap "Correct" on a bubble for a one-tap grammar fix + a short note about what changed, jump into a live voice party, or start a language game (Word Race, Word Chain, Guess the Word, Spy, WordSpies, Ludo, Pool, Connect 4, Hoop) together. No paywall, no premium tier, no ads-that-force-signup. Downside: the community is newer, so obscure language pairs have thinner rosters.</p>
+<h2>Older exchange platforms</h2>
+<p>The classics (you know the names) still have the largest user bases, so if you're learning a rare language your best chance of a partner is there. Downsides in 2026: most useful features (translations of long messages, VIP filters, group audio, cross-language moments) sit behind a subscription; AI corrections rely on the other person actually taking the time to correct you.</p>
+<h2>Discord servers</h2>
+<p>Language-learning Discord servers are still a strong free option, especially for young adults. Voice channels are always-on, moderation ranges from great to none, and there's no formal exchange mechanic — you sink or swim on making friends.</p>
+<h2>Reddit r/language_exchange</h2>
+<p>An old-school notice-board. Post your language pair, wait for DMs, take conversations elsewhere. Zero infrastructure but zero cost too. Works if you have patience.</p>
+<h2>Which one fits you?</h2>
+<p>For most people the modern answer is <a href="/">WordSpies</a> — free AI corrections built in, real people to chat with, games for the awkward first few sessions, and voice parties when you're ready to speak. Older platforms remain the fallback for rare languages. Discord and Reddit are for people who want to build friendships more than they want structured practice.</p>
+<p><a href="/social">Start free on WordSpies</a> — 30 seconds, no email required, all features open from day one.</p>`
+  },
+
+  'ai-grammar-correction-spanish': {
+    title: 'How AI Grammar Correction Changed How I Write Spanish',
+    desc: 'A short story about learning to write Spanish with AI grammar correction on every message — what worked, what didn\'t, and how the daily feedback loop actually built fluency.',
+    date: '2026-08-10',
+    html: `
+<p>For most of my life, learning Spanish looked like this: an app in the morning, ten minutes of matching pairs, a streak counter, three weeks of consistency, then quiet drift back to English. The words never became <em>mine</em>. Then in 2026 something changed: AI grammar correction started living inside every message I sent.</p>
+<h2>The problem with silent mistakes</h2>
+<p>Language classes teach rules. Apps teach vocabulary. Neither tells you, five seconds after you write something wrong, what specifically you messed up. So you keep making the same mistake for years — "por/para", genders, past-tense endings — because the feedback loop is too slow to matter.</p>
+<h2>What one-tap correction actually feels like</h2>
+<p>On <a href="/">WordSpies</a>, every message I send has a "Correct" button. Tap it: the AI proposes the fixed sentence, underlined with the changes, plus a short line ("past tense · missing article"). The original stays visible so I see the mistake next to the fix. It's ten seconds. I do it while I'm already chatting with a real Colombian friend.</p>
+<h2>The changes I noticed</h2>
+<p>First month: my "por/para" ratio flipped. Second month: I stopped writing "es" when I meant "está". Third month: subjunctive started showing up unprompted. None of these were things I could have drilled with flashcards. They only stuck because I saw them corrected in a real sentence I was really trying to send.</p>
+<h2>Why AI beats waiting for a human to correct you</h2>
+<p>Native speakers are polite. They read your Spanish, understand what you meant, and reply. They don't spend the time to type out corrections unless you specifically ask, and even then they get tired. AI never tires, never judges, and turns around a correction in half a second.</p>
+<h2>The daily practice</h2>
+<p>Type your messages first. Correct after you send. Re-read the fix. If the same mistake shows up three times, note it down — that's your personal weak spot. Do this every day for a month and your writing changes shape.</p>
+<p><a href="/social">Try WordSpies free</a> — Correct is on every message by default. No account needed to start.</p>`
+  },
+
+  'learn-language-by-playing-games': {
+    title: 'How to Learn a Language Just by Playing Games (2026)',
+    desc: 'Playing games in your target language builds vocabulary faster than flashcards — because you use words in context. Here is how to structure it so it actually works.',
+    date: '2026-08-10',
+    html: `
+<p>Every fluent speaker will tell you the same thing: words stick when you use them. Flashcards are the illusion of learning — you recognise a word in isolation and never think of it again. Games force you to <em>produce</em> vocabulary under pressure, which is how it moves from short-term to long-term memory.</p>
+<h2>Why games work when flashcards don't</h2>
+<p>A flashcard says "casa → house". Your brain files it under "translation exercise", not under "a place I might mention in a real conversation". A game where you have to describe an object without saying its name forces active recall in context — the same cognitive move you make when speaking.</p>
+<h2>The games that teach best</h2>
+<p><a href="/wordrace">Word Race</a>: 60 seconds, one category ("Animals", "Foods", "Body parts"), type as many words as you can. Solo or against a friend. Builds vocabulary breadth fast.</p>
+<p><a href="/wordchain">Word Chain</a>: someone says a word, you have to say one that starts with its last letter. Trains active recall — the hardest kind of vocabulary skill.</p>
+<p><a href="/guessword">Guess the Word</a>: describe a secret word without saying it. Forces paraphrasing — which is what fluency actually is.</p>
+<p><a href="/play">WordSpies</a> (Codenames-style): give one-word clues that link secret words on a board. Trains word association — the mental model native speakers have.</p>
+<p><a href="/hoop">Hoop</a>: not a language game strictly, but a 60-second multiplayer arcade round makes a great warm-up + trash-talk starter with your language exchange partner. Chat in your target language while you play.</p>
+<h2>The rule that makes games actually teach you</h2>
+<p>Play in your target language, not in English. If you play Word Race and type English words, you learn nothing. If you type Spanish, every letter combination is real practice. Same for chatting between rounds — it's the low-stakes conversation that games unlock that does the teaching.</p>
+<h2>A weekly routine that works</h2>
+<p>Two 15-minute chat sessions with a real speaker. One live voice party a week (join as a listener first, raise your hand when ready). One game night — pick any of the eight, invite your language partner, play in the target language. Do this for three months and you'll be conversational.</p>
+<p><a href="/games">Browse the games shelf</a> — everything is free and works in a browser.</p>`
+  },
+
+  'voice-chat-vs-text-chat-language': {
+    title: 'Voice Chat vs Text Chat for Learning a Language: Which Wins?',
+    desc: 'Text chat feels safer, voice chat teaches you more — but the honest answer is you need both. Here is how to structure them so you actually improve.',
+    date: '2026-08-10',
+    html: `
+<p>Every language learner asks the same question: should I text or should I talk? Text feels safer — you can look up words, edit before sending, re-read what the other person wrote. Voice feels terrifying — no undo, no dictionary, and if you freeze, everyone hears the silence. Here's the honest answer: you need both, in that order.</p>
+<h2>What text chat actually teaches you</h2>
+<p>Vocabulary breadth, grammar patterns, writing register, and confidence with the alphabet + typing. Text is the low-pressure environment where you can look up "the exact word I mean" and stitch a proper sentence together. With <a href="/blog/ai-grammar-correction-spanish">AI grammar correction on every message</a>, text is also where you get the most feedback per minute.</p>
+<h2>What voice chat teaches you that text can't</h2>
+<p>Pronunciation. Rhythm. Reduction (the way native speakers slur "you all" into "y'all"). Recognition speed — you can read Japanese perfectly and still not understand a spoken sentence because your ear has never met that vocabulary at full speed. Voice practice is the only way to teach your brain to process the language in real time.</p>
+<h2>The trap of only doing text</h2>
+<p>Many learners spend years messaging fluently and still can't hold a two-minute phone call. Their brain has never had to convert thought → mouth → sound under pressure. When they finally try, they freeze. The muscle isn't there.</p>
+<h2>The trap of only doing voice</h2>
+<p>Skipping text means never getting the deliberate practice of forming a well-structured sentence. You learn to say "yeah, cool, awesome" fluently and never build the vocabulary to actually discuss anything.</p>
+<h2>The order that works</h2>
+<p>Week 1–2: text-only with a real speaker on <a href="/">WordSpies</a>. Use the Correct button on every message. Build confidence and vocabulary.</p>
+<p>Week 3: send one voice note. Then send another. Voice notes are the bridge — half-writing, half-speech, no live pressure.</p>
+<p>Week 4: join a live <a href="/">voice party</a> as a listener. You can hear everyone but no one hears you until you raise a hand. Spend three parties listening.</p>
+<p>Week 5: raise your hand and say one sentence. That's it. Do this and speaking will stop being scary.</p>
+<h2>Why WordSpies has both in one place</h2>
+<p>Text chats with AI corrections + voice parties + AI conversation partners for practice when nobody's online — all in one browser tab. That way you can flow between text and voice without switching platforms. <a href="/social">Start free</a> — 30-second signup, no email required.</p>`
+  },
+
   'party-games-shelf': {
     title: 'The WordSpies Games Shelf: One Place, Free, No Sign-Up',
     desc: 'Codenames-style word game, Ludo, 8-ball pool, Connect 4, Mind Meld and Who is the Spy — all free, in the browser, with friends or against the bot.',
