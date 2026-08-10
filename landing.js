@@ -207,6 +207,28 @@ a{text-decoration:none;color:inherit}
 /* sections */
 .sec-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:29px;letter-spacing:-.7px;text-align:center;margin-bottom:8px}
 .sec-sub{text-align:center;color:var(--muted);font-weight:500;font-size:16px;margin-bottom:38px;max-width:640px;margin-inline:auto}
+/* Flag grid — Lingopie-style language shelf. Big, bright, tappable. */
+.flaggrid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+@media(max-width:900px){.flaggrid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:520px){.flaggrid{grid-template-columns:repeat(3,1fr);gap:10px}}
+.flagcard{background:#fff;border-radius:16px;padding:18px 12px;text-align:center;text-decoration:none;color:var(--ink);border:1.5px solid var(--line);transition:transform .16s var(--spring),border-color .12s,box-shadow .16s;display:flex;flex-direction:column;align-items:center;gap:8px}
+.flagcard:hover{transform:translateY(-4px);border-color:var(--green);box-shadow:0 12px 28px rgba(15,117,0,.12)}
+.flagcard .fl{font-size:36px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.1))}
+.flagcard b{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14.5px;letter-spacing:-.2px}
+@media(max-width:520px){.flagcard{padding:14px 8px}.flagcard .fl{font-size:30px}.flagcard b{font-size:13px}}
+.flagfoot{text-align:center;color:var(--muted);font-weight:500;font-size:14.5px;margin-top:24px}
+/* Alternating feature strips (image ⇄ text). */
+.strip{display:grid;grid-template-columns:1fr 1.15fr;gap:44px;align-items:center;padding:36px 0}
+.strip + .strip{border-top:1px dashed rgba(35,41,70,.1)}
+.strip-rev{grid-template-columns:1.15fr 1fr}
+.strip-rev .strip-art{order:2}
+.strip-rev .strip-txt{order:1}
+@media(max-width:820px){.strip,.strip-rev{grid-template-columns:1fr;gap:20px;padding:28px 0;text-align:center}.strip-rev .strip-art{order:1}.strip-rev .strip-txt{order:2}}
+.strip-art{background:linear-gradient(160deg,#fff,#f7f8fb);border-radius:20px;padding:24px;box-shadow:var(--sh);max-width:420px;justify-self:center;width:100%}
+.strip-txt .strip-tag{display:inline-block;background:var(--caccent-soft,#eef1ff);color:var(--green);font-weight:800;font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;padding:5px 11px;border-radius:99px;margin-bottom:12px}
+.strip-txt h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:24px;letter-spacing:-.6px;line-height:1.2;margin-bottom:12px;color:var(--ink)}
+.strip-txt p{color:var(--muted);font-weight:500;font-size:16px;line-height:1.55}
+@media(max-width:820px){.strip-txt h3{font-size:22px}.strip-txt p{font-size:15px}}
 .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 @media(max-width:900px){.pillars{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.pillars{grid-template-columns:1fr}}
@@ -270,9 +292,9 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
         <a class="btn ghost" href="/games">Browse games</a>
       </div>
       <div class="herometa">
-        <span class="pill">100% free</span>
+        <span class="pill">100% free forever</span>
         <span class="pill">AI corrections built in</span>
-        <span class="pill">18+ languages</span>
+        <span class="pill">Real people from 90+ countries</span>
       </div>
       <div class="playersrow">
         <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>
@@ -283,14 +305,73 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
   </div>
 </div>
 
+<!-- Language flag grid — Lingopie-style 'pick your language' shelf. -->
 <div class="band white"><div class="wrap">
-  <h2 class="sec-h">Four ways to actually learn</h2>
-  <p class="sec-sub">Not lessons. Not flashcards. Real conversations, real games, real corrections — the way you learned your first language.</p>
-  <div class="pillars">
-    <div class="pillar"><div class="illus">${ILLUS_CHAT}</div><h3>💬 Chat with real speakers</h3><p>Message anyone learning your language. Tap any message → Correct for an instant AI fix that shows exactly what to change and why.</p></div>
-    <div class="pillar"><div class="illus">${ILLUS_GAMES}</div><h3>🎮 8 games, free forever</h3><p>Word Race, WordSpies, Guess the Word, Spy, Ludo, Pool, Connect 4, Mind Meld. Practise vocabulary while having fun.</p></div>
-    <div class="pillar"><div class="illus">${ILLUS_PARTY}</div><h3>🎤 Live voice parties</h3><p>Drop into open voice rooms and speak with real people. Raise a hand to talk, or just listen and pick up the accent.</p></div>
-    <div class="pillar"><div class="illus">${ILLUS_AI}</div><h3>🤖 AI conversation partners</h3><p>No one online? Practise anytime with an AI expert in every language who corrects gently and keeps you talking.</p></div>
+  <h2 class="sec-h">Learn any of these 24 languages, free</h2>
+  <p class="sec-sub">Tap a language to sign up and start chatting with real speakers in seconds. Every language, every level — beginner to fluent.</p>
+  <div class="flaggrid">
+    <a href="/social" class="flagcard"><span class="fl">🇪🇸</span><b>Spanish</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇫🇷</span><b>French</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇩🇪</span><b>German</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇮🇹</span><b>Italian</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇵🇹</span><b>Portuguese</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇳🇱</span><b>Dutch</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇸🇪</span><b>Swedish</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇵🇱</span><b>Polish</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇬🇷</span><b>Greek</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇹🇷</span><b>Turkish</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇷🇺</span><b>Russian</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇺🇦</span><b>Ukrainian</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇸🇦</span><b>Arabic</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇮🇷</span><b>Persian</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇮🇱</span><b>Hebrew</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇮🇳</span><b>Hindi</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇧🇩</span><b>Bengali</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇵🇰</span><b>Urdu</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇯🇵</span><b>Japanese</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇰🇷</span><b>Korean</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇨🇳</span><b>Mandarin</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇻🇳</span><b>Vietnamese</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇹🇭</span><b>Thai</b></a>
+    <a href="/social" class="flagcard"><span class="fl">🇮🇩</span><b>Indonesian</b></a>
+  </div>
+  <p class="flagfoot">Learning something else? Pick 'Other' at signup — every language works.</p>
+</div></div>
+
+<!-- Alternating feature strips (Lingopie-style). Image ⇄ text on
+     each row so the eye tracks down the page naturally. -->
+<div class="band gray"><div class="wrap">
+  <div class="strip">
+    <div class="strip-art">${ILLUS_CHAT}</div>
+    <div class="strip-txt">
+      <div class="strip-tag">💬 Chat</div>
+      <h3>Text real speakers. Get instant AI corrections.</h3>
+      <p>Message anyone learning your language. Tap "Correct" on any message and our AI proposes the fixed version underneath — plus a short line explaining what changed ("past tense · missing article"). Your original stays visible so you learn from the mistake, not around it.</p>
+    </div>
+  </div>
+  <div class="strip strip-rev">
+    <div class="strip-art">${ILLUS_GAMES}</div>
+    <div class="strip-txt">
+      <div class="strip-tag">🎮 9 games</div>
+      <h3>Learn by playing — vocabulary that actually sticks.</h3>
+      <p>Word Race, Word Chain, WordSpies, Guess the Word, Spy, Ludo, 8-Ball Pool, Connect 4, Hoop. Play in your target language and every round builds real vocabulary in real context. Solo or with a friend — one shared link, no downloads.</p>
+    </div>
+  </div>
+  <div class="strip">
+    <div class="strip-art">${ILLUS_PARTY}</div>
+    <div class="strip-txt">
+      <div class="strip-tag">🎤 Voice</div>
+      <h3>Drop into live voice parties. Listen first, speak when ready.</h3>
+      <p>Open audio rooms with speakers from around the world. Join as a listener — hear the rhythm, pick up slang, no pressure to talk. Raise your hand when you're ready and speak with the room. This is the fastest way to break the speaking wall.</p>
+    </div>
+  </div>
+  <div class="strip strip-rev">
+    <div class="strip-art">${ILLUS_AI}</div>
+    <div class="strip-txt">
+      <div class="strip-tag">🤖 AI partners</div>
+      <h3>No one online? Practise with an AI conversation partner.</h3>
+      <p>Three built-in AI experts (British, American, Australian) with real voices — always available, patient, and honest with corrections. Perfect for warm-ups before a real conversation, or late-night practice when nobody's awake.</p>
+    </div>
   </div>
 </div></div>
 
