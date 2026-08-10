@@ -213,6 +213,10 @@ a{color:inherit;text-decoration:none}
 .listeners .pav .nm{font-size:11px}
 .listeners .pav .rl{display:none}
 .listeners .pav .micchip{display:none}
+/* Owner ask 10 Aug 2026 — remove the mic chips from every party tile
+   (speakers + listeners). Voice-activity ring on the avatar already
+   shows who's talking; the chip was clutter. */
+.pav .micchip{display:none !important}
 /* Listener with hand raised */
 .pav.hand::before{content:'✋';position:absolute;top:0;right:6px;font-size:14px;background:#fff8e6;padding:3px 5px;border-radius:99px;border:1px solid #f0d97a;animation:handwave 1.3s ease-in-out infinite}
 @keyframes handwave{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}
@@ -366,11 +370,11 @@ a{color:inherit;text-decoration:none}
     <div class="hostqueue hidden" id="pQueue"></div>
 
     <div class="psect">
-      <div class="ph"><h3>Speakers <b id="speakerCnt">0</b></h3></div>
+      <div class="ph"><h3>Speakers <b id="speakerCnt" style="display:none">0</b></h3></div>
       <div class="speakers" id="speakers"></div>
     </div>
     <div class="psect">
-      <div class="ph"><h3>Listeners <b id="listenerCnt">0</b></h3></div>
+      <div class="ph"><h3>Listeners <b id="listenerCnt" style="display:none">0</b></h3></div>
       <div class="listeners" id="listeners"></div>
     </div>
   </main>
