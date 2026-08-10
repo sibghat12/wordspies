@@ -84,7 +84,20 @@ body.embed{padding-top:0}
 .lobby-bd.on,.results-bd.on{display:flex}
 .lobby,.results{background:#fff;border-radius:22px;padding:24px 22px 20px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.32)}
 .lobby h2,.results h2{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:22px;margin-bottom:8px}
-.lobby .code{display:inline-block;background:#fff2d9;color:#a25a00;font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:26px;letter-spacing:6px;padding:8px 18px;border-radius:12px;margin:6px 0 14px}
+.lobby .code{display:inline-block;background:#fff2d9;color:#a25a00;font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:26px;letter-spacing:6px;padding:8px 18px;border-radius:12px;margin:6px 0 6px;cursor:pointer;user-select:all}
+.lobby .code:hover{background:#ffe6b3}
+.lobby .inviterow{display:flex;gap:8px;justify-content:center;margin:8px 0 14px;flex-wrap:wrap}
+.lobby .inv-btn{background:#111318;color:#fff;border:0;border-radius:99px;padding:8px 14px;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.lobby .inv-btn:hover{filter:brightness(1.15)}
+/* Solo-mode join-by-code input at the top of the court. Only shown
+   when there is NO ?room in the URL. */
+.joinbox{position:absolute;top:112px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:14px;padding:6px 6px 6px 14px;display:none;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.08);z-index:5;backdrop-filter:blur(6px)}
+.joinbox.on{display:inline-flex}
+.joinbox .jl{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--sub);white-space:nowrap}
+.joinbox input{width:78px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-align:center;text-transform:uppercase;outline:none;background:#fff}
+.joinbox input:focus{border-color:var(--orange)}
+.joinbox button{background:var(--orange);color:#fff;border:0;border-radius:10px;padding:7px 14px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:13.5px;cursor:pointer}
+.joinbox button:hover{filter:brightness(1.08)}
 .lobby .sub,.results .sub{color:var(--sub);font-size:13.5px;font-weight:500;margin-bottom:16px}
 .lobby .plist,.results .plist{list-style:none;padding:0;margin:0 0 14px;max-height:200px;overflow-y:auto;text-align:left}
 .lobby .plist li,.results .plist li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;color:var(--ink)}
@@ -142,12 +155,22 @@ body.embed{padding-top:0}
   <div class="lobby-bd" id="lobbyBd">
     <div class="lobby" role="dialog">
       <h2>🏀 Hoop room</h2>
-      <div class="code" id="lbCode">----</div>
-      <div class="sub">Share this code with friends. Everyone plays the same 60-second round together.</div>
+      <div class="code" id="lbCode" onclick="copyCode()" title="Tap to copy the code">----</div>
+      <div class="sub">Share the code above OR tap Invite friends to send the link.</div>
+      <div class="inviterow">
+        <button type="button" class="inv-btn" onclick="copyLink()">🔗 Copy link</button>
+        <button type="button" class="inv-btn" onclick="shareInvite()">📣 Invite friends</button>
+      </div>
       <ul class="plist" id="lbList"></ul>
       <button id="lbStart" disabled>Start round</button>
       <button class="ghost" onclick="location.href='/games'">Leave</button>
     </div>
+  </div>
+  <!-- Solo-mode overlay: 'Join a room' input for friends who only got a code. -->
+  <div class="joinbox" id="joinBox">
+    <span class="jl">Have a code?</span>
+    <input id="joinCode" maxlength="4" placeholder="ABCD" autocomplete="off" oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase()" onkeydown="if(event.key==='Enter')goJoin()">
+    <button type="button" onclick="goJoin()">Join</button>
   </div>
   <!-- Final results (multiplayer only) — after the timer expires. -->
   <div class="results-bd" id="resBd">
@@ -698,6 +721,50 @@ body.embed{padding-top:0}
   window.startRound = startRound;
   resize();
 
+  // ── Invite / Join helpers ─────────────────────────────────────────────
+  // Owner ask 10 Aug 2026 — 'add button invite friends or share the
+  // code, and let them either directly join with the link or add the code'.
+  function shareURL(){ return location.origin + '/hoop?room=' + ROOM; }
+  window.copyCode = function(){
+    try { navigator.clipboard.writeText(ROOM); brief('Code copied'); }
+    catch(e){ brief('Copy failed'); }
+  };
+  window.copyLink = function(){
+    try { navigator.clipboard.writeText(shareURL()); brief('Link copied'); }
+    catch(e){ brief('Copy failed'); }
+  };
+  window.shareInvite = async function(){
+    const url = shareURL();
+    const text = 'Join my 🏀 Hoop round on WordSpies — code ' + ROOM;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'WordSpies Hoop', text, url }); return; }
+      catch(e){ /* user cancelled → fall through to clipboard */ }
+    }
+    try { navigator.clipboard.writeText(text + ' — ' + url); brief('Invite copied'); }
+    catch(e){ brief('Copy failed'); }
+  };
+  // Solo-mode 'Join by code' input.
+  window.goJoin = function(){
+    const box = document.getElementById('joinCode');
+    const code = (box.value || '').trim().toUpperCase();
+    if (code.length < 3) return;
+    location.href = '/hoop?room=' + encodeURIComponent(code);
+  };
+  // Tiny toast fallback (no dependency on external toast lib).
+  function brief(msg){
+    let t = document.getElementById('_hbrief');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = '_hbrief';
+      t.style.cssText = 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111318;color:#fff;padding:9px 16px;border-radius:99px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;z-index:1000;opacity:0;transition:opacity .18s;pointer-events:none';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._h);
+    t._h = setTimeout(() => t.style.opacity = '0', 1600);
+  }
+
   if (MULTI) {
     // Lazy-load socket.io only when we need it (solo mode stays lean).
     const s = document.createElement('script');
@@ -706,6 +773,10 @@ body.embed{padding-top:0}
     s.onerror = () => alert('Could not load multiplayer. Try refreshing.');
     document.head.appendChild(s);
   } else {
+    // Solo mode: expose the 'Join a room?' input so a friend who only
+    // got the 4-letter code can paste it and jump into the round.
+    const jb = document.getElementById('joinBox');
+    if (jb) jb.classList.add('on');
     startRound();
   }
 })();
