@@ -89,6 +89,27 @@ body.embed{padding-top:0}
 .lobby .inviterow{display:flex;gap:8px;justify-content:center;margin:8px 0 14px;flex-wrap:wrap}
 .lobby .inv-btn{background:#111318;color:#fff;border:0;border-radius:99px;padding:8px 14px;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .lobby .inv-btn:hover{filter:brightness(1.15)}
+/* In-app invite picker */
+.pick-bd{position:fixed;inset:0;background:rgba(22,24,31,.65);display:none;align-items:center;justify-content:center;z-index:40;padding:20px;animation:fadeIn .2s}
+.pick-bd.on{display:flex}
+.pick{background:#fff;border-radius:22px;padding:22px 20px 16px;max-width:400px;width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.32)}
+.pick h3{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:20px;margin:0 0 4px}
+.pick-sub{color:var(--sub);font-size:13px;margin:0 0 12px}
+.pick-search{border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:14px;outline:none;margin-bottom:10px}
+.pick-search:focus{border-color:var(--orange)}
+.pick-list{flex:1;overflow-y:auto;min-height:120px;max-height:400px;margin-bottom:10px}
+.pick-empty{color:var(--sub);font-size:13.5px;text-align:center;padding:24px 8px}
+.pick-row{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:12px;cursor:pointer;transition:background .1s}
+.pick-row:hover{background:#f5f5f7}
+.pick-row.sent{opacity:.55;pointer-events:none}
+.pick-av{width:38px;height:38px;border-radius:50%;background:#e6e8ef;flex-shrink:0;background-size:cover;background-position:center;display:inline-flex;align-items:center;justify-content:center;color:#5f6675;font-weight:700;font-size:14px}
+.pick-info{flex:1;min-width:0}
+.pick-info b{display:block;font-family:'Inter',sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick-info small{font-size:11.5px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.pick-send{background:var(--orange);color:#fff;border:0;border-radius:99px;padding:6px 12px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:12.5px;cursor:pointer}
+.pick-send.done{background:#22c55e}
+.pick-close{background:#f3f4f6;color:var(--ink);border:0;border-radius:12px;padding:11px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:14.5px;cursor:pointer;width:100%}
+.pick-close:hover{background:#e5e7eb}
 /* Solo-mode join-by-code input at the top of the court. Only shown
    when there is NO ?room in the URL. */
 .joinbox{position:absolute;top:112px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:14px;padding:6px 6px 6px 14px;display:none;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.08);z-index:5;backdrop-filter:blur(6px)}
@@ -159,11 +180,23 @@ body.embed{padding-top:0}
       <div class="sub">Share the code above OR tap Invite friends to send the link.</div>
       <div class="inviterow">
         <button type="button" class="inv-btn" onclick="copyLink()">🔗 Copy link</button>
-        <button type="button" class="inv-btn" onclick="shareInvite()">📣 Invite friends</button>
+        <button type="button" class="inv-btn" onclick="openInvitePicker()">👥 Invite friends</button>
       </div>
       <ul class="plist" id="lbList"></ul>
       <button id="lbStart" disabled>Start round</button>
       <button class="ghost" onclick="location.href='/games'">Leave</button>
+    </div>
+  </div>
+  <!-- In-app invite picker (owner ask 10 Aug 2026 — 'invite should be
+       inside the app, my friends / followers / following'). Fetches
+       /api/social/graph and lets host DM the room link with one tap. -->
+  <div class="pick-bd" id="pickBd" onclick="if(event.target===this)closeInvitePicker()">
+    <div class="pick" role="dialog">
+      <h3>👥 Invite to Hoop</h3>
+      <p class="pick-sub">Tap someone to send them a message with the room link.</p>
+      <input class="pick-search" id="pickSearch" type="text" placeholder="Search…" autocomplete="off" oninput="paintInviteList()">
+      <div class="pick-list" id="pickList"><div class="pick-empty">Loading…</div></div>
+      <button class="pick-close" onclick="closeInvitePicker()">Done</button>
     </div>
   </div>
   <!-- Solo-mode overlay: 'Join a room' input for friends who only got a code. -->
@@ -745,16 +778,80 @@ body.embed{padding-top:0}
     try { navigator.clipboard.writeText(shareURL()); brief('Link copied'); }
     catch(e){ brief('Copy failed'); }
   };
-  window.shareInvite = async function(){
-    const url = shareURL();
-    const text = 'Join my 🏀 Hoop round on WordSpies — code ' + ROOM;
-    if (navigator.share) {
-      try { await navigator.share({ title: 'WordSpies Hoop', text, url }); return; }
-      catch(e){ /* user cancelled → fall through to clipboard */ }
+  // In-app invite (owner ask 10 Aug 2026 — 'invite my friends,
+  // followers, following inside the app not outside'). Loads the
+  // caller's social graph, shows a picker, sends the room link as
+  // a chat message when the user taps someone.
+  let _graphCache = null;
+  window.openInvitePicker = async function(){
+    const bd = document.getElementById('pickBd');
+    const list = document.getElementById('pickList');
+    document.getElementById('pickSearch').value = '';
+    bd.classList.add('on');
+    if (!_graphCache) {
+      list.innerHTML = '<div class="pick-empty">Loading…</div>';
+      try {
+        const r = await fetch('/api/social/graph', { credentials: 'include' });
+        if (r.status === 401) { list.innerHTML = '<div class="pick-empty">Log in on WordSpies first to invite friends.</div>'; return; }
+        if (!r.ok) throw new Error('graph ' + r.status);
+        const j = await r.json();
+        _graphCache = { me: j.me, cards: (j.cards || []) };
+      } catch(e) {
+        list.innerHTML = '<div class="pick-empty">Couldn\'t load your contacts. Try again.</div>';
+        return;
+      }
     }
-    try { navigator.clipboard.writeText(text + ' — ' + url); brief('Invite copied'); }
-    catch(e){ brief('Copy failed'); }
+    paintInviteList();
   };
+  window.closeInvitePicker = function(){ document.getElementById('pickBd').classList.remove('on'); };
+  window.paintInviteList = function(){
+    if (!_graphCache) return;
+    const list = document.getElementById('pickList');
+    const q = (document.getElementById('pickSearch').value || '').trim().toLowerCase();
+    let cards = _graphCache.cards;
+    if (q) cards = cards.filter(c => c.name.toLowerCase().includes(q));
+    if (!cards.length) {
+      list.innerHTML = '<div class="pick-empty">No matching contacts. Follow people first to invite them here.</div>';
+      return;
+    }
+    const label = { friends: 'FRIEND', following: 'FOLLOWING', followers: 'FOLLOWER', other: '' };
+    list.innerHTML = cards.map(c => {
+      const initial = (c.name[0] || '?').toUpperCase();
+      const av = c.photo
+        ? `<span class="pick-av" style="background-image:url('${c.photo}')"></span>`
+        : `<span class="pick-av">${initial}</span>`;
+      return `<div class="pick-row" data-id="${c.id}">
+        ${av}
+        <div class="pick-info"><b>${c.name.replace(/</g,'&lt;')}</b><small>${label[c.group] || ''}</small></div>
+        <button type="button" class="pick-send">Invite</button>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.pick-row').forEach(row => {
+      row.onclick = () => sendInvite(row);
+    });
+  };
+  async function sendInvite(row){
+    if (row.classList.contains('sent')) return;
+    const id = row.dataset.id;
+    const btn = row.querySelector('.pick-send');
+    btn.textContent = 'Sending…';
+    const url = shareURL();
+    const msg = `🏀 Join my Hoop round on WordSpies — code ${ROOM}\n${url}`;
+    try {
+      const r = await fetch('/api/social/message', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: id, text: msg })
+      });
+      if (!r.ok) throw new Error('msg ' + r.status);
+      row.classList.add('sent');
+      btn.textContent = '✓ Sent';
+      btn.classList.add('done');
+    } catch(e) {
+      btn.textContent = 'Retry';
+      brief('Could not send. Try again.');
+    }
+  }
   // Solo-mode 'Join by code' input.
   window.goJoin = function(){
     const box = document.getElementById('joinCode');

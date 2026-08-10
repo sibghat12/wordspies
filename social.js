@@ -1081,6 +1081,44 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
+  // ---- GET /following — for the in-app invite picker (owner ask 10
+  // Aug 2026 — 'invite link should invite people inside the app, not
+  // outside'). Returns the caller's Follow set as thin profile cards
+  // (id + name + photo) plus everyone who follows the caller back
+  // (mutual = 'friends') and everyone they follow. Sorted by
+  // 'friends first, then following-only, then followers-only'.
+  api.get('/graph', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const [following, followers] = await Promise.all([
+        db.smembers('soc:following:' + me.id),
+        db.smembers('soc:followers:' + me.id),
+      ]);
+      const fSet = new Set(followers);
+      const gSet = new Set(following);
+      const union = Array.from(new Set([...following, ...followers]));
+      const cards = [];
+      for (const id of union) {
+        try {
+          const raw = await db.get('soc:user:' + id);
+          if (!raw) continue;
+          const u = JSON.parse(raw);
+          const iFollow = gSet.has(id);
+          const followsMe = fSet.has(id);
+          let group = 'other';
+          if (iFollow && followsMe) group = 'friends';
+          else if (iFollow) group = 'following';
+          else if (followsMe) group = 'followers';
+          cards.push({ id, name: u.name || 'Player', photo: u.photo || null, group });
+        } catch (e) {}
+      }
+      const rank = { friends: 0, following: 1, followers: 2, other: 3 };
+      cards.sort((a, b) => (rank[a.group] - rank[b.group]) || a.name.localeCompare(b.name));
+      res.json({ me: { id: me.id, name: me.name }, cards });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
   // ---- presence: the app pings while open; a user is online while the key lives ----
   api.post('/ping', async (req, res) => {
     try {
