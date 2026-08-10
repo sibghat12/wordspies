@@ -5475,24 +5475,38 @@ addEventListener('pointerdown', () => audio(), { once: true });
 // The old code only fired a notification while this tab was open, which rather
 // missed the point. Real push goes through the service worker, so it reaches
 // you with the app closed.
+// Push state (owner ask 10 Aug 2026 — 'push notifications for browser
+// users too'):
+//   'unsupported' — no Notification API at all (very old / stripped)
+//   'blocked'     — user denied the browser prompt
+//   'on'          — real Web Push subscription active
+//   'inpage-on'   — no Push support (iOS Safari in-tab, etc), but
+//                   Notification permission granted → we still notify
+//                   in-page when a message arrives while the tab is
+//                   backgrounded (pingLoop() already does this).
+//   'off'         — everything supported/permission-able but not on
 async function pushState(){
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported';
+  if (!('Notification' in window)) return 'unsupported';
   if (Notification.permission === 'denied') return 'blocked';
-  const reg = await navigator.serviceWorker.getRegistration();
-  if (!reg) return 'off';
-  return (await reg.pushManager.getSubscription()) ? 'on' : 'off';
+  if (('serviceWorker' in navigator) && ('PushManager' in window)) {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg && (await reg.pushManager.getSubscription())) return 'on';
+    return 'off';
+  }
+  // No Push API here — Notification API alone works while the tab is open.
+  return Notification.permission === 'granted' ? 'inpage-on' : 'off';
 }
-// The same switch as Sound, so the row reads as one setting you flick, not a
-// button that changes its own label at you.
 async function paintPush(){
   const s = $('swPush'), why = $('pushWhy');
   if (!s) return;
   const st = await pushState();
-  s.classList.toggle('on', st === 'on');
+  s.classList.toggle('on', st === 'on' || st === 'inpage-on');
   s.disabled = st === 'unsupported';
   why.textContent =
-      st === 'unsupported' ? 'This browser can\'t do push notifications.'
+      st === 'unsupported' ? 'This browser can\'t show notifications.'
+    : st === 'blocked'     ? 'Notifications are blocked in your browser — allow them for wordspies.co.uk to turn back on.'
     : st === 'on'          ? 'On — we\'ll tell you about messages and new followers.'
+    : st === 'inpage-on'   ? 'On — we\'ll notify you about messages and new followers.'
     :                        'Get told even when WordSpies is closed.';
 }
 const b64ToU8 = s => {
@@ -5504,15 +5518,21 @@ const b64ToU8 = s => {
 const BLOCKED_HINT = 'Notifications are off in your browser — allow them for wordspies.co.uk';
 async function togglePush(){
   const s = $('swPush');
+  const hasPush = ('serviceWorker' in navigator) && ('PushManager' in window);
   try {
     const st = await pushState();
     if (st === 'unsupported') return;
-    // Once you've said no to the browser's own prompt, the site is never allowed
-    // to ask again — only you can undo it. So flick the switch back and say where
-    // the setting lives, instead of parking a dead "Blocked" label in the row.
     if (st === 'blocked') { s.classList.remove('on'); toast(BLOCKED_HINT); return; }
-    if (st === 'on') {                                   // flick off
-      s.classList.remove('on');                          // move now, tidy up after
+    // In-page notifications only (no Push API here) — flick off is just
+    // a client-side hint; the browser holds the real permission.
+    if (st === 'inpage-on') {
+      s.classList.remove('on');
+      try { localStorage.setItem('ws_inpage_off', '1'); } catch(e){}
+      toast('Notifications off (while WordSpies is open)');
+      return paintPush();
+    }
+    if (st === 'on') {                                   // flick off (real push)
+      s.classList.remove('on');
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = reg && await reg.pushManager.getSubscription();
       if (sub) {
@@ -5523,10 +5543,18 @@ async function togglePush(){
       toast('Push notifications off');
       return paintPush();
     }
-    s.classList.add('on');                               // optimistic — paintPush corrects it if this fails
+    // st === 'off' → ask for permission + subscribe (or fall back).
+    s.classList.add('on');
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') {
       if (perm === 'denied') toast(BLOCKED_HINT);
+      return paintPush();
+    }
+    try { localStorage.removeItem('ws_inpage_off'); } catch(e){}
+    // No PushManager → we can't subscribe, but pingLoop() already shows
+    // in-page notifications when Notification.permission==='granted'.
+    if (!hasPush) {
+      toast('Notifications on (while WordSpies is open)');
       return paintPush();
     }
     const { key } = await api('/push/key');
@@ -5592,19 +5620,20 @@ async function pingLoop(){
     });
     updateBadge(j.unread);
     const away = document.hidden || (!curChat && $('tabChat').classList.contains('hidden'));
+    // Respect the in-page opt-out flag (set when a user without full
+    // Push support flicks the toggle off) so we don't nag them.
+    let inpageOff = false;
+    try { inpageOff = localStorage.getItem('ws_inpage_off') === '1'; } catch(e){}
+    const canInPageNotify = !inpageOff && !PUSH_EP && 'Notification' in window && Notification.permission === 'granted';
     if (j.unread > lastUnread && away) {
       soundMsg();
-      // only stand in for push where there is no push — otherwise you'd get
-      // told twice about the same message
-      if (!PUSH_EP && 'Notification' in window && Notification.permission === 'granted')
-        new Notification('WordSpies 💬', { body: 'You have a new message!', icon: '/icon-192.png' });
+      if (canInPageNotify) new Notification('WordSpies 💬', { body: 'You have a new message!', icon: '/icon-192.png' });
     }
     lastUnread = j.unread;
-    // a new follower is worth a nudge too — the count is the cheapest signal we have
     if (typeof j.followers === 'number') {
       if (lastFollowers !== null && j.followers > lastFollowers) {
         soundFollow();
-        if (!PUSH_EP && 'Notification' in window && Notification.permission === 'granted' && document.hidden)
+        if (canInPageNotify && document.hidden)
           new Notification('WordSpies 👋', { body: 'Someone new is following you!', icon: '/icon-192.png' });
       }
       lastFollowers = j.followers;
