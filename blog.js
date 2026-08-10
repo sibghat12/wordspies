@@ -339,20 +339,44 @@ const articles = {
     desc: 'The fastest way to learn Spanish is by talking to real Spanish speakers — free. Here is how to find them, what to say first, and how AI corrections keep you improving.',
     date: '2026-08-09',
     html: `
-<p>Spanish is the second-most-spoken native language on the planet, and thousands of native speakers are online right now who genuinely want to talk to you — because they're learning English. That mutual exchange is the fastest, cheapest way to actually learn Spanish. Here's how to do it, free.</p>
+<p>Spanish is the second-most-spoken native language on the planet, and thousands of native speakers are online right now who genuinely want to talk to you — because they're learning English. That mutual exchange is the fastest, cheapest way to actually learn Spanish. Not a subscription. Not a bootcamp. Not another app that gamifies "streak days" while you never say a Spanish sentence to a Spanish person. Just real conversation, on both sides, free. Here's exactly how to do it.</p>
+
 <h2>Why chatting with real people beats apps</h2>
-<p>Duolingo teaches you sentences you'll never say. A real conversation with a Mexican, Spaniard, Argentine or Colombian teaches you the phrases they actually use — <em>"¿qué tal?"</em> not <em>"¿cómo está usted?"</em>. You also pick up slang, rhythm, and confidence, all of which classroom Spanish never gives you.</p>
+<p>Duolingo teaches you sentences you'll never say. A real conversation with a Mexican, Spaniard, Argentine or Colombian teaches you the phrases they actually use — <em>"¿qué tal?"</em> not <em>"¿cómo está usted?"</em>, <em>"me mola"</em> not <em>"me gusta mucho"</em>. You also pick up slang, rhythm, and confidence — three things classroom Spanish never gives you. And you build a friend in the process, which is the real fuel that keeps you going when the initial motivation fades in week three.</p>
+<p>The other advantage: correction happens in context. When you write "yo soy cansado" and your partner replies "estoy cansado también!" — with the correct verb baked into a normal reply — the pattern lands in a way no textbook grammar box ever will. That's how children learn languages, and it works for adults too as long as we're humble enough to be corrected.</p>
+
 <h2>Where to find real Spanish speakers online, free</h2>
-<p><a href="/social">WordSpies</a> has thousands of Spanish speakers looking for English practice — you pick your language pair once at signup and the community wall filters to people who match. Send a message, no accounts to trade, no phone numbers, no fee.</p>
+<p><a href="/social">WordSpies</a> has thousands of Spanish speakers looking for English practice — you pick your language pair once at signup and the community wall filters to people who match. Send a message, no accounts to trade, no phone numbers, no fee. No swiping either — it's a browsable feed of profiles with photos, bios, and language pairs, so you can tell in three seconds whether someone might be interesting to talk to.</p>
+<p>Alternatives: HelloTalk and Tandem still have the biggest user bases but paywall the most useful features. Discord Spanish-learning servers work if you're comfortable with the chatroom-plus-voice format. Reddit r/language_exchange is slow but sometimes turns up gems. For most learners the modern answer is one main platform (WordSpies for the free AI corrections + integrated voice) plus one backup pool for volume.</p>
+
 <h2>What to say in your first message</h2>
-<p>Keep it short and specific. Bad first message: <em>"Hola, quieres practicar?"</em> (Everyone gets thirty of these a day.) Good first message: <em>"Hola! Vi que te gusta el cine mexicano — ¿qué película recomiendas para alguien aprendiendo español?"</em> A specific question about their profile earns a real reply.</p>
+<p>Keep it short and specific. This is the biggest mistake beginners make.</p>
+<p>Bad first message: <em>"Hola, quieres practicar?"</em>. Everyone gets thirty of these a day and ignores them all. It signals no effort, no personality, and no reason to reply to you specifically.</p>
+<p>Good first message: <em>"¡Hola! Vi que te gusta el cine mexicano — ¿qué película recomiendas para alguien aprendiendo español?"</em>. A specific question about something in their profile earns a real reply almost every time. It shows you actually read their profile, it gives them something concrete to answer, and it starts a conversation that has somewhere to go.</p>
+<p>Even better: reference something specific and personal. If their profile says they're from Bogotá, mention you've always wanted to visit Colombia and ask for their café recommendation. If they mention they love football, ask who they support. People love talking about themselves; give them permission.</p>
+
 <h2>Use AI corrections without breaking the flow</h2>
-<p>You'll make mistakes. Every chat message on WordSpies has a "Correct" button — tap it and Claude AI shows the fixed version underneath yours with a short note ("past tense", "missing article"). Your original stays visible so you learn from the mistake instead of hiding it.</p>
+<p>You'll make mistakes. Lots of them. That's the point. Every chat message on WordSpies has a "Correct" button — tap it and Claude AI shows the fixed version underneath yours with a short note ("past tense", "missing article"). Your original stays visible so you learn from the mistake instead of hiding it.</p>
+<p>Don't correct every message — that kills the conversation flow. Correct every fourth or fifth message, focusing on the ones where you feel unsure. The corrections you actually notice and read stick way better than the ones you skim.</p>
+<p>Once a week, scroll back through your corrections and write down the top three mistakes you're making repeatedly. Those are your personal weak spots. Look them up properly (a textbook, a YouTube grammar explainer, whatever) and you'll close them within a month.</p>
+
 <h2>Voice practice from day one</h2>
-<p>Text is safe, voice is where you actually learn to speak. Voice parties on WordSpies let you drop into a Spanish-speaking room and just listen at first — no pressure to talk. When you're ready, raise a hand and jump in. Doing this once a week for a month will do more for your Spanish than a year of flashcards.</p>
+<p>Text is safe, voice is where you actually learn to speak. Voice parties on WordSpies let you drop into a Spanish-speaking room and just listen at first — no pressure to talk. This is the most under-used feature of the whole space; almost every learner skips it for months because "I'm not ready yet". You're never ready. You get ready by doing it.</p>
+<p>Start as a pure listener. Three parties, thirty minutes each, just absorbing the rhythm of native Spanish spoken at real speed. Then raise your hand and say one sentence — anything, "Soy nueva aquí, estoy aprendiendo español" — and see the fear break. Doing this once a week for a month will do more for your Spanish than a year of flashcards.</p>
+
+<h2>The regional-Spanish question</h2>
+<p>Spanish varies more than English. A Mexican, a Spaniard, and an Argentine can all sound different enough that a beginner learner struggles to switch. Pick a region to focus on for the first three months — usually Mexican Spanish is easiest for English speakers because the pronunciation is clearer and the vocabulary matches what US Spanish media uses. Once you're comfortable, expose yourself to other varieties (Argentine "vos", Spanish "vosotros", Caribbean speed) so your ear becomes flexible.</p>
+<p>WordSpies lets you filter by country on the community wall — Mexico, Spain, Colombia, Argentina, Peru, Chile all have big rosters. Pick the flag that matches the media you want to consume (Mexican films? Spanish news? Argentine music?) and lean into that regional variant first.</p>
+
 <h2>The realistic path</h2>
-<p>Two 15-minute chats a day, one voice party a week, and one game with your language partner (Word Race in Spanish is unfair fun). Do that for three months and you'll be conversational. Do it for six and you'll be fluent enough to travel.</p>
-<p><a href="/social">Start free on WordSpies</a> — pick Spanish as your target language and you're talking to a real speaker within minutes.</p>`
+<p>Two 15-minute chats a day, one voice party a week, and one game with your language partner (Word Race in Spanish is unfair fun). Do that for three months and you'll be conversational. Do it for six and you'll be fluent enough to travel confidently. Do it for twelve and you'll dream in Spanish occasionally, which is the moment every learner secretly waits for.</p>
+<p>Notice what's not in that plan: grammar drills, verb conjugation tables, spaced-repetition apps. Those aren't wrong — they're just not necessary if you're doing the conversation work. The conversation forces you to encounter grammar you don't know, and the AI corrections + your own googling teach it to you as it comes up. That's how kids learn languages, and it turns out to work for adults too.</p>
+
+<h2>What to do when you plateau</h2>
+<p>Every learner plateaus around month four. Vocabulary breadth stops growing, corrections start coming back "OK" for the same patterns, conversations feel repetitive. Signs you've plateaued: you can chat about the weather, food, and weekends fluently but freeze on politics, movies, or your job.</p>
+<p>The fix: vary the topics deliberately. Pick a hard topic each week (cinema, work, environment, dating) and force the conversation there. Send your partner a Spanish YouTube video and discuss it. Read a Spanish news article and paraphrase it back in a message. Boring practice keeps you at plateau; deliberately hard practice moves you off it.</p>
+
+<p><a href="/social">Start free on WordSpies</a> — pick Spanish as your target language and you're talking to a real speaker within minutes. No credit card, no email required.</p>`
   },
 
   'best-free-language-exchange-apps': {
@@ -381,20 +405,49 @@ const articles = {
     desc: 'Get instant AI corrections on any sentence in any language, free. How AI corrections work, how they compare to native-speaker feedback, and when to use each.',
     date: '2026-08-09',
     html: `
-<p>Learning a language without correction is like practising darts blindfolded — you'll get comfortable doing it wrong. Getting corrected used to mean hiring a tutor or nagging a native-speaker friend. Now AI does it instantly, in every language, for free.</p>
+<p>Learning a language without correction is like practising darts blindfolded — you'll get comfortable doing it wrong. Every fluent adult learner will tell you the same story: they spent years plateauing at intermediate level because nobody was correcting their writing regularly. Grammar books drift out of relevance the moment you close them. Native-speaker friends are polite; they understand what you meant and reply, quietly ignoring the four grammatical errors in your last message. Getting corrected used to mean hiring a tutor at £20/hour or nagging a friend until they blocked you. Now AI does it instantly, in every language, for free.</p>
+
 <h2>Why corrections matter more than lessons</h2>
-<p>Textbooks teach rules. Corrections show you which rule you personally keep breaking. That's the actual learning — the feedback loop between your mistake and someone (or something) telling you why.</p>
+<p>Textbooks teach the rules of the language. Corrections show you which rules you personally keep breaking. Those are two very different things. You can know a rule perfectly (in your head, on a test) and violate it constantly in your own writing because the rule hasn't crossed from "know about" to "instinctively apply".</p>
+<p>The gap between knowing and using is what corrections close. Every time you see a specific mistake in a real sentence you wrote — and the fix underneath it — you're rewriting the neural pathway that produced the error. Do this enough times and the correct form starts appearing spontaneously.</p>
+<p>This is also why "spaced repetition" apps like Anki hit their ceiling for intermediate learners. Flashcards drill vocabulary you already recognise. They can't correct sentences you never actually construct in a real context. Corrections attack the actual bottleneck: production, not recognition.</p>
+
 <h2>How AI corrections work</h2>
-<p>You type a sentence. The AI proposes the corrected version and — critically — explains what changed. "I go to store yesterday" → "I <u>went</u> to <u>the</u> store yesterday" (past tense, missing article). Modern models like Claude are shockingly good at this in dozens of languages.</p>
+<p>You type a sentence. The AI proposes the corrected version and — critically — explains what changed. "I go to store yesterday" → "I <u>went</u> to <u>the</u> store yesterday" with a note ("past tense · missing article"). Modern models like Claude, GPT-4, and Gemini are shockingly good at this in dozens of languages, including languages with wildly different grammatical structures from English.</p>
+<p>What they do well: catching grammatical errors, missing articles, wrong verb tenses, wrong noun genders, wrong prepositions, and awkward word orders. They also usually catch typos and provide a natural-sounding rewrite rather than a rigidly literal one.</p>
+<p>What they do less well: catching register mismatches (using formal language in a casual chat), regional variants (using European Spanish when the person you're talking to is Argentine), and idioms that "work" grammatically but no native would say. These are the places you still need a human.</p>
+
 <h2>AI vs native-speaker corrections</h2>
-<p>Natives catch nuance — the phrase that's grammatically correct but nobody actually says. AI catches grammar and vocabulary with near-perfect consistency, and it never gets tired of correcting you. Both are valuable. AI is the daily driver; a native speaker is the polish.</p>
+<p>Natives catch nuance. They know that "voy a tomar una decisión" is grammatically fine but "voy a decidir" is what someone would actually say. They know that "muy bueno" in an Argentine context sounds different from "muy bueno" in Spain. They know that certain phrasings sound old-fashioned or overly formal.</p>
+<p>AI catches consistency. It never gets tired of correcting the same mistake for the tenth time. It never lets a wrong-but-understandable sentence slide because it's polite. It never runs out of time or interest. It's available at 3am when you can't sleep and want to send a message.</p>
+<p>Both are valuable, and neither replaces the other. The right split: AI is the daily driver, catching 80% of the mistakes at 0% of the cost. A native speaker (paid or exchange partner) is the polish, catching the last 20% that requires human judgement.</p>
+
 <h2>Where to get free AI corrections</h2>
-<p>On <a href="/">WordSpies</a>, every message in every chat has a "Correct" button. Tap it, get the corrected version underneath yours, plus a one-line explanation of what changed. Your original stays visible so you're learning from your own mistake, not hiding it.</p>
+<p>On <a href="/">WordSpies</a>, every message in every chat has a "Correct" button. Tap it, get the corrected version underneath yours, plus a one-line explanation of what changed. Your original stays visible so you're learning from your own mistake, not hiding it. It works in every language the underlying model supports — which is essentially every major language plus most minor ones.</p>
+<p>Alternatives: ChatGPT (paste your sentence + ask "please correct my Spanish"), DeepL Write (excellent for polishing already-decent writing), LanguageTool (grammar checker with an AI mode). All work but require copy-paste back and forth. WordSpies' advantage is that the Correct button is one tap inside the conversation you're already having, so friction is zero.</p>
+
 <h2>Getting the most from AI corrections</h2>
-<p>Three habits: (1) write first, correct after — don't lean on AI while composing or you'll never learn to think in the language. (2) re-read the correction out loud before moving on. (3) if the same mistake shows up three times, write it in a note — that's your personal weak spot to drill.</p>
+<p>Three habits that separate learners who compound from learners who plateau:</p>
+<p><b>Write first, correct after.</b> If you lean on AI while composing — asking it to translate for you, or write a paragraph you can send — you'll never learn to think in the language. The correction only teaches you if you produced the mistake yourself first. The friction of the correction is the training.</p>
+<p><b>Read the correction out loud before moving on.</b> Silent skimming lets the fix slip past your working memory. Saying it out loud (or subvocalising if you're in public) forces the pattern into a different memory system. Two seconds of extra effort, ten times the retention.</p>
+<p><b>Track your top three mistakes.</b> If the same correction shows up three times in a week, write it down. That's your personal weak spot — the specific mistake that costs you the most. Read up on it deliberately (a grammar site, a YouTube video), and it'll close within a month.</p>
+
 <h2>When AI corrections aren't enough</h2>
-<p>Register (formal vs casual), regional variation, idioms, and cultural fit — these are where you still need a human. Do most of your daily correcting with AI, then swap voice notes with a real person once a week to polish everything AI misses.</p>
-<p><a href="/social">Try free AI corrections on WordSpies</a> — send a message in any language, tap Correct, and see how it works. No signup fee.</p>`
+<p>Register (formal vs casual), regional variation, idioms, and cultural fit — these are where you still need a human. AI will happily correct your grammatically-perfect email that would come across as painfully formal to an actual Colombian friend. It's not that AI is wrong — it's that "correct" and "natural" are different bars.</p>
+<p>The fix: do most of your daily correcting with AI, then swap voice notes or occasional messages with a real language exchange partner. When your partner uses a phrase that surprises you (better than what you would have said), save it. Those "aha" moments from real humans are what push you past intermediate.</p>
+
+<h2>The 90-day compound effect</h2>
+<p>What happens if you use AI corrections on every 3-4 messages you send, for 90 days, while chatting with real partners?</p>
+<p>Month 1: your top ten mistakes disappear. Genders lock in, basic tenses become automatic, prepositions stop being guesswork.</p>
+<p>Month 2: your writing starts sounding more natural. Not native-natural — still recognisable as a learner — but the "textbook stiff" quality goes away.</p>
+<p>Month 3: corrections start returning "OK" or unchanged for entire messages. You've closed enough of the pattern-space that random new sentences you generate are grammatically fine.</p>
+<p>What DOESN'T happen: fluency in speaking. That requires voice practice (see the <a href="/blog/voice-chat-vs-text-chat-language">voice vs text guide</a>). But your written command of the language will move a full CEFR level — B1 to B2, or B2 to C1 — in that 90-day window if you're consistent.</p>
+
+<h2>A common trap</h2>
+<p>Using AI corrections as a substitute for actually chatting. If you write ten sentences a day into a text field just to see them corrected, you're doing homework, not learning to communicate. Corrections work because they happen inside real conversations you actually cared about. If the conversation is real, the corrections stick. If the conversation is fake, they don't.</p>
+<p>The fix: always correct in the context of a chat with a real person you're actually trying to talk to. Fake practice doesn't build real fluency.</p>
+
+<p><a href="/social">Try free AI corrections on WordSpies</a> — send a message in any language, tap Correct, and see how it works. No signup fee, no per-message limit.</p>`
   },
 
   'practise-speaking-a-language-online': {
@@ -402,19 +455,50 @@ const articles = {
     desc: 'Terrified of speaking your target language? Here is how to practise speaking online without the awkward silences — from AI voice to listen-first voice parties.',
     date: '2026-08-09',
     html: `
-<p>Speaking is the scariest part of learning a language. Reading is easy. Writing gives you time to think. Speaking — with someone hearing your mistakes in real time — is where most learners stall for years. Here's how to break through that wall without dying of embarrassment.</p>
+<p>Speaking is the scariest part of learning a language. Reading is easy — nobody's watching. Writing gives you time to think. Speaking, with someone hearing your mistakes in real time and your accent laid bare, is where most learners stall for years. They know the words, they can conjugate the verbs on a test, they can even read a book — but when a native speaker asks them a question, their brain goes white and they answer in English. Here's how to break through that wall without dying of embarrassment.</p>
+
 <h2>Rule 1: You must speak from the very beginning</h2>
-<p>Skipping speaking practice until you "feel ready" means you'll never feel ready. Speaking builds a different skill from reading or listening — the pathway from thought to mouth. That pathway only develops through use.</p>
+<p>Skipping speaking practice until you "feel ready" means you'll never feel ready. Speaking builds a completely different skill from reading or listening — the neural pathway from thought → mouth → sound. That pathway only develops through use. It doesn't matter how many words you know; if the pathway isn't built, they can't come out.</p>
+<p>The proof is depressingly common: heritage learners who understand their parents' language perfectly but can't speak it. All the vocabulary is there, all the grammar is there, but the production pathway was never trained. Don't do that to yourself. Speak on day one, even if it's badly.</p>
+
+<h2>Rule 2: Bad speech is not failure — silent speech is failure</h2>
+<p>The mistake most learners make: they wait to speak until they can do it correctly. This is backwards. You get good at speaking by speaking badly, then slightly less badly, then slightly less badly. Every native speaker started at "goo goo ga ga" — you didn't skip that phase for your first language, and you can't skip it for your second.</p>
+<p>The way to make peace with bad speech: pick moments where the stakes are low. AI partners have zero stakes. Voice notes have low stakes (you can re-record). Voice parties with strangers you'll never meet have medium stakes. Video calls with a partner have higher stakes. Escalate slowly.</p>
+
 <h2>Start with AI, not people</h2>
-<p>An AI conversation partner doesn't judge, doesn't get bored, and doesn't watch you struggle. <a href="/social">WordSpies has three AI Chat Experts</a> — Amy (British), Matthew (American), Ashley (Australian) — who speak with real voices and remember what you said earlier in the conversation. Warm up with them before any real chat.</p>
+<p>An AI conversation partner doesn't judge, doesn't get bored, and doesn't watch you struggle. <a href="/social">WordSpies has three AI Chat Experts</a> — Amy (British), Matthew (American), Ashley (Australian) — who speak with real voices, remember what you said earlier in the conversation, and gently correct your writing when needed. Warm up with them before any real chat.</p>
+<p>The magic of AI for early speaking practice: the same conversation, on repeat, until it's automatic. Do a "coffee shop" roleplay with Amy ten times. By the tenth, ordering a coffee in your target language will feel automatic. Now try it on a real person and it'll come out cleanly. This kind of rote-practice is embarrassing to do with humans but perfectly fine with AI.</p>
+
 <h2>Move to voice parties as a listener</h2>
 <p>Voice parties are group audio rooms where anyone can join. Here's the trick: on WordSpies you can join as a <em>listener</em> — you can hear everyone, but nobody hears you until you raise your hand. Spend your first three parties just listening. You'll pick up rhythm, slang, common phrases — and lose the fear of the accent.</p>
+<p>What to listen for: the fillers ("bueno", "pues", "vale" in Spanish; "ben", "alors" in French). The pauses (native speakers pause more than textbooks suggest). The intonation patterns. The way native speakers agree, disagree, interrupt gently. This is the invisible curriculum you'll never learn from apps because apps only teach the words, not the space between them.</p>
+
 <h2>Raise your hand for one sentence</h2>
-<p>When you're ready, join a party and raise your hand to say one thing. Not a monologue — one sentence. "Hi, I'm learning Spanish from Manchester" is enough. Do this once and the fear evaporates.</p>
+<p>When you're ready — which is now, actually, because the fear won't get smaller by waiting — join a party and raise your hand to say one thing. Not a monologue. Not a paragraph. One sentence. "Hi, I'm learning Spanish from Manchester" is enough. It doesn't need to be witty or complete. It just needs to happen.</p>
+<p>Do this once and the fear evaporates. Every learner reports the same experience: crushing terror before, mild elation after, wondering why they made such a big deal of it. The fear is a projection, not a reality. The only way to know is to test it.</p>
+
 <h2>Send voice notes, not perfect speech</h2>
-<p>Voice notes are half-speech, half-writing — you can re-record, and there's no live pressure. Every chat on WordSpies supports voice notes. Send them badly. The other person will send one back, and now you're having a real conversation.</p>
+<p>Voice notes are the bridge between text-only and live-voice practice. They're half-speech, half-writing — you can re-record, edit your delivery, listen back before sending. There's no live pressure. But the muscle of "producing target-language sound with your own mouth" is still being trained.</p>
+<p>Every chat on WordSpies supports voice notes. Send them badly. Send a 15-second one about what you had for breakfast. The other person will send one back. Now you're having a voice conversation, just asynchronous — which is much easier than a live call as a starter.</p>
+<p>Ratio target: for every ten text messages you send, send one voice note. That's a manageable dose that keeps building the speaking muscle without ever feeling like a leap.</p>
+
+<h2>The big one: your first video call</h2>
+<p>Around week 6, propose a 15-minute video call to a text partner you've built rapport with. Frame it as short and structured: "Want to do 15 minutes — 7 in your language, 7 in mine? I'll bring three questions if we get stuck." The structure makes it feel safer.</p>
+<p>Before the call, write down three specific things to ask about (their weekend, a movie they've mentioned, something in the news). This is your safety net — you'll never run out of things to say. Bring a notepad; if a word comes up you don't know, jot it down instead of stopping the flow.</p>
+<p>Expect it to be awkward. It's supposed to be. The awkwardness is the practice.</p>
+
+<h2>Common problems and fixes</h2>
+<p><b>"I understand what they say but can't respond fast enough."</b> That's normal at intermediate level. Fix: shadow (imitate) native audio for 10 minutes a day. Podcast, YouTube, whatever — repeat what they say out loud, matching their speed. Your brain will speed up in a few weeks.</p>
+<p><b>"They keep switching to English."</b> Their instinct is helpful, but it kills your practice. Fix: at the start of the call, say "let's stay in Spanish even when I'm slow — I'm trying to build the muscle". Native speakers appreciate the framing.</p>
+<p><b>"I freeze completely."</b> Fix: rehearse three "escape phrases" — "sorry, can you say that again more slowly?", "I know the word in English but not in Spanish — can you help?", "let me think for a second". These give your brain time to unfreeze.</p>
+
 <h2>The 3-week plan</h2>
-<p>Week 1: 10 minutes a day with an AI partner. Week 2: join one voice party as a listener, send one voice note to a real person. Week 3: raise your hand in a party for one sentence. By the end of week 3, speaking will still feel new but no longer terrifying.</p>
+<p><b>Week 1:</b> 10 minutes a day with an AI partner. Do the same roleplay (coffee shop, meeting a friend, ordering food) repeatedly until it's automatic.</p>
+<p><b>Week 2:</b> Join one voice party as a listener, send one voice note to a real person. Both are low-stakes exposure.</p>
+<p><b>Week 3:</b> Raise your hand in a party for one sentence. Send three voice notes. Notice how much less scary it is than week 1.</p>
+<p><b>Week 4+:</b> Once a week: 15-minute video call. Twice a week: voice party with active participation. Daily: voice notes to your partners.</p>
+<p>By the end of month 2 you'll be a person who speaks the language, not a person who studies the language.</p>
+
 <p><a href="/social">Start free on WordSpies</a> — AI voice partners and live voice parties are open from day one.</p>`
   },
 
@@ -445,20 +529,49 @@ const articles = {
     desc: 'Finding a language exchange partner is easier than ever in 2026. Here is where to look, what to say in your first message, and how to keep them replying.',
     date: '2026-08-09',
     html: `
-<p>The best language teacher is a native speaker who's learning your language too — a language exchange partner. You help each other, both languages get practised, nobody pays. The tricky part isn't the concept, it's finding one who actually replies. Here's the 2026 playbook.</p>
+<p>The best language teacher is a native speaker who's learning your language too — a language exchange partner. You help each other, both languages get practised, nobody pays. The tricky part isn't the concept, it's finding one who actually replies. Most learners burn through fifty first messages and get five replies, then decide "nobody wants to practise with me". They're wrong — they're just doing the finding + messaging + follow-through in ways that guarantee no partner sticks. Here's the 2026 playbook that actually works.</p>
+
 <h2>Where to look</h2>
-<p>Language exchange lives on dedicated apps — <a href="/blog/best-free-language-exchange-apps">Tandem, HelloTalk, Speaky, WordSpies</a>. Sub-reddits work in a pinch (r/language_exchange). Discord servers for specific languages have voice channels but skew younger and less structured.</p>
+<p>Language exchange lives on dedicated apps — <a href="/blog/best-free-language-exchange-apps">Tandem, HelloTalk, Speaky, WordSpies</a>. Each has its own quirks:</p>
+<p>The classic apps have the largest user bases but paywall most useful features and the free tier is heavily "featured" (translation: pay to appear). <a href="/">WordSpies</a> is smaller but genuinely free and has AI grammar corrections built into every chat, so your practice compounds even before you find a regular partner.</p>
+<p>Sub-reddits work in a pinch (r/language_exchange). Discord servers for specific languages have voice channels but skew younger and less structured. If you're older or want something more like an old-school pen-pal, the platforms that have been running since the 2000s (ConversationExchange, MyLanguageExchange) surface partners with more staying power than app-generation platforms.</p>
+
 <h2>Build a profile that gets replies</h2>
-<p>Three details do the heavy lifting: a real photo (not a landscape), your specific interests (not "I like everything"), and what you want from the exchange ("weekly voice calls, casual chat"). Vague profiles get ignored. Specific ones get twenty messages a week.</p>
+<p>Your profile is your job application. Three details do 80% of the work:</p>
+<p><b>A real photo of your face.</b> Not a landscape, not your dog, not a cartoon avatar. People need to see a human before they invest attention. Landscape profiles get ignored 4-to-1.</p>
+<p><b>Specific interests.</b> "I like everything" gets you nothing. "Argentine indie music, sci-fi novels, sourdough baking" tells someone exactly whether you're their kind of person. The more oddly specific, the better — niche shared interest is the strongest first-message hook there is.</p>
+<p><b>What you want from the exchange.</b> "Weekly voice calls, casual chat" is a hundred times better than nothing. It filters out mismatches (voice-averse people won't message you) and pre-negotiates the format.</p>
+<p>Bonus: a one-line self-intro in the target language, even if it's imperfect. It signals commitment and gives corrections partners an immediate hook ("actually you'd say it like this...").</p>
+
 <h2>The first message that works</h2>
-<p>Don't say "Hi, want to practise?" — they get thirty of those a day. Instead, react to something specific in their profile: <em>"Saw you're into indie music from Buenos Aires — any bands I should try?"</em> A specific question in their native language earns a genuine reply almost every time.</p>
+<p>Don't say "Hi, want to practise?" — they get thirty of those a day and they all blur into the same anonymous request. Instead, react to something specific in their profile: <em>"Saw you're into indie music from Buenos Aires — any bands I should try?"</em>. A specific question in their native language earns a genuine reply almost every time.</p>
+<p>The formula: (1) name the specific thing you noticed, (2) ask a real question they can answer with a concrete recommendation. This bypasses the "should I bother replying?" filter because they know exactly how to respond and it takes them 20 seconds.</p>
+<p>Two follow-up moves that most people skip: reply within a day when they respond (momentum matters), and drop a personal detail of your own in reply 2 so they can hook back into you. Language exchange is a friendship-building process, not a translation service.</p>
+
 <h2>Set the exchange format early</h2>
-<p>Most exchanges die because one person gets all the practice and the other gets none. Agree in the first few messages: 15 min in their language, 15 min in yours. Alternate days if that's easier. Formal rules feel awkward until they save the friendship.</p>
+<p>Most exchanges die because one person gets all the practice and the other gets none. Sometimes you're the one getting all the practice ("wow, they're always so happy to speak English to me!") and don't notice until the partner goes silent. Other times you're the one giving all the practice and quietly resenting it.</p>
+<p>Agree in the first few messages: 15 min in their language, 15 min in yours. Or alternate days — Monday all Spanish, Tuesday all English. Or a simple "I'll write to you in Spanish, you write back in English". Formal rules feel awkward until they save the friendship.</p>
+<p>Renegotiate every month or so. As your skills change, the balance should change. If you were beginner Spanish and they were fluent English, the mix would rightfully lean 80/20 in your favour early. Once you're upper-intermediate, it should be 50/50.</p>
+
 <h2>Use tools that fill the awkward silences</h2>
-<p>Play a game together while you chat. <a href="/wordrace">Word Race</a>, <a href="/wordchain">Word Chain</a>, or <a href="/guessword">Guess the Word</a> in the target language give you something to talk about when you run out of small talk. A five-minute game breaks the ice and turns a stiff first call into an easy one.</p>
+<p>The first three video calls with a new partner are excruciating for both people. Nobody knows what to say. Silence hangs. The temptation to fall back to English is enormous.</p>
+<p>Play a game together while you chat. <a href="/wordrace">Word Race</a>, <a href="/wordchain">Word Chain</a>, or <a href="/guessword">Guess the Word</a> in the target language give you something to talk about when you run out of small talk. A five-minute game breaks the ice and turns a stiff first call into an easy one. The trash talk in the target language is the real teacher — you'll learn more idiomatic phrases from ten minutes of losing at Word Race than an hour of "so, tell me about yourself".</p>
+<p>Other silence-fillers: send them a YouTube video in your language and discuss it. Cook the same recipe together on video. Play 20 Questions. Anything with structure beats "so...what do you want to talk about?".</p>
+
 <h2>How to keep them replying</h2>
-<p>Reply within a day. Ask questions about them (people love talking about themselves). Send voice notes — they feel more personal than text. And be forgiving: language exchange is a hobby for both of you, not a job.</p>
-<p><a href="/social">Start free on WordSpies</a> — the community wall filters to people learning your language and speaking theirs. First real conversation possible today.</p>`
+<p>Reply within a day. Any longer and momentum dies. If you're too busy for a full reply, send a one-line "hey, saw your message, will reply properly tonight" — costs you 5 seconds and keeps them engaged.</p>
+<p>Ask questions about them. People love talking about themselves and remember most fondly the partners who were curious about their life. If they told you their sister is getting married last week, ask how the wedding went the next week. The tiny memory earns huge loyalty.</p>
+<p>Send voice notes. They feel more personal than text and force you both into voice practice. Even 30-second voice notes about your day build the intimacy that keeps partnerships going for months.</p>
+<p>Be forgiving. Language exchange is a hobby for both of you, not a job. If they go quiet for a week, send a friendly "hey! how have you been?" instead of accusing them of ghosting. Most people come back — they just had a busy week.</p>
+
+<h2>How many partners is the right number?</h2>
+<p>Two to four active partners is the sweet spot. One is too fragile (if they get busy, your whole practice dies). Ten is too many (you can't maintain real relationships with ten people). Two to four gives you variety (different accents, different topics, different schedules) without spreading you thin.</p>
+<p>Rotate. If a partner goes quiet for two weeks, gracefully add a new one. Don't hoard "just in case" partners — the ones you don't message become dead weight in your app and they'll forget about you too.</p>
+
+<h2>When to graduate to a tutor</h2>
+<p>Free language exchange is fantastic for building fluency, but it hits a ceiling. Around upper-intermediate (B2), you'll notice your partner corrects you less, either because you're better or because they're bored of correcting. That's the moment to add a paid tutor once a week (italki, Preply) alongside your free partners. The tutor pushes the ceiling; the partners keep the daily practice alive.</p>
+
+<p><a href="/social">Start free on WordSpies</a> — the community wall filters to people learning your language and speaking theirs. First real conversation possible within a few minutes of signup.</p>`
   },
 
   'best-free-language-exchange-sites-2026': {
@@ -466,17 +579,38 @@ const articles = {
     desc: 'The best free language exchange sites in 2026 — chat, voice, AI corrections, cost, and which fits which kind of learner. Honest comparison, no affiliate spin.',
     date: '2026-08-10',
     html: `
-<p>Language exchange has grown up. In 2026 you can find a native speaker of almost any language in seconds, chat by text or voice for free, and get instant AI grammar help on top. Here's the honest state of the space — what's genuinely free, what's paywalled, and which platform fits which kind of learner.</p>
+<p>Language exchange has grown up. In 2026 you can find a native speaker of almost any language in seconds, chat by text or voice for free, and get instant AI grammar help layered on top of both. That's a very different world from a decade ago, when you either paid an italki tutor or trawled Reddit for pen-pals. The catch is that "free" now means very different things depending on the platform — some genuinely free, some free-with-friction, some free-with-a-timer. This is the honest state of the space in 2026, what each one actually costs in practice, and which fits which kind of learner.</p>
+
+<h2>What "free" really means in 2026</h2>
+<p>Almost every platform advertises a free tier. The question is what they hold back. Common paywall tricks: translation limited to short messages, only one target language, voice call minutes capped, "moments" (social feed) capped per day, VIP filters (native speakers only, gender, verified) locked, group audio hidden. If you're serious about a language you'll bump into at least one of these within a week. Before signing up, search the app store reviews for the word "paywall" — it's usually the top complaint.</p>
+
 <h2>WordSpies</h2>
-<p><a href="/">WordSpies</a> is language exchange plus multiplayer games plus AI corrections in one browser tab. Message any member, tap "Correct" on a bubble for a one-tap grammar fix + a short note about what changed, jump into a live voice party, or start a language game (Word Race, Word Chain, Guess the Word, Spy, WordSpies, Ludo, Pool, Connect 4, Hoop) together. No paywall, no premium tier, no ads-that-force-signup. Downside: the community is newer, so obscure language pairs have thinner rosters.</p>
-<h2>Older exchange platforms</h2>
-<p>The classics (you know the names) still have the largest user bases, so if you're learning a rare language your best chance of a partner is there. Downsides in 2026: most useful features (translations of long messages, VIP filters, group audio, cross-language moments) sit behind a subscription; AI corrections rely on the other person actually taking the time to correct you.</p>
-<h2>Discord servers</h2>
-<p>Language-learning Discord servers are still a strong free option, especially for young adults. Voice channels are always-on, moderation ranges from great to none, and there's no formal exchange mechanic — you sink or swim on making friends.</p>
-<h2>Reddit r/language_exchange</h2>
-<p>An old-school notice-board. Post your language pair, wait for DMs, take conversations elsewhere. Zero infrastructure but zero cost too. Works if you have patience.</p>
-<h2>Which one fits you?</h2>
-<p>For most people the modern answer is <a href="/">WordSpies</a> — free AI corrections built in, real people to chat with, games for the awkward first few sessions, and voice parties when you're ready to speak. Older platforms remain the fallback for rare languages. Discord and Reddit are for people who want to build friendships more than they want structured practice.</p>
+<p><a href="/">WordSpies</a> is language exchange plus multiplayer games plus AI corrections in one browser tab. Message any member, tap "Correct" on any message bubble for a one-tap grammar fix with a short note about what changed, jump into a live voice party, or start a language game (Word Race, Word Chain, Guess the Word, Spy, WordSpies, Ludo, Pool, Connect 4, Hoop) together. No paywall, no premium tier, no ads that force a signup wall. Everything works from day one — including the AI corrections powered by Claude, which most competitors gate behind subscription. Downside: the community is newer, so if you're learning a rare language pair (like Finnish ↔ Filipino) the roster is thin — for those you'll want a fallback.</p>
+
+<h2>Older exchange platforms (Tandem, HelloTalk, Speaky, Bilingua)</h2>
+<p>The classics still have the largest user bases, so if you're learning a rare or "small" language your best chance of finding an active partner is there. Downsides in 2026: most useful features (translations of long messages, VIP filters, group audio, cross-language moments feed) sit behind a subscription that's crept up to £10–15 per month. AI corrections either don't exist or arrived late and are gated behind Pro. Discovery is dominated by a "featured" row that many users complain feels pay-to-play. Verdict: keep an account for the volume, but don't lean on the free tier as your daily driver.</p>
+
+<h2>italki</h2>
+<p>italki isn't really language exchange — it's a paid tutoring marketplace with a "community" tab bolted on. The tutors are excellent (average £8–20/hour for a professional teacher, £3–8 for a "community tutor"), but if your goal is free practice you'll be swimming against the current. The free "notebook" feature (write in your target language, get corrections from natives) still works and is under-appreciated — treat that as the freebie and pay for a tutor only when you're plateauing.</p>
+
+<h2>Discord language servers</h2>
+<p>Server discovery has matured. r/languagelearning maintains a list; most major languages have a 5,000–50,000 member server with active voice channels around the clock. Downsides: no formal exchange mechanic (you sink or swim on making friends), moderation ranges from excellent to non-existent, and voice channels can feel like walking into a party where everyone already knows each other. Strong for extroverts and young adults; punishing for shy learners.</p>
+
+<h2>Reddit's r/language_exchange</h2>
+<p>An old-school notice-board. Post your native + target languages, wait for DMs, move conversations to WhatsApp or Discord. Zero infrastructure, zero cost, glacially slow — but for less common language pairs it sometimes surfaces a real teacher who's just tired of the paid marketplaces. Worth checking once a month, not a daily driver.</p>
+
+<h2>ConversationExchange and MyLanguageExchange</h2>
+<p>The dinosaurs of the space. Both have been running since the early 2000s and still work, though the UI looks its age. Genuine value: their user bases skew older and more committed than the app crowd. If you're learning a language where "old-school pen-pal" energy suits you (French, German, Japanese), they surface partners with more staying power than the app-generation platforms.</p>
+
+<h2>What to combine</h2>
+<p>Most serious learners in 2026 run two platforms in parallel: one big pool for finding practice partners, one modern tool for the daily work of correcting your writing and speaking. <a href="/">WordSpies</a> covers the second slot particularly well because the AI corrections layer is genuinely free and instant. Pick whichever big pool has the most speakers of your target language, run WordSpies alongside it for daily writing practice, and you'll cover both "quantity of partners" and "quality of feedback" without paying anyone.</p>
+
+<h2>Which fits you?</h2>
+<p>For most people the modern answer is <a href="/">WordSpies</a> — free AI corrections built in, real people to chat with, multiplayer games that break the awkward first-session ice, and live voice parties when you're ready to speak. Older platforms remain the fallback for rare languages. Discord and Reddit are for people who want to build friendships more than they want structured practice. italki is worth its money once you're intermediate and want to break through a plateau, but skip it as a beginner — real conversation matters more than lesson structure early on.</p>
+
+<h2>The 30-day starter plan</h2>
+<p>Week 1: sign up to <a href="/social">WordSpies</a> and one big pool platform. Focus on filling out both profiles properly (a good photo, an honest bio, target-language sentence). Week 2: send 5 first messages a day on the big pool, do daily AI-corrected practice on WordSpies. Week 3: schedule one voice call. Week 4: drop one platform, keep the one that gave you the most conversations. Do that and by day 30 you'll have a shortlist of 2–3 real partners plus a daily writing habit — the two ingredients that separate people who learn from people who just download apps.</p>
+
 <p><a href="/social">Start free on WordSpies</a> — 30 seconds, no email required, all features open from day one.</p>`
   },
 
@@ -485,18 +619,40 @@ const articles = {
     desc: 'A short story about learning to write Spanish with AI grammar correction on every message — what worked, what didn\'t, and how the daily feedback loop actually built fluency.',
     date: '2026-08-10',
     html: `
-<p>For most of my life, learning Spanish looked like this: an app in the morning, ten minutes of matching pairs, a streak counter, three weeks of consistency, then quiet drift back to English. The words never became <em>mine</em>. Then in 2026 something changed: AI grammar correction started living inside every message I sent.</p>
+<p>For most of my life, learning Spanish looked like this: an app in the morning, ten minutes of matching pairs, a streak counter, three weeks of consistency, then quiet drift back to English. The words never became <em>mine</em>. I could recognise "aunque" on a flashcard but I never wrote it in a message. I knew the subjunctive existed but I never conjugated it under pressure. Then in 2026 something changed: AI grammar correction started living inside every message I sent — and my Spanish moved.</p>
+
 <h2>The problem with silent mistakes</h2>
-<p>Language classes teach rules. Apps teach vocabulary. Neither tells you, five seconds after you write something wrong, what specifically you messed up. So you keep making the same mistake for years — "por/para", genders, past-tense endings — because the feedback loop is too slow to matter.</p>
+<p>Language classes teach rules. Apps teach vocabulary. Neither tells you, five seconds after you write something wrong, what specifically you messed up and why. So you keep making the same mistake for years — "por/para", noun genders, past-tense endings — because the feedback loop is too slow to matter. By the time you get the sentence back (from a teacher, from a friend, from a corrected essay two weeks later), you've forgotten what you were trying to say.</p>
+<p>Cognitive science calls this the "spacing paradox". Corrections work when they're close in time to the mistake, but classroom cycles put weeks between the two. Every learner secretly knows this. What we didn't have was a way to shrink the gap without hiring a full-time tutor.</p>
+
 <h2>What one-tap correction actually feels like</h2>
-<p>On <a href="/">WordSpies</a>, every message I send has a "Correct" button. Tap it: the AI proposes the fixed sentence, underlined with the changes, plus a short line ("past tense · missing article"). The original stays visible so I see the mistake next to the fix. It's ten seconds. I do it while I'm already chatting with a real Colombian friend.</p>
-<h2>The changes I noticed</h2>
-<p>First month: my "por/para" ratio flipped. Second month: I stopped writing "es" when I meant "está". Third month: subjunctive started showing up unprompted. None of these were things I could have drilled with flashcards. They only stuck because I saw them corrected in a real sentence I was really trying to send.</p>
+<p>On <a href="/">WordSpies</a>, every message I send has a "Correct" button. Tap it: the AI proposes the fixed sentence, underlined with the changes, plus a short line naming what changed ("past tense · missing article"). The original stays visible so I see the mistake next to the fix. It's ten seconds. I do it while I'm already chatting with a real Colombian friend.</p>
+<p>What surprises new users: the correction doesn't feel like a school test. It feels like a friend who reads over your shoulder and mumbles the right version. No score, no red pen, no leaderboard. Just — here's what you meant to say. That framing matters because the emotional cost of asking for correction was always what killed the practice loop.</p>
+
+<h2>The changes I noticed, month by month</h2>
+<p><b>First month:</b> my "por/para" ratio flipped. I'd been using "por" as a catch-all for years. Seeing "para" underlined ten times in real sentences beat five years of flashcard drills.</p>
+<p><b>Second month:</b> I stopped writing "es" when I meant "está". The distinction between permanent vs temporary state had never quite locked in from textbooks; seeing it corrected in "estoy cansado" vs "soy cansado" (which I'd used embarrassingly often) made it visceral.</p>
+<p><b>Third month:</b> subjunctive started showing up unprompted. "Espero que puedas" instead of my old "Espero que puedes". This was the surprise — subjunctive was the thing every teacher warned would take years. It took three months because it was correcting me in the middle of real conversations I wanted to have.</p>
+<p><b>Fourth month:</b> the corrections started returning "OK" with no changes. Not for every sentence — but often enough that I noticed the gaps closing.</p>
+
 <h2>Why AI beats waiting for a human to correct you</h2>
-<p>Native speakers are polite. They read your Spanish, understand what you meant, and reply. They don't spend the time to type out corrections unless you specifically ask, and even then they get tired. AI never tires, never judges, and turns around a correction in half a second.</p>
+<p>Native speakers are polite. They read your Spanish, understand what you meant, and reply in Spanish. They don't spend the time to type out corrections unless you specifically ask, and even then they get tired. Most language exchange partners will correct you enthusiastically for the first week, then quietly stop. It's not their fault — they came for a conversation, not a marking session.</p>
+<p>AI never tires, never judges, and turns around a correction in half a second. It also doesn't get distracted by the meaning of what you said — a human friend will often let a wrong-but-understandable sentence slide because they got the point. The AI catches it because catching things is all it's doing.</p>
+<p>There's a limit, though: AI still misses the sentences that are grammatically perfect but culturally weird. "Voy a tomar una decisión" is grammatically fine; native speakers say "voy a decidir". For that kind of nuance you still need a human, ideally the same partner over time.</p>
+
+<h2>The right way to use it</h2>
+<p>Type your messages first, without help. Correct after you send. Re-read the corrected version out loud (silently in your head counts). If the same mistake shows up three times in a week, write it in a note — that's your personal weak spot to drill deliberately.</p>
+<p>Don't correct every single message. If you're mid-flow in a conversation, let three or four go and correct the fifth. The friction of stopping to check every line kills the momentum that makes chat practice work in the first place. Corrections are meant to catch patterns, not to make every sentence perfect.</p>
+
+<h2>What it doesn't fix</h2>
+<p>Writing corrections don't teach you to speak. They train your brain to produce grammatically-correct written Spanish, which is a real skill, but it's a different one from producing spoken Spanish under time pressure. For speaking you still need voice practice — either with an AI voice partner or in a live voice party. Combine both and you get the compounding effect.</p>
+<p>They also don't build vocabulary breadth. If you only ever write about the same three topics with your language partner, the corrections will polish those three topics and leave the rest of your Spanish untouched. Vary the conversation deliberately: cook with them one week, argue about politics the next, describe a book the third.</p>
+
 <h2>The daily practice</h2>
-<p>Type your messages first. Correct after you send. Re-read the fix. If the same mistake shows up three times, note it down — that's your personal weak spot. Do this every day for a month and your writing changes shape.</p>
-<p><a href="/social">Try WordSpies free</a> — Correct is on every message by default. No account needed to start.</p>`
+<p>Two 15-minute chat sessions a day, corrections turned on. That's it. You can layer voice notes on top when you're feeling brave, but the writing loop alone will move a stalled intermediate learner more than any app I've tried.</p>
+<p>The trap: treating corrections as a score. Some days you'll write six sentences and all six get corrected — that's fine. It doesn't mean your Spanish is worse, it means the AI caught more. On other days corrections come back "OK" and it feels like progress. Both days are good days. The point is the loop, not the number.</p>
+
+<p><a href="/social">Try WordSpies free</a> — Correct is on every message by default. Sign up in 30 seconds and start chatting with a real speaker today.</p>`
   },
 
   'learn-language-by-playing-games': {
@@ -504,20 +660,38 @@ const articles = {
     desc: 'Playing games in your target language builds vocabulary faster than flashcards — because you use words in context. Here is how to structure it so it actually works.',
     date: '2026-08-10',
     html: `
-<p>Every fluent speaker will tell you the same thing: words stick when you use them. Flashcards are the illusion of learning — you recognise a word in isolation and never think of it again. Games force you to <em>produce</em> vocabulary under pressure, which is how it moves from short-term to long-term memory.</p>
+<p>Every fluent speaker will tell you the same thing: words stick when you use them. Flashcards are the illusion of learning — you recognise a word in isolation and never think of it again. Games force you to <em>produce</em> vocabulary under pressure, which is how it moves from short-term to long-term memory. The research supports the anecdote: producing a word in context strengthens memory roughly three times more than recognising it, according to studies on retrieval practice going back to Bjork in the 90s.</p>
+
 <h2>Why games work when flashcards don't</h2>
 <p>A flashcard says "casa → house". Your brain files it under "translation exercise", not under "a place I might mention in a real conversation". A game where you have to describe an object without saying its name forces active recall in context — the same cognitive move you make when speaking.</p>
-<h2>The games that teach best</h2>
-<p><a href="/wordrace">Word Race</a>: 60 seconds, one category ("Animals", "Foods", "Body parts"), type as many words as you can. Solo or against a friend. Builds vocabulary breadth fast.</p>
-<p><a href="/wordchain">Word Chain</a>: someone says a word, you have to say one that starts with its last letter. Trains active recall — the hardest kind of vocabulary skill.</p>
-<p><a href="/guessword">Guess the Word</a>: describe a secret word without saying it. Forces paraphrasing — which is what fluency actually is.</p>
-<p><a href="/play">WordSpies</a> (Codenames-style): give one-word clues that link secret words on a board. Trains word association — the mental model native speakers have.</p>
-<p><a href="/hoop">Hoop</a>: not a language game strictly, but a 60-second multiplayer arcade round makes a great warm-up + trash-talk starter with your language exchange partner. Chat in your target language while you play.</p>
+<p>Games also carry an emotional charge that flashcards don't. Losing a round of Word Race because you couldn't think of the Spanish for "elephant" sears the word into memory better than a hundred passive reps. Winning by remembering "cebolla" at the last second gives you a hit of satisfaction that makes you come back tomorrow. Language apps understand this — that's why they added streaks and leaderboards. But those are extrinsic motivators bolted onto passive learning. Games are intrinsically motivating <em>because they're games</em>.</p>
+
+<h2>The four game types that teach best</h2>
+<p><b>Speed vocabulary sprints.</b> <a href="/wordrace">Word Race</a> gives you 60 seconds and a category ("Animals", "Foods", "Body parts", "Things in a kitchen"). Type as many words as you can that fit. Solo or against a friend. Builds vocabulary breadth fast — you'll cover more nouns in three rounds than in a week of flashcards, and you'll actually remember them because you retrieved them under time pressure.</p>
+<p><b>Constraint games.</b> <a href="/wordchain">Word Chain</a> gives you the last letter of the previous word and asks for a new one starting with it. Trains active recall — the hardest kind of vocabulary skill to build. This is closest to what your brain does in a real conversation when someone says a word and you have to respond immediately.</p>
+<p><b>Paraphrase games.</b> <a href="/guessword">Guess the Word</a> is Taboo for language learners. One player has a secret word, the others ask questions to figure it out — all in the target language. Being forced to describe "elephant" without using "elephant" builds paraphrasing skills faster than any textbook exercise. Paraphrasing IS fluency — fluent speakers just have more ways to say the same thing.</p>
+<p><b>Association games.</b> <a href="/play">WordSpies</a> (Codenames-style) asks you to give a one-word clue that links two or three secret words on a board. Trains word association — the mental map native speakers have that lets them navigate a conversation. Playing "APPLE, TREE, RIVER" as a clue links three concepts and forces your brain to build the same webs a native carries.</p>
+
+<h2>What about non-language games?</h2>
+<p>Even games that aren't about words teach language when played with a partner in the target tongue. <a href="/hoop">Hoop</a> is a 60-second arcade round of free-throws — not a language game strictly, but the trash talk between shots is real conversation. Same for <a href="/pool">8-Ball Pool</a> and <a href="/four">Connect 4</a>. The low stakes let you chat in the target language without the pressure of "this is a lesson". Some of the best sessions I've had were losing at Ludo to a French partner while both of us made increasingly desperate excuses in French.</p>
+
 <h2>The rule that makes games actually teach you</h2>
 <p>Play in your target language, not in English. If you play Word Race and type English words, you learn nothing. If you type Spanish, every letter combination is real practice. Same for chatting between rounds — it's the low-stakes conversation that games unlock that does the teaching.</p>
+<p>This is harder than it sounds. When you're losing a round of Word Chain, your brain screams for the fastest word it can find — which is usually the English one. Fighting that instinct is the actual training. Every time you resist it and force the Spanish word out, you're not just adding a vocab item, you're building the mental muscle that stops your native language from hijacking every fluent-adjacent moment.</p>
+
 <h2>A weekly routine that works</h2>
-<p>Two 15-minute chat sessions with a real speaker. One live voice party a week (join as a listener first, raise your hand when ready). One game night — pick any of the eight, invite your language partner, play in the target language. Do this for three months and you'll be conversational.</p>
-<p><a href="/games">Browse the games shelf</a> — everything is free and works in a browser.</p>`
+<p>Two 15-minute chat sessions with a real speaker (with <a href="/blog/ai-grammar-correction-spanish">AI corrections turned on</a>). One live voice party a week (join as a listener first, raise your hand when ready). One game night — pick any of the eight games on the shelf, invite your language partner or a friend, play in the target language for 20 minutes. Do this for three months and you'll be conversational; six months and you'll be genuinely comfortable.</p>
+<p>The routine's virtue is that it doesn't feel like study. There's no textbook, no lesson plan, no boss you're accountable to. Just three small commitments a week, all of them enjoyable enough that you'll actually do them. That's the whole trick — the best learning routine is the one you don't hate.</p>
+
+<h2>Games vs apps: an honest comparison</h2>
+<p>Apps like Duolingo are excellent for the first 100 hours of a language — they build the foundation you need before real conversation is possible. Games take over from there. Once you can construct a basic sentence, apps hit diminishing returns fast (the same exercises repeat, and passive selection stops teaching you much). Games scale with your level because your partner scales with your level — the conversation gets richer as your vocabulary does.</p>
+<p>The mistake most learners make is staying on apps too long. If you've done 500 lessons and you still can't hold a conversation, the problem isn't more lessons — it's that lessons stopped being the right tool 400 lessons ago.</p>
+
+<h2>Getting started</h2>
+<p>The lowest-friction way to test this is to sign up for <a href="/">WordSpies</a>, find one active partner learning your native language, and challenge them to a round of Word Race in their language. If they can't get through it, they're a beginner too — pair them with Word Chain instead. If they crush it, you're playing against someone above your level, which is exactly what accelerates learning.</p>
+<p>Two rounds a day for two weeks. That's the minimum experiment. If your vocabulary hasn't obviously grown by day 14, drop the games and go back to apps. If it has (spoiler: it will), keep going.</p>
+
+<p><a href="/games">Browse the games shelf</a> — everything is free and works in a browser, no downloads or accounts required to start playing.</p>`
   },
 
   'voice-chat-vs-text-chat-language': {
@@ -525,22 +699,48 @@ const articles = {
     desc: 'Text chat feels safer, voice chat teaches you more — but the honest answer is you need both. Here is how to structure them so you actually improve.',
     date: '2026-08-10',
     html: `
-<p>Every language learner asks the same question: should I text or should I talk? Text feels safer — you can look up words, edit before sending, re-read what the other person wrote. Voice feels terrifying — no undo, no dictionary, and if you freeze, everyone hears the silence. Here's the honest answer: you need both, in that order.</p>
+<p>Every language learner asks the same question: should I text or should I talk? Text feels safer — you can look up words, edit before sending, re-read what the other person wrote as many times as you need. Voice feels terrifying — no undo, no dictionary, and if you freeze, everyone hears the silence. Most learners answer this question the same way: they text for years and never voice, telling themselves they're "not ready yet". Then one day they meet a native speaker in person and discover that reading Japanese perfectly and speaking Japanese are two completely different skills.</p>
+
+<p>Here's the honest answer: you need both, in a specific order, and the order matters more than most people realise.</p>
+
 <h2>What text chat actually teaches you</h2>
-<p>Vocabulary breadth, grammar patterns, writing register, and confidence with the alphabet + typing. Text is the low-pressure environment where you can look up "the exact word I mean" and stitch a proper sentence together. With <a href="/blog/ai-grammar-correction-spanish">AI grammar correction on every message</a>, text is also where you get the most feedback per minute.</p>
+<p>Text is the low-pressure environment where you can look up "the exact word I mean" and stitch a proper sentence together. It's excellent for four things:</p>
+<p><b>Vocabulary breadth.</b> When you can pause to check a word, you naturally reach for more precise language. That precision compounds — you build the habit of not settling for the first vaguely-right word.</p>
+<p><b>Grammar patterns.</b> With <a href="/blog/ai-grammar-correction-spanish">AI grammar correction on every message</a>, text is where you get the most feedback per minute. Voice conversation moves too fast for corrections to land; text moves at your pace.</p>
+<p><b>Writing register.</b> Learning to switch between formal ("estimado señor") and casual ("qué pasa tío") registers is easier in writing where you can see both forms side by side.</p>
+<p><b>Confidence with the alphabet + typing.</b> Especially critical for languages with non-Latin scripts. You can't skip this; the muscle memory of typing Japanese kana or Cyrillic has to be built somewhere.</p>
+
 <h2>What voice chat teaches you that text can't</h2>
-<p>Pronunciation. Rhythm. Reduction (the way native speakers slur "you all" into "y'all"). Recognition speed — you can read Japanese perfectly and still not understand a spoken sentence because your ear has never met that vocabulary at full speed. Voice practice is the only way to teach your brain to process the language in real time.</p>
+<p><b>Pronunciation.</b> No amount of reading teaches you the difference between the Spanish "r" and the rolled "rr". You have to hear it, imitate it, hear yourself imitate it, and adjust. Text is silent training for a skill that lives in your mouth.</p>
+<p><b>Rhythm and prosody.</b> Every language has a musicality — the way syllables get compressed or stretched, where the pauses fall, which words get emphasis. Textbooks call this "prosody" and treat it as advanced. Native speakers hear it in the first second of your first sentence and use it to decide whether to keep talking to you or switch to English.</p>
+<p><b>Reduction and connected speech.</b> Native speakers slur "how are you" into "hawaya", "did you eat" into "jeet". Your brain has to learn to un-slur in real time. This is impossible to train from text because text hides the reductions.</p>
+<p><b>Recognition speed.</b> You can read Japanese perfectly and still not understand a spoken sentence because your ear has never met that vocabulary at full native speed. Voice practice is the only way to teach your brain to process the language in real time. Without it, you'll always be that person who says "sorry, could you repeat that?" and gets a slower, dumbed-down version.</p>
+<p><b>Confidence to speak at all.</b> This is the biggest one. Text-only learners spend years knowing what to say but freezing when it's time to say it. The freeze is a trained response. The only cure is doing the thing you're afraid of, in small doses.</p>
+
 <h2>The trap of only doing text</h2>
-<p>Many learners spend years messaging fluently and still can't hold a two-minute phone call. Their brain has never had to convert thought → mouth → sound under pressure. When they finally try, they freeze. The muscle isn't there.</p>
+<p>Many learners spend years messaging fluently and still can't hold a two-minute phone call. Their brain has never had to convert thought → mouth → sound under time pressure. When they finally try, they freeze. The muscle isn't there.</p>
+<p>The classic sign of a text-only learner: they can write beautiful long messages in Spanish but their spoken Spanish sounds like a beginner. They know the words; the pipeline from "thought" to "sound" has never been built. Rebuilding it takes months of deliberate voice practice, and every month you delay makes it harder.</p>
+
 <h2>The trap of only doing voice</h2>
-<p>Skipping text means never getting the deliberate practice of forming a well-structured sentence. You learn to say "yeah, cool, awesome" fluently and never build the vocabulary to actually discuss anything.</p>
+<p>Skipping text means never getting the deliberate practice of forming a well-structured sentence. You learn to say "yeah, cool, awesome" fluently and never build the vocabulary to actually discuss anything. Voice-only learners often sound conversational but are secretly limited to about 500 words. They can chat about the weather but not about a movie.</p>
+<p>The classic sign of a voice-only learner: they're comfortable in a bar conversation but can't write a coherent WhatsApp message. This shows up embarrassingly when they try to text a partner and end up sending sentences a five-year-old would.</p>
+
 <h2>The order that works</h2>
-<p>Week 1–2: text-only with a real speaker on <a href="/">WordSpies</a>. Use the Correct button on every message. Build confidence and vocabulary.</p>
-<p>Week 3: send one voice note. Then send another. Voice notes are the bridge — half-writing, half-speech, no live pressure.</p>
-<p>Week 4: join a live <a href="/">voice party</a> as a listener. You can hear everyone but no one hears you until you raise a hand. Spend three parties listening.</p>
-<p>Week 5: raise your hand and say one sentence. That's it. Do this and speaking will stop being scary.</p>
+<p>The evidence-based order is text first, then voice notes, then live voice. Each step builds the confidence for the next.</p>
+<p><b>Week 1–2: text-only</b> with a real speaker on <a href="/">WordSpies</a>. Use the Correct button on every message. Build confidence and vocabulary. No pressure to speak yet — the goal is to feel comfortable producing language at any speed.</p>
+<p><b>Week 3: send one voice note.</b> Then send another. Voice notes are the bridge — half-writing, half-speech, no live pressure. You can re-record five times. Nobody hears the drafts. But the muscle of turning thought into sound is being built.</p>
+<p><b>Week 4: join a live voice party as a listener.</b> On <a href="/social">WordSpies parties</a> you can hear everyone but nobody hears you until you raise a hand. Spend three parties just listening. You'll pick up the rhythm without any pressure to perform.</p>
+<p><b>Week 5: raise your hand and say one sentence.</b> Just one. "Hi, I'm learning Spanish from Manchester." That's the whole task. Do it and speaking will stop being scary — the fear breaks after the first sentence, always.</p>
+<p><b>Week 6 onwards: keep doing all three.</b> Text daily. Voice notes 2–3 times a week. Voice party weekly. This is the rhythm that produces fluency in months rather than years.</p>
+
+<h2>How to know you're ready to move to the next step</h2>
+<p>Common mistake: waiting until you feel "ready". You will never feel ready — the discomfort of moving up a level is the point.</p>
+<p>Better signal: when the current step feels boring. If text chat is easy and your corrections are coming back "OK" most of the time, you're ready for voice notes. If voice notes feel repetitive, you're ready for a live party. Boredom is the honest signal that a skill is consolidated and it's time to raise the difficulty.</p>
+
 <h2>Why WordSpies has both in one place</h2>
-<p>Text chats with AI corrections + voice parties + AI conversation partners for practice when nobody's online — all in one browser tab. That way you can flow between text and voice without switching platforms. <a href="/social">Start free</a> — 30-second signup, no email required.</p>`
+<p>Text chats with AI corrections + voice parties + AI conversation partners for practice when nobody's online — all in one browser tab. That way you can flow between text and voice without switching platforms, keeping the same friends across both modes. The AI conversation partners are particularly useful for shy learners: you can practise voice with an AI that won't judge you, get comfortable with the sound of your own foreign-language voice, and then move to human voice parties once the fear has broken.</p>
+
+<p><a href="/social">Start free</a> — 30-second signup, no email required. Text a partner today, send a voice note this week, join a voice party next week.</p>`
   },
 
   'party-games-shelf': {
