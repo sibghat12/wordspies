@@ -260,6 +260,21 @@ a{color:inherit;text-decoration:none}
   .micfab .mfico,.handfab .hfico{width:28px;height:28px;font-size:14px}
 }
 
+/* Owner ask 10 Aug 2026 — 'remove the entire chat functionality from
+   parties'. We keep the raise-hand button visible (it lives inside
+   .pcompose) but hide everything chat-related: quota, messages, text
+   input, emoji picker + button, send button. Voice + raise-hand +
+   reactions-via-avatar remain intact. */
+#pChat .pquota,
+#pChat .pmsgs,
+#pChat .pemoji-pick,
+#pChat .pinput,
+#pChat .pemo,
+#pChat #pSendBtn{display:none !important}
+/* When only the raise-hand slot remains, shrink the panel padding so
+   it doesn't leave a big empty white block at the bottom. */
+#pChat.chat-off{background:transparent;border-top:0;padding:6px 12px calc(10px + env(safe-area-inset-bottom))}
+#pChat.chat-off::before{display:none}
 /* Bottom chat panel — soft top-fade + generous padding. */
 .pchat{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(12px + env(safe-area-inset-bottom));z-index:30}
 .pchat::before{content:'';position:absolute;left:0;right:0;top:-24px;height:24px;background:linear-gradient(to top,rgba(255,255,255,.95),rgba(255,255,255,0));pointer-events:none}
@@ -417,7 +432,7 @@ a{color:inherit;text-decoration:none}
 <div class="kbdhint" id="kbdHint"><kbd>Space</kbd> hold to talk · <kbd>Esc</kbd> minimise</div>
 
 <!-- Fixed chat panel at the bottom -->
-<div class="pchat hidden" id="pChat">
+<div class="pchat chat-off hidden" id="pChat">
   <div class="pquota" id="pQuota"></div>
   <div class="pmsgs" id="pMsgs"></div>
   <div class="pemoji-pick" id="pEmojiPick">

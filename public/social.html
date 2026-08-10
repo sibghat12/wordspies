@@ -3308,6 +3308,89 @@ paintLive();
 let toastT = null;
 function toast(m){ const t = $('toastEl'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2600); }
 
+// ── Custom sweet-alert helpers (owner ask 10 Aug 2026 — 'make some
+//   custom sweet alerts'). Replaces the browser's beige alert()/confirm()
+//   with a WordSpies-styled modal. Returns a Promise so callers can
+//   await it — window.confirm() is overridden too so existing code
+//   picks up the pretty version with zero migration.
+function _swInject(){
+  if (document.getElementById('swBd')) return;
+  const s = document.createElement('style');
+  s.textContent = `
+    .sw-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:20000;padding:20px;animation:swfade .16s ease}
+    .sw-bd.on{display:flex}
+    @keyframes swfade{from{opacity:0}to{opacity:1}}
+    .sw-card{background:#fff;border-radius:22px;padding:24px 22px 18px;max-width:380px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.32);animation:wpop .22s cubic-bezier(.2,.9,.3,1);text-align:center}
+    .sw-icon{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:30px;line-height:1;margin:0 auto 12px}
+    .sw-icon.info{background:#e8f0ff;color:#2456c4}
+    .sw-icon.warn{background:#fff2d9;color:#a25a00}
+    .sw-icon.danger{background:#ffeeef;color:#c8123b}
+    .sw-icon.ok{background:#e7fbe9;color:#0f5b1a}
+    .sw-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:19px;color:#111318;margin:0 0 6px;letter-spacing:-.2px}
+    .sw-body{font-family:'Inter',system-ui,sans-serif;font-size:14.5px;color:#5f6675;line-height:1.5;margin:0 0 18px;font-weight:500}
+    .sw-actions{display:flex;flex-direction:column;gap:8px}
+    .sw-actions .sw-ok{background:#0f7500;color:#fff;border:0;border-radius:14px;padding:12px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:15.5px;cursor:pointer;transition:filter .12s}
+    .sw-actions .sw-ok:hover{filter:brightness(1.08)}
+    .sw-actions .sw-ok.danger{background:#c8123b}
+    .sw-actions .sw-cancel{background:transparent;color:#5f6675;border:0;padding:8px;font-family:'Inter',sans-serif;font-weight:500;font-size:14px;cursor:pointer}
+    .sw-actions .sw-cancel:hover{color:#111318}`;
+  document.head.appendChild(s);
+  const bd = document.createElement('div');
+  bd.id = 'swBd';
+  bd.className = 'sw-bd';
+  bd.innerHTML = `<div class="sw-card" role="dialog" aria-modal="true">
+    <div class="sw-icon" id="swIcon"></div>
+    <h3 class="sw-title" id="swTitle"></h3>
+    <p class="sw-body" id="swBody"></p>
+    <div class="sw-actions"><button type="button" class="sw-ok" id="swOk">OK</button><button type="button" class="sw-cancel hidden" id="swCancel">Cancel</button></div>
+  </div>`;
+  document.body.appendChild(bd);
+  bd.addEventListener('click', ev => { if (ev.target === bd) _swClose(false); });
+  document.addEventListener('keydown', ev => {
+    if (!bd.classList.contains('on')) return;
+    if (ev.key === 'Escape') _swClose(false);
+    if (ev.key === 'Enter')  _swClose(true);
+  });
+}
+let _swResolve = null;
+function _swClose(v){
+  const bd = document.getElementById('swBd');
+  if (bd) bd.classList.remove('on');
+  if (_swResolve) { const r = _swResolve; _swResolve = null; r(v); }
+}
+function swPrompt({ title = '', body = '', icon = 'info', okText = 'OK', cancelText = 'Cancel', danger = false, cancel = false } = {}){
+  _swInject();
+  return new Promise(resolve => {
+    _swResolve = resolve;
+    const bd = document.getElementById('swBd');
+    document.getElementById('swTitle').textContent = title || '';
+    document.getElementById('swBody').textContent = body || '';
+    const ic = document.getElementById('swIcon');
+    const glyph = { info: 'ℹ️', warn: '⚠️', danger: '⚠️', ok: '✅', question: '❓' }[icon] || 'ℹ️';
+    ic.textContent = glyph;
+    ic.className = 'sw-icon ' + (icon === 'danger' ? 'danger' : icon === 'warn' ? 'warn' : icon === 'ok' ? 'ok' : 'info');
+    const ok = document.getElementById('swOk');
+    ok.textContent = okText;
+    ok.className = 'sw-ok' + (danger ? ' danger' : '');
+    ok.onclick = () => _swClose(true);
+    const cnc = document.getElementById('swCancel');
+    cnc.textContent = cancelText;
+    cnc.classList.toggle('hidden', !cancel);
+    cnc.onclick = () => _swClose(false);
+    bd.classList.add('on');
+    setTimeout(() => ok.focus(), 50);
+  });
+}
+window.swAlert   = (body, title = '', icon = 'info') => swPrompt({ title, body, icon });
+window.swConfirm = (body, title = 'Are you sure?', opts = {}) => swPrompt({ title, body, icon: opts.icon || 'question', cancel: true, danger: !!opts.danger, okText: opts.okText || 'Yes', cancelText: opts.cancelText || 'Cancel' });
+// Shim window.alert only — it's fire-and-forget so async is safe.
+// window.confirm is NOT overridden because existing callers use
+// `if (!confirm(...))` which expects a synchronous boolean; a Promise
+// would always be truthy and break the gate. New code should use
+// await swConfirm(...) instead.
+const _nativeAlert = window.alert.bind(window);
+window.alert = msg => { swAlert(msg).catch(() => _nativeAlert(msg)); };
+
 async function api(p, opts){
   const r = await fetch('/api/social' + p, opts);
   const j = await r.json().catch(() => ({}));
@@ -5267,12 +5350,11 @@ document.addEventListener('click', (ev) => {
 });
 document.addEventListener('DOMContentLoaded', () => {
   const ex = $('phostExpand'); if (ex) ex.onclick = togglePartyExpand;
-  const lv = $('phostLeave'); if (lv) lv.onclick = () => {
-    // Owner ask 10 Aug 2026 — confirm before closing so a stray tap
-    // on the ✕ doesn't nuke the party. If confirmed, tell the iframe
-    // to leave cleanly (it POSTs /leave which ends the party if the
-    // host is alone) then close the host + refresh the party card.
-    if (!confirm('End this party for everyone?')) return;
+  const lv = $('phostLeave'); if (lv) lv.onclick = async () => {
+    const ok = await swConfirm('This will end the party for everyone in it.', 'Close party?', {
+      icon: 'warn', okText: 'End party', danger: true
+    });
+    if (!ok) return;
     try { $('phostFrame').contentWindow.postMessage({ type: 'party:leave' }, location.origin); } catch(e){}
     setTimeout(() => {
       closePartyInApp(false);
