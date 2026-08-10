@@ -1223,73 +1223,91 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .gcard2.g-pool .gicon{background:#e8f9ef;color:#159f5d}
 
 /* ══ Parties tab ══ */
-/* Social subtabs (Language Parties / Language Clubs) — owner ask
-   10 Aug 2026 v3 based on Tandem screenshots. Light font weight
-   throughout so the design breathes. */
-.socsub{display:flex;justify-content:center;gap:24px;padding:14px 20px 4px;border-bottom:1px solid var(--line);margin-bottom:8px}
-.socsub-btn{background:transparent;border:0;padding:12px 4px;font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:400;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;transition:color .12s,border-color .12s;letter-spacing:-.1px}
+/* Social subtabs + Language Clubs — polish pass (owner ask 10 Aug
+   2026 v4). Light font weight, generous whitespace, softer shadows,
+   smarter cover framing. Inter throughout. */
+.socsub{display:flex;justify-content:center;gap:32px;padding:16px 20px 0;border-bottom:1px solid var(--line);margin-bottom:4px}
+.socsub-btn{background:transparent;border:0;padding:14px 4px 16px;font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:400;color:var(--faint);cursor:pointer;border-bottom:2px solid transparent;transition:color .16s,border-color .16s;letter-spacing:-.1px;position:relative;top:1px}
+.socsub-btn:hover{color:var(--sub)}
 .socsub-btn.on{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
-.clubchips{display:flex;gap:8px;padding:8px 20px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.clubchips{display:flex;gap:8px;padding:14px 20px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .clubchips::-webkit-scrollbar{display:none}
-.clubchips .chip{flex-shrink:0;background:#f4f5f7;border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:400;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.12s}
-.clubchips .chip:hover{background:#e6e8ef}
+.clubchips .chip{flex-shrink:0;background:#fff;border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .14s;letter-spacing:-.1px}
+.clubchips .chip:hover{border-color:#c9cfe3;background:#fafbfc}
 .clubchips .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .clubchips .chip .fl{font-size:15px;line-height:1}
-.clublist{display:flex;flex-direction:column;gap:12px;padding:4px 16px 100px}
-.clubempty{color:var(--sub);font-size:14px;text-align:center;padding:32px 20px;font-weight:400}
-.clubcard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .16s,box-shadow .16s}
-.clubcard:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.06)}
-.clubcard-cover{height:140px;position:relative;display:flex;align-items:flex-end;padding:14px 16px;color:#fff}
-.clubcard-cover h3{font-family:'Inter',system-ui,sans-serif;font-weight:500;font-size:19px;line-height:1.25;margin:0;letter-spacing:-.3px;text-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;gap:6px}
-.clubcard-body{padding:12px 16px 14px}
-.clubcard-lang{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:12px;color:var(--sub);font-weight:400;margin-bottom:6px}
-.clubcard-lang .fl{font-size:14px}
-.clubcard-desc{font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;color:var(--ink);font-weight:400;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.clubcard-foot{display:flex;justify-content:space-between;align-items:center;font-family:'Inter',sans-serif;font-size:12px;color:var(--sub);font-weight:400}
-.clubcard-foot .members{display:inline-flex;align-items:center;gap:4px}
+.clublist{display:grid;grid-template-columns:1fr;gap:14px;padding:2px 16px 100px}
+@media(min-width:760px){.clublist{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1080px){.clublist{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.clubempty{color:var(--sub);font-size:14px;text-align:center;padding:40px 20px;font-weight:400}
+.clubcard{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .18s,border-color .16s;position:relative}
+.clubcard:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(15,17,25,.08),0 2px 6px rgba(15,17,25,.04);border-color:transparent}
+.clubcard-cover{height:150px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:16px 18px 14px;color:#fff}
+.clubcard-cover::after{content:'';position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(to top,rgba(0,0,0,.42),transparent);pointer-events:none}
+.clubcard-cover h3{position:relative;z-index:1;font-family:'Inter',system-ui,sans-serif;font-weight:500;font-size:18px;line-height:1.2;margin:0;letter-spacing:-.3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clubcard-cover h3 .clubcard-emoji{margin-left:4px;font-size:16px}
+.clubcard-body{padding:14px 18px 16px}
+.clubcard-lang{display:inline-flex;align-items:center;gap:6px;background:#f4f5f7;border-radius:99px;padding:4px 10px;font-family:'Inter',sans-serif;font-size:11.5px;color:var(--sub);font-weight:500;letter-spacing:.02em;margin-bottom:10px;text-transform:uppercase}
+.clubcard-lang .fl{font-size:12.5px}
+.clubcard-desc{font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.55;color:var(--sub);font-weight:400;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clubcard-foot{display:flex;justify-content:space-between;align-items:center;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--faint);font-weight:400;padding-top:10px;border-top:1px solid #f2f3f5}
+.clubcard-foot .members{display:inline-flex;align-items:center;gap:5px;color:var(--sub)}
+.clubcard-foot .members b{font-weight:600;color:var(--ink)}
+.clubcard-foot .goto{color:var(--ink);opacity:.4;font-size:15px;line-height:1}
 
-/* Club detail overlay — full-page inside the app iframe */
+/* Club detail overlay — polished with sticky header + cleaner meta */
 .clubdetail{position:fixed;inset:0;background:var(--bg);z-index:180;overflow-y:auto;padding-bottom:80px}
 .clubdetail.hidden{display:none}
-.cd-cover{height:180px;background:#0f7500;background-size:cover;background-position:center}
-.cd-back{position:fixed;top:16px;left:16px;background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:99px;padding:8px 14px;font-family:'Inter',sans-serif;font-weight:500;font-size:13px;cursor:pointer;backdrop-filter:blur(4px);z-index:5}
-.cd-back:hover{background:rgba(0,0,0,.75)}
-.cd-body{max-width:640px;margin:0 auto;padding:22px 18px 40px}
-.cd-body h1{font-family:'Inter',system-ui,sans-serif;font-size:26px;font-weight:500;letter-spacing:-.4px;line-height:1.15;margin:0 0 10px;color:var(--ink)}
-.cd-desc{font-family:'Inter',sans-serif;font-size:15px;line-height:1.55;color:var(--sub);font-weight:400;margin:0 0 16px}
-.cd-meta{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--sub);font-weight:400;margin-bottom:16px;display:flex;align-items:center;gap:4px}
-.cd-flag{font-size:16px;line-height:1;margin-right:2px}
-.cd-actions{display:flex;gap:10px;margin-bottom:20px}
-.cd-actions button{flex:1;background:#22c07a;color:#fff;border:0;border-radius:99px;padding:12px;font-family:'Inter',sans-serif;font-weight:500;font-size:15px;cursor:pointer;transition:filter .12s}
-.cd-actions button:hover{filter:brightness(1.05)}
-.cd-actions .cd-join.joined{background:#f4f5f7;color:var(--ink)}
-.cd-actions .cd-share{background:#22c07a}
-.cd-composer{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start}
+.cd-cover{height:220px;background:#0f7500;background-size:cover;background-position:center;position:relative}
+.cd-cover::after{content:'';position:absolute;inset:auto 0 0 0;height:80px;background:linear-gradient(to top,var(--bg),transparent);pointer-events:none}
+.cd-back{position:fixed;top:14px;left:14px;background:rgba(255,255,255,.9);color:var(--ink);border:0;border-radius:99px;width:38px;height:38px;font-size:18px;cursor:pointer;backdrop-filter:blur(8px);z-index:5;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:transform .12s}
+.cd-back:hover{transform:scale(1.05)}
+.cd-body{max-width:640px;margin:-40px auto 0;padding:0 20px 40px;position:relative}
+.cd-body h1{font-family:'Inter',system-ui,sans-serif;font-size:26px;font-weight:500;letter-spacing:-.5px;line-height:1.2;margin:0 0 10px;color:var(--ink)}
+.cd-desc{font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;color:var(--sub);font-weight:400;margin:0 0 18px}
+.cd-meta{font-family:'Inter',sans-serif;font-size:13px;color:var(--sub);font-weight:400;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cd-meta > span{display:inline-flex;align-items:center;gap:5px}
+.cd-meta > span + span::before{content:'';display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--faint);margin-right:12px}
+.cd-flag{font-size:15px;line-height:1}
+.cd-meta b{color:var(--ink);font-weight:600}
+.cd-actions{display:flex;gap:10px;margin-bottom:24px}
+.cd-actions button{flex:1;background:var(--ink);color:#fff;border:0;border-radius:14px;padding:13px;font-family:'Inter',sans-serif;font-weight:500;font-size:14.5px;cursor:pointer;transition:filter .12s,background .12s;letter-spacing:-.1px}
+.cd-actions button:hover{filter:brightness(1.08)}
+.cd-actions .cd-join.joined{background:#f0f2f5;color:var(--ink)}
+.cd-actions .cd-join.joined:hover{background:#e4e7eb;filter:none}
+.cd-actions .cd-share{background:#f0f2f5;color:var(--ink)}
+.cd-actions .cd-share:hover{background:#e4e7eb;filter:none}
+.cd-composer{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;margin-bottom:24px;display:flex;gap:12px;align-items:flex-start;transition:border-color .12s}
+.cd-composer:focus-within{border-color:#c9cfe3}
 .cd-cavatar{width:36px;height:36px;border-radius:50%;background:#e6e8ef;flex-shrink:0;background-size:cover;background-position:center}
 .cd-cinput{flex:1;display:flex;flex-direction:column;gap:8px}
-.cd-cinput textarea{border:0;padding:6px 4px;font-family:'Inter',sans-serif;font-size:14.5px;line-height:1.4;color:var(--ink);outline:none;resize:none;background:transparent;font-weight:400}
-.cd-cinput button{align-self:flex-end;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:7px 18px;font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;cursor:pointer}
-.cd-cinput button:disabled{opacity:.5;cursor:not-allowed}
-.cd-feed{display:flex;flex-direction:column;gap:14px}
-.cd-post{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-.cd-post-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.cd-post-head .cd-cavatar{width:34px;height:34px}
-.cd-post-who{font-family:'Inter',sans-serif;font-weight:500;font-size:14px;color:var(--ink)}
-.cd-post-when{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--faint);font-weight:400}
-.cd-post-body{font-family:'Inter',sans-serif;font-size:14.5px;line-height:1.55;color:var(--ink);font-weight:400;margin:0 0 10px;white-space:pre-wrap;word-wrap:break-word}
-.cd-post-actions{display:flex;gap:16px;padding-top:8px;border-top:1px solid #f0f0f2;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;color:var(--sub)}
-.cd-post-actions button{background:transparent;border:0;padding:4px 0;color:inherit;cursor:pointer;font-family:inherit;font-size:inherit;font-weight:inherit;display:inline-flex;align-items:center;gap:4px}
+.cd-cinput textarea{border:0;padding:6px 2px;font-family:'Inter',sans-serif;font-size:14.5px;line-height:1.5;color:var(--ink);outline:none;resize:none;background:transparent;font-weight:400}
+.cd-cinput textarea::placeholder{color:var(--faint)}
+.cd-cinput button{align-self:flex-end;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:7px 18px;font-family:'Inter',sans-serif;font-weight:500;font-size:13px;cursor:pointer;transition:filter .12s}
+.cd-cinput button:hover{filter:brightness(1.15)}
+.cd-cinput button:disabled{opacity:.4;cursor:not-allowed}
+.cd-feed{display:flex;flex-direction:column;gap:12px}
+.cd-post{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;transition:border-color .12s}
+.cd-post:hover{border-color:#e0e3ea}
+.cd-post-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.cd-post-head .cd-cavatar{width:36px;height:36px}
+.cd-post-who{font-family:'Inter',sans-serif;font-weight:500;font-size:14.5px;color:var(--ink);line-height:1.2;letter-spacing:-.1px}
+.cd-post-when{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--faint);font-weight:400;margin-top:2px}
+.cd-post-body{font-family:'Inter',sans-serif;font-size:14.5px;line-height:1.55;color:var(--ink);font-weight:400;margin:0 0 12px;white-space:pre-wrap;word-wrap:break-word}
+.cd-post-actions{display:flex;gap:22px;padding-top:10px;border-top:1px solid #f2f3f5;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;color:var(--sub)}
+.cd-post-actions button{background:transparent;border:0;padding:4px 0;color:inherit;cursor:pointer;font-family:inherit;font-size:inherit;font-weight:inherit;display:inline-flex;align-items:center;gap:5px;transition:color .12s}
 .cd-post-actions button:hover{color:var(--ink)}
-.cd-post-actions .liked{color:#e74c3c;font-weight:500}
-.cd-post-comments{margin-top:10px;display:flex;flex-direction:column;gap:8px}
-.cd-comment{display:flex;gap:8px;padding:8px 10px;background:#f8f9fb;border-radius:10px}
+.cd-post-actions .liked{color:#e63946;font-weight:500}
+.cd-post-comments{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.cd-comment{display:flex;gap:10px;padding:9px 12px;background:#f8f9fb;border-radius:12px}
 .cd-comment .cd-cavatar{width:28px;height:28px;flex-shrink:0}
-.cd-comment-b{flex:1;font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.45;color:var(--ink);font-weight:400}
-.cd-comment-b b{font-weight:500;margin-right:6px}
-.cd-comment-add{display:flex;gap:6px;margin-top:6px}
-.cd-comment-add input{flex:1;border:1px solid var(--line);border-radius:14px;padding:7px 12px;font-family:'Inter',sans-serif;font-size:13.5px;outline:none;background:#fff}
+.cd-comment-b{flex:1;font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.5;color:var(--ink);font-weight:400;padding-top:2px}
+.cd-comment-b b{font-weight:500;margin-right:6px;color:var(--ink)}
+.cd-comment-add{display:flex;gap:6px;margin-top:10px}
+.cd-comment-add input{flex:1;border:1px solid var(--line);border-radius:99px;padding:9px 14px;font-family:'Inter',sans-serif;font-size:13.5px;outline:none;background:#fff;transition:border-color .12s;color:var(--ink)}
 .cd-comment-add input:focus{border-color:var(--ink)}
-.cd-comment-add button{background:var(--ink);color:#fff;border:0;border-radius:99px;padding:6px 14px;font-family:'Inter',sans-serif;font-weight:500;font-size:12.5px;cursor:pointer}
+.cd-comment-add button{background:var(--ink);color:#fff;border:0;border-radius:99px;padding:7px 16px;font-family:'Inter',sans-serif;font-weight:500;font-size:12.5px;cursor:pointer;transition:filter .12s}
+.cd-comment-add button:hover{filter:brightness(1.15)}
 
 .pt-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;padding:14px 20px 6px;flex-wrap:wrap}
 .pt-hero h2{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.5px;color:var(--ink)}
@@ -2948,11 +2966,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   <!-- Club detail overlay (opens when a card is tapped) -->
   <div id="clubDetail" class="clubdetail hidden">
     <div class="cd-cover" id="cdCover"></div>
-    <button class="cd-back" onclick="closeClub()">← Back</button>
+    <button class="cd-back" onclick="closeClub()" aria-label="Back">←</button>
     <div class="cd-body">
       <h1 id="cdName"></h1>
       <p class="cd-desc" id="cdDesc"></p>
-      <div class="cd-meta"><span class="cd-flag" id="cdFlag"></span> <span id="cdLang"></span> · <span id="cdMembers"></span> members</div>
+      <div class="cd-meta" id="cdMeta"></div>
       <div class="cd-actions">
         <button class="cd-join" id="cdJoin" onclick="toggleJoinClub()">Join</button>
         <button class="cd-share" onclick="shareClub()">Share</button>
@@ -4895,15 +4913,20 @@ function paintClubList(){
   if (!_clubs.length) { list.innerHTML = '<div class="clubempty">No clubs found for this filter.</div>'; return; }
   list.innerHTML = _clubs.map(c => {
     const cover = clubCoverImage(c);
+    const mc = (c.memberCount || 0);
+    const membersLabel = mc === 1 ? '1 member' : `${mc.toLocaleString()} members`;
     return `
     <div class="clubcard" onclick="openClub('${c.id}')">
       <div class="clubcard-cover" style="background-image:url('${cover}');background-size:cover;background-position:center">
-        <h3>${esc(c.name)} ${c.emoji || ''}</h3>
+        <h3>${esc(c.name)}<span class="clubcard-emoji"> ${c.emoji || ''}</span></h3>
       </div>
       <div class="clubcard-body">
         <div class="clubcard-lang"><span class="fl">${flagFromLang(c.lang)}</span> ${esc(c.lang)}</div>
         <p class="clubcard-desc">${esc(c.desc || '')}</p>
-        <div class="clubcard-foot"><span class="members">👥 ${(c.memberCount || 0).toLocaleString()}</span></div>
+        <div class="clubcard-foot">
+          <span class="members"><b>${mc.toLocaleString()}</b> ${mc === 1 ? 'member' : 'members'}</span>
+          <span class="goto">→</span>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -4923,19 +4946,20 @@ function closeClub(){
 }
 function paintClubDetail(){
   const c = _curClub; if (!c) return;
-  document.getElementById('cdCover').style.background = c.cover || 'linear-gradient(135deg,#3d7bff,#7c5cff)';
-  document.getElementById('cdCover').style.backgroundImage = `url('${clubCoverImage(c)}')`;
-  document.getElementById('cdCover').style.backgroundSize = 'cover';
-  document.getElementById('cdCover').style.backgroundPosition = 'center';
+  const cover = document.getElementById('cdCover');
+  cover.style.backgroundImage = `url('${clubCoverImage(c)}')`;
+  cover.style.backgroundSize = 'cover';
+  cover.style.backgroundPosition = 'center';
   document.getElementById('cdName').textContent = (c.name || '') + ' ' + (c.emoji || '');
   document.getElementById('cdDesc').textContent = c.desc || '';
-  document.getElementById('cdFlag').textContent = flagFromLang(c.lang);
-  document.getElementById('cdLang').textContent = c.lang || '';
-  document.getElementById('cdMembers').textContent = (c.memberCount || 0).toLocaleString();
+  const mc = c.memberCount || 0;
+  document.getElementById('cdMeta').innerHTML = `
+    <span><span class="cd-flag">${flagFromLang(c.lang)}</span> ${esc(c.lang || '')}</span>
+    <span><b>${mc.toLocaleString()}</b> ${mc === 1 ? 'member' : 'members'}</span>
+  `;
   const joinBtn = document.getElementById('cdJoin');
   joinBtn.textContent = c.isMember ? '✓ Joined' : 'Join';
   joinBtn.classList.toggle('joined', !!c.isMember);
-  // Composer avatar
   const av = document.getElementById('cdMyAvatar');
   if (ME && ME.photo) av.style.backgroundImage = `url('${ME.photo}')`;
   else av.style.backgroundImage = '';
