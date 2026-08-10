@@ -109,11 +109,10 @@ function mount(app, io, options = {}) {
       // Only surface PUBLIC parties in the list — private ones require a
       // direct link or invite from a member of the host's circle.
       if (r.visibility !== 'public') continue;
-      // Show even empty rooms for the first 60 minutes after creation so
-      // hosts who created a party but haven't opened it in a socket yet
-      // (owner-reported bug: "I created a party but I don't see it")
-      // still appear. Bumped from 10 → 60 min.
-      const isFresh = (Date.now() - (r.createdAt || r.touched || 0)) < 60 * 60 * 1000;
+      // Show freshly-created empty rooms only for 5 minutes (owner ask
+      // 10 Aug 2026 — 'if zero host + zero listener don't show in the
+      // archive'). Was 60 min which left ghost cards up for an hour.
+      const isFresh = (Date.now() - (r.createdAt || r.touched || 0)) < 5 * 60 * 1000;
       if (!r.members.size && !isFresh) continue;
       const all = [...r.members.values()];
       const speakers = all.filter(m => m.role === 'speaker' || m.role === 'host');
@@ -265,10 +264,6 @@ function mount(app, io, options = {}) {
       r.members.delete(socket.id);
       socket.leave(r.code);
       // Call rooms are 2-person only: one leaves → call ends for both.
-      // Fires the same 'closed' event so the other party sees "Call
-      // ended" and their UI navigates home cleanly. Guarded against a
-      // second fire — the other socket's disconnect handler ALSO tries
-      // to end the call, which previously double-logged the entry.
       if (r.isCall) {
         if (!r.ended) {
           r.ended = true;
@@ -283,6 +278,15 @@ function mount(app, io, options = {}) {
           } catch (e) { console.error('onCallEnd:', e.message); }
           try { nsp.to(r.code).emit('closed'); } catch (e) {}
         }
+        rooms.delete(r.code);
+        return;
+      }
+      // Owner ask 10 Aug 2026 — 'if zero host + zero listener → party
+      // should not show in the archive and should end immediately'.
+      // Kill the room the moment the last member is gone, instead of
+      // holding a ghost for the weekly sweep.
+      if (r.members.size === 0) {
+        try { nsp.to(r.code).emit('closed'); } catch (e) {}
         rooms.delete(r.code);
       } else {
         broadcast(r);
@@ -388,34 +392,11 @@ function mount(app, io, options = {}) {
       room = null;
     });
 
-    // ── chat with the listener 2-message rule ──────────────────────
-    socket.on('chat', (data) => {
-      if (!room || !me) return;
-      const text = cleanText((data && data.text), MSG_MAX);
-      if (!text) return;
-      if (me.role === 'listener') {
-        if ((me.msgsUsed || 0) >= LISTENER_MSG_LIMIT) {
-          return socket.emit('chatBlocked', {
-            reason: 'You\'ve used both your chat messages. Wait for the host to promote you to speaker.'
-          });
-        }
-        me.msgsUsed = (me.msgsUsed || 0) + 1;
-      }
-      const msg = {
-        id: crypto.randomBytes(4).toString('base64url'),
-        t: Date.now(),
-        f: socket.id,
-        n: me.name,
-        r: me.role,
-        x: text
-      };
-      room.messages.push(msg);
-      if (room.messages.length > RECENT_MSGS * 4) room.messages.splice(0, room.messages.length - RECENT_MSGS * 2);
-      nsp.to(room.code).emit('chat', msg);
-      // Refresh the sender's remaining count.
-      if (me.role === 'listener') socket.emit('chatMeta', { msgsLeft: LISTENER_MSG_LIMIT - me.msgsUsed });
-      room.touched = Date.now();
-    });
+    // Chat removed (owner ask 10 Aug 2026). Parties are voice-only now.
+    // The client UI is hidden but we no-op the handler server-side so a
+    // stale client build (or a scripted request) can't burn listener
+    // quotas or leak messages into a party that no longer displays them.
+    socket.on('chat', () => { /* intentionally dropped */ });
 
     // Emoji reactions — unlimited for everyone including listeners.
     socket.on('emoji', (data) => {
@@ -540,6 +521,17 @@ function mount(app, io, options = {}) {
         if (!m.connected && (now - (m.discAt || now)) > 5 * 60 * 1000) drop.push(id);
       }
       for (const id of drop) { r.members.delete(id); if (r.hostId === id) r.hostId = null; }
+
+      // Owner ask 10 Aug 2026 — the moment nobody's left after the grace
+      // sweep, kill the room so it doesn't sit as a ghost in the archive
+      // list. Fresh empty rooms (see /api/parties visibility rule) still
+      // linger briefly for the "I created but haven't opened" edge, but
+      // this catches rooms that were populated then emptied.
+      if (r.members.size === 0 && (now - (r.createdAt || 0)) > 3 * 60 * 1000) {
+        try { nsp.to(r.code).emit('closed'); } catch (e) {}
+        rooms.delete(code);
+        continue;
+      }
 
       // Any host still connected? If none for >10 min, the party ends.
       // "You can't have a party without a host" (owner) — but 2 min was

@@ -501,7 +501,8 @@ if (EMBED) {
     // Parent listens for a leave request from inside.
     window.addEventListener('message', (ev) => {
       if (ev.origin !== location.origin) return;
-      if (ev.data && ev.data.type === 'party:leave') leaveAndGo();
+      if (ev.data && ev.data.type === 'party:leave') leaveOrEnd();
+      if (ev.data && ev.data.type === 'party:end') { try { socket && socket.emit('closeParty'); } catch(e){} setTimeout(leaveAndGo, 120); }
     });
   });
 }
@@ -662,16 +663,12 @@ function conn(){
 }
 boot();
 
-// Chat send — respects the 2-message listener limit
-function send(){
-  const v = $('pInput').value.trim();
-  if (!v || !socket) return;
-  if (myRole === 'listener' && msgsLeft <= 0) { toast('Only 2 messages for listeners — wait for the host to promote you.'); return; }
-  socket.emit('chat', { text: v });
-  $('pInput').value = '';
-}
-$('pSendBtn').onclick = send;
-$('pInput').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+// Chat removed from parties (owner ask 10 Aug 2026). Kept the send()
+// stub so anything still referencing it doesn't ReferenceError; the
+// UI is CSS-hidden AND the click/keydown handlers are unwired below.
+function send(){ /* chat disabled */ }
+if ($('pSendBtn')) $('pSendBtn').onclick = null;
+if ($('pInput')) $('pInput').disabled = true;
 
 // Legacy composer-emoji picker (kept in DOM, hidden by default) — the
 // centered popover replaces it. Wire it up defensively in case it re-appears.
@@ -1140,6 +1137,19 @@ function denyHand(id){
   paint();
 }
 function endParty(){ if (confirm('End the party for everyone?')) socket && socket.emit('closeParty'); }
+
+// Called by the shell's ✕ (posts 'party:leave'). If I'm the host it
+// actually ends the party for everyone; otherwise I just leave. Owner
+// ask 10 Aug 2026 — the ✕ said 'End for everyone' but was only calling
+// leave, so the host would silently leave and the room lived on.
+function leaveOrEnd(){
+  if (myRole === 'host') {
+    try { socket && socket.emit('closeParty'); } catch(e){}
+    setTimeout(leaveAndGo, 120);
+  } else {
+    leaveAndGo();
+  }
+}
 
 function leaveAndGo(){
   try { socket && socket.emit('leave'); } catch(e){}
