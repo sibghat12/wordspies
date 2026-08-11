@@ -1257,6 +1257,60 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .club-foot .club-members{color:var(--sub)}
 .club-foot .club-members b{font-weight:600;color:var(--ink)}
 .club-foot .club-go{color:var(--ink);opacity:.4;font-size:15px}
+/* Flag filter chip bar (owner ask 11 Aug 2026). Horizontal scroll on
+   mobile, all classes namespaced .club-chip*. */
+.club-chips{display:flex;gap:8px;padding:10px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.club-chips::-webkit-scrollbar{display:none}
+.club-chip{flex-shrink:0;background:#fff;border:1px solid var(--line);border-radius:99px;padding:7px 13px;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .14s;letter-spacing:-.1px}
+.club-chip:hover{border-color:#c9cfe3;background:#fafbfc}
+.club-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.club-chip .club-chip-fl{font-size:15px;line-height:1}
+/* Club detail view (inline inside the Clubs subtab) — namespaced .cd-* */
+.cd-wrap{position:relative;padding-bottom:40px}
+.cd-wrap.hidden{display:none}
+.cd-cover{height:200px;background:#0f7500;background-size:cover;background-position:center;position:relative;border-radius:16px;overflow:hidden;margin-top:8px}
+.cd-cover::after{content:'';position:absolute;inset:auto 0 0 0;height:80px;background:linear-gradient(to top,var(--bg),transparent);pointer-events:none}
+.cd-back{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.9);color:var(--ink);border:0;border-radius:99px;width:38px;height:38px;font-size:18px;cursor:pointer;backdrop-filter:blur(8px);z-index:5;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:transform .12s}
+.cd-back:hover{transform:scale(1.05)}
+.cd-body{max-width:640px;margin:-40px auto 0;padding:0 0 40px;position:relative}
+.cd-body h1{font-family:'Inter',sans-serif;font-size:24px;font-weight:500;letter-spacing:-.4px;line-height:1.2;margin:0 0 10px;color:var(--ink)}
+.cd-desc{font-family:'Inter',sans-serif;font-size:14.5px;line-height:1.55;color:var(--sub);font-weight:400;margin:0 0 16px}
+.cd-meta{font-family:'Inter',sans-serif;font-size:13px;color:var(--sub);font-weight:400;margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cd-meta > span{display:inline-flex;align-items:center;gap:5px}
+.cd-meta > span + span::before{content:'';display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--faint);margin-right:8px}
+.cd-meta b{color:var(--ink);font-weight:600}
+.cd-actions{display:flex;gap:10px;margin-bottom:20px}
+.cd-actions button{flex:1;background:var(--ink);color:#fff;border:0;border-radius:12px;padding:11px;font-family:'Inter',sans-serif;font-weight:500;font-size:14px;cursor:pointer;transition:filter .12s}
+.cd-actions button:hover{filter:brightness(1.08)}
+.cd-actions .cd-join.joined{background:#f0f2f5;color:var(--ink)}
+.cd-actions .cd-share{background:#f0f2f5;color:var(--ink)}
+.cd-composer{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start}
+.cd-composer:focus-within{border-color:#c9cfe3}
+.cd-cavatar{width:34px;height:34px;border-radius:50%;background:#e6e8ef;flex-shrink:0;background-size:cover;background-position:center}
+.cd-cinput{flex:1;display:flex;flex-direction:column;gap:8px}
+.cd-cinput textarea{border:0;padding:6px 2px;font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;color:var(--ink);outline:none;resize:none;background:transparent;font-weight:400}
+.cd-cinput textarea::placeholder{color:var(--faint)}
+.cd-cinput button{align-self:flex-end;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:7px 16px;font-family:'Inter',sans-serif;font-weight:500;font-size:13px;cursor:pointer}
+.cd-cinput button:disabled{opacity:.4;cursor:not-allowed}
+.cd-feed{display:flex;flex-direction:column;gap:12px}
+.cd-post{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.cd-post-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.cd-post-who{font-family:'Inter',sans-serif;font-weight:500;font-size:14px;color:var(--ink);line-height:1.2}
+.cd-post-when{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--faint);font-weight:400;margin-top:2px}
+.cd-post-body{font-family:'Inter',sans-serif;font-size:14px;line-height:1.55;color:var(--ink);font-weight:400;margin:0 0 10px;white-space:pre-wrap;word-wrap:break-word}
+.cd-post-actions{display:flex;gap:18px;padding-top:8px;border-top:1px solid #f2f3f5;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:400;color:var(--sub)}
+.cd-post-actions button{background:transparent;border:0;padding:2px 0;color:inherit;cursor:pointer;font-family:inherit;font-size:inherit;font-weight:inherit;display:inline-flex;align-items:center;gap:4px}
+.cd-post-actions button:hover{color:var(--ink)}
+.cd-post-actions .cd-liked{color:#e63946;font-weight:500}
+.cd-post-comments{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.cd-comment{display:flex;gap:8px;padding:8px 10px;background:#f8f9fb;border-radius:10px}
+.cd-comment .cd-cavatar{width:26px;height:26px}
+.cd-comment-b{flex:1;font-family:'Inter',sans-serif;font-size:13px;line-height:1.45;color:var(--ink);font-weight:400}
+.cd-comment-b b{font-weight:500;margin-right:5px}
+.cd-comment-add{display:flex;gap:6px;margin-top:8px}
+.cd-comment-add input{flex:1;border:1px solid var(--line);border-radius:99px;padding:7px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none;background:#fff}
+.cd-comment-add input:focus{border-color:var(--ink)}
+.cd-comment-add button{background:var(--ink);color:#fff;border:0;border-radius:99px;padding:6px 14px;font-family:'Inter',sans-serif;font-weight:500;font-size:12px;cursor:pointer}
 
 .pt-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;padding:14px 20px 6px;flex-wrap:wrap}
 .pt-hero h2{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.5px;color:var(--ink)}
@@ -2874,8 +2928,34 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <!-- Language Clubs (placeholder — full feature re-lands in a
          separate careful commit series per the roadmap Phase 4). -->
     <div id="psubClubsPane" class="hidden">
-      <div class="club-list" id="clubList">
-        <div class="club-empty">Loading clubs…</div>
+      <!-- Listing view (filter chips + card grid) -->
+      <div id="clubListView">
+        <div class="club-chips" id="clubChips"></div>
+        <div class="club-list" id="clubList">
+          <div class="club-empty">Loading clubs…</div>
+        </div>
+      </div>
+      <!-- Detail view (opens when a card is tapped). Namespaced .cd-* -->
+      <div id="clubDetail" class="cd-wrap hidden">
+        <div class="cd-cover" id="cdCover"></div>
+        <button class="cd-back" onclick="closeClub()" aria-label="Back">←</button>
+        <div class="cd-body">
+          <h1 id="cdName"></h1>
+          <p class="cd-desc" id="cdDesc"></p>
+          <div class="cd-meta" id="cdMeta"></div>
+          <div class="cd-actions">
+            <button class="cd-join" id="cdJoin" onclick="toggleJoinClub()">Join</button>
+            <button class="cd-share" onclick="shareClub()">Share link</button>
+          </div>
+          <div class="cd-composer">
+            <div class="cd-cavatar" id="cdMyAvatar"></div>
+            <div class="cd-cinput">
+              <textarea id="cdPostText" placeholder="Write something…" rows="2" maxlength="1200"></textarea>
+              <button id="cdPostBtn" onclick="submitClubPost()">Post</button>
+            </div>
+          </div>
+          <div id="cdFeed" class="cd-feed"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -4765,13 +4845,18 @@ function showPSub(which){
   if (which === 'clubs' && !_clubsLoaded) loadClubs();
 }
 let _clubsLoaded = false;
+let _clubsAll = [];               // full list from server
+let _clubLang = 'All';            // active filter
+let _curClub = null;              // open detail
 async function loadClubs(){
   const host = document.getElementById('clubList');
   if (!host) return;
   try {
     const j = await api('/clubs');
     _clubsLoaded = true;
-    paintClubs((j && j.clubs) || []);
+    _clubsAll = (j && j.clubs) || [];
+    paintClubChips();
+    paintClubs();
   } catch(e){
     host.innerHTML = '<div class="club-empty">Couldn\'t load clubs. Refresh to try again.</div>';
   }
@@ -4782,14 +4867,39 @@ function clubPhotoUrl(c){
   const seed = encodeURIComponent((c && c.id) || 'club');
   return 'https://picsum.photos/seed/' + seed + '/800/400';
 }
-function paintClubs(clubs){
+// Flag chip row across the top — 'All' + one per unique language.
+function paintClubChips(){
+  const host = document.getElementById('clubChips');
+  if (!host) return;
+  const langs = Array.from(new Set(_clubsAll.map(c => c.lang).filter(Boolean)));
+  // Sort so English comes first, then alpha, 'Any' last.
+  langs.sort((a, b) => {
+    if (a === 'English') return -1; if (b === 'English') return 1;
+    if (a === 'Any') return 1; if (b === 'Any') return -1;
+    return a.localeCompare(b);
+  });
+  const flagOf = { English:'🇬🇧', Spanish:'🇪🇸', French:'🇫🇷', German:'🇩🇪', Italian:'🇮🇹',
+    Portuguese:'🇧🇷', Russian:'🇷🇺', Japanese:'🇯🇵', Korean:'🇰🇷', Mandarin:'🇨🇳',
+    Arabic:'🇸🇦', Any:'🌍' };
+  const chips = [{ name:'All', flag:'🌐' }].concat(langs.map(l => ({ name: l, flag: flagOf[l] || '🌐' })));
+  host.innerHTML = chips.map(ch => {
+    const on = ch.name === _clubLang ? 'on' : '';
+    return `<button class="club-chip ${on}" onclick="pickClubLang('${esc(ch.name)}')"><span class="club-chip-fl">${ch.flag}</span> ${esc(ch.name)}</button>`;
+  }).join('');
+}
+function pickClubLang(lang){
+  _clubLang = lang;
+  paintClubChips();
+  paintClubs();
+}
+function paintClubs(){
   const host = document.getElementById('clubList');
   if (!host) return;
-  if (!clubs.length) { host.innerHTML = '<div class="club-empty">No clubs yet.</div>'; return; }
+  const clubs = _clubLang === 'All' ? _clubsAll : _clubsAll.filter(c => c.lang === _clubLang);
+  if (!clubs.length) { host.innerHTML = '<div class="club-empty">No clubs for this filter.</div>'; return; }
   try {
     host.innerHTML = clubs.map(c => {
       const photo = clubPhotoUrl(c);
-      const grad = (c && c.cover) || 'linear-gradient(135deg,#3d7bff,#7c5cff)';
       const mc = (c && c.memberCount) || 0;
       const name = esc((c && c.name) || 'Club');
       const emo = (c && c.emoji) || '';
@@ -4815,10 +4925,162 @@ function paintClubs(clubs){
     host.innerHTML = '<div class="club-empty">Could not render clubs.</div>';
   }
 }
-// Placeholder tap handler — clicking a club just toasts for now.
-// Detail page + posts + comments will land in the next commit.
-function openClub(id){
-  if (typeof toast === 'function') toast('Club detail coming next — this is a preview of the covers.');
+// ── Club detail view: posts, likes, comments ─────────────────────────
+async function openClub(id){
+  try {
+    const j = await api('/clubs/' + encodeURIComponent(id));
+    if (!j || !j.club) throw new Error('missing club');
+    _curClub = { ...j.club, isMember: !!j.isMember, posts: j.posts || [] };
+    paintClubDetail();
+    document.getElementById('clubListView').classList.add('hidden');
+    document.getElementById('clubDetail').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  } catch(e){ if (typeof toast === 'function') toast('Could not open club.'); }
+}
+function closeClub(){
+  document.getElementById('clubDetail').classList.add('hidden');
+  document.getElementById('clubListView').classList.remove('hidden');
+  _curClub = null;
+}
+function paintClubDetail(){
+  const c = _curClub; if (!c) return;
+  try {
+    const cover = document.getElementById('cdCover');
+    cover.style.backgroundImage = `url('${clubPhotoUrl(c)}')`;
+    cover.style.backgroundSize = 'cover'; cover.style.backgroundPosition = 'center';
+    document.getElementById('cdName').textContent = (c.name || '') + ' ' + (c.emoji || '');
+    document.getElementById('cdDesc').textContent = c.desc || '';
+    const mc = c.memberCount || 0;
+    document.getElementById('cdMeta').innerHTML =
+      `<span>${(c.emoji || '🌐')} ${esc(c.lang || '')}</span>` +
+      `<span><b>${mc.toLocaleString()}</b> ${mc === 1 ? 'member' : 'members'}</span>`;
+    const joinBtn = document.getElementById('cdJoin');
+    joinBtn.textContent = c.isMember ? '✓ Joined' : 'Join';
+    joinBtn.classList.toggle('joined', !!c.isMember);
+    const av = document.getElementById('cdMyAvatar');
+    if (ME && ME.photo) av.style.backgroundImage = `url('${ME.photo}')`;
+    else av.style.backgroundImage = '';
+    paintClubFeed();
+  } catch(e){ console.error('paintClubDetail:', e); }
+}
+function paintClubFeed(){
+  const feed = document.getElementById('cdFeed');
+  if (!feed) return;
+  const posts = (_curClub && _curClub.posts) || [];
+  if (!posts.length) { feed.innerHTML = '<div class="club-empty">No posts yet — be the first!</div>'; return; }
+  feed.innerHTML = posts.map(renderClubPost).join('');
+  posts.forEach(p => {
+    const inp = document.getElementById('cdCommentInp_' + p.id);
+    if (inp) inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') submitClubComment(p.id); });
+  });
+}
+function renderClubPost(p){
+  const liked = ME && (p.likes || []).indexOf(ME.id) >= 0;
+  const photoBg = p.photo ? `url('${p.photo}')` : '';
+  const commentsHtml = (p.comments || []).map(cm => `
+    <div class="cd-comment">
+      <div class="cd-cavatar" style="${cm.photo ? `background-image:url('${cm.photo}')` : ''}"></div>
+      <div class="cd-comment-b"><b>${esc(cm.name)}</b>${esc(cm.text)}</div>
+    </div>`).join('');
+  return `
+    <div class="cd-post" data-id="${esc(p.id)}">
+      <div class="cd-post-head">
+        <div class="cd-cavatar" style="background-image:${photoBg}"></div>
+        <div><div class="cd-post-who">${esc(p.name)}</div><div class="cd-post-when">${_clubWhen(p.createdAt)}</div></div>
+      </div>
+      <p class="cd-post-body">${esc(p.text)}</p>
+      <div class="cd-post-actions">
+        <button onclick="likeClubPost('${esc(p.id)}')" class="${liked ? 'cd-liked' : ''}">${liked ? '❤️' : '🤍'} ${(p.likes || []).length || ''} Like</button>
+        <button onclick="focusClubComment('${esc(p.id)}')">💬 ${(p.comments || []).length || ''} Comment</button>
+      </div>
+      ${commentsHtml ? '<div class="cd-post-comments">' + commentsHtml + '</div>' : ''}
+      <div class="cd-comment-add">
+        <input id="cdCommentInp_${esc(p.id)}" type="text" placeholder="Write a comment…" maxlength="400">
+        <button onclick="submitClubComment('${esc(p.id)}')">Send</button>
+      </div>
+    </div>`;
+}
+function _clubWhen(ts){
+  const d = Date.now() - ts;
+  if (d < 60000) return 'just now';
+  if (d < 3600000) return Math.floor(d/60000) + 'm ago';
+  if (d < 86400000) return Math.floor(d/3600000) + 'h ago';
+  return Math.floor(d/86400000) + 'd ago';
+}
+async function toggleJoinClub(){
+  if (!_curClub) return;
+  if (GUEST) { if (typeof requireLogin === 'function') requireLogin('Log in to join a club'); return; }
+  try {
+    const j = await api('/clubs/' + encodeURIComponent(_curClub.id) + '/join', { method:'POST' });
+    _curClub.isMember = !!j.joined;
+    _curClub.memberCount = j.memberCount || 0;
+    paintClubDetail();
+    const idx = _clubsAll.findIndex(c => c.id === _curClub.id);
+    if (idx >= 0) _clubsAll[idx].memberCount = j.memberCount || 0;
+  } catch(e){ if (typeof toast === 'function') toast(e.message || 'Something went wrong.'); }
+}
+function shareClub(){
+  const url = location.origin + '/social#club=' + (_curClub ? _curClub.id : '');
+  try { navigator.clipboard.writeText(url); if (typeof toast === 'function') toast('Link copied'); }
+  catch(e){ if (typeof toast === 'function') toast('Could not copy.'); }
+}
+async function submitClubPost(){
+  if (!_curClub) return;
+  if (GUEST) { if (typeof requireLogin === 'function') requireLogin('Log in to post'); return; }
+  const el = document.getElementById('cdPostText');
+  const text = el.value.trim();
+  if (!text) return;
+  const btn = document.getElementById('cdPostBtn');
+  btn.disabled = true;
+  try {
+    const j = await api('/clubs/' + encodeURIComponent(_curClub.id) + '/posts', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text })
+    });
+    el.value = '';
+    _curClub.posts.unshift(j.post);
+    paintClubFeed();
+  } catch(e){ if (typeof toast === 'function') toast(e.message || 'Could not post.'); }
+  btn.disabled = false;
+}
+async function likeClubPost(pid){
+  if (!_curClub) return;
+  if (GUEST) { if (typeof requireLogin === 'function') requireLogin('Log in to like'); return; }
+  try {
+    const j = await api('/clubs/' + encodeURIComponent(_curClub.id) + '/posts/' + encodeURIComponent(pid) + '/like', { method:'POST' });
+    const p = _curClub.posts.find(x => x.id === pid);
+    if (p) {
+      p.likes = p.likes || [];
+      const idx = p.likes.indexOf(ME.id);
+      if (j.liked && idx < 0) p.likes.push(ME.id);
+      else if (!j.liked && idx >= 0) p.likes.splice(idx, 1);
+      paintClubFeed();
+    }
+  } catch(e){ if (typeof toast === 'function') toast(e.message || 'Something went wrong.'); }
+}
+function focusClubComment(pid){
+  const inp = document.getElementById('cdCommentInp_' + pid);
+  if (inp) inp.focus();
+}
+async function submitClubComment(pid){
+  if (!_curClub) return;
+  if (GUEST) { if (typeof requireLogin === 'function') requireLogin('Log in to comment'); return; }
+  const inp = document.getElementById('cdCommentInp_' + pid);
+  const text = inp.value.trim();
+  if (!text) return;
+  try {
+    const j = await api('/clubs/' + encodeURIComponent(_curClub.id) + '/posts/' + encodeURIComponent(pid) + '/comments', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text })
+    });
+    const p = _curClub.posts.find(x => x.id === pid);
+    if (p) {
+      p.comments = p.comments || [];
+      p.comments.push(j.comment);
+      inp.value = '';
+      paintClubFeed();
+    }
+  } catch(e){ if (typeof toast === 'function') toast(e.message || 'Could not comment.'); }
 }
 
 function openCreateParty(){

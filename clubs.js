@@ -40,6 +40,9 @@ function clean(s, max) {
 // 2026: 'good rooms for English + Spanish + Russian + Italian + French
 // + other languages, default rooms that are always ours'.
 const SEED_CLUBS = [
+  // ── English cluster (owner ask 11 Aug 2026 — put English rooms
+  // at the start + more of them). Everyone learning English gets
+  // an obvious home to land in. ──────────────────────────────────
   {
     id: 'club_english_pronunciation',
     name: 'English Pronunciation Practice',
@@ -51,6 +54,36 @@ const SEED_CLUBS = [
     name: 'English for Beginners',
     desc: 'Just starting English? This is your safe space. Ask any question, no matter how basic. Kind, patient, no judgement. Post daily sentences and get gentle corrections.',
     lang: 'English', cover: 'linear-gradient(135deg,#48dbfb 0%,#0abde3 100%)', emoji: '🇬🇧',
+  },
+  {
+    id: 'club_english_conversation',
+    name: 'English Conversation Club',
+    desc: 'Practise real everyday English — greetings, small talk, opinions, arguments. Post a topic, jump into someone else\'s. All levels welcome.',
+    lang: 'English', cover: 'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)', emoji: '🇬🇧',
+  },
+  {
+    id: 'club_english_business',
+    name: 'Business English',
+    desc: 'Emails, meetings, presentations, negotiations. Share the exact sentences you struggle with at work — real answers from natives + professionals.',
+    lang: 'English', cover: 'linear-gradient(135deg,#232526 0%,#414345 100%)', emoji: '💼',
+  },
+  {
+    id: 'club_english_idioms',
+    name: 'English Idioms & Slang',
+    desc: 'It\'s raining cats and dogs. Break a leg. Piece of cake. What do these actually mean, and when do you use them? Post an idiom you heard — get the story behind it.',
+    lang: 'English', cover: 'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)', emoji: '🇬🇧',
+  },
+  {
+    id: 'club_english_movies',
+    name: 'Learn English Through Movies',
+    desc: 'Watched something in English? Post lines you loved, words you didn\'t understand, or scenes worth studying. Netflix, YouTube, TikTok — all counts.',
+    lang: 'English', cover: 'linear-gradient(135deg,#134e5e 0%,#71b280 100%)', emoji: '🎬',
+  },
+  {
+    id: 'club_english_ielts',
+    name: 'IELTS & TOEFL Prep',
+    desc: 'Preparing for IELTS, TOEFL, or Cambridge exams? Share writing samples, ask about speaking topics, get corrected by people who\'ve passed.',
+    lang: 'English', cover: 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)', emoji: '📝',
   },
   {
     id: 'club_spanish_conversation',
@@ -138,11 +171,16 @@ const SEED_CLUBS = [
   },
 ];
 
+// Seed on first boot AND top-up on every boot for any SEED_CLUBS ids
+// we don't already have (owner ask 11 Aug 2026 — added more English
+// rooms mid-life; existing prod Redis needs them too, not just fresh
+// installs). Never overwrites — an existing id is left untouched.
 async function seedIfEmpty(db) {
   try {
-    const count = await db.scard('soc:clubs');
-    if (count > 0) return;
+    let added = 0;
     for (const c of SEED_CLUBS) {
+      const already = await db.sismember('soc:clubs', c.id);
+      if (already) continue;
       const club = {
         ...c,
         createdBy: 'system',
@@ -151,8 +189,9 @@ async function seedIfEmpty(db) {
       };
       await db.set('soc:club:' + c.id, JSON.stringify(club));
       await db.sadd('soc:clubs', c.id);
+      added++;
     }
-    console.log('[clubs] seeded ' + SEED_CLUBS.length + ' default clubs');
+    if (added) console.log('[clubs] seeded ' + added + ' new default club(s), total defaults: ' + SEED_CLUBS.length);
   } catch (e) { console.error('[clubs] seed:', e.message); }
 }
 
