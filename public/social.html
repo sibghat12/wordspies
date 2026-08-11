@@ -1970,6 +1970,11 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
    Pulses red while recording. Owner ask 6 Aug 2026 rebuilt this
    from the old blocky square. */
 .composer .micrec{background:var(--ink,#16181f);color:#fff;border:0;box-shadow:none;position:relative;user-select:none;-webkit-user-select:none;min-width:40px;width:40px;height:40px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;line-height:0;border-radius:50%;transition:background .12s,transform .12s}
+/* Talk-to-AI mic (owner ask 11 Aug 2026). Pulses red while listening. */
+.composer .cbtn.aitalk{background:#f4f5f7;color:var(--ink);min-width:40px;width:40px;height:40px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:18px;transition:background .12s,transform .12s;padding:0}
+.composer .cbtn.aitalk:hover{background:#e6e9ee}
+.composer .cbtn.aitalk.listening{background:linear-gradient(135deg,#ff3d5b,#c8123b);color:#fff;animation:aiTalkPulse 1.15s ease-in-out infinite}
+@keyframes aiTalkPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,61,91,.55)}70%{box-shadow:0 0 0 12px rgba(255,61,91,0)}}
 .composer .micrec:hover{background:#000}
 .composer .micrec svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .composer .micrec.recording{background:linear-gradient(135deg,#ff3d5b,#c8123b);animation:micrecpulse 1.2s ease-in-out infinite;transform:scale(1.08)}
@@ -3097,6 +3102,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="cbtn" style="display:none" onclick="$('imgIn').click()" title="Send a photo">📷</button>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
       <button class="cbtn xlat" style="display:none" id="composerXlat" onclick="translateComposer()" title="Translate my typing" aria-label="Translate my typing">🌐</button>
+      <!-- Talk-to-AI mic (owner ask 11 Aug 2026 — 'user can speak with
+           AI experts, reply back in text + audio'). Shown only when
+           the current chat is an AI expert. Uses the browser's built-in
+           SpeechRecognition (no key, no cost). Falls back to a toast on
+           unsupported browsers. -->
+      <button class="cbtn aitalk hidden" id="aiTalkBtn" onclick="toggleAITalk()" title="Speak to the AI expert" aria-label="Speak to the AI expert">🎙️</button>
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
       <!-- Mic stays in DOM (voice recording flow references #micRecBtn)
            but is hidden from the composer — Voice launches from the +
@@ -6377,6 +6388,9 @@ function openChatWith(id){
   // ElevenLabs so the "hear them talk" need is covered.
   const call = document.getElementById('chCall');
   if (call) call.classList.toggle('hidden', CUR_CHAT_IS_AI);
+  // Talk-to-AI mic: shown only on AI expert chats (owner ask 11 Aug 2026).
+  const aiTalk = document.getElementById('aiTalkBtn');
+  if (aiTalk) aiTalk.classList.toggle('hidden', !CUR_CHAT_IS_AI);
   showTab('chat');
 }
 
@@ -6762,6 +6776,60 @@ function pickVoice(personaId){
 // chat switch or replay.
 let _voiceAudio = null;
 let _voiceUrl = null;
+
+// ── Talk-to-AI (owner ask 11 Aug 2026) ─────────────────────────────
+// Browser SpeechRecognition → transcript → drop into #msgIn → sendMsg
+// via the existing AI-reply path (which already speaks the reply via
+// ElevenLabs). Free, no key, works on Chrome/Edge/Android/iOS Safari
+// 14.5+. Firefox + old Safari get a friendly 'type instead' toast.
+let _aiRecog = null;
+function toggleAITalk(){
+  if (_aiRecog) return stopAITalk();
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Voice input not supported in this browser — type instead.'); return; }
+  try {
+    _aiRecog = new SR();
+    _aiRecog.continuous = false;
+    _aiRecog.interimResults = true;
+    _aiRecog.lang = (navigator.language || 'en-US');
+    const inp = $('msgIn');
+    const btn = document.getElementById('aiTalkBtn');
+    if (btn) btn.classList.add('listening');
+    let finalTranscript = '';
+    _aiRecog.onresult = (ev) => {
+      let interim = '';
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const r = ev.results[i];
+        if (r.isFinal) finalTranscript += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      inp.value = (finalTranscript + interim).trim();
+      inp.dispatchEvent(new Event('input'));
+    };
+    _aiRecog.onerror = (ev) => {
+      stopAITalk();
+      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+        toast('🎤 Microphone access denied. Enable it in browser settings.');
+      } else if (ev.error !== 'no-speech' && ev.error !== 'aborted') {
+        toast('Voice input error — try again.');
+      }
+    };
+    _aiRecog.onend = () => {
+      const wasListening = !!_aiRecog;
+      stopAITalk();
+      const text = (inp.value || '').trim();
+      // Auto-send if we captured anything — feels like a call, not a note.
+      if (wasListening && text) setTimeout(() => sendMsg(), 120);
+    };
+    _aiRecog.start();
+  } catch(e){ stopAITalk(); toast('Voice input failed to start.'); }
+}
+function stopAITalk(){
+  try { if (_aiRecog) _aiRecog.stop(); } catch(e){}
+  _aiRecog = null;
+  const btn = document.getElementById('aiTalkBtn');
+  if (btn) btn.classList.remove('listening');
+}
 function stopServerVoice(){
   if (_voiceAudio) { try { _voiceAudio.pause(); _voiceAudio.src = ''; } catch(e){} _voiceAudio = null; }
   if (_voiceUrl)   { try { URL.revokeObjectURL(_voiceUrl); } catch(e){} _voiceUrl = null; }
