@@ -1863,6 +1863,19 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb-xlat.loading{opacity:.75}
 .mb-xlat.loading .txt::after{content:'…';animation:tload 1s ease-in-out infinite;margin-left:2px}
 @keyframes xlatIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* AI-expert correction: warm amber "fix + grammar" box + green "full sentence" box.
+   Rendered inline right before the AI reply bubble when the model returns
+   [[FIX]] / [[FULL]] tags in its response. See parseAiReply() below. */
+.mb-fix,.mb-full{align-self:flex-start;max-width:82%;margin-top:4px;border-radius:14px;padding:8px 12px;font-family:'Inter',system-ui,sans-serif;font-size:13.5px;line-height:1.42;animation:xlatIn .2s ease-out;position:relative}
+.mb-fix{background:#fff5e0;border:1px solid #f0c97a;color:#6b4a10;border-bottom-left-radius:6px}
+.mb-full{background:#e7fbe9;border:1px solid #a8d8b0;color:#0f5b1a;border-bottom-left-radius:6px}
+.mb-fix .lbl,.mb-full .lbl{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.72;margin-bottom:3px;display:flex;align-items:center;gap:4px}
+.mb-fix .swap{font-weight:600;line-height:1.5}
+.mb-fix .swap .from{background:rgba(200,60,60,.14);padding:1px 5px;border-radius:5px;text-decoration:line-through;text-decoration-color:rgba(150,30,30,.55);text-decoration-thickness:1.5px}
+.mb-fix .swap .arr{opacity:.55;margin:0 6px;font-weight:400}
+.mb-fix .swap .to{background:rgba(60,160,80,.16);padding:1px 5px;border-radius:5px;font-weight:700}
+.mb-fix .note{font-size:12.5px;font-weight:500;margin-top:5px;opacity:.92;line-height:1.4}
+.mb-full .txt{font-weight:600;white-space:pre-wrap;word-wrap:break-word;font-size:14.5px}
 /* Language picker — floating popover anchored to the tapped bubble
    (owner ask 9 Aug 2026 v3, "open in the message not in the bottom
    horizontal line"). JS positions it above/below via top/left. */
@@ -6588,12 +6601,21 @@ function msgBody(m){
   // loading + added decoding=async to stop the blink caused by the
   // chat's periodic re-render destroying and re-creating the <img>.
   if (m.k === 'image') return `<img class="chatimg" src="${esc(m.x)}" decoding="async" alt="photo" draggable="false">`;
+  // AI-expert replies come back tagged as [[FIX]] / [[FULL]] / [[REPLY]]
+  // so the client can render two teaching boxes above the reply during
+  // the live typewriter animation. On chat reopen we only need the plain
+  // reply — strip the teaching tags so the bubble stays short and clean.
+  let raw = m.x;
+  if (typeof raw === 'string' && raw.indexOf('[[REPLY]]') >= 0) {
+    const m2 = raw.match(/\[\[REPLY\]\]([\s\S]*)$/i);
+    if (m2) raw = m2[1].trim();
+  }
   // Any game invite — WordSpies or the arcade — becomes a big tappable Join
   // card, and a message can hold several of them. The regex runs on the
   // escaped text, so & in the URL appears as &amp; here.
   const mine = ME && m.f === ME.id;
   let found = false;
-  let out = esc(m.x).replace(/(?:https?:\/\/[^\s<]+)?\/(play|ludo|four|pool|meld|party)\?room=([A-Za-z0-9]{4})(?:&amp;go=1)?/g, (all, g, code) => {
+  let out = esc(raw).replace(/(?:https?:\/\/[^\s<]+)?\/(play|ludo|four|pool|meld|party)\?room=([A-Za-z0-9]{4})(?:&amp;go=1)?/g, (all, g, code) => {
     found = true;
     const [ic, nm] = GAME_TAGS[g];
     const c = code.toUpperCase();
@@ -6921,15 +6943,63 @@ window.addEventListener('beforeunload', stopAIVoice);
 // once but we display it character by character so it feels natural
 // instead of the whole paragraph slamming in. Owner ask: "bit slow".
 // Voice starts at the same moment so the two land together.
+// Parse [[FIX]] / [[FULL]] / [[REPLY]] tags out of the AI reply text.
+// Returns { fixFrom, fixTo, fixNote, full, reply } — any field may be
+// empty. If no tags at all, whole text falls into reply so we stay
+// backwards-compatible with old cached messages.
+function parseAiReply(raw){
+  const out = { fixFrom:'', fixTo:'', fixNote:'', full:'', reply:'' };
+  const s = String(raw || '').trim();
+  const grab = (tag) => {
+    const re = new RegExp('\\[\\[' + tag + '\\]\\]([\\s\\S]*?)(?=\\[\\[(?:FIX|FULL|REPLY)\\]\\]|$)', 'i');
+    const m = s.match(re); return m ? m[1].trim() : '';
+  };
+  const fix = grab('FIX');
+  out.full = grab('FULL');
+  out.reply = grab('REPLY');
+  if (fix) {
+    // "wrong" → "right" — note.  Split on em-dash / hyphen after the second quote.
+    const m = fix.match(/["“]([^"”]+)["”]\s*[→\-]+\s*["“]([^"”]+)["”]\s*(?:[—\-–:]\s*)?(.*)$/);
+    if (m) { out.fixFrom = m[1]; out.fixTo = m[2]; out.fixNote = (m[3] || '').trim(); }
+    else { out.fixNote = fix; }
+  }
+  if (!out.reply && !fix && !out.full) out.reply = s;   // untagged fallback
+  return out;
+}
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+function renderAiFixBox(parsed, msgs){
+  if (!parsed.fixFrom && !parsed.fixNote) return;
+  const box = document.createElement('div');
+  box.className = 'mb-fix';
+  const swap = (parsed.fixFrom && parsed.fixTo)
+    ? '<div class="swap"><span class="from">' + esc(parsed.fixFrom) + '</span><span class="arr">→</span><span class="to">' + esc(parsed.fixTo) + '</span></div>'
+    : '';
+  const note = parsed.fixNote ? '<div class="note">' + esc(parsed.fixNote) + '</div>' : '';
+  box.innerHTML = '<div class="lbl">✏️ Correction</div>' + swap + note;
+  msgs.appendChild(box);
+}
+function renderAiFullBox(parsed, msgs){
+  if (!parsed.full) return;
+  const box = document.createElement('div');
+  box.className = 'mb-full';
+  box.innerHTML = '<div class="lbl">✅ Full sentence</div><div class="txt">' + esc(parsed.full) + '</div>';
+  msgs.appendChild(box);
+}
 async function typewriteAIReply(msg){
   if (!msg || !msg.x) return;
   const msgs = document.getElementById('msgs');
   if (!msgs) return;
+  const parsed = parseAiReply(msg.x);
+  // Render the two teaching boxes first (if any) so the reader
+  // sees the correction before the natural reply lands.
+  renderAiFixBox(parsed, msgs);
+  renderAiFullBox(parsed, msgs);
+  if (parsed.full || parsed.fixFrom) msgs.scrollTop = msgs.scrollHeight;
   const bubble = document.createElement('div');
   bubble.className = 'mb them ai-typewrite';
   bubble.dataset.aiTypewriter = '1';
   msgs.appendChild(bubble);
-  const text = String(msg.x);
+  const text = String(parsed.reply || msg.x);
   // Kick off the voice at the start so audio + text roughly align.
   speakAIReply(text, curChat);
   // ~28ms per character = ~35 chars/sec — matches a natural typing

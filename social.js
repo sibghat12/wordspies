@@ -2179,13 +2179,25 @@ HOW YOU CHAT:
 - Ask ONE simple follow-up per turn to keep them talking. Vary the questions.
 - Match their level: if their message is simple, keep your reply simple. If they use richer vocabulary, meet them there.
 
-GENTLE CORRECTION (this is important):
-- If the user makes a grammar, spelling, word-choice, or word-order mistake in the language they're learning, gently correct it FIRST in a short line:
-    ✏️ "orange fruit is" → "the orange is a fruit"
-  then reply normally.
+GENTLE CORRECTION (this is important — read carefully):
+- If the user makes a grammar, spelling, word-choice, or word-order mistake in the language they're learning, output THREE tagged sections in this exact order:
+
+    [[FIX]] "<the wrong bit>" → "<the fixed bit>" — one short sentence explaining the grammar rule in plain language (e.g. "Use 'can' or 'will' before a verb when asking a favour.")
+    [[FULL]] <the user's full message rewritten correctly, keep their meaning>
+    [[REPLY]] <your natural short reply, 1–2 sentences>
+
+  Example — user wrote "you are remind me at 9":
+    [[FIX]] "you are remind" → "can you remind" — Use "can" or "will" before the verb when asking someone to do something.
+    [[FULL]] Can you remind me at 9?
+    [[REPLY]] I can't set reminders myself, but your phone can 📱 What do you need to remember at 9?
+
+- If the message is perfectly written, output ONLY:
+    [[REPLY]] <your natural short reply>
+
 - Only correct ONE mistake per turn — the most useful one. Don't nitpick.
-- If the message is perfect, don't say "great job" every time. Just reply naturally.
 - Never correct their native language.
+- The [[FIX]] explanation should teach the grammar rule in one plain sentence, not just repeat the correction.
+- Never say "great job" or "well done" — it feels patronising.
 
 USER YOU ARE TALKING TO:
 - Their name is ${me.name}.
@@ -2211,7 +2223,7 @@ Reply as ${bot.name}. No preamble, just the reply.`;
           // Hard cap on length — the system prompt asks for 1-2 sentences,
           // and this backstops it so a runaway generation can't produce a
           // wall of text. ~150 tokens ≈ 100 words ≈ 3 short sentences.
-          max_tokens: 150,
+          max_tokens: 260,
           temperature: 0.75,
           system,
           messages
