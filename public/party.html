@@ -212,11 +212,11 @@ a{color:inherit;text-decoration:none}
 .listeners .pav .circ{width:44px;height:44px;font-size:17px;margin-bottom:6px}
 .listeners .pav .nm{font-size:11px}
 .listeners .pav .rl{display:none}
+/* Listener tiles don't show the mic chip (they can't speak until
+   promoted). Speakers + hosts show it so everyone can see who's
+   muted vs live — Tandem-style (owner ask 11 Aug 2026 — 'mic on
+   their picture on and off, all people can see who's muted'). */
 .listeners .pav .micchip{display:none}
-/* Owner ask 10 Aug 2026 — remove the mic chips from every party tile
-   (speakers + listeners). Voice-activity ring on the avatar already
-   shows who's talking; the chip was clutter. */
-.pav .micchip{display:none !important}
 /* Listener with hand raised */
 .pav.hand::before{content:'✋';position:absolute;top:0;right:6px;font-size:14px;background:#fff8e6;padding:3px 5px;border-radius:99px;border:1px solid #f0d97a;animation:handwave 1.3s ease-in-out infinite}
 @keyframes handwave{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}

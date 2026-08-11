@@ -1355,6 +1355,16 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .pt-card .pt-hostav{width:22px;height:22px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:10.5px;flex-shrink:0}
 .pt-card .pt-hostav img{width:100%;height:100%;object-fit:cover;display:block}
 .pt-card .pt-hostnm{color:var(--ink);font-weight:700;font-size:13px;letter-spacing:-.1px}
+/* New party-card layout (owner ask 11 Aug 2026 v2): flags on top,
+   host on left, speaker+listener counts on right. */
+.pt-card .pt-cflags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.pt-card .pt-cflag{font-size:18px;line-height:1;display:inline-block}
+.pt-card .pt-cfoot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);gap:12px}
+.pt-card .pt-fhost{display:inline-flex;align-items:center;gap:8px;min-width:0;flex:1}
+.pt-card .pt-fcounts{display:inline-flex;align-items:center;gap:10px;flex-shrink:0}
+.pt-card .pt-fcounts .pt-cbadge{display:inline-flex;align-items:center;gap:4px;color:var(--sub);font-size:12.5px;font-weight:600}
+.pt-card .pt-fcounts .pt-cbadge svg{width:14px;height:14px;flex:none}
+.pt-card .pt-fcounts .pt-cbadge b{color:var(--ink);font-weight:700}
 .pt-empty{text-align:center;color:var(--faint);padding:60px 20px;font-size:14px;font-weight:500;line-height:1.7}
 .pt-empty .big{font-size:44px;display:block;margin-bottom:12px}
 
@@ -1364,7 +1374,16 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Big variant used by the party-creation dialog (owner ask 10 Aug
    2026 — 'make it big popup'). Wider, taller, chip grid for flags. */
 .pt-msheet-big{max-width:520px;padding:26px 26px 22px;max-height:90vh;overflow-y:auto}
-.pt-flags{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow-y:auto;padding:6px 4px;border:1.5px dashed var(--line);border-radius:12px;background:#fafbfc}
+/* Language multi-select dropdown (owner ask 11 Aug 2026 v2). Button
+   shows the currently-chosen flags; opens the chip grid below. */
+.pt-fselect{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .12s}
+.pt-fselect:hover{border-color:#c9cfe3}
+.pt-fselect.on{border-color:var(--caccent)}
+.pt-fselect-chev{color:var(--sub);font-size:12px;line-height:1;transition:transform .16s}
+.pt-fselect.on .pt-fselect-chev{transform:rotate(180deg)}
+.pt-fselect #ptFlagsSummary{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-flags{display:flex;flex-wrap:wrap;gap:6px;max-height:200px;overflow-y:auto;padding:8px 6px;border:1.5px solid var(--line);border-radius:12px;background:#fff;margin-top:6px}
+.pt-flags.hidden{display:none}
 .pt-flags .fchip{background:#fff;border:1.5px solid var(--line);border-radius:99px;padding:6px 12px;font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:13px;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.12s}
 .pt-flags .fchip:hover{border-color:#c9cfe3}
 .pt-flags .fchip.on{background:#eef1ff;border-color:var(--caccent);color:var(--caccent)}
@@ -2970,7 +2989,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <label class="pt-flabel">Subtitle</label>
       <input class="pt-finput" id="ptSub" maxlength="120" placeholder="What are we talking about?">
       <label class="pt-flabel">Languages</label>
-      <div class="pt-flags" id="ptFlags"></div>
+      <button type="button" class="pt-fselect" id="ptFlagsToggle" onclick="togglePtFlagsDropdown()">
+        <span id="ptFlagsSummary">Select languages</span>
+        <span class="pt-fselect-chev">▾</span>
+      </button>
+      <div class="pt-flags hidden" id="ptFlags"></div>
       <label class="pt-flabel">Who can join?</label>
       <div class="pt-vis">
         <label><input type="radio" name="ptVis" value="public" checked><div><b>🌍 Public</b><small>Anyone can join</small></div></label>
@@ -4804,22 +4827,35 @@ function paintParties(list){
     const lst = (p.listenerCount != null) ? p.listenerCount : Math.max(0, (p.count || 0) - spk);
     const iAmHost = !!(ME && p.hostName && ME.name && ME.name.toLowerCase() === String(p.hostName).toLowerCase());
     const hostAv = p.hostPhoto ? `<img src="${esc(p.hostPhoto)}" alt="">` : esc((p.hostName || '?').charAt(0).toUpperCase());
+    // Language flags on top (owner ask 11 Aug 2026 v2 — 'show flags
+    // in the card, flag 1 flag 2, then title, then subtitle, host
+    // on left, speaker+listener counts on right').
+    const flagRow = (Array.isArray(p.langs) && p.langs.length)
+      ? '<div class="pt-cflags">' + p.langs.slice(0, 4).map(l => `<span class="pt-cflag">${flagFromLangName(l)}</span>`).join('') + '</div>'
+      : '';
     return `<a class="pt-card" href="/party?room=${esc(p.code)}">
+      ${flagRow}
       <div class="pt-ct">${esc(p.title)}</div>
       ${p.subtitle ? `<div class="pt-cs">${esc(p.subtitle)}</div>` : ''}
-      <div class="pt-cstats">
-        <span class="pt-cbadge spk" title="${spk} speaker${spk === 1 ? '' : 's'}">${micIconSVG()} <b>${spk}</b></span>
-        <span class="pt-cbadge lst" title="${lst} listener${lst === 1 ? '' : 's'}">${headphoneIconSVG()} <b>${lst}</b></span>
-      </div>
-      <div class="pt-cstack">${avs}</div>
-      <div class="pt-cmeta">
-        <span class="pt-hosthead">
+      <div class="pt-cfoot">
+        <span class="pt-fhost">
           <span class="pt-hostav">${hostAv}</span>
-          <span class="pt-hostnm">${esc(p.hostName || 'Someone')}${iAmHost ? ' · you host' : ''}</span>
+          <span class="pt-hostnm">${esc(p.hostName || 'Someone')}${iAmHost ? ' · host' : ''}</span>
+        </span>
+        <span class="pt-fcounts">
+          <span class="pt-cbadge spk" title="${spk} speaker${spk === 1 ? '' : 's'}">${micIconSVG()} <b>${spk}</b></span>
+          <span class="pt-cbadge lst" title="${lst} listener${lst === 1 ? '' : 's'}">${headphoneIconSVG()} <b>${lst}</b></span>
         </span>
       </div>
     </a>`;
   }).join('');
+}
+// Local flag lookup (in-file so we don't depend on any external map).
+function flagFromLangName(name){
+  const m = { English:'🇬🇧', Spanish:'🇪🇸', French:'🇫🇷', German:'🇩🇪', Italian:'🇮🇹',
+    Portuguese:'🇵🇹', Russian:'🇷🇺', Japanese:'🇯🇵', Korean:'🇰🇷', Mandarin:'🇨🇳',
+    Arabic:'🇸🇦', Hindi:'🇮🇳', Turkish:'🇹🇷', Dutch:'🇳🇱', Polish:'🇵🇱', Any:'🌍' };
+  return m[name] || '🌐';
 }
 
 // Tiny inline SVG icons for the speaker + listener count chips.
@@ -5114,9 +5150,27 @@ function paintPtFlags(){
     b.onclick = () => {
       if (_ptLangs.has(name)) _ptLangs.delete(name); else _ptLangs.add(name);
       b.classList.toggle('on');
+      updatePtFlagsSummary();
     };
     host.appendChild(b);
   });
+  updatePtFlagsSummary();
+}
+// Dropdown-summary line under the languages label (owner ask 11 Aug
+// 2026 v2 — 'select dropdown so user can select multiple').
+function updatePtFlagsSummary(){
+  const sum = document.getElementById('ptFlagsSummary');
+  if (!sum) return;
+  if (!_ptLangs.size) { sum.textContent = 'Select languages'; return; }
+  const arr = Array.from(_ptLangs);
+  const flags = arr.slice(0, 6).map(n => flagFromLangName(n)).join(' ');
+  sum.innerHTML = flags + (arr.length > 6 ? ` <span style="color:var(--sub)">+${arr.length-6}</span>` : '');
+}
+function togglePtFlagsDropdown(){
+  const host = document.getElementById('ptFlags');
+  const btn = document.getElementById('ptFlagsToggle');
+  host.classList.toggle('hidden');
+  btn.classList.toggle('on', !host.classList.contains('hidden'));
 }
 
 // Learn tab — v1 interest-capture. Fires the idea to /api/social/learn-idea
