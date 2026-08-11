@@ -972,6 +972,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     // tampered client can't self-activate.
     wizardFieldsComplete
   });
+  // Language Clubs — topic communities (owner ask 11 Aug 2026 re-land
+  // after the 901ab12 revert). Isolated module, own Redis keys, own
+  // route prefix; failure to load can't take down the rest of social.
+  try { require('./clubs').mount(app, api, db, { userFromReq }); }
+  catch (e) { console.error('clubs module failed to load:', e.message); }
   // Voice messages in DMs. Client records a short opus/webm blob (60 s max),
   // POSTs it here as multipart form-data, we save under /social-voice with a
   // random name, return the URL. Client then sends /message with kind:'voice'

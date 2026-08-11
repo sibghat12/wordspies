@@ -1236,6 +1236,27 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .psub-empty-emoji{font-size:44px;line-height:1;margin-bottom:12px;opacity:.7}
 .psub-empty-title{font-family:'Inter',sans-serif;font-size:16px;font-weight:500;color:var(--ink);margin-bottom:6px;letter-spacing:-.2px}
 .psub-empty-sub{font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.55;font-weight:400;max-width:340px;margin:0 auto}
+/* Language Clubs list (owner ask 11 Aug 2026 — re-land carefully with
+   cover photos). ALL classes namespaced .club-* to avoid the collision
+   that broke chat when this was first tried (see 901ab12 revert). */
+.club-list{display:grid;grid-template-columns:1fr;gap:14px;padding:14px 0 100px}
+@media(min-width:760px){.club-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1080px){.club-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.club-empty{color:var(--sub);font-size:14px;text-align:center;padding:32px 20px;font-weight:400}
+.club-card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .18s,border-color .16s}
+.club-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(15,17,25,.08),0 2px 6px rgba(15,17,25,.04);border-color:transparent}
+.club-cover{height:150px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:16px 18px 14px;color:#fff;background-color:#3d7bff;background-size:cover;background-position:center}
+.club-cover::after{content:'';position:absolute;inset:auto 0 0 0;height:70%;background:linear-gradient(to top,rgba(0,0,0,.55),transparent);pointer-events:none}
+.club-cover h3{position:relative;z-index:1;font-family:'Inter',sans-serif;font-weight:500;font-size:18px;line-height:1.2;margin:0;letter-spacing:-.3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.club-cover .club-emoji{margin-left:4px;font-size:16px}
+.club-body{padding:14px 18px 16px}
+.club-lang{display:inline-flex;align-items:center;gap:6px;background:#f4f5f7;border-radius:99px;padding:4px 10px;font-family:'Inter',sans-serif;font-size:11px;color:var(--sub);font-weight:500;letter-spacing:.02em;margin-bottom:10px;text-transform:uppercase}
+.club-lang .club-fl{font-size:12.5px;line-height:1}
+.club-desc{font-family:'Inter',sans-serif;font-size:13.5px;line-height:1.55;color:var(--sub);font-weight:400;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.club-foot{display:flex;justify-content:space-between;align-items:center;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--faint);font-weight:400;padding-top:10px;border-top:1px solid #f2f3f5}
+.club-foot .club-members{color:var(--sub)}
+.club-foot .club-members b{font-weight:600;color:var(--ink)}
+.club-foot .club-go{color:var(--ink);opacity:.4;font-size:15px}
 
 .pt-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;padding:14px 20px 6px;flex-wrap:wrap}
 .pt-hero h2{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.5px;color:var(--ink)}
@@ -2853,10 +2874,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <!-- Language Clubs (placeholder — full feature re-lands in a
          separate careful commit series per the roadmap Phase 4). -->
     <div id="psubClubsPane" class="hidden">
-      <div class="psub-empty">
-        <div class="psub-empty-emoji">💬</div>
-        <div class="psub-empty-title">Language Clubs — coming back soon</div>
-        <div class="psub-empty-sub">Topic communities where you post, comment and get corrections. Rebuilding this carefully after a rough first landing — should be ready in the next session.</div>
+      <div class="club-list" id="clubList">
+        <div class="club-empty">Loading clubs…</div>
       </div>
     </div>
   </div>
@@ -4741,6 +4760,65 @@ function showPSub(which){
   document.getElementById('psubClubs').classList.toggle('on', which === 'clubs');
   document.getElementById('psubPartiesPane').classList.toggle('hidden', which !== 'parties');
   document.getElementById('psubClubsPane').classList.toggle('hidden', which !== 'clubs');
+  // Lazy-load clubs on first Clubs-tab open. Defensive — any error is
+  // caught + logged so a bad payload doesn't take the tab down.
+  if (which === 'clubs' && !_clubsLoaded) loadClubs();
+}
+let _clubsLoaded = false;
+async function loadClubs(){
+  const host = document.getElementById('clubList');
+  if (!host) return;
+  try {
+    const j = await api('/clubs');
+    _clubsLoaded = true;
+    paintClubs((j && j.clubs) || []);
+  } catch(e){
+    host.innerHTML = '<div class="club-empty">Couldn\'t load clubs. Refresh to try again.</div>';
+  }
+}
+// Rich cover photo per club — picsum.photos deterministic-per-seed so
+// each club always shows the same real photo. Zero external API keys.
+function clubPhotoUrl(c){
+  const seed = encodeURIComponent((c && c.id) || 'club');
+  return 'https://picsum.photos/seed/' + seed + '/800/400';
+}
+function paintClubs(clubs){
+  const host = document.getElementById('clubList');
+  if (!host) return;
+  if (!clubs.length) { host.innerHTML = '<div class="club-empty">No clubs yet.</div>'; return; }
+  try {
+    host.innerHTML = clubs.map(c => {
+      const photo = clubPhotoUrl(c);
+      const grad = (c && c.cover) || 'linear-gradient(135deg,#3d7bff,#7c5cff)';
+      const mc = (c && c.memberCount) || 0;
+      const name = esc((c && c.name) || 'Club');
+      const emo = (c && c.emoji) || '';
+      const langName = esc((c && c.lang) || '');
+      const desc = esc((c && c.desc) || '');
+      return `
+        <div class="club-card" onclick="openClub('${esc(c.id)}')">
+          <div class="club-cover" style="background-image:url('${photo}');background-color:transparent">
+            <h3>${name}<span class="club-emoji"> ${emo}</span></h3>
+          </div>
+          <div class="club-body">
+            <div class="club-lang"><span class="club-fl">${emo || '🌐'}</span> ${langName}</div>
+            <p class="club-desc">${desc}</p>
+            <div class="club-foot">
+              <span class="club-members"><b>${mc.toLocaleString()}</b> ${mc === 1 ? 'member' : 'members'}</span>
+              <span class="club-go">→</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e){
+    console.error('paintClubs error:', e);
+    host.innerHTML = '<div class="club-empty">Could not render clubs.</div>';
+  }
+}
+// Placeholder tap handler — clicking a club just toasts for now.
+// Detail page + posts + comments will land in the next commit.
+function openClub(id){
+  if (typeof toast === 'function') toast('Club detail coming next — this is a preview of the covers.');
 }
 
 function openCreateParty(){
