@@ -36,6 +36,13 @@
      check if its good than we click the button approved'. -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
 <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<!-- Leaflet — no-key OpenStreetMap tiles. Owner ask 12 Aug 2026:
+     replace the flat purple profile banner with a real map showing
+     the person's location. Bundle is ~40KB gzipped, loaded from
+     unpkg CDN. Nominatim (also free, no key) geocodes the city
+     string into lat/lng. See initProfileMap() below. -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 :root{
   --edge:#e6e6ef; --accent-d:#c33d55;
@@ -707,11 +714,19 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    Left sidebar (photo + meta + actions), right cards (talk / interests /
    goals / speaks / learns / recommendations / photos). Two-column on
    desktop; stacked on mobile. */
-.mp-hero{display:none;height:120px;background:linear-gradient(90deg,#5a7bff 0%,#a656e0 100%);position:relative;border-radius:4px}
-/* Plain black ← in the profile hero — no filled circle. Owner ask
-   6 Aug 2026. Still a 40×40 tap-target so it's easy to hit. */
-.mp-hero .mp-back{position:absolute;top:14px;left:12px;width:40px;height:40px;background:transparent;border:0;font-size:26px;font-weight:500;line-height:1;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.mp-hero .mp-back:hover,.mp-hero .mp-back:active{background:transparent;color:#000}
+.mp-hero{display:none;height:120px;background:#e6ecf1;position:relative;border-radius:4px;overflow:hidden}
+/* Owner ask 12 Aug 2026: turn the flat gradient banner into a real
+   map of the user's city. Leaflet + OSM tiles fill the hero; the
+   Back button + a small "city name" pill float on top. */
+.mp-map{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.mp-map .leaflet-control-attribution{font-size:9px;background:rgba(255,255,255,.7)}
+/* Back arrow: white pill so it stays readable over any map colour. */
+.mp-hero .mp-back{position:absolute;top:12px;left:12px;width:40px;height:40px;background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.08);border-radius:50%;font-size:22px;font-weight:600;line-height:1;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.10);transition:.12s}
+.mp-hero .mp-back:hover,.mp-hero .mp-back:active{background:#fff;color:#000;transform:scale(1.03)}
+/* City-name chip floating top-right so users know what they're
+   looking at without reading the map itself. */
+.mp-hero .mp-loc-pill{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.08);border-radius:999px;padding:6px 12px;font-family:'Inter',system-ui,sans-serif;font-size:13px;font-weight:600;color:var(--ink);z-index:5;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.10);max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-hero .mp-loc-pill.hidden{display:none}
 /* Hero band: extend to full viewport width on desktop even though
    tabMember lives inside .wrap (max-width 1400px). The negative-margin
    trick breaks the child out to the viewport edges — Speaky's exact
@@ -2832,7 +2847,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   <!-- member profile — Speaky-style two-column layout on desktop, stacked
        on mobile. Left = photo + meta + actions. Right = content cards. -->
   <div id="tabMember" class="hidden">
-    <div class="mp-hero"><button class="mp-back" onclick="showTab('wall')">←</button></div>
+    <div class="mp-hero">
+      <div class="mp-map" id="memberMap"></div>
+      <div class="mp-loc-pill hidden" id="memberLocPill"><span>📍</span><span id="memberLocPillTxt"></span></div>
+      <button class="mp-back" onclick="showTab('wall')">←</button>
+    </div>
     <div class="mp-grid">
       <!-- LEFT COLUMN: photo, name, meta, counts, actions -->
       <aside class="mp-side">
@@ -3156,7 +3175,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        existing JS (saveProfile, chip pickers, upload, settings) keeps
        working without changes. -->
   <div id="tabMe" class="hidden">
-    <div class="mp-hero"><button class="mp-back" onclick="showTab('wall')">←</button></div>
+    <div class="mp-hero">
+      <div class="mp-map" id="meMap"></div>
+      <div class="mp-loc-pill hidden" id="meLocPill"><span>📍</span><span id="meLocPillTxt"></span></div>
+      <button class="mp-back" onclick="showTab('wall')">←</button>
+    </div>
     <div class="mp-grid">
       <!-- LEFT: photo (with upload), name, meta, save/logout. -->
       <aside class="mp-side">
@@ -4657,6 +4680,58 @@ function mark(u){
   // never emit the badge anymore. Kings still get their crown.
   return '';
 }
+// Turn a country-code + location string into a Leaflet map with a
+// pin, dropped into the passed element. Cached per unique location in
+// localStorage so we hit Nominatim at most once per city per browser
+// (their usage policy allows 1 req/sec; a cached hit is 0 req/sec).
+// Owner ask 12 Aug 2026 — 'show the map here and show my location
+// with the real map api' — replaces the flat purple hero banner.
+async function initProfileMap(elId, pillId, pillTxtId, locationStr, cc, country){
+  const el = document.getElementById(elId);
+  if (!el || typeof window.L === 'undefined') return;
+  // Tear down a previous instance if this element was already used
+  // for another profile (member → member navigation).
+  if (el._leafletMap) { try { el._leafletMap.remove(); } catch(e){} el._leafletMap = null; el.innerHTML = ''; }
+  const label = (locationStr && locationStr.trim()) || country || '';
+  const query = label || (cc ? cc.toUpperCase() : '');
+  const pill = pillId ? document.getElementById(pillId) : null;
+  const pillTxt = pillTxtId ? document.getElementById(pillTxtId) : null;
+  if (pill && pillTxt) {
+    if (label) { pillTxt.textContent = label; pill.classList.remove('hidden'); }
+    else pill.classList.add('hidden');
+  }
+  if (!query) return;
+  const cacheKey = 'ws:geo:v1:' + query.toLowerCase();
+  let coords = null;
+  try { const raw = localStorage.getItem(cacheKey); if (raw) coords = JSON.parse(raw); } catch(e){}
+  if (!coords) {
+    try {
+      const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query), { headers:{ 'Accept':'application/json' } });
+      const data = await r.json();
+      if (Array.isArray(data) && data[0]) {
+        coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        try { localStorage.setItem(cacheKey, JSON.stringify(coords)); } catch(e){}
+      }
+    } catch(e){}
+  }
+  if (!coords) return;
+  const zoom = label && label.length > 3 ? 11 : 5;
+  const map = L.map(el, {
+    zoomControl:false, attributionControl:true,
+    scrollWheelZoom:false, dragging:false, doubleClickZoom:false,
+    boxZoom:false, keyboard:false, tap:false, touchZoom:false
+  }).setView(coords, zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:18, attribution:'© OSM'
+  }).addTo(map);
+  L.marker(coords).addTo(map);
+  el._leafletMap = map;
+  // Leaflet needs a size recalc after the container becomes visible
+  // (the tab was display:none when we init'd). One rAF is usually
+  // enough; a 250ms backstop covers slow tab transitions.
+  requestAnimationFrame(() => { try { map.invalidateSize(); } catch(e){} });
+  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 250);
+}
 function paintMe(){
   const tick = mark(ME);
   // Belt and braces: the chip at the top gets swapped out in guest mode, so
@@ -4671,6 +4746,9 @@ function paintMe(){
   $('fMyName').value = ME.name || '';
   $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
   $('myEmail').textContent = ME.location || 'Add your city below';
+  // Real-map hero: show a Leaflet map centred on the user's city.
+  // Only runs on desktop (.mp-hero is display:none on mobile).
+  try { if (window.matchMedia('(min-width:769px)').matches) initProfileMap('meMap', 'meLocPill', 'meLocPillTxt', ME.location, ME.cc, ME.country); } catch(e){}
   // Show your own "Let's talk about" quote at the top of your profile
   // so you can see what other people see.
   const mq = document.getElementById('myQuote');
@@ -8530,6 +8608,10 @@ function openMemberObj(m){
   // 🕐 local time in their country, and @ username — three things.
   $('mLoc').innerHTML = '📍 ' + flag(m.cc) + ' ' + esc(m.location || m.country || 'Somewhere on Earth');
   $('mLocalTime').innerHTML = '🕐 ' + esc(localTimeForCC(m.cc));
+  // Real-map hero for the member profile — see initProfileMap() for
+  // caching + Nominatim details. Desktop-only (.mp-hero is display:none
+  // on mobile).
+  try { if (window.matchMedia('(min-width:769px)').matches) initProfileMap('memberMap', 'memberLocPill', 'memberLocPillTxt', m.location, m.cc, m.country); } catch(e){}
   const handle = '@' + (m.name || '').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,20) + (m.id || '').slice(0, 4);
   $('mHandle').textContent = handle;
   // Counts default while we fetch the real numbers.
