@@ -2373,17 +2373,22 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
     </section>
 
-    <!-- STEP 3 · Terms & Conditions -->
+    <!-- STEP 3 · Terms & Conditions
+         Owner ask 12 Aug 2026: wall of text felt heavy, add a checkbox
+         instead of implicit-on-Continue agreement, keep the read-more
+         link for anyone who wants the full policies. -->
     <section class="ob-step" data-step="3">
       <div class="ob-emoji">📜</div>
       <h2>Our house rules</h2>
-      <p class="ob-para"><b>Be kind and real.</b> WordSpies is a community of language learners around the world. Treat everyone with respect. No harassment, hate speech, spam, or nudity.</p>
-      <p class="ob-para"><b>Age matters.</b> You confirm you are 18 or over. We may ask for verification if we suspect otherwise, and we remove any account that turns out to be under 18.</p>
-      <p class="ob-para"><b>Report freely.</b> Every profile and every message has a Report and a Block button. We review reports within 24 hours and act firmly.</p>
-      <p class="ob-sub" style="margin-top:16px;font-size:12.5px">Full <a href="/terms" target="_blank" rel="noopener">Terms</a> · <a href="/privacy" target="_blank" rel="noopener">Privacy</a> · <a href="/child-safety" target="_blank" rel="noopener">Child safety</a></p>
+      <p class="ob-sub" style="margin:4px 0 18px;font-size:14px;line-height:1.55">Be kind, be real, be 18+. Every profile has a Report and Block button — we review within 24 hours.</p>
+      <label for="obAgreeChk" style="display:flex;align-items:flex-start;gap:10px;padding:14px;border:1px solid var(--line);border-radius:12px;cursor:pointer;background:#fafbfc;transition:.15s">
+        <input type="checkbox" id="obAgreeChk" style="margin-top:2px;width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0" onchange="obToggleAgree()">
+        <span style="font-size:13.5px;line-height:1.5;color:var(--ink)">I've read and agree to the <a href="/terms" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Terms</a>, <a href="/privacy" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Privacy Policy</a>, and <a href="/child-safety" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Child Safety</a> policy.</span>
+      </label>
+      <div class="ob-err hidden" id="obErr3" style="margin-top:10px"></div>
       <div class="ob-row">
         <button class="ob-back" onclick="obBack(3)">Back</button>
-        <button class="ob-next" onclick="obNext(3)">I agree — continue</button>
+        <button class="ob-next" id="obAgreeBtn" onclick="obTryAgree()" disabled style="opacity:.5;cursor:not-allowed">Continue</button>
       </div>
     </section>
 
@@ -4292,6 +4297,28 @@ async function obNext(step){
 function obBack(step){
   if (step <= 1) return;
   obShow(step - 1);
+}
+// Wizard step 3 — house rules checkbox gate. Continue stays disabled
+// (greyed out) until the user actually ticks the "I've read" box, so
+// tapping through blindly can't count as consent.
+function obToggleAgree(){
+  const chk = document.getElementById('obAgreeChk');
+  const btn = document.getElementById('obAgreeBtn');
+  if (!chk || !btn) return;
+  const on = chk.checked;
+  btn.disabled = !on;
+  btn.style.opacity = on ? '1' : '.5';
+  btn.style.cursor = on ? 'pointer' : 'not-allowed';
+}
+function obTryAgree(){
+  const chk = document.getElementById('obAgreeChk');
+  const err = document.getElementById('obErr3');
+  if (!chk || !chk.checked) {
+    if (err) { err.textContent = 'Please tick the box to confirm you\'ve read the rules.'; err.classList.remove('hidden'); }
+    return;
+  }
+  if (err) err.classList.add('hidden');
+  obNext(3);
 }
 async function obFinish(){
   // Owner audit 2 Aug 2026 bug #2: previously this fired the onboardedAt
@@ -7274,10 +7301,28 @@ function buildEmojis(){
   ).join('');
 }
 // + menu — one attachments popover with Photo / Emoji / Voice.
+// Owner ask 12 Aug 2026: on the browser the popover was landing in the
+// far bottom-left corner of the viewport because CSS pinned it with
+// position:fixed;left:14px. On a wide window the + button sits well
+// away from that corner, so it looked disconnected from what was
+// tapped. Now we anchor the menu to the actual + button's screen
+// position each time it opens.
 function togglePlusMenu(ev){
   if (ev) ev.stopPropagation();
   const m = document.getElementById('plusMenu');
-  if (m) m.classList.toggle('show');
+  if (!m) return;
+  const btn = document.getElementById('plusBtn');
+  if (btn && !m.classList.contains('show')) {
+    const r = btn.getBoundingClientRect();
+    // Left-align with the button, but keep the menu on-screen if the
+    // window is narrow. Menu opens UPWARD from the button so the
+    // bottom of the menu sits ~6px above the + button.
+    const menuW = 200;
+    const maxLeft = window.innerWidth - menuW - 8;
+    m.style.left = Math.max(8, Math.min(r.left, maxLeft)) + 'px';
+    m.style.bottom = Math.max(8, window.innerHeight - r.top + 6) + 'px';
+  }
+  m.classList.toggle('show');
 }
 function closePlusMenu(){
   const m = document.getElementById('plusMenu');
