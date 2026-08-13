@@ -1119,7 +1119,17 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
           if (iFollow && followsMe) group = 'friends';
           else if (iFollow) group = 'following';
           else if (followsMe) group = 'followers';
-          cards.push({ id, name: u.name || 'Player', photo: u.photo || null, group });
+          // Enriched shape (owner ask 13 Aug 2026 for the Tandem-style
+          // 3-tab drawer): includes cc, location, and the first
+          // speaks/learns language so the row can render like a real
+          // Tandem card ('🇵🇰 Karachi · Speaks Urdu · Learns English').
+          // Old consumers (invite picker) ignore the extra fields.
+          cards.push({
+            id, name: u.name || 'Player', photo: u.photo || null, group,
+            cc: u.cc || null, country: u.country || null, location: u.location || null,
+            spk: Array.isArray(u.speaks) && u.speaks[0] || null,
+            lrn: Array.isArray(u.learns) && u.learns[0] || null
+          });
         } catch (e) {}
       }
       const rank = { friends: 0, following: 1, followers: 2, other: 3 };

@@ -740,6 +740,66 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .me-vis-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .me-vis-name{font-size:12px;font-weight:600;color:var(--ink);line-height:1.2;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .me-vis-when{font-size:10.5px;color:var(--sub);font-weight:500}
+/* ═══ Stats row on /me — Following · Followers · Blocked ═══
+   Three clickable pills sharing one row. Big number top, faint
+   label under. Hovered pill lifts + tints. Owner ask 13 Aug 2026. */
+.mp-stats{padding:8px 4px}
+.me-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.me-stat{background:transparent;border:0;padding:14px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:14px;transition:.16s;font-family:inherit;position:relative}
+.me-stat::after{content:'';position:absolute;top:20%;bottom:20%;right:0;width:1px;background:var(--line,#e6e8ec)}
+.me-stat:last-child::after{display:none}
+.me-stat:hover{background:linear-gradient(180deg,rgba(90,123,255,.06),rgba(124,92,255,.10));transform:translateY(-1px)}
+.me-stat-n{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:22px;color:var(--ink);line-height:1;letter-spacing:-.3px}
+.me-stat-lbl{font-size:12.5px;color:var(--sub);font-weight:600;letter-spacing:.2px}
+/* ═══ Follows/Followers/Blocked drawer ═══
+   Bottom-sheet on mobile, centred card on desktop. Rich rows with
+   avatar, name, location, language chips, action button. */
+.fs-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center;z-index:13000;padding:0}
+.fs-bd.show{display:flex;animation:fsFade .2s ease-out}
+@keyframes fsFade{from{opacity:0}to{opacity:1}}
+.fs-card{background:#fff;width:100%;max-width:560px;max-height:88vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;min-height:0;box-shadow:0 -12px 60px rgba(0,0,0,.28);animation:fsSlide .32s cubic-bezier(.16,1.11,.3,1.02);overflow:hidden}
+@keyframes fsSlide{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(min-width:769px){
+  .fs-bd{align-items:center;padding:20px}
+  .fs-card{max-height:82vh;border-radius:24px;animation:fsPop .28s cubic-bezier(.16,1.11,.3,1.02)}
+  @keyframes fsPop{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+}
+.fs-head{padding:18px 22px 6px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.fs-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:22px;color:var(--ink);letter-spacing:-.3px}
+.fs-x{background:#f2f4f7;border:0;width:36px;height:36px;border-radius:50%;font-size:16px;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.14s;font-weight:600}
+.fs-x:hover{background:#e6e8ec;color:var(--ink);transform:rotate(90deg)}
+.fs-tabs{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;padding:0 22px;border-bottom:1px solid var(--line,#e6e8ec);flex-shrink:0;margin-top:8px}
+.fs-tab{background:transparent;border:0;padding:14px 8px 16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;position:relative;transition:.14s;z-index:1}
+.fs-tab .fs-tab-lbl{font-size:14px;font-weight:600;color:var(--sub);transition:.16s;letter-spacing:.2px}
+.fs-tab .fs-tab-n{font-size:11px;font-weight:700;color:var(--sub);opacity:.65;letter-spacing:.4px}
+.fs-tab.active .fs-tab-lbl{color:var(--ink)}
+.fs-tab.active .fs-tab-n{color:var(--accent,#e8506b);opacity:1}
+.fs-tab:hover .fs-tab-lbl{color:var(--ink)}
+.fs-tab-slide{position:absolute;bottom:-1px;height:3px;width:33.333%;background:linear-gradient(90deg,var(--accent,#e8506b),#7c5cff);border-radius:3px 3px 0 0;transition:transform .28s cubic-bezier(.4,.14,.3,1);pointer-events:none;left:22px;right:22px;width:calc((100% - 44px) / 3)}
+.fs-body{overflow-y:auto;padding:8px 12px 24px;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.fs-loading{padding:60px 20px;text-align:center;color:var(--sub);font-weight:500;font-size:14px}
+/* Row layout: avatar left, name+meta middle, action button right. */
+.fs-row{display:flex;align-items:center;gap:14px;padding:12px;border-radius:14px;transition:.12s;cursor:pointer}
+.fs-row:hover{background:#f7f8fa}
+.fs-avatar{width:56px;height:56px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.fs-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.fs-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.fs-name{font-weight:700;font-size:15.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Inter',system-ui,sans-serif}
+.fs-meta{font-size:12.5px;color:var(--sub);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.fs-meta .fs-dot{opacity:.4;font-weight:400}
+.fs-langs{display:flex;gap:4px;margin-top:2px}
+.fs-lang{background:linear-gradient(135deg,rgba(232,80,107,.10),rgba(124,92,255,.10));border:1px solid rgba(232,80,107,.15);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;color:var(--accent,#e8506b);white-space:nowrap}
+.fs-act{background:transparent;border:1.5px solid var(--line,#e6e8ec);color:var(--ink);padding:7px 14px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:.14s;flex-shrink:0;min-width:96px;text-align:center}
+.fs-act:hover{background:#f2f4f7;border-color:#c8ced6}
+.fs-act.primary{background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(232,80,107,.28)}
+.fs-act.primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,80,107,.36)}
+.fs-act.warn:hover{background:#fef2f2;border-color:#fecaca;color:#dc2626}
+.fs-empty{padding:48px 24px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.fs-empty-emoji{font-size:44px;line-height:1;margin-bottom:8px}
+.fs-empty-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:18px;color:var(--ink)}
+.fs-empty-sub{font-size:13.5px;color:var(--sub);max-width:280px;line-height:1.5;font-weight:500}
+.fs-empty-cta{margin-top:14px;background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);border:0;color:#fff;padding:10px 22px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:0 4px 14px rgba(232,80,107,.28);transition:.14s}
+.fs-empty-cta:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,80,107,.36)}
 /* Hero band: extend to full viewport width on desktop even though
    tabMember lives inside .wrap (max-width 1400px). The negative-margin
    trick breaks the child out to the viewport edges — Speaky's exact
@@ -3225,6 +3285,26 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
       <!-- RIGHT: editable cards, same visual as tabMember. -->
       <main class="mp-main">
+        <!-- Follows / Followers / Blocked stats row — clickable, each
+             opens the 3-tab drawer at the matching tab. Tandem pattern:
+             one screen, three tabs. Owner ask 13 Aug 2026. -->
+        <section class="mp-card mp-stats">
+          <div class="me-stats-row">
+            <button type="button" class="me-stat" onclick="openFollowsSheet('following')">
+              <span class="me-stat-n" id="meNFollowing">—</span>
+              <span class="me-stat-lbl">Following</span>
+            </button>
+            <button type="button" class="me-stat" onclick="openFollowsSheet('followers')">
+              <span class="me-stat-n" id="meNFollowers">—</span>
+              <span class="me-stat-lbl">Followers</span>
+            </button>
+            <button type="button" class="me-stat" onclick="openFollowsSheet('blocked')">
+              <span class="me-stat-n" id="meNBlocked">—</span>
+              <span class="me-stat-lbl">Blocked</span>
+            </button>
+          </div>
+        </section>
+
         <!-- Recent visitors (owner ask 13 Aug 2026 — Tandem-style, but
              free for everyone). Renders as a horizontal strip of avatar
              cards with name + relative time. Populated by loadMyVisitors()
@@ -4768,6 +4848,151 @@ function shortAgo(t){
   if (d < 30) return d + 'd ago';
   try { return new Date(Number(t)).toLocaleDateString('en-GB', { day:'numeric', month:'short' }); } catch(e) { return ''; }
 }
+// ═══ Following / Followers / Blocked drawer ═══
+// Tandem-style 3-tab view on your OWN profile: opens as a bottom-
+// sheet (mobile) / centred card (desktop). Owner ask 13 Aug 2026.
+// Data lives in memory (FS_CACHE) so switching tabs is instant.
+let FS_TAB = 'following';
+const FS_CACHE = { following: null, followers: null, blocked: null };
+function openFollowsSheet(tab){
+  FS_TAB = tab || 'following';
+  const bd = document.getElementById('fsBd');
+  if (!bd) return;
+  bd.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  switchFollowsTab(FS_TAB, true);
+  // Load in the background if we don't have it yet. First open of a
+  // fresh session hits /graph once + /blocks once; subsequent opens
+  // hit the cache.
+  loadFollowsData();
+}
+function closeFollowsSheet(){
+  const bd = document.getElementById('fsBd');
+  if (!bd) return;
+  bd.classList.remove('show');
+  document.body.style.overflow = '';
+}
+function switchFollowsTab(tab, initial){
+  FS_TAB = tab;
+  document.querySelectorAll('.fs-tab').forEach(t => t.classList.toggle('active', t.dataset.fsTab === tab));
+  // Slide the underline bar to the active tab index (0/1/2).
+  const slide = document.getElementById('fsTabSlide');
+  if (slide) {
+    const idx = tab === 'followers' ? 1 : tab === 'blocked' ? 2 : 0;
+    slide.style.transform = 'translateX(' + (idx * 100) + '%)';
+  }
+  renderFollowsBody();
+}
+async function loadFollowsData(){
+  const needGraph = FS_CACHE.following === null || FS_CACHE.followers === null;
+  const needBlocks = FS_CACHE.blocked === null;
+  const jobs = [];
+  if (needGraph) jobs.push(api('/graph').then(j => {
+    const cards = (j && Array.isArray(j.cards)) ? j.cards : [];
+    FS_CACHE.following = cards.filter(c => c.group === 'friends' || c.group === 'following');
+    FS_CACHE.followers = cards.filter(c => c.group === 'friends' || c.group === 'followers');
+  }).catch(() => { FS_CACHE.following = []; FS_CACHE.followers = []; }));
+  if (needBlocks) jobs.push(api('/blocks').then(j => {
+    FS_CACHE.blocked = (j && Array.isArray(j.blocked)) ? j.blocked : [];
+  }).catch(() => { FS_CACHE.blocked = []; }));
+  if (!jobs.length) return renderFollowsBody();
+  await Promise.all(jobs);
+  // Refresh the tab counters and the /me stats row so numbers match
+  // reality on every open — cache lets us avoid the re-fetch.
+  paintFollowsCounts();
+  renderFollowsBody();
+}
+function paintFollowsCounts(){
+  const setN = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = String(n); };
+  setN('fsCFollowing', (FS_CACHE.following || []).length);
+  setN('fsCFollowers', (FS_CACHE.followers || []).length);
+  setN('fsCBlocked',   (FS_CACHE.blocked || []).length);
+  setN('meNFollowing', (FS_CACHE.following || []).length);
+  setN('meNFollowers', (FS_CACHE.followers || []).length);
+  setN('meNBlocked',   (FS_CACHE.blocked || []).length);
+}
+// A single row in the drawer — avatar + name + meta + action button.
+function renderFollowsRow(u, kind){
+  const av = u.photo
+    ? '<img src="' + esc(u.photo) + '" alt="' + esc(u.name || '') + '">'
+    : esc((u.name || '?').charAt(0).toUpperCase());
+  const meta = [];
+  if (u.cc || u.location || u.country) {
+    const loc = u.location || u.country || '';
+    meta.push((u.cc ? flag(u.cc) + ' ' : '') + esc(loc));
+  }
+  if (u.spk) meta.push('Speaks ' + esc(u.spk));
+  const metaHtml = meta.length ? '<div class="fs-meta">' + meta.map((m,i) => (i ? '<span class="fs-dot">·</span>' : '') + '<span>' + m + '</span>').join('') + '</div>' : '';
+  const langs = [];
+  if (u.lrn) langs.push('<span class="fs-lang">🎯 ' + esc(u.lrn) + '</span>');
+  const langsHtml = langs.length ? '<div class="fs-langs">' + langs.join('') + '</div>' : '';
+  let btn;
+  if (kind === 'blocked') {
+    btn = '<button type="button" class="fs-act warn" onclick="event.stopPropagation();fsUnblock(\'' + esc(u.id) + '\')">Unblock</button>';
+  } else if (kind === 'followers') {
+    // "friends" (mutual) are still in this list — show Following
+    // if I already follow back, otherwise 'Follow back'.
+    const iFollow = (FS_CACHE.following || []).some(x => x.id === u.id);
+    btn = iFollow
+      ? '<button type="button" class="fs-act" onclick="event.stopPropagation();fsUnfollow(\'' + esc(u.id) + '\')">Following</button>'
+      : '<button type="button" class="fs-act primary" onclick="event.stopPropagation();fsFollow(\'' + esc(u.id) + '\')">＋ Follow back</button>';
+  } else {
+    btn = '<button type="button" class="fs-act" onclick="event.stopPropagation();fsUnfollow(\'' + esc(u.id) + '\')">Following</button>';
+  }
+  return '<div class="fs-row" onclick="closeFollowsSheet();openMemberById(\'' + esc(u.id) + '\')">' +
+    '<div class="fs-avatar">' + av + '</div>' +
+    '<div class="fs-info"><div class="fs-name">' + esc(u.name || 'Someone') + '</div>' + metaHtml + langsHtml + '</div>' +
+    btn +
+    '</div>';
+}
+function renderFollowsBody(){
+  const body = document.getElementById('fsBody');
+  if (!body) return;
+  const list = FS_CACHE[FS_TAB];
+  if (list === null) { body.innerHTML = '<div class="fs-loading">Loading…</div>'; return; }
+  if (!list.length) {
+    const empty = FS_TAB === 'following'
+      ? { emoji:'🌱', title:'No one yet', sub:'Follow people from the wall to grow your circle. They\'ll appear here.', cta:'Explore the wall', on:"closeFollowsSheet();showTab('wall')" }
+      : FS_TAB === 'followers'
+      ? { emoji:'👋', title:'No followers yet', sub:'Post on the wall or say hi in a party — introducing yourself is the fastest way to be followed back.', cta:'Go to Community', on:"closeFollowsSheet();showTab('wall')" }
+      : { emoji:'🙌', title:'Nobody blocked', sub:'You haven\'t blocked anyone. If a chat gets uncomfortable, tap ⋯ on a message to block that person.', cta:null, on:null };
+    body.innerHTML = '<div class="fs-empty">' +
+      '<div class="fs-empty-emoji">' + empty.emoji + '</div>' +
+      '<div class="fs-empty-title">' + empty.title + '</div>' +
+      '<div class="fs-empty-sub">' + empty.sub + '</div>' +
+      (empty.cta ? '<button class="fs-empty-cta" onclick="' + empty.on + '">' + empty.cta + '</button>' : '') +
+      '</div>';
+    return;
+  }
+  body.innerHTML = list.map(u => renderFollowsRow(u, FS_TAB)).join('');
+}
+async function fsFollow(id){
+  try {
+    await api('/follow', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+    // Move them into Following cache; render.
+    const inFollowers = (FS_CACHE.followers || []).find(u => u.id === id);
+    if (inFollowers && !(FS_CACHE.following || []).some(u => u.id === id)) FS_CACHE.following.push(inFollowers);
+    paintFollowsCounts(); renderFollowsBody();
+    toast('⭐ Following!');
+  } catch(e) { toast(e.message || 'Could not follow.'); }
+}
+async function fsUnfollow(id){
+  try {
+    await api('/unfollow', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+    FS_CACHE.following = (FS_CACHE.following || []).filter(u => u.id !== id);
+    paintFollowsCounts(); renderFollowsBody();
+    toast('Unfollowed');
+  } catch(e) { toast(e.message || 'Could not unfollow.'); }
+}
+async function fsUnblock(id){
+  try {
+    await api('/unblock', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+    FS_CACHE.blocked = (FS_CACHE.blocked || []).filter(u => u.id !== id);
+    paintFollowsCounts(); renderFollowsBody();
+    toast('Unblocked');
+  } catch(e) { toast(e.message || 'Could not unblock.'); }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFollowsSheet(); });
 // Fetch + render the "who visited your profile" strip on the /me
 // tab. Card self-hides when there are no visitors so a fresh account
 // isn't stuck staring at an empty box.  Owner ask 13 Aug 2026.
@@ -4814,6 +5039,11 @@ function paintMe(){
   // the top of the right column. Silent-fail if the endpoint 500s
   // so the rest of /me keeps rendering.
   try { loadMyVisitors(); } catch(e){}
+  // Refresh the Following/Followers/Blocked counters on the /me stats
+  // row every time /me is painted so numbers reflect reality after a
+  // follow/unfollow elsewhere in the app. Uses the drawer's own cache
+  // and re-fetches quietly.
+  try { FS_CACHE.following = null; FS_CACHE.followers = null; FS_CACHE.blocked = null; loadFollowsData(); } catch(e){}
   // Show your own "Let's talk about" quote at the top of your profile
   // so you can see what other people see.
   const mq = document.getElementById('myQuote');
@@ -9306,6 +9536,37 @@ function maybeWelcome(){ /* retired — no popup */ }
     <h3>🌐 Translate into</h3>
     <p>Tap a language — we'll use it every time from now on. You can change this later from your profile.</p>
     <div class="xlat-setup-chips" id="xlatSetupList"></div>
+  </div>
+</div>
+
+<!-- Following / Followers / Blocked drawer — Tandem-style 3-tab
+     screen on your own profile. Owner ask 13 Aug 2026. Renders as a
+     bottom-sheet on mobile, centred card on desktop. Populated by
+     openFollowsSheet() below. -->
+<div class="fs-bd" id="fsBd" onclick="if(event.target===this)closeFollowsSheet()">
+  <div class="fs-card" role="dialog" aria-modal="true">
+    <div class="fs-head">
+      <div class="fs-title">Your circle</div>
+      <button class="fs-x" type="button" onclick="closeFollowsSheet()" aria-label="Close">✕</button>
+    </div>
+    <div class="fs-tabs">
+      <button type="button" class="fs-tab active" data-fs-tab="following" onclick="switchFollowsTab('following')">
+        <span class="fs-tab-lbl">Following</span>
+        <span class="fs-tab-n" id="fsCFollowing">0</span>
+      </button>
+      <button type="button" class="fs-tab" data-fs-tab="followers" onclick="switchFollowsTab('followers')">
+        <span class="fs-tab-lbl">Followers</span>
+        <span class="fs-tab-n" id="fsCFollowers">0</span>
+      </button>
+      <button type="button" class="fs-tab" data-fs-tab="blocked" onclick="switchFollowsTab('blocked')">
+        <span class="fs-tab-lbl">Blocked</span>
+        <span class="fs-tab-n" id="fsCBlocked">0</span>
+      </button>
+      <span class="fs-tab-slide" id="fsTabSlide"></span>
+    </div>
+    <div class="fs-body" id="fsBody">
+      <div class="fs-loading">Loading…</div>
+    </div>
   </div>
 </div>
 
