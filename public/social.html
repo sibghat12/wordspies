@@ -6786,13 +6786,27 @@ function openGameInApp(game, code, title){
   const host = $('gameHost');
   const frame = $('ghostFrame');
   if (!host || !frame) return;
-  // Same game + same code already mounted → just re-expand.
-  if (GHOST_GAME === game && GHOST_CODE === code) {
-    host.classList.remove('hidden', 'mini');
-    host.classList.add('fs');
-    document.body.classList.add('in-game');
-    return;
-  }
+  // Owner ask 14 Aug 2026: 'games not same like the codenames has no
+  // url'. Push the game's own URL onto browser history so the
+  // address bar matches what the user sees + so /codenames?room=X
+  // is shareable/bookmarkable from inside the app just like the
+  // standalone game page.  Refresh still lands on the game (its
+  // route is a real server-rendered page).  Back button closes
+  // the game (handled by popstate below).
+  const publicUrl = route + (code ? '?room=' + encodeURIComponent(code) : '');
+  try {
+    // Same game + same code already mounted → just re-expand +
+    // resync the URL if we drifted (e.g. tab switched away).
+    if (GHOST_GAME === game && GHOST_CODE === code) {
+      host.classList.remove('hidden', 'mini');
+      host.classList.add('fs');
+      document.body.classList.add('in-game');
+      if (location.pathname + location.search !== publicUrl) {
+        history.pushState({ inGame:true, game, code }, '', publicUrl);
+      }
+      return;
+    }
+  } catch(e){}
   // Different game or different code → tear down and mount fresh.
   if (GHOST_GAME || GHOST_CODE) closeGameInApp(true);
   GHOST_GAME = game; GHOST_CODE = code;
@@ -6808,6 +6822,7 @@ function openGameInApp(game, code, title){
   document.body.classList.add('in-game');
   const url = route + (code ? '?room=' + encodeURIComponent(code) + '&' : '?') + 'embed=1';
   frame.src = url;
+  try { history.pushState({ inGame:true, game, code }, '', publicUrl); } catch(e){}
 }
 function closeGameInApp(silent){
   const host = $('gameHost'); const frame = $('ghostFrame');
@@ -6818,7 +6833,22 @@ function closeGameInApp(silent){
   GHOST_GAME = null; GHOST_CODE = null;
   if (frame) { try { frame.src = 'about:blank'; } catch(e){} }
   if (!silent) toast('Left the game');
+  // Pop the game URL back to /social so the address bar matches the
+  // app state again. Guarded: only push if we're currently sitting
+  // on a game URL, so a normal /social navigation doesn't spam
+  // history entries.
+  try {
+    if (/^\/(codenames|play|meld|ludo|four|pool|spy|wordchain|guessword|wordrace|hoop)(\/|\?|$)/.test(location.pathname + location.search)) {
+      history.pushState({}, '', '/social');
+    }
+  } catch(e){}
 }
+// Browser Back → close the open game (matches standalone-game
+// behaviour where Back leaves the game). If nothing is mounted,
+// let the default behaviour happen.
+window.addEventListener('popstate', () => {
+  if (GHOST_GAME || GHOST_CODE) closeGameInApp(true);
+});
 function minimizeGameInApp(){
   const host = $('gameHost'); if (!host || !GHOST_CODE) return;
   host.classList.remove('fs');
