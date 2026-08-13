@@ -1163,6 +1163,27 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   });
 
   // ---- follow ----
+  // Log a visit to targetUid by visitorUid — stored as a JSON array
+  // under soc:visits:<targetUid>, most-recent first, deduped per
+  // visitor (a person visiting 10 times over a week counts once, at
+  // their latest visit), capped at 50 entries. Fire-and-forget from
+  // GET /user/:id so profile loads stay snappy. Owner ask 13 Aug 2026:
+  // Tandem-style "who visited you" surface — but free for everyone
+  // (Tandem paywalls the list; we don't).
+  async function logProfileVisit(targetUid, visitorUid) {
+    if (!targetUid || !visitorUid || targetUid === visitorUid) return;
+    try {
+      const key = 'soc:visits:' + targetUid;
+      const raw = await db.get(key);
+      let list = [];
+      if (raw) { try { list = JSON.parse(raw) || []; } catch (e) { list = []; } }
+      list = list.filter(e => e && e.u !== visitorUid);
+      list.unshift({ u: visitorUid, t: Date.now() });
+      if (list.length > 50) list = list.slice(0, 50);
+      await db.set(key, JSON.stringify(list));
+    } catch (e) { /* silent — visit logging must never break profile view */ }
+  }
+
   api.get('/user/:id', async (req, res) => {
     try {
       const me = await userFromReq(req);
@@ -1182,6 +1203,10 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (me && me.id !== u.id && await isBlocked(me.id, u.id)) {
         return res.status(404).json({ error: 'Not found.' });
       }
+      // Log the visit (fire-and-forget). Self-views + across-blocks are
+      // already ruled out above, so this is safe to kick off without
+      // awaiting.
+      if (me && me.id !== u.id) { logProfileVisit(u.id, me.id); }
       res.json({
         user: pub(u),
         online: await db.exists('soc:online:' + u.id),
@@ -1189,6 +1214,32 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         following: await db.scard('soc:following:' + u.id),
         isFollowing: me ? await db.sismember('soc:following:' + me.id, u.id) : false
       });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // GET /visits — the "who visited your profile" list for the /me tab.
+  // Returns up to 12 most-recent visitors, each hydrated with their
+  // public shape + the timestamp of their latest visit. Onboarding-
+  // gated and block-aware (a blocked visitor never shows up).
+  api.get('/visits', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const raw = await db.get('soc:visits:' + me.id);
+      if (!raw) return res.json({ visitors: [] });
+      let list = []; try { list = JSON.parse(raw) || []; } catch (e) { list = []; }
+      const out = [];
+      for (const entry of list) {
+        if (out.length >= 12) break;
+        if (!entry || !entry.u) continue;
+        const uraw = await db.get('soc:user:' + entry.u);
+        if (!uraw) continue;
+        let vu = null; try { vu = JSON.parse(uraw); } catch (e) {}
+        if (!vu || !isOnboarded(vu)) continue;
+        if (await isBlocked(me.id, vu.id)) continue;
+        out.push({ user: pub(vu), t: Number(entry.t) || 0 });
+      }
+      res.json({ visitors: out });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 

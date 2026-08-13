@@ -727,6 +727,19 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    looking at without reading the map itself. */
 .mp-hero .mp-loc-pill{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.08);border-radius:999px;padding:6px 12px;font-family:'Inter',system-ui,sans-serif;font-size:13px;font-weight:600;color:var(--ink);z-index:5;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.10);max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mp-hero .mp-loc-pill.hidden{display:none}
+/* Recent visitors card on the /me tab (owner ask 13 Aug 2026).
+   Horizontal strip: avatar circle + name + "3d ago" underneath.
+   Each tile is a clickable card that opens that visitor's profile. */
+.mp-visitors h3{margin:0 0 12px}
+.me-vis-strip{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin}
+.me-vis-strip::-webkit-scrollbar{height:6px}
+.me-vis-strip::-webkit-scrollbar-thumb{background:#d5dbe3;border-radius:3px}
+.me-vis-item{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:6px;border-radius:12px;transition:.14s;text-align:center;width:74px;background:transparent;border:0;font-family:inherit}
+.me-vis-item:hover{background:var(--caccent-soft,#eef4ff);transform:translateY(-1px)}
+.me-vis-avatar{width:52px;height:52px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.me-vis-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.me-vis-name{font-size:12px;font-weight:600;color:var(--ink);line-height:1.2;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me-vis-when{font-size:10.5px;color:var(--sub);font-weight:500}
 /* Hero band: extend to full viewport width on desktop even though
    tabMember lives inside .wrap (max-width 1400px). The negative-margin
    trick breaks the child out to the viewport edges — Speaky's exact
@@ -3212,6 +3225,15 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
       <!-- RIGHT: editable cards, same visual as tabMember. -->
       <main class="mp-main">
+        <!-- Recent visitors (owner ask 13 Aug 2026 — Tandem-style, but
+             free for everyone). Renders as a horizontal strip of avatar
+             cards with name + relative time. Populated by loadMyVisitors()
+             from /api/social/visits. Self-hides when no visitors. -->
+        <section class="mp-card mp-visitors hidden" id="meVisitorsCard">
+          <h3>👀 Who visited your profile</h3>
+          <div class="me-vis-strip" id="meVisitorsStrip"></div>
+        </section>
+
         <section class="mp-card">
           <h3>Your name</h3>
           <input class="me-input" id="fMyName" maxlength="15" placeholder="Your name" autocomplete="off">
@@ -4732,6 +4754,45 @@ async function initProfileMap(elId, pillId, pillTxtId, locationStr, cc, country)
   requestAnimationFrame(() => { try { map.invalidateSize(); } catch(e){} });
   setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 250);
 }
+// Short "3d ago" / "just now" / "5h ago" strings for the visitors
+// strip.  Anything older than 30 days falls back to a date so the
+// list never grows a stale-looking tail.
+function shortAgo(t){
+  const dt = Date.now() - Number(t || 0);
+  if (dt < 60_000) return 'just now';
+  const m = Math.floor(dt / 60_000);
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  const d = Math.floor(h / 24);
+  if (d < 30) return d + 'd ago';
+  try { return new Date(Number(t)).toLocaleDateString('en-GB', { day:'numeric', month:'short' }); } catch(e) { return ''; }
+}
+// Fetch + render the "who visited your profile" strip on the /me
+// tab. Card self-hides when there are no visitors so a fresh account
+// isn't stuck staring at an empty box.  Owner ask 13 Aug 2026.
+async function loadMyVisitors(){
+  const card = document.getElementById('meVisitorsCard');
+  const strip = document.getElementById('meVisitorsStrip');
+  if (!card || !strip) return;
+  let j = null;
+  try { j = await api('/visits'); } catch(e) { card.classList.add('hidden'); return; }
+  const list = (j && Array.isArray(j.visitors)) ? j.visitors : [];
+  if (!list.length) { card.classList.add('hidden'); return; }
+  strip.innerHTML = list.map(v => {
+    const u = v.user || {};
+    const av = u.photo
+      ? '<img src="' + esc(u.photo) + '" alt="' + esc(u.name || '') + '">'
+      : esc((u.name || '?').charAt(0).toUpperCase());
+    const first = String(u.name || 'Someone').split(' ')[0];
+    return '<button type="button" class="me-vis-item" onclick="openMemberById(\'' + esc(u.id || '') + '\')">' +
+      '<span class="me-vis-avatar">' + av + '</span>' +
+      '<span class="me-vis-name">' + esc(first) + '</span>' +
+      '<span class="me-vis-when">' + esc(shortAgo(v.t)) + '</span>' +
+    '</button>';
+  }).join('');
+  card.classList.remove('hidden');
+}
 function paintMe(){
   const tick = mark(ME);
   // Belt and braces: the chip at the top gets swapped out in guest mode, so
@@ -4749,6 +4810,10 @@ function paintMe(){
   // Real-map hero: show a Leaflet map centred on the user's city.
   // Only runs on desktop (.mp-hero is display:none on mobile).
   try { if (window.matchMedia('(min-width:769px)').matches) initProfileMap('meMap', 'meLocPill', 'meLocPillTxt', ME.location, ME.cc, ME.country); } catch(e){}
+  // Fetch who visited your profile — populates the visitors card at
+  // the top of the right column. Silent-fail if the endpoint 500s
+  // so the rest of /me keeps rendering.
+  try { loadMyVisitors(); } catch(e){}
   // Show your own "Let's talk about" quote at the top of your profile
   // so you can see what other people see.
   const mq = document.getElementById('myQuote');
