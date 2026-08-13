@@ -102,6 +102,55 @@ app.get('/about', (req, res) => res.type('html').send(pages.aboutPage()));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage()));
 app.get('/terms', (req, res) => res.type('html').send(pages.termsPage()));
 app.get('/child-safety', (req, res) => res.type('html').send(pages.childSafetyPage()));
+app.get('/become-a-teacher', (req, res) => res.type('html').send(pages.becomeTeacherPage()));
+
+// Teacher applications — public form (no login required). Rate-limited
+// per-IP so a bot can't dump the Redis list. Owner ask 13 Aug 2026:
+// 'let them a separate page for the teacher form they can submit to
+// become a teacher, in footer make a button become a teacher'.
+const teacherApplyBucket = new Map();
+app.post('/api/teacher/apply', express.json({ limit: '20kb' }), async (req, res) => {
+  try {
+    const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    const now = Date.now();
+    // 5 minutes between applications from the same IP.
+    const last = teacherApplyBucket.get(ip) || 0;
+    if (now - last < 5 * 60 * 1000) return res.status(429).json({ error: 'Please wait a few minutes before submitting again.' });
+    const b = req.body || {};
+    const trim = (s, n) => String(s == null ? '' : s).trim().slice(0, n);
+    const application = {
+      id: require('crypto').randomBytes(6).toString('base64url'),
+      t: now,
+      ip: ip.slice(0, 45),
+      name:      trim(b.name, 60),
+      email:     trim(b.email, 100),
+      country:   trim(b.country, 40),
+      langs:     trim(b.langs, 200),
+      years:     trim(b.years, 6),
+      quals:     trim(b.quals, 400),
+      bio:       trim(b.bio, 1000),
+      rate:      trim(b.rate, 40),
+      avail:     trim(b.avail, 200),
+      portfolio: trim(b.portfolio, 200)
+    };
+    if (!application.name || !application.email || !application.langs || !application.bio) {
+      return res.status(400).json({ error: 'Please fill in name, email, languages, and a short bio.' });
+    }
+    if (!/^\S+@\S+\.\S+$/.test(application.email)) {
+      return res.status(400).json({ error: 'That email doesn\'t look right.' });
+    }
+    if (redis) {
+      try {
+        await redis.rpush('soc:teacher-apps', JSON.stringify(application));
+        await redis.ltrim('soc:teacher-apps', -500, -1);
+      } catch (e) { console.error('teacher-apps redis:', e.message); }
+    } else {
+      console.log('[teacher] new application (no redis):', JSON.stringify({ ...application, ip: undefined }));
+    }
+    teacherApplyBucket.set(ip, now);
+    res.json({ ok: true });
+  } catch (e) { console.error('teacher apply:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+});
 app.get('/safety', (req, res) => res.redirect(301, '/child-safety'));
 app.get('/how-to-play', (req, res) => res.type('html').send(pages.howToPlayPage()));
 // The shared marketing nav used to link `/#how`, which stopped working when

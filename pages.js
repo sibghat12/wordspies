@@ -171,6 +171,7 @@ ${body}
     <!-- Column 1 · Useful Information (matches Tandem's screenshot order) -->
     <div class="fcol">
       <h4>Useful Information</h4>
+      <a href="/become-a-teacher" style="color:#ffd166;font-weight:700">🎓 Become a teacher</a>
       <a href="mailto:contact@wordspies.co.uk?subject=WordSpies%20—%20Bug%20report">Report a bug</a>
       <a href="mailto:contact@wordspies.co.uk?subject=WordSpies%20—%20Feature%20request">Request a feature</a>
       <a href="/how-to-play">FAQs</a>
@@ -439,4 +440,162 @@ function howToPlayPage() {
   );
 }
 
-module.exports = { aboutPage, privacyPage, termsPage, howToPlayPage, childSafetyPage };
+// "Become a Teacher" — public application form. Owner ask 13 Aug 2026:
+// first slice of the Teacher role from the full vision doc. Anyone
+// (signed in or not) can submit their credentials + rate + bio; the
+// application lands in Redis for the owner to review manually. No
+// verification / payment / booking yet — this only opens the pipe.
+function becomeTeacherPage() {
+  const body = `
+<style>
+.bt-hero{text-align:center;padding:32px 20px 24px;background:linear-gradient(180deg,#fafbff,#eef1ff);border:1px solid #dce1ff;border-radius:22px;margin-bottom:28px}
+.bt-hero-emoji{font-size:56px;line-height:1;margin-bottom:12px;filter:drop-shadow(0 4px 12px rgba(90,123,255,.25))}
+.bt-hero h1{font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:30px;letter-spacing:-.4px;margin:0 0 8px;color:#111318}
+.bt-hero p{font-size:15px;line-height:1.6;color:#4b5563;margin:0 auto;max-width:520px;font-weight:500}
+.bt-form{background:#fff;border:1px solid #e6e8ec;border-radius:22px;padding:28px;box-shadow:0 2px 12px rgba(20,30,60,.04)}
+.bt-row{margin-bottom:20px}
+.bt-row.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.bt-row.two{grid-template-columns:1fr}}
+.bt-lbl{display:block;font-size:13.5px;font-weight:700;color:#374151;letter-spacing:.1px;margin-bottom:6px}
+.bt-lbl .req{color:#ff4d6b;margin-left:2px}
+.bt-in,.bt-area{width:100%;padding:12px 14px;border:1.5px solid #e6e8ec;border-radius:12px;font-family:inherit;font-size:14.5px;background:#fff;color:#111318;outline:none;transition:.14s;box-sizing:border-box}
+.bt-in:focus,.bt-area:focus{border-color:#7c5cff;box-shadow:0 0 0 3px rgba(124,92,255,.14)}
+.bt-area{min-height:110px;resize:vertical;line-height:1.5}
+.bt-hint{font-size:12px;color:#7b8090;margin-top:4px;font-weight:500;line-height:1.4}
+.bt-submit{background:linear-gradient(135deg,#e8506b,#c93257);color:#fff;border:0;padding:15px 32px;border-radius:999px;font-family:'Inter',sans-serif;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 6px 20px rgba(232,80,107,.32);transition:.18s;width:100%;margin-top:8px}
+.bt-submit:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 26px rgba(232,80,107,.44)}
+.bt-submit:disabled{opacity:.6;cursor:not-allowed}
+.bt-note{font-size:12.5px;color:#7b8090;text-align:center;margin-top:14px;line-height:1.55}
+.bt-msg{margin-top:16px;padding:14px 16px;border-radius:12px;font-size:14px;font-weight:600;line-height:1.5;display:none}
+.bt-msg.ok{display:block;background:#dcfce7;color:#0d6f3a;border:1px solid #bbf7d0}
+.bt-msg.err{display:block;background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.bt-thanks{display:none;text-align:center;padding:36px 24px;background:linear-gradient(180deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:22px}
+.bt-thanks.on{display:block;animation:btPop .32s cubic-bezier(.16,1.11,.3,1.02)}
+@keyframes btPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.bt-thanks-emoji{font-size:56px;margin-bottom:12px;line-height:1}
+.bt-thanks h2{font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:24px;color:#0d6f3a;margin:0 0 8px}
+.bt-thanks p{color:#166534;font-size:14.5px;margin:0 auto;max-width:400px;line-height:1.6}
+.bt-list{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:24px 0 32px}
+@media(max-width:640px){.bt-list{grid-template-columns:1fr}}
+.bt-perk{padding:16px;background:#fff;border:1px solid #e6e8ec;border-radius:14px;text-align:center}
+.bt-perk-emoji{font-size:26px;margin-bottom:6px;line-height:1}
+.bt-perk-t{font-weight:700;font-size:14px;color:#111318;margin-bottom:4px}
+.bt-perk-s{font-size:12.5px;color:#5f6675;line-height:1.45}
+</style>
+
+<div class="bt-hero">
+  <div class="bt-hero-emoji">🎓</div>
+  <h1>Teach on WordSpies</h1>
+  <p>Fill out the form below to apply. We personally review every application. We'll get in touch by email once you're approved.</p>
+</div>
+
+<div class="bt-list">
+  <div class="bt-perk"><div class="bt-perk-emoji">💰</div><div class="bt-perk-t">Set your own rate</div><div class="bt-perk-s">You choose your hourly price and availability.</div></div>
+  <div class="bt-perk"><div class="bt-perk-emoji">🌍</div><div class="bt-perk-t">Global students</div><div class="bt-perk-s">Reach learners in dozens of countries.</div></div>
+  <div class="bt-perk"><div class="bt-perk-emoji">🎥</div><div class="bt-perk-t">Built-in video lessons</div><div class="bt-perk-s">Teach live from the browser. No extra apps.</div></div>
+</div>
+
+<form class="bt-form" id="btForm" onsubmit="return btSubmit(event)">
+  <div class="bt-row two">
+    <div>
+      <label class="bt-lbl" for="btName">Full name <span class="req">*</span></label>
+      <input class="bt-in" id="btName" name="name" maxlength="60" required autocomplete="name">
+    </div>
+    <div>
+      <label class="bt-lbl" for="btEmail">Email <span class="req">*</span></label>
+      <input class="bt-in" id="btEmail" name="email" type="email" maxlength="100" required autocomplete="email">
+    </div>
+  </div>
+  <div class="bt-row two">
+    <div>
+      <label class="bt-lbl" for="btCountry">Country</label>
+      <input class="bt-in" id="btCountry" name="country" maxlength="40" placeholder="e.g. Spain" autocomplete="country-name">
+    </div>
+    <div>
+      <label class="bt-lbl" for="btYears">Years teaching</label>
+      <input class="bt-in" id="btYears" name="years" maxlength="6" placeholder="e.g. 3" inputmode="numeric">
+    </div>
+  </div>
+  <div class="bt-row">
+    <label class="bt-lbl" for="btLangs">Languages you can teach <span class="req">*</span></label>
+    <input class="bt-in" id="btLangs" name="langs" maxlength="200" required placeholder="e.g. Spanish, English (up to C1)">
+    <div class="bt-hint">Comma-separated. Include the level you're comfortable teaching each to.</div>
+  </div>
+  <div class="bt-row">
+    <label class="bt-lbl" for="btQuals">Qualifications &amp; certifications</label>
+    <textarea class="bt-area" id="btQuals" name="quals" maxlength="400" rows="3" placeholder="e.g. CELTA (2022), DELE examiner, MA Applied Linguistics — University of Barcelona"></textarea>
+    <div class="bt-hint">Formal certifications, degrees, examiner status. Optional but strengthens your application.</div>
+  </div>
+  <div class="bt-row">
+    <label class="bt-lbl" for="btBio">About you <span class="req">*</span></label>
+    <textarea class="bt-area" id="btBio" name="bio" maxlength="1000" rows="4" required placeholder="Tell us about your teaching style, who you love working with, and why you'd be a great fit for WordSpies."></textarea>
+    <div class="bt-hint">150–500 words works well. Write it the way you'd introduce yourself to a first student.</div>
+  </div>
+  <div class="bt-row two">
+    <div>
+      <label class="bt-lbl" for="btRate">Hourly rate</label>
+      <input class="bt-in" id="btRate" name="rate" maxlength="40" placeholder="e.g. £18 / hour">
+    </div>
+    <div>
+      <label class="bt-lbl" for="btAvail">Availability</label>
+      <input class="bt-in" id="btAvail" name="avail" maxlength="200" placeholder="e.g. Evenings CET, weekends">
+    </div>
+  </div>
+  <div class="bt-row">
+    <label class="bt-lbl" for="btPortfolio">Portfolio or demo video (URL)</label>
+    <input class="bt-in" id="btPortfolio" name="portfolio" maxlength="200" placeholder="https://…" type="url">
+    <div class="bt-hint">A YouTube link, personal website, or an intro video works best.</div>
+  </div>
+  <button class="bt-submit" id="btGo" type="submit">Send my application</button>
+  <div class="bt-note">By submitting, you agree we'll email you at the address above about your application. See our <a href="/privacy">privacy policy</a>.</div>
+  <div class="bt-msg" id="btMsg"></div>
+</form>
+
+<div class="bt-thanks" id="btThanks">
+  <div class="bt-thanks-emoji">🎉</div>
+  <h2>Application received</h2>
+  <p>Thanks — we'll review it and get in touch by email. Meanwhile, join the community and see how WordSpies works.</p>
+  <p style="margin-top:20px"><a href="/social" style="background:#0d6f3a;color:#fff;padding:12px 24px;border-radius:99px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">← Back to community</a></p>
+</div>
+
+<script>
+async function btSubmit(ev){
+  ev.preventDefault();
+  var btn = document.getElementById('btGo'), msg = document.getElementById('btMsg');
+  btn.disabled = true; btn.textContent = 'Sending…'; msg.className = 'bt-msg'; msg.textContent = '';
+  var body = {
+    name: document.getElementById('btName').value,
+    email: document.getElementById('btEmail').value,
+    country: document.getElementById('btCountry').value,
+    years: document.getElementById('btYears').value,
+    langs: document.getElementById('btLangs').value,
+    quals: document.getElementById('btQuals').value,
+    bio: document.getElementById('btBio').value,
+    rate: document.getElementById('btRate').value,
+    avail: document.getElementById('btAvail').value,
+    portfolio: document.getElementById('btPortfolio').value
+  };
+  try {
+    var r = await fetch('/api/teacher/apply', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    var j = await r.json();
+    if (!r.ok) throw new Error((j && j.error) || 'Could not send. Please try again.');
+    document.getElementById('btForm').style.display = 'none';
+    document.getElementById('btThanks').classList.add('on');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) {
+    msg.className = 'bt-msg err'; msg.textContent = e.message || 'Something went wrong.';
+    btn.disabled = false; btn.textContent = 'Send my application';
+  }
+  return false;
+}
+</script>`;
+  return layout(
+    'Teach on WordSpies — become a language teacher',
+    'Apply to teach on WordSpies. Set your own rate, teach live from the browser, reach students worldwide.',
+    '/become-a-teacher', body);
+}
+
+module.exports = { aboutPage, privacyPage, termsPage, howToPlayPage, childSafetyPage, becomeTeacherPage };

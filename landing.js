@@ -474,7 +474,7 @@ footer a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 </div></div>
 
 <div class="wrap"><footer>
-  <a href="/social">Community</a> · <a href="/games">Games</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
+  <a href="/social">Community</a> · <a href="/games">Games</a> · <a href="/blog">Blog</a> · <a href="/about">About</a> · <a href="/become-a-teacher" style="color:#e8506b;font-weight:700">🎓 Become a teacher</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>
   © 2026 WordSpies. Learn a language by playing.
 </footer></div>
 
