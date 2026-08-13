@@ -1,7 +1,7 @@
 // Blog articles for WordSpies — server-rendered for SEO.
 const SITE = 'https://wordspies.co.uk';
 // Consent-gated GA + cookie modal are single-sourced from landing.js.
-const { GA, CONSENT_MODAL } = require('./landing.js');
+const { GA, CONSENT_MODAL, SITE_FOOTER } = require('./landing.js');
 const GA_ID = 'G-JTH809Z8NH';
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -810,8 +810,7 @@ article a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline
 .cta:hover{background:#0b5a00}
 .backrow{margin-top:26px;font-size:15px}
 .backrow a{color:#374151;text-decoration:none;font-weight:600}
-footer{margin-top:44px;padding:36px 0 44px;border-top:1px solid #e5e7eb;text-align:center;color:#6b7280;font-size:13.5px;font-weight:700;line-height:2;font-family:'Inter',sans-serif}
-footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
+/* blog footer overrides removed — SITE_FOOTER carries its own dark theme. */
 .hero{width:100%;height:auto;border-radius:16px;margin:4px 0 30px;display:block;border:1px solid #e6e8ef}
 .post{padding:24px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:22px;align-items:flex-start;max-width:100%}
 .postthumb{flex:0 0 220px;width:220px;border-radius:12px;border:1px solid #e6e8ef;aspect-ratio:1200/630;overflow:hidden;display:block}
@@ -844,11 +843,8 @@ footer a{color:#1c1e21;text-decoration:underline;text-underline-offset:3px}
 ${banner || ''}
 <div class="wrap">
 ${body}
-<footer>
-<a href="/home">Home</a> · <a href="/about">About</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/child-safety">Child safety</a> · <a href="mailto:contact@wordspies.co.uk">Contact</a><br>
-© 2026 WordSpies. All rights reserved.
-</footer>
 </div>
+${SITE_FOOTER}
 ${CONSENT_MODAL}
 </body></html>`;
 }
