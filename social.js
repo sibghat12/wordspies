@@ -2451,12 +2451,43 @@ Do NOT add quotes, preambles, or explanations.`,
   // Owner ask 13 Aug 2026: 'ask people personal preferences what
   // language they want to learn and make them a small short-term plan
   // and if they done that learning mark it tick so it shows done in
-  // their profile' + 'ai curated roadmap'.
+  // their profile' + 'ai curated roadmap' + (14 Aug follow-up) 'let
+  // the user can start as many learnings ok and it can list like in
+  // the progress as well in his learn page'.
   //
-  // Storage: soc:learn:<uid> holds the whole plan as JSON:
-  //   { language, level, goal, minutesPerDay, createdAt, lessons:[
-  //       { title, focus, phrases:[{src,dst}], done, doneAt } * 5 ] }
-  // One plan per user. Regenerating overwrites.
+  // Storage (v2, 14 Aug 2026): soc:learns:<uid> holds a JSON array of
+  // plans. Each plan has an id + the same shape as before. Old single-
+  // plan key soc:learn:<uid> is migrated on first read then deleted.
+  // Cap at 8 plans per user to keep the list scannable + Redis small.
+  const LEARN_MAX_PLANS = 8;
+  async function loadUserPlans(uid) {
+    if (!uid) return [];
+    try {
+      const raw = await db.get('soc:learns:' + uid);
+      if (raw) {
+        try { const arr = JSON.parse(raw); return Array.isArray(arr) ? arr : []; }
+        catch (e) { return []; }
+      }
+      // Legacy migration: single-plan key from the v1 shape.
+      const legacyRaw = await db.get('soc:learn:' + uid);
+      if (legacyRaw) {
+        try {
+          const legacy = JSON.parse(legacyRaw);
+          if (legacy && Array.isArray(legacy.lessons)) {
+            legacy.id = legacy.id || crypto.randomBytes(6).toString('base64url');
+            const arr = [legacy];
+            await db.set('soc:learns:' + uid, JSON.stringify(arr));
+            await db.del('soc:learn:' + uid);
+            return arr;
+          }
+        } catch (e) {}
+      }
+      return [];
+    } catch (e) { return []; }
+  }
+  async function saveUserPlans(uid, plans) {
+    await db.set('soc:learns:' + uid, JSON.stringify(plans || []));
+  }
   api.post('/learn/plan', async (req, res) => {
     try {
       const me = await userFromReq(req);
@@ -2525,8 +2556,18 @@ Do NOT add quotes, preambles, or explanations.`,
         done: false, doneAt: null
       })).filter(l => l.phrases.length > 0);
       if (cleanedLessons.length < 3) return res.status(502).json({ error: 'Plan too thin — try again.' });
-      const stored = { language, level, goal: goalStr, minutesPerDay: mpd, createdAt: Date.now(), lessons: cleanedLessons };
-      await db.set('soc:learn:' + me.id, JSON.stringify(stored));
+      const stored = {
+        id: crypto.randomBytes(6).toString('base64url'),
+        language, level, goal: goalStr, minutesPerDay: mpd,
+        createdAt: Date.now(),
+        lessons: cleanedLessons
+      };
+      const existing = await loadUserPlans(me.id);
+      if (existing.length >= LEARN_MAX_PLANS) {
+        return res.status(400).json({ error: 'You have ' + LEARN_MAX_PLANS + ' plans already. Delete an old one first.' });
+      }
+      existing.push(stored);
+      await saveUserPlans(me.id, existing);
       // Cost log (same shape as ai-usage) — Haiku 4.5: $0.80/M in, $4.00/M out.
       const cost = ((usage.input_tokens || 0) * 0.80 + (usage.output_tokens || 0) * 4.00) / 1_000_000;
       const day = new Date().toISOString().slice(0, 10);
@@ -2536,39 +2577,83 @@ Do NOT add quotes, preambles, or explanations.`,
     } catch (e) { console.error('[learn] plan:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
+  // Returns ALL plans for the caller (owner ask 14 Aug 2026:
+  // 'list like in the progress as well in his learn page'). New primary
+  // endpoint. The old singular /learn/plan is kept for one release as
+  // a backwards-compat shim (returns the newest plan or null) so any
+  // client that hasn't refreshed its JS yet keeps rendering something.
+  api.get('/learn/plans', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const plans = await loadUserPlans(me.id);
+      res.json({ plans });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
   api.get('/learn/plan', async (req, res) => {
     try {
       const me = await userFromReq(req);
       if (!me) return res.status(401).json({ error: 'Please log in.' });
-      const raw = await db.get('soc:learn:' + me.id);
-      if (!raw) return res.json({ plan: null });
-      try { res.json({ plan: JSON.parse(raw) }); }
-      catch (e) { res.json({ plan: null }); }
+      const plans = await loadUserPlans(me.id);
+      const newest = plans.length ? plans[plans.length - 1] : null;
+      res.json({ plan: newest });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
-  api.post('/learn/lesson/:idx/done', async (req, res) => {
+  api.post('/learn/plan/:planId/lesson/:idx/done', async (req, res) => {
     try {
       const me = await userFromReq(req);
       if (!me) return res.status(401).json({ error: 'Please log in.' });
-      const idx = Math.max(0, Math.min(4, parseInt(req.params.idx, 10) || 0));
-      const raw = await db.get('soc:learn:' + me.id);
-      if (!raw) return res.status(404).json({ error: 'No plan yet — create one first.' });
-      let plan; try { plan = JSON.parse(raw); } catch (e) { return res.status(500).json({ error: 'Bad plan.' }); }
+      const planId = String(req.params.planId || '');
+      const idx = Math.max(0, Math.min(9, parseInt(req.params.idx, 10) || 0));
+      const plans = await loadUserPlans(me.id);
+      const plan = plans.find(p => p && p.id === planId);
+      if (!plan) return res.status(404).json({ error: 'Plan not found.' });
       if (!plan.lessons || !plan.lessons[idx]) return res.status(404).json({ error: 'Lesson not found.' });
       plan.lessons[idx].done = true;
       plan.lessons[idx].doneAt = Date.now();
-      await db.set('soc:learn:' + me.id, JSON.stringify(plan));
+      await saveUserPlans(me.id, plans);
       res.json({ plan });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
+  api.delete('/learn/plan/:planId', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const planId = String(req.params.planId || '');
+      const plans = await loadUserPlans(me.id);
+      const filtered = plans.filter(p => p && p.id !== planId);
+      if (filtered.length === plans.length) return res.status(404).json({ error: 'Plan not found.' });
+      await saveUserPlans(me.id, filtered);
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // Backwards-compat: old singular DELETE with no id — clears every plan.
   api.delete('/learn/plan', async (req, res) => {
     try {
       const me = await userFromReq(req);
       if (!me) return res.status(401).json({ error: 'Please log in.' });
+      await saveUserPlans(me.id, []);
       await db.del('soc:learn:' + me.id);
       res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // Backwards-compat for the old single-plan mark-done shape.
+  api.post('/learn/lesson/:idx/done', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const idx = Math.max(0, Math.min(9, parseInt(req.params.idx, 10) || 0));
+      const plans = await loadUserPlans(me.id);
+      const plan = plans.length ? plans[plans.length - 1] : null;
+      if (!plan || !plan.lessons || !plan.lessons[idx]) return res.status(404).json({ error: 'Lesson not found.' });
+      plan.lessons[idx].done = true;
+      plan.lessons[idx].doneAt = Date.now();
+      await saveUserPlans(me.id, plans);
+      res.json({ plan });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 

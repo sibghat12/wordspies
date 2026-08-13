@@ -898,6 +898,20 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .ln-phrase-speak:active{transform:scale(.94)}
 .ln-phrase-speak.on{background:linear-gradient(135deg,#22c55e,#16a34a);animation:lnSpeakPulse 1s ease-in-out infinite}
 @keyframes lnSpeakPulse{0%,100%{box-shadow:0 3px 10px rgba(34,197,94,.35)}50%{box-shadow:0 3px 18px rgba(34,197,94,.6)}}
+/* Multiple-plans layout on the Learn page. Each plan is its own
+   full-width card wrapping the existing progress ring + lesson list
+   markup — owner ask 14 Aug 2026 'let the user can start as many
+   learnings ok and it can list like in the progress as well'. */
+.ln-toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;padding:2px 4px}
+.ln-toprow-t{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:20px;letter-spacing:-.3px;color:var(--ink)}
+.ln-add{background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);color:#fff;border:0;padding:9px 18px;border-radius:999px;font-family:'Inter',sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:0 4px 14px rgba(232,80,107,.32);transition:.16s}
+.ln-add:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(232,80,107,.44)}
+.ln-plans{display:flex;flex-direction:column;gap:22px}
+.ln-plancard{background:linear-gradient(180deg,#fafbff,#fff);border:1px solid var(--line,#e6e8ec);border-radius:20px;padding:18px 18px 22px;box-shadow:0 2px 12px rgba(20,30,60,.04);animation:fsFade .22s ease-out}
+.ln-plancard .ln-planhead{background:transparent;border:0;padding:0 4px 8px;box-shadow:none;margin-bottom:12px;border-bottom:1px solid var(--line,#e6e8ec)}
+.ln-plancard .ln-lessons{margin-top:12px}
+.ln-plandel{background:transparent;border:0;color:var(--faint);font-family:inherit;font-weight:500;font-size:12px;cursor:pointer;padding:8px 4px;margin-top:8px;transition:.14s;display:block;margin-left:auto}
+.ln-plandel:hover{color:#dc2626}
 /* Hero band: extend to full viewport width on desktop even though
    tabMember lives inside .wrap (max-width 1400px). The negative-margin
    trick breaks the child out to the viewport edges — Speaky's exact
@@ -2846,26 +2860,20 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
         <div class="ln-hero-hint">Free, no ads. Tap <b>AI Plan</b> to start.</div>
       </div>
-      <!-- State C: plan exists -->
+      <!-- State C: one or more plans exist. Owner ask 14 Aug 2026:
+           'let the user can start as many learnings' — stack ALL of
+           the user's plans on this page, each a self-contained card
+           with its own progress ring + lesson list. -->
       <div id="lnPlan" class="hidden">
-        <div class="ln-planhead">
-          <div class="ln-planhead-l">
-            <div class="ln-planhead-title">Learning <span id="lnPlanLang">Spanish</span></div>
-            <div class="ln-planhead-meta"><span id="lnPlanLevel">Beginner</span> · <span id="lnPlanGoal">Travel</span> · <span id="lnPlanMpd">10</span> min/day</div>
-          </div>
-          <div class="ln-planhead-r">
-            <div class="ln-progress-ring">
-              <svg viewBox="0 0 40 40" width="52" height="52">
-                <circle cx="20" cy="20" r="17" fill="none" stroke="#e6e8ec" stroke-width="4"/>
-                <circle id="lnRingFg" cx="20" cy="20" r="17" fill="none" stroke="url(#lnGrad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="106.8" transform="rotate(-90 20 20)"/>
-                <defs><linearGradient id="lnGrad" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#e8506b"/><stop offset="100%" stop-color="#7c5cff"/></linearGradient></defs>
-              </svg>
-              <span class="ln-progress-txt" id="lnProgressTxt">0/5</span>
-            </div>
-          </div>
+        <div class="ln-toprow">
+          <div class="ln-toprow-t">My learning plans</div>
+          <button class="ln-add" type="button" onclick="openLearnSetup()">＋ New plan</button>
         </div>
-        <div class="ln-lessons" id="lnLessons"></div>
-        <button class="ln-regen" onclick="regenLearnPlan()">↻ Generate a new plan</button>
+        <div class="ln-plans" id="lnPlansHost"></div>
+        <!-- Shared SVG gradient used by every plan's progress ring. -->
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+          <defs><linearGradient id="lnGrad" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#e8506b"/><stop offset="100%" stop-color="#7c5cff"/></linearGradient></defs>
+        </svg>
       </div>
     </div>
   </div>
@@ -5800,7 +5808,13 @@ function togglePtFlagsDropdown(){
 // Owner ask 13 Aug 2026. State lives in LN_PLAN (server-owned, refreshed
 // each time the Learn tab is opened). LN_SETUP holds the modal answers
 // during selection.
+// LN_PLANS = array of plans (owner ask 14 Aug 2026 — multiple learning
+// plans per user). LN_PLAN kept for backwards-compat with the lesson-
+// detail modal which reads it; it points at whichever plan the user
+// last opened a lesson from.
+let LN_PLANS = [];
 let LN_PLAN = null;
+let LN_ACTIVE_PLAN_ID = null;
 const LN_SETUP = { level:'Beginner', goal:'Travel', mpd:10, learn:'', native:'' };
 let LN_LESSON_IDX = null;
 // Simple ISO-639 code map so browser SpeechSynthesis picks a voice
@@ -5842,45 +5856,31 @@ function speakLessonPhrase(text, langName, btnEl){
 // so 'done' ticks from another session (or a fresh plan generated
 // elsewhere) show up immediately.
 async function loadLearnPlan(){
-  // Owner ask 13 Aug 2026: the setup modal now lets users pick both
-  // target and native languages inline, so we no longer force them
-  // to complete the wizard first. Empty state always renders with
-  // method grid; setup handles the language choice.
   const showState = (which) => {
     const map = { empty:'lnEmpty', plan:'lnPlan' };
     Object.keys(map).forEach(k => { const el = $(map[k]); if (el) el.classList.toggle('hidden', k !== which); });
   };
   try {
-    const j = await api('/learn/plan');
-    LN_PLAN = (j && j.plan) || null;
-    if (LN_PLAN && Array.isArray(LN_PLAN.lessons) && LN_PLAN.lessons.length) {
-      paintLearnPlan(); showState('plan');
+    const j = await api('/learn/plans');
+    LN_PLANS = (j && Array.isArray(j.plans)) ? j.plans : [];
+    if (LN_PLANS.length) {
+      paintAllLearnPlans(); showState('plan');
     } else {
       showState('empty');
     }
   } catch(e) { showState('empty'); }
 }
-function paintLearnPlan(){
-  if (!LN_PLAN) return;
-  const setT = (id, v) => { const el = $(id); if (el) el.textContent = v; };
-  setT('lnPlanLang', LN_PLAN.language || '—');
-  setT('lnPlanLevel', LN_PLAN.level || '—');
-  setT('lnPlanGoal', LN_PLAN.goal || '—');
-  setT('lnPlanMpd', String(LN_PLAN.minutesPerDay || 10));
-  const total = LN_PLAN.lessons.length;
-  const done = LN_PLAN.lessons.filter(l => l.done).length;
-  setT('lnProgressTxt', done + '/' + total);
-  // Progress ring: dasharray = 2πr = 2π·17 ≈ 106.8. Offset is the
-  // portion NOT filled, so full = 0 offset, empty = 106.8.
-  const ring = $('lnRingFg');
-  if (ring) {
-    const pct = total ? (done / total) : 0;
-    const dash = 106.8;
-    ring.setAttribute('stroke-dashoffset', String(dash * (1 - pct)));
-  }
-  const host = $('lnLessons'); if (!host) return;
-  host.innerHTML = LN_PLAN.lessons.map((l, i) =>
-    '<button type="button" class="ln-lcard' + (l.done ? ' done' : '') + '" onclick="openLearnLesson(' + i + ')">' +
+// Render one plan card into HTML — reuses the same ln-lcard grid the
+// single-plan view used, wrapped in an ln-plancard shell so multiple
+// plans stack cleanly on the Learn page.
+function planCardHtml(plan){
+  const total = (plan.lessons || []).length;
+  const done = (plan.lessons || []).filter(l => l.done).length;
+  const pct = total ? (done / total) : 0;
+  const dash = 106.8;
+  const offset = dash * (1 - pct);
+  const lessonsHtml = (plan.lessons || []).map((l, i) =>
+    '<button type="button" class="ln-lcard' + (l.done ? ' done' : '') + '" onclick="openLearnLesson(\'' + esc(plan.id) + '\',' + i + ')">' +
       '<div class="ln-lcard-n">' + (l.done ? '✓' : String(i + 1)) + '</div>' +
       '<div class="ln-lcard-tt">' +
         '<div class="ln-lcard-title">' + esc(l.title || ('Lesson ' + (i + 1))) + '</div>' +
@@ -5889,6 +5889,30 @@ function paintLearnPlan(){
       '<svg class="ln-lcard-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' +
     '</button>'
   ).join('');
+  return '<div class="ln-plancard" data-plan-id="' + esc(plan.id) + '">' +
+    '<div class="ln-planhead">' +
+      '<div class="ln-planhead-l">' +
+        '<div class="ln-planhead-title">Learning <span>' + esc(plan.language || '—') + '</span></div>' +
+        '<div class="ln-planhead-meta">' + esc(plan.level || '—') + ' · ' + esc(plan.goal || '—') + ' · ' + esc(String(plan.minutesPerDay || 10)) + ' min/day</div>' +
+      '</div>' +
+      '<div class="ln-planhead-r">' +
+        '<div class="ln-progress-ring">' +
+          '<svg viewBox="0 0 40 40" width="52" height="52">' +
+            '<circle cx="20" cy="20" r="17" fill="none" stroke="#e6e8ec" stroke-width="4"/>' +
+            '<circle cx="20" cy="20" r="17" fill="none" stroke="url(#lnGrad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="' + offset + '" transform="rotate(-90 20 20)"/>' +
+          '</svg>' +
+          '<span class="ln-progress-txt">' + done + '/' + total + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="ln-lessons">' + lessonsHtml + '</div>' +
+    '<button type="button" class="ln-plandel" onclick="deleteLearnPlan(\'' + esc(plan.id) + '\')">🗑 Delete this plan</button>' +
+  '</div>';
+}
+function paintAllLearnPlans(){
+  const host = document.getElementById('lnPlansHost');
+  if (!host) return;
+  host.innerHTML = LN_PLANS.map(p => planCardHtml(p)).join('');
 }
 function openLearnSetup(){
   const bd = $('lnSetupBd'); if (bd) { bd.classList.add('show'); document.body.style.overflow = 'hidden'; }
@@ -5937,10 +5961,13 @@ async function submitLearnSetup(){
   try {
     const j = await api('/learn/plan', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ level: LN_SETUP.level, goal: LN_SETUP.goal, minutesPerDay: LN_SETUP.mpd, language: LN_SETUP.learn, nativeLanguage: LN_SETUP.native }) });
-    LN_PLAN = j && j.plan;
-    if (!LN_PLAN) throw new Error('No plan returned.');
+    const newPlan = j && j.plan;
+    if (!newPlan) throw new Error('No plan returned.');
+    // Append to the local list + repaint so the new plan appears
+    // immediately without a round-trip through /learn/plans.
+    LN_PLANS.push(newPlan);
+    paintAllLearnPlans();
     closeLearnSetup();
-    paintLearnPlan();
     const setState = (id, hide) => { const el = $(id); if (el) el.classList.toggle('hidden', hide); };
     setState('lnEmpty', true); setState('lnPlan', false);
     toast('✨ Your plan is ready!');
@@ -5950,21 +5977,28 @@ async function submitLearnSetup(){
     if (btn) { btn.disabled = false; btn.textContent = '✨ Build my plan'; }
   }
 }
-async function regenLearnPlan(){
+async function deleteLearnPlan(planId){
   if (typeof swConfirm === 'function') {
-    const ok = await swConfirm({ title:'Start over?', text:'This clears your current progress and generates a fresh 5-lesson plan.', confirmButtonText:'Yes, restart', cancelButtonText:'Keep this plan' });
+    const ok = await swConfirm({ title:'Delete this plan?', text:'Your progress on this plan will be lost. Other plans stay untouched.', confirmButtonText:'Yes, delete', cancelButtonText:'Keep it' });
     if (!ok) return;
-  } else if (!confirm('Clear this plan and generate a new one?')) return;
-  try { await api('/learn/plan', { method:'DELETE' }); } catch(e){}
-  LN_PLAN = null;
-  const setState = (id, hide) => { const el = $(id); if (el) el.classList.toggle('hidden', hide); };
-  setState('lnPlan', true); setState('lnEmpty', false);
-  openLearnSetup();
+  } else if (!confirm('Delete this plan?')) return;
+  try { await api('/learn/plan/' + encodeURIComponent(planId), { method:'DELETE' }); } catch(e) { toast(e.message || 'Could not delete.'); return; }
+  LN_PLANS = LN_PLANS.filter(p => p.id !== planId);
+  if (LN_PLANS.length) {
+    paintAllLearnPlans();
+  } else {
+    const setState = (id, hide) => { const el = $(id); if (el) el.classList.toggle('hidden', hide); };
+    setState('lnPlan', true); setState('lnEmpty', false);
+  }
+  toast('Deleted.');
 }
-function openLearnLesson(idx){
-  if (!LN_PLAN || !LN_PLAN.lessons[idx]) return;
+function openLearnLesson(planId, idx){
+  const plan = LN_PLANS.find(p => p && p.id === planId);
+  if (!plan || !plan.lessons[idx]) return;
+  LN_PLAN = plan;              // remember which plan owns this lesson
+  LN_ACTIVE_PLAN_ID = planId;
   LN_LESSON_IDX = idx;
-  const l = LN_PLAN.lessons[idx];
+  const l = plan.lessons[idx];
   $('lnLessonNum').textContent = String(idx + 1);
   $('lnLessonTitle').textContent = l.title || ('Lesson ' + (idx + 1));
   $('lnLessonFocus').textContent = l.focus || '';
@@ -5997,12 +6031,18 @@ function closeLearnLesson(){
   LN_LESSON_IDX = null;
 }
 async function markLearnLessonDone(){
-  if (LN_LESSON_IDX == null) return;
+  if (LN_LESSON_IDX == null || !LN_ACTIVE_PLAN_ID) return;
   const btn = $('lnLessonDone'); if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
-    const j = await api('/learn/lesson/' + LN_LESSON_IDX + '/done', { method:'POST' });
-    if (j && j.plan) LN_PLAN = j.plan;
-    paintLearnPlan();
+    const j = await api('/learn/plan/' + encodeURIComponent(LN_ACTIVE_PLAN_ID) + '/lesson/' + LN_LESSON_IDX + '/done', { method:'POST' });
+    if (j && j.plan) {
+      // Update the in-memory plan so the roadmap card re-renders green
+      // without a full /learn/plans re-fetch.
+      const idx = LN_PLANS.findIndex(p => p.id === LN_ACTIVE_PLAN_ID);
+      if (idx >= 0) LN_PLANS[idx] = j.plan;
+      LN_PLAN = j.plan;
+    }
+    paintAllLearnPlans();
     if (btn) { btn.classList.add('done'); btn.textContent = '✓ Done'; }
     toast('🎉 Lesson done!');
     setTimeout(closeLearnLesson, 700);
