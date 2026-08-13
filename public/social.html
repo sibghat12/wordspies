@@ -6850,20 +6850,29 @@ function closeGameInApp(silent){
   const bar = $('gameBar'); if (bar) bar.classList.add('hidden');
   if (!silent) toast('Left the game');
   // Pop the game URL back to /social so the address bar matches the
-  // app state again. Guarded: only push if we're currently sitting
-  // on a game URL, so a normal /social navigation doesn't spam
-  // history entries.
-  try {
-    if (/^\/(codenames|play|meld|ludo|four|pool|spy|wordchain|guessword|wordrace|hoop)(\/|\?|$)/.test(location.pathname + location.search)) {
-      history.pushState({}, '', '/social');
-    }
-  } catch(e){}
+  // app state again. Guarded: only push if the current URL is still a
+  // game URL AND we didn't get here from the popstate handler (which
+  // already unwinds the game history entry itself). Without this
+  // guard, browser Back would fire popstate → closeGameInApp →
+  // pushState('/social') → history would grow one entry per Back.
+  if (!window._closingFromPopstate) {
+    try {
+      if (/^\/(codenames|play|meld|ludo|four|pool|spy|wordchain|guessword|wordrace|hoop)(\/|\?|$)/.test(location.pathname + location.search)) {
+        history.pushState({}, '', '/social');
+      }
+    } catch(e){}
+  }
 }
-// Browser Back → close the open game (matches standalone-game
-// behaviour where Back leaves the game). If nothing is mounted,
-// let the default behaviour happen.
+// Browser Back → close the open game (matches Codenames + every
+// standalone game page where Back leaves the game). Sets a
+// short-lived flag so closeGameInApp knows not to double-push
+// '/social' — the popstate has already unwound the game entry.
 window.addEventListener('popstate', () => {
-  if (GHOST_GAME || GHOST_CODE) closeGameInApp(true);
+  if (GHOST_GAME || GHOST_CODE) {
+    window._closingFromPopstate = true;
+    try { closeGameInApp(true); }
+    finally { window._closingFromPopstate = false; }
+  }
 });
 function minimizeGameInApp(){
   const host = $('gameHost'); if (!host || !GHOST_CODE) return;
