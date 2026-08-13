@@ -2461,10 +2461,15 @@ Do NOT add quotes, preambles, or explanations.`,
     try {
       const me = await userFromReq(req);
       if (!me) return res.status(401).json({ error: 'Please log in.' });
-      // Learning language comes from the wizard's 'learns' array so
-      // the plan is always for a language the user has actually picked.
-      const language = (Array.isArray(me.learns) && me.learns[0]) || null;
-      if (!language) return res.status(400).json({ error: 'Add a language you\'re learning in your profile first.' });
+      // Owner ask 13 Aug 2026: 'let the user select language he wants
+      // to learn and his native as well' — pull from the request body
+      // first, only fall back to the profile if the client didn't send
+      // one. Clamp to sane length + strip anything weird so the LLM
+      // prompt stays predictable.
+      const bodyLang = String((req.body && req.body.language) || '').trim().slice(0, 30);
+      const bodyNative = String((req.body && req.body.nativeLanguage) || '').trim().slice(0, 30);
+      const language = bodyLang || (Array.isArray(me.learns) && me.learns[0]) || null;
+      if (!language) return res.status(400).json({ error: 'Pick a language to learn.' });
       const { level, goal, minutesPerDay } = req.body || {};
       const okLevels = ['Beginner','Intermediate','Advanced'];
       if (!okLevels.includes(level)) return res.status(400).json({ error: 'Pick a level.' });
@@ -2473,7 +2478,7 @@ Do NOT add quotes, preambles, or explanations.`,
       const mpd = Math.max(5, Math.min(60, Number(minutesPerDay) || 10));
       const client = getAnthropic();
       if (!client) return res.status(503).json({ error: 'AI not configured yet.' });
-      const nativeLang = (Array.isArray(me.speaks) && me.speaks[0]) || 'English';
+      const nativeLang = bodyNative || (Array.isArray(me.speaks) && me.speaks[0]) || 'English';
       const system = 'You are an expert language-learning curriculum designer. Output ONLY valid JSON, no prose, no markdown fences. Design a 5-lesson short-term plan tailored to the learner. Each lesson must build on the previous one and be doable in the daily time budget. Focus on the goal — the phrases must be immediately useful for that specific goal.';
       const userMsg = 'Target language: ' + language + '\n' +
         'Learner speaks natively: ' + nativeLang + '\n' +

@@ -869,6 +869,35 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ln-lesson-foot{padding:14px 22px 20px;border-top:1px solid var(--line,#e6e8ec);flex-shrink:0}
 .ln-lesson-foot .ln-cta{width:100%;justify-content:center;display:flex;padding:14px}
 .ln-lesson-foot .ln-cta.done{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 6px 20px rgba(34,197,94,.32);pointer-events:none;opacity:.9}
+/* Learning methods grid — 'AI Plan' + coming-soon siblings. Owner ask
+   13 Aug 2026 (Learn tab tweaks): 'make it one option from many'. */
+.ln-methods{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:22px auto 20px;max-width:520px}
+@media(min-width:640px){.ln-methods{grid-template-columns:repeat(4,1fr)}}
+.ln-method{background:#fff;border:1.5px solid var(--line,#e6e8ec);border-radius:16px;padding:16px 12px;text-align:center;font-family:inherit;transition:.18s;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:default}
+button.ln-method{cursor:pointer;border-width:2px}
+.ln-method.on{background:linear-gradient(135deg,rgba(232,80,107,.10),rgba(124,92,255,.10));border-color:var(--accent,#e8506b);box-shadow:0 4px 16px rgba(232,80,107,.16)}
+button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,30,60,.10);border-color:var(--accent,#e8506b)}
+.ln-method-emoji{font-size:32px;line-height:1}
+.ln-method-t{font-weight:700;font-size:14px;color:var(--ink);margin-top:2px}
+.ln-method-s{font-size:12px;color:var(--sub);font-weight:500;line-height:1.35}
+.ln-method.soon{opacity:.55;background:#f7f8fa}
+.ln-method.soon .ln-method-s{font-style:italic}
+/* Language selects in the setup modal — big touch targets, real flag
+   emoji in each option so users see what they picked. */
+.ln-select{width:100%;padding:12px 14px;border:1.5px solid var(--line,#e6e8ec);border-radius:12px;font-family:inherit;font-size:14.5px;background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='%235f6675'><path d='M6 8L0 0h12z'/></svg>") no-repeat right 14px center;background-size:10px;color:var(--ink);outline:none;transition:.14s;-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer}
+.ln-select:focus{border-color:#7c5cff;box-shadow:0 0 0 3px rgba(124,92,255,.14)}
+/* Speak button on lesson phrases — 🔊 in a soft circle. Owner ask
+   13 Aug 2026: 'make it voice notes as well for each lesson in
+   front of each written message'. Uses browser SpeechSynthesis
+   so it's free + supports 30+ languages natively (no ElevenLabs
+   burn per phrase). */
+.ln-phrase{display:flex;align-items:flex-start;gap:12px}
+.ln-phrase-txt{flex:1;min-width:0}
+.ln-phrase-speak{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#e8506b,#c93257);color:#fff;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 3px 10px rgba(232,80,107,.24);transition:.16s}
+.ln-phrase-speak:hover{transform:scale(1.06);box-shadow:0 5px 14px rgba(232,80,107,.36)}
+.ln-phrase-speak:active{transform:scale(.94)}
+.ln-phrase-speak.on{background:linear-gradient(135deg,#22c55e,#16a34a);animation:lnSpeakPulse 1s ease-in-out infinite}
+@keyframes lnSpeakPulse{0%,100%{box-shadow:0 3px 10px rgba(34,197,94,.35)}50%{box-shadow:0 3px 18px rgba(34,197,94,.6)}}
 /* Hero band: extend to full viewport width on desktop even though
    tabMember lives inside .wrap (max-width 1400px). The negative-margin
    trick breaks the child out to the viewport edges — Speaky's exact
@@ -2803,18 +2832,19 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="ln-wrap">
       <!-- State A: no plan yet -->
       <div id="lnEmpty" class="ln-hero hidden">
-        <div class="ln-hero-emoji">🧭</div>
-        <h2>Your personal learning plan</h2>
-        <p>Tell us your level and your goal — Claude builds you a 5-lesson short-term plan for <b id="lnHeroLang">your language</b>. Tick each lesson as you go. Progress shows on your profile.</p>
-        <button class="ln-cta" onclick="openLearnSetup()">✨ Create my plan</button>
-        <div class="ln-hero-hint">Free, no ads, works offline once generated.</div>
-      </div>
-      <!-- State B: no learning language set -->
-      <div id="lnNoLang" class="ln-hero hidden">
-        <div class="ln-hero-emoji">🌍</div>
-        <h2>Pick a language first</h2>
-        <p>Add a language you're learning to your profile, then come back here for your plan.</p>
-        <button class="ln-cta" onclick="showTab('me')">Go to my profile →</button>
+        <h2>How would you like to learn?</h2>
+        <p>Pick a method below. More coming as we go — voice-guided lessons, roleplay conversations, and a special Kids Mode are on the way.</p>
+        <div class="ln-methods">
+          <button type="button" class="ln-method on" onclick="openLearnSetup()">
+            <div class="ln-method-emoji">🧭</div>
+            <div class="ln-method-t">AI Plan</div>
+            <div class="ln-method-s">A 5-lesson roadmap made for you</div>
+          </button>
+          <div class="ln-method soon"><div class="ln-method-emoji">🗣️</div><div class="ln-method-t">Phrasebooks</div><div class="ln-method-s">Coming soon</div></div>
+          <div class="ln-method soon"><div class="ln-method-emoji">🎭</div><div class="ln-method-t">Roleplay</div><div class="ln-method-s">Coming soon</div></div>
+          <div class="ln-method soon"><div class="ln-method-emoji">🧒</div><div class="ln-method-t">Kids Mode</div><div class="ln-method-s">Coming soon</div></div>
+        </div>
+        <div class="ln-hero-hint">Free, no ads. Tap <b>AI Plan</b> to start.</div>
       </div>
       <!-- State C: plan exists -->
       <div id="lnPlan" class="hidden">
@@ -2850,6 +2880,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
       <div class="ln-setup-body">
         <div class="ln-setup-q">
+          <div class="ln-setup-qlbl">You want to learn</div>
+          <select class="ln-select" id="lnPickLearn"></select>
+        </div>
+        <div class="ln-setup-q">
+          <div class="ln-setup-qlbl">You already speak</div>
+          <select class="ln-select" id="lnPickNative"></select>
+        </div>
+        <div class="ln-setup-q">
           <div class="ln-setup-qlbl">Your current level</div>
           <div class="ln-opts" data-ln-q="level">
             <button type="button" class="ln-opt on" data-v="Beginner">🌱 Beginner</button>
@@ -2879,7 +2917,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
         <div class="ln-setup-err hidden" id="lnSetupErr"></div>
         <button class="ln-cta ln-setup-go" id="lnSetupGo" onclick="submitLearnSetup()">✨ Build my plan</button>
-        <div class="ln-setup-hint">Claude will design 5 lessons tailored to your answers. Takes about 5 seconds.</div>
+        <div class="ln-setup-hint">Your plan is designed just for you. Takes about 5 seconds.</div>
       </div>
     </div>
   </div>
@@ -5763,22 +5801,55 @@ function togglePtFlagsDropdown(){
 // each time the Learn tab is opened). LN_SETUP holds the modal answers
 // during selection.
 let LN_PLAN = null;
-const LN_SETUP = { level:'Beginner', goal:'Travel', mpd:10 };
+const LN_SETUP = { level:'Beginner', goal:'Travel', mpd:10, learn:'', native:'' };
 let LN_LESSON_IDX = null;
+// Simple ISO-639 code map so browser SpeechSynthesis picks a voice
+// in the right language (e.g. Spanish name → 'es-ES').  Fallback is
+// the browser default. Owner ask 13 Aug 2026: voice notes on every
+// phrase in a lesson.
+const LN_LANG_TO_BCP = {
+  'English':'en-US','Spanish':'es-ES','French':'fr-FR','German':'de-DE',
+  'Italian':'it-IT','Portuguese':'pt-PT','Russian':'ru-RU','Chinese':'zh-CN',
+  'Japanese':'ja-JP','Korean':'ko-KR','Arabic':'ar-SA','Hindi':'hi-IN',
+  'Urdu':'ur-PK','Indonesian':'id-ID','Turkish':'tr-TR','Dutch':'nl-NL',
+  'Swedish':'sv-SE','Polish':'pl-PL','Norwegian':'no-NO','Danish':'da-DK',
+  'Finnish':'fi-FI','Greek':'el-GR','Hebrew':'he-IL','Thai':'th-TH',
+  'Vietnamese':'vi-VN','Ukrainian':'uk-UA','Romanian':'ro-RO','Bengali':'bn-BD',
+  'Persian':'fa-IR','Swahili':'sw-KE'
+};
+function speakLessonPhrase(text, langName, btnEl){
+  try {
+    if (!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text || ''));
+    const bcp = LN_LANG_TO_BCP[langName] || 'en-US';
+    u.lang = bcp;
+    u.rate = 0.92;
+    u.pitch = 1;
+    // Pick a voice matching the language if one is installed.
+    const voices = speechSynthesis.getVoices();
+    const match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(bcp.slice(0,2)));
+    if (match) u.voice = match;
+    if (btnEl) {
+      document.querySelectorAll('.ln-phrase-speak.on').forEach(b => b.classList.remove('on'));
+      btnEl.classList.add('on');
+      u.onend = u.onerror = () => btnEl.classList.remove('on');
+    }
+    speechSynthesis.speak(u);
+  } catch(e){}
+}
 // Load current plan and paint. Called every time the Learn tab opens
 // so 'done' ticks from another session (or a fresh plan generated
 // elsewhere) show up immediately.
 async function loadLearnPlan(){
-  // If the user hasn't picked a learning language yet, don't even
-  // try to fetch — surface the 'pick a language' state.
-  const learns = (ME && Array.isArray(ME.learns)) ? ME.learns : [];
-  const lang = learns[0] || null;
+  // Owner ask 13 Aug 2026: the setup modal now lets users pick both
+  // target and native languages inline, so we no longer force them
+  // to complete the wizard first. Empty state always renders with
+  // method grid; setup handles the language choice.
   const showState = (which) => {
-    const map = { empty:'lnEmpty', nolang:'lnNoLang', plan:'lnPlan' };
+    const map = { empty:'lnEmpty', plan:'lnPlan' };
     Object.keys(map).forEach(k => { const el = $(map[k]); if (el) el.classList.toggle('hidden', k !== which); });
   };
-  if (!lang) { showState('nolang'); return; }
-  const heroLang = $('lnHeroLang'); if (heroLang) heroLang.textContent = lang;
   try {
     const j = await api('/learn/plan');
     LN_PLAN = (j && j.plan) || null;
@@ -5822,6 +5893,25 @@ function paintLearnPlan(){
 function openLearnSetup(){
   const bd = $('lnSetupBd'); if (bd) { bd.classList.add('show'); document.body.style.overflow = 'hidden'; }
   wireLearnSetupOpts();
+  // Populate + preselect language pickers. Uses the LANGS constant
+  // shared with the wizard. Defaults come from the user's own profile
+  // if set, otherwise sensible fallbacks (Spanish + English).
+  const learnSel = document.getElementById('lnPickLearn');
+  const nativeSel = document.getElementById('lnPickNative');
+  if (learnSel && !learnSel.options.length) {
+    learnSel.innerHTML = LANGS.map(l => '<option value="' + l.n + '">' + l.f + ' ' + l.n + '</option>').join('');
+  }
+  if (nativeSel && !nativeSel.options.length) {
+    nativeSel.innerHTML = LANGS.map(l => '<option value="' + l.n + '">' + l.f + ' ' + l.n + '</option>').join('');
+  }
+  const meLearn = (ME && Array.isArray(ME.learns) && ME.learns[0]) || 'Spanish';
+  const meSpeak = (ME && Array.isArray(ME.speaks) && ME.speaks[0]) || 'English';
+  if (learnSel) learnSel.value = meLearn;
+  if (nativeSel) nativeSel.value = meSpeak;
+  LN_SETUP.learn = meLearn;
+  LN_SETUP.native = meSpeak;
+  if (learnSel) learnSel.onchange = e => { LN_SETUP.learn = e.target.value; };
+  if (nativeSel) nativeSel.onchange = e => { LN_SETUP.native = e.target.value; };
 }
 function closeLearnSetup(){
   const bd = $('lnSetupBd'); if (bd) { bd.classList.remove('show'); document.body.style.overflow = ''; }
@@ -5846,13 +5936,13 @@ async function submitLearnSetup(){
   const err = $('lnSetupErr'); if (err) err.classList.add('hidden');
   try {
     const j = await api('/learn/plan', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ level: LN_SETUP.level, goal: LN_SETUP.goal, minutesPerDay: LN_SETUP.mpd }) });
+      body: JSON.stringify({ level: LN_SETUP.level, goal: LN_SETUP.goal, minutesPerDay: LN_SETUP.mpd, language: LN_SETUP.learn, nativeLanguage: LN_SETUP.native }) });
     LN_PLAN = j && j.plan;
     if (!LN_PLAN) throw new Error('No plan returned.');
     closeLearnSetup();
     paintLearnPlan();
     const setState = (id, hide) => { const el = $(id); if (el) el.classList.toggle('hidden', hide); };
-    setState('lnEmpty', true); setState('lnNoLang', true); setState('lnPlan', false);
+    setState('lnEmpty', true); setState('lnPlan', false);
     toast('✨ Your plan is ready!');
   } catch(e) {
     if (err) { err.textContent = e.message || 'Could not build the plan — try again.'; err.classList.remove('hidden'); }
@@ -5879,12 +5969,24 @@ function openLearnLesson(idx){
   $('lnLessonTitle').textContent = l.title || ('Lesson ' + (idx + 1));
   $('lnLessonFocus').textContent = l.focus || '';
   const body = $('lnLessonBody');
-  body.innerHTML = (l.phrases || []).map(p =>
+  const targetLang = (LN_PLAN && LN_PLAN.language) || '';
+  body.innerHTML = (l.phrases || []).map((p, pi) =>
     '<div class="ln-phrase">' +
-      '<div class="ln-phrase-src">' + esc(p.src || '') + '</div>' +
-      '<div class="ln-phrase-dst">' + esc(p.dst || '') + '</div>' +
+      '<button type="button" class="ln-phrase-speak" data-src="' + esc(p.src || '') + '" data-lang="' + esc(targetLang) + '" data-idx="' + pi + '" aria-label="Hear this phrase">🔊</button>' +
+      '<div class="ln-phrase-txt">' +
+        '<div class="ln-phrase-src">' + esc(p.src || '') + '</div>' +
+        '<div class="ln-phrase-dst">' + esc(p.dst || '') + '</div>' +
+      '</div>' +
     '</div>'
   ).join('');
+  // Wire the speak buttons — one shared handler so a lesson with 25
+  // phrases doesn't create 25 inline handlers in the HTML string.
+  body.querySelectorAll('.ln-phrase-speak').forEach(btn => {
+    btn.onclick = ev => {
+      ev.stopPropagation();
+      speakLessonPhrase(btn.dataset.src, btn.dataset.lang, btn);
+    };
+  });
   const done = $('lnLessonDone');
   if (l.done) { done.classList.add('done'); done.textContent = '✓ Done'; done.disabled = true; }
   else { done.classList.remove('done'); done.textContent = '✓ Mark this lesson done'; done.disabled = false; }
