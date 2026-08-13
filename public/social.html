@@ -1784,8 +1784,14 @@ body.in-game .wsfoot,body.in-game .wshead{display:none !important}
 /* Hide the game-shell top bar for WordSpies specifically — owner ask
    9 Aug 2026: players kept tapping ✕ / ▲ mid-round and losing the
    game. WordSpies has its own in-game leave button in the corner. */
-.ghost.fs[data-game="wordspies"] .ghost-bar{display:none}
-.ghost.fs[data-game="wordspies"] .ghost-frame{height:100%}
+/* Owner ask 14 Aug 2026: 'remove the top bar cross from the game
+   but make it like codenames please.'  Codenames had the top ghost
+   bar hidden in fullscreen — was scoped to [data-game="wordspies"]
+   only; now applies to EVERY game so nobody can accidentally tap
+   the ✕ mid-round. Back button and the mini-strip still let users
+   leave/minimise. */
+.ghost.fs .ghost-bar{display:none}
+.ghost.fs .ghost-frame{height:100%}
 .ghost.fs .ghost-frame{flex:1;min-height:0;display:block;background:#fff}
 .ghost .ghost-dot{width:9px;height:9px;border-radius:50%;background:#ff3d5b;animation:gcpulse 1.4s ease-in-out infinite;flex-shrink:0}
 .ghost .ghost-text{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
@@ -6692,6 +6698,11 @@ function closePartyInApp(silent){
   PHOST_CODE = null;
   if (frame) { try { frame.src = 'about:blank'; } catch(e){} }
   try { localStorage.removeItem('wsActiveParty'); } catch(e){}
+  // Owner ask 14 Aug 2026: 'if party ends or leaves it still shows the
+  // black bar'. refreshPartyBar was async (server ping first) so the
+  // stale bar could hang around for a moment. Hide it directly first,
+  // then let refreshPartyBar reconcile.
+  const bar = $('partyBar'); if (bar) bar.classList.add('hidden');
   refreshPartyBar();
   if (!silent) toast('Left party');
 }
@@ -6832,6 +6843,11 @@ function closeGameInApp(silent){
   document.body.classList.remove('in-game');
   GHOST_GAME = null; GHOST_CODE = null;
   if (frame) { try { frame.src = 'about:blank'; } catch(e){} }
+  // Owner ask 14 Aug 2026: don't let the 'resume this game' pill
+  // linger after the user has explicitly left. Clear the stamp +
+  // hide the pill directly.
+  try { localStorage.removeItem('wsActiveGame'); } catch(e){}
+  const bar = $('gameBar'); if (bar) bar.classList.add('hidden');
   if (!silent) toast('Left the game');
   // Pop the game URL back to /social so the address bar matches the
   // app state again. Guarded: only push if we're currently sitting
