@@ -800,6 +800,75 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .fs-empty-sub{font-size:13.5px;color:var(--sub);max-width:280px;line-height:1.5;font-weight:500}
 .fs-empty-cta{margin-top:14px;background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);border:0;color:#fff;padding:10px 22px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:0 4px 14px rgba(232,80,107,.28);transition:.14s}
 .fs-empty-cta:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,80,107,.36)}
+/* ═══ Learn tab — personalised AI roadmap ═══════════════════════════
+   Three states share the same wrap: no plan → hero + Create.
+   Plan exists → header with progress ring + 5 lesson cards. */
+.ln-wrap{max-width:720px;margin:32px auto 60px;padding:0 12px}
+.ln-hero{text-align:center;padding:48px 24px 44px;background:linear-gradient(180deg,#fafbff,#eef1ff);border:1px solid #dce1ff;border-radius:26px;animation:fsFade .28s ease-out}
+.ln-hero-emoji{font-size:62px;line-height:1;margin-bottom:16px;filter:drop-shadow(0 4px 12px rgba(90,123,255,.24))}
+.ln-hero h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:26px;letter-spacing:-.4px;color:var(--ink);margin:0 0 12px}
+.ln-hero p{font-size:14.5px;line-height:1.65;color:var(--sub);margin:0 auto 24px;max-width:440px;font-weight:500}
+.ln-hero p b{color:var(--ink);font-weight:700}
+.ln-hero-hint{font-size:12px;color:var(--faint);margin-top:14px;font-weight:500}
+.ln-cta{background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);color:#fff;border:0;padding:14px 26px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:0 6px 20px rgba(232,80,107,.32);transition:.18s;display:inline-flex;align-items:center;gap:6px}
+.ln-cta:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(232,80,107,.44)}
+.ln-cta:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:0 4px 12px rgba(232,80,107,.2)}
+.ln-planhead{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1px solid var(--line,#e6e8ec);border-radius:20px;padding:18px 22px;box-shadow:0 2px 12px rgba(20,30,60,.04)}
+.ln-planhead-l{min-width:0;flex:1}
+.ln-planhead-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:20px;letter-spacing:-.3px;color:var(--ink);line-height:1.15}
+.ln-planhead-title span{background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+.ln-planhead-meta{font-size:13px;color:var(--sub);font-weight:500;margin-top:4px}
+.ln-progress-ring{position:relative;width:52px;height:52px;flex-shrink:0}
+.ln-progress-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:13px;color:var(--ink);letter-spacing:-.4px}
+.ln-lessons{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.ln-lcard{display:flex;align-items:center;gap:14px;padding:16px 18px;background:#fff;border:1px solid var(--line,#e6e8ec);border-radius:18px;cursor:pointer;transition:.16s;text-align:left;font-family:inherit;width:100%;border-left-width:4px;border-left-color:transparent}
+.ln-lcard:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(20,30,60,.08);border-left-color:var(--accent,#e8506b)}
+.ln-lcard.done{background:linear-gradient(90deg,rgba(232,244,235,.5),#fff);border-left-color:#22c55e}
+.ln-lcard-n{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:16px;background:#f2f4f7;color:var(--sub);flex-shrink:0;transition:.16s}
+.ln-lcard.done .ln-lcard-n{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 3px 10px rgba(34,197,94,.32)}
+.ln-lcard-tt{flex:1;min-width:0}
+.ln-lcard-title{font-weight:700;font-size:15px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ln-lcard-focus{font-size:12.5px;color:var(--sub);font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ln-lcard-tick{width:26px;height:26px;flex-shrink:0;color:#22c55e;display:none}
+.ln-lcard.done .ln-lcard-tick{display:block}
+.ln-lcard.done .ln-lcard-title{color:#0d6f3a}
+.ln-regen{background:transparent;border:1px solid var(--line,#e6e8ec);color:var(--sub);padding:10px 18px;border-radius:999px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;margin:20px auto 0;display:block;transition:.14s}
+.ln-regen:hover{background:#f7f8fa;color:var(--ink)}
+/* Setup modal */
+.ln-setup-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:13000;padding:20px}
+.ln-setup-bd.show{display:flex;animation:fsFade .2s ease-out}
+.ln-setup-card{background:#fff;width:100%;max-width:520px;max-height:88vh;border-radius:24px;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:fsPop .3s cubic-bezier(.16,1.11,.3,1.02);overflow:hidden}
+.ln-setup-head{padding:20px 24px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ln-setup-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:22px;color:var(--ink);letter-spacing:-.3px}
+.ln-setup-body{padding:8px 24px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.ln-setup-q{margin:18px 0}
+.ln-setup-qlbl{font-size:13px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.ln-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ln-opts-wrap{grid-template-columns:1fr 1fr}
+@media(min-width:520px){ .ln-opts-wrap{grid-template-columns:1fr 1fr 1fr} }
+.ln-opt{background:#fff;border:1.5px solid var(--line,#e6e8ec);color:var(--ink);padding:11px 10px;border-radius:14px;font-family:inherit;font-weight:600;font-size:13.5px;cursor:pointer;transition:.14s;text-align:center;line-height:1.2}
+.ln-opt:hover{background:#f7f8fa;border-color:#c8ced6}
+.ln-opt.on{background:linear-gradient(135deg,rgba(232,80,107,.10),rgba(124,92,255,.10));border-color:var(--accent,#e8506b);color:var(--accent,#e8506b);box-shadow:0 2px 10px rgba(232,80,107,.14)}
+.ln-setup-go{width:100%;margin-top:18px;padding:15px 20px;font-size:15px;justify-content:center;display:flex}
+.ln-setup-hint{font-size:11.5px;color:var(--faint);text-align:center;margin-top:10px;font-weight:500}
+.ln-setup-err{font-size:13px;color:#dc2626;text-align:center;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:8px 12px;margin-top:12px}
+/* Lesson detail modal — same shell shape as setup, richer body */
+.ln-lesson-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:13001;padding:20px}
+.ln-lesson-bd.show{display:flex;animation:fsFade .2s ease-out}
+.ln-lesson-card{background:#fff;width:100%;max-width:560px;max-height:88vh;border-radius:24px;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:fsPop .3s cubic-bezier(.16,1.11,.3,1.02);overflow:hidden}
+.ln-lesson-head{padding:20px 22px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line,#e6e8ec)}
+.ln-lesson-num{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Inter',sans-serif;font-weight:800;font-size:17px;box-shadow:0 4px 12px rgba(232,80,107,.28);flex-shrink:0}
+.ln-lesson-tt{flex:1;min-width:0}
+.ln-lesson-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:18px;color:var(--ink);letter-spacing:-.2px;line-height:1.2}
+.ln-lesson-focus{font-size:12.5px;color:var(--sub);font-weight:500;margin-top:3px;line-height:1.4}
+.ln-lesson-body{padding:8px 22px 20px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.ln-phrase{padding:14px 16px;background:#fafbff;border:1px solid #eef1ff;border-radius:14px;margin-top:10px;transition:.14s}
+.ln-phrase:hover{background:#fff;border-color:#dce1ff}
+.ln-phrase-src{font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:16px;color:var(--ink);letter-spacing:-.2px;line-height:1.35}
+.ln-phrase-dst{font-size:13px;color:var(--sub);font-weight:500;margin-top:4px;line-height:1.4}
+.ln-lesson-foot{padding:14px 22px 20px;border-top:1px solid var(--line,#e6e8ec);flex-shrink:0}
+.ln-lesson-foot .ln-cta{width:100%;justify-content:center;display:flex;padding:14px}
+.ln-lesson-foot .ln-cta.done{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 6px 20px rgba(34,197,94,.32);pointer-events:none;opacity:.9}
 /* Hero band: extend to full viewport width on desktop even though
    tabMember lives inside .wrap (max-width 1400px). The negative-margin
    trick breaks the child out to the viewport edges — Speaky's exact
@@ -2599,6 +2668,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button id="tbWall" class="tnt on" onclick="showTab('wall')">Community<span class="badge hidden" id="wallBadge"></span></button>
       <button id="tbChats" class="tnt" onclick="showTab('chats')">Chats<span class="badge hidden" id="chatBadge"></span></button>
       <button id="tbParties" class="tnt" onclick="showTab('parties')">Social<span class="badge hidden" id="partyBadge"></span></button>
+      <button id="tbLearn" class="tnt" onclick="showTab('learn')">Learn</button>
       <button id="tbGames" class="tnt" onclick="showTab('games')">Games</button>
     </div>
     <div class="tnright">
@@ -2724,23 +2794,110 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        coming-soon that captures interest without over-promising. Real
        curriculum / resources / teacher directory to come in later
        sessions. ═══ -->
+  <!-- Learn tab — personalised AI roadmap. Owner ask 13 Aug 2026.
+       Three states:
+       - No language picked yet (learns array empty) → prompt to /me
+       - No plan yet → hero + 'Create your plan' button opens setup modal
+       - Plan exists → 5 numbered lesson cards with progress bar -->
   <div id="tabLearn" class="hidden">
-    <div style="max-width:640px;margin:32px auto 0;padding:0 6px">
-      <div style="text-align:center;padding:36px 20px 40px;background:linear-gradient(180deg,#fafbff,#eef1ff);border:1px solid #dce1ff;border-radius:24px">
-        <div style="font-size:52px;line-height:1;margin-bottom:14px">📚</div>
-        <h2 style="font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:600;font-size:26px;letter-spacing:-.5px;color:var(--ink);margin:0 0 8px">Learn</h2>
-        <p style="font-size:14.5px;line-height:1.6;color:var(--sub);margin:0 auto 20px;max-width:420px">Curated resources, short lessons and a roadmap for every language you're learning. Coming soon — tell us what you want first.</p>
-        <div id="lnMsg" style="font-size:13px;color:var(--sub);min-height:16px;margin-bottom:10px"></div>
-        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:460px;margin:0 auto">
-          <input id="lnIdea" maxlength="200" placeholder="What would help you most?" style="flex:1;min-width:220px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink);outline:none">
-          <button onclick="submitLearnIdea()" style="padding:12px 22px;background:var(--ink);color:#fff;border:0;border-radius:12px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer">Send</button>
-        </div>
+    <div class="ln-wrap">
+      <!-- State A: no plan yet -->
+      <div id="lnEmpty" class="ln-hero hidden">
+        <div class="ln-hero-emoji">🧭</div>
+        <h2>Your personal learning plan</h2>
+        <p>Tell us your level and your goal — Claude builds you a 5-lesson short-term plan for <b id="lnHeroLang">your language</b>. Tick each lesson as you go. Progress shows on your profile.</p>
+        <button class="ln-cta" onclick="openLearnSetup()">✨ Create my plan</button>
+        <div class="ln-hero-hint">Free, no ads, works offline once generated.</div>
       </div>
-      <div style="margin-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
-        <div style="padding:18px;background:#fff;border:1px solid var(--line);border-radius:16px"><div style="font-size:22px;margin-bottom:6px">🗣️</div><div style="font-weight:700;font-size:14px;margin-bottom:4px">Phrasebooks</div><div style="font-size:12.5px;color:var(--sub);line-height:1.5">Common phrases for real conversations, not textbook drills.</div></div>
-        <div style="padding:18px;background:#fff;border:1px solid var(--line);border-radius:16px"><div style="font-size:22px;margin-bottom:6px">🧭</div><div style="font-weight:700;font-size:14px;margin-bottom:4px">Roadmaps</div><div style="font-size:12.5px;color:var(--sub);line-height:1.5">Week-by-week paths from beginner to conversational.</div></div>
-        <div style="padding:18px;background:#fff;border:1px solid var(--line);border-radius:16px"><div style="font-size:22px;margin-bottom:6px">🎓</div><div style="font-weight:700;font-size:14px;margin-bottom:4px">Teachers</div><div style="font-size:12.5px;color:var(--sub);line-height:1.5">Real tutors for structured lessons alongside community chat.</div></div>
-        <div style="padding:18px;background:#fff;border:1px solid var(--line);border-radius:16px"><div style="font-size:22px;margin-bottom:6px">📖</div><div style="font-weight:700;font-size:14px;margin-bottom:4px">Resources</div><div style="font-size:12.5px;color:var(--sub);line-height:1.5">Curated dictionaries, YouTube channels and podcasts we vouch for.</div></div>
+      <!-- State B: no learning language set -->
+      <div id="lnNoLang" class="ln-hero hidden">
+        <div class="ln-hero-emoji">🌍</div>
+        <h2>Pick a language first</h2>
+        <p>Add a language you're learning to your profile, then come back here for your plan.</p>
+        <button class="ln-cta" onclick="showTab('me')">Go to my profile →</button>
+      </div>
+      <!-- State C: plan exists -->
+      <div id="lnPlan" class="hidden">
+        <div class="ln-planhead">
+          <div class="ln-planhead-l">
+            <div class="ln-planhead-title">Learning <span id="lnPlanLang">Spanish</span></div>
+            <div class="ln-planhead-meta"><span id="lnPlanLevel">Beginner</span> · <span id="lnPlanGoal">Travel</span> · <span id="lnPlanMpd">10</span> min/day</div>
+          </div>
+          <div class="ln-planhead-r">
+            <div class="ln-progress-ring">
+              <svg viewBox="0 0 40 40" width="52" height="52">
+                <circle cx="20" cy="20" r="17" fill="none" stroke="#e6e8ec" stroke-width="4"/>
+                <circle id="lnRingFg" cx="20" cy="20" r="17" fill="none" stroke="url(#lnGrad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="106.8" transform="rotate(-90 20 20)"/>
+                <defs><linearGradient id="lnGrad" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#e8506b"/><stop offset="100%" stop-color="#7c5cff"/></linearGradient></defs>
+              </svg>
+              <span class="ln-progress-txt" id="lnProgressTxt">0/5</span>
+            </div>
+          </div>
+        </div>
+        <div class="ln-lessons" id="lnLessons"></div>
+        <button class="ln-regen" onclick="regenLearnPlan()">↻ Generate a new plan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup modal: level + goal + minutes/day. Fires POST /learn/plan
+       which calls Claude Haiku with a strict JSON contract. -->
+  <div class="ln-setup-bd" id="lnSetupBd" onclick="if(event.target===this)closeLearnSetup()">
+    <div class="ln-setup-card" role="dialog" aria-modal="true">
+      <div class="ln-setup-head">
+        <div class="ln-setup-title">Build your plan</div>
+        <button class="fs-x" type="button" onclick="closeLearnSetup()" aria-label="Close">✕</button>
+      </div>
+      <div class="ln-setup-body">
+        <div class="ln-setup-q">
+          <div class="ln-setup-qlbl">Your current level</div>
+          <div class="ln-opts" data-ln-q="level">
+            <button type="button" class="ln-opt on" data-v="Beginner">🌱 Beginner</button>
+            <button type="button" class="ln-opt" data-v="Intermediate">🌿 Intermediate</button>
+            <button type="button" class="ln-opt" data-v="Advanced">🌳 Advanced</button>
+          </div>
+        </div>
+        <div class="ln-setup-q">
+          <div class="ln-setup-qlbl">Why are you learning?</div>
+          <div class="ln-opts ln-opts-wrap" data-ln-q="goal">
+            <button type="button" class="ln-opt on" data-v="Travel">✈️ Travel</button>
+            <button type="button" class="ln-opt" data-v="Work">💼 Work</button>
+            <button type="button" class="ln-opt" data-v="Chat with locals">💬 Chat</button>
+            <button type="button" class="ln-opt" data-v="IELTS or TOEIC exam">📝 Exam</button>
+            <button type="button" class="ln-opt" data-v="Partner or family">❤️ Partner</button>
+            <button type="button" class="ln-opt" data-v="Fun and hobbies">🎨 Fun</button>
+          </div>
+        </div>
+        <div class="ln-setup-q">
+          <div class="ln-setup-qlbl">Time you can spare a day</div>
+          <div class="ln-opts" data-ln-q="mpd">
+            <button type="button" class="ln-opt" data-v="5">5 min</button>
+            <button type="button" class="ln-opt on" data-v="10">10 min</button>
+            <button type="button" class="ln-opt" data-v="15">15 min</button>
+            <button type="button" class="ln-opt" data-v="30">30 min</button>
+          </div>
+        </div>
+        <div class="ln-setup-err hidden" id="lnSetupErr"></div>
+        <button class="ln-cta ln-setup-go" id="lnSetupGo" onclick="submitLearnSetup()">✨ Build my plan</button>
+        <div class="ln-setup-hint">Claude will design 5 lessons tailored to your answers. Takes about 5 seconds.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lesson detail modal: 5 phrases + Mark done. -->
+  <div class="ln-lesson-bd" id="lnLessonBd" onclick="if(event.target===this)closeLearnLesson()">
+    <div class="ln-lesson-card" role="dialog" aria-modal="true">
+      <div class="ln-lesson-head">
+        <div class="ln-lesson-num" id="lnLessonNum">1</div>
+        <div class="ln-lesson-tt">
+          <div class="ln-lesson-title" id="lnLessonTitle">Lesson</div>
+          <div class="ln-lesson-focus" id="lnLessonFocus"></div>
+        </div>
+        <button class="fs-x" type="button" onclick="closeLearnLesson()" aria-label="Close">✕</button>
+      </div>
+      <div class="ln-lesson-body" id="lnLessonBody"></div>
+      <div class="ln-lesson-foot">
+        <button class="ln-cta" id="lnLessonDone" onclick="markLearnLessonDone()">✓ Mark this lesson done</button>
       </div>
     </div>
   </div>
@@ -5212,6 +5369,7 @@ function showTab(t){
   } else if (t === 'chats') { refreshChats(); chatTimer = setInterval(refreshChats, 5000); askNotify(); }
   else if (t === 'chat') { refreshChat(true); chatTimer = setInterval(refreshChat, 3000); }
   if (t === 'me') { paintSound(); paintPush(); }
+  if (t === 'learn') { try { loadLearnPlan(); } catch(e){} }
   // Watching a list of live games only works if it's actually live: five
   // seconds while you're looking at it, and the slower background tick below
   // keeps the tab badge honest while you're somewhere else.
@@ -5600,26 +5758,160 @@ function togglePtFlagsDropdown(){
 // (best-effort; failures are silent). The server logs it to a Redis list so
 // owner can read what people are asking for while the real Learn surface
 // gets built out. Prevents rapid re-sends with a simple client-side guard.
-async function submitLearnIdea(){
-  const el = $('lnIdea'); const msg = $('lnMsg');
-  const idea = String((el && el.value) || '').trim();
-  if (!idea) { msg.textContent = 'Type a quick note first — what would help you learn?'; msg.style.color = 'var(--err)'; return; }
-  msg.textContent = ''; msg.style.color = 'var(--sub)';
-  const btn = el && el.nextElementSibling; if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+// ═══ Learn — AI-curated roadmap ═══════════════════════════════════
+// Owner ask 13 Aug 2026. State lives in LN_PLAN (server-owned, refreshed
+// each time the Learn tab is opened). LN_SETUP holds the modal answers
+// during selection.
+let LN_PLAN = null;
+const LN_SETUP = { level:'Beginner', goal:'Travel', mpd:10 };
+let LN_LESSON_IDX = null;
+// Load current plan and paint. Called every time the Learn tab opens
+// so 'done' ticks from another session (or a fresh plan generated
+// elsewhere) show up immediately.
+async function loadLearnPlan(){
+  // If the user hasn't picked a learning language yet, don't even
+  // try to fetch — surface the 'pick a language' state.
+  const learns = (ME && Array.isArray(ME.learns)) ? ME.learns : [];
+  const lang = learns[0] || null;
+  const showState = (which) => {
+    const map = { empty:'lnEmpty', nolang:'lnNoLang', plan:'lnPlan' };
+    Object.keys(map).forEach(k => { const el = $(map[k]); if (el) el.classList.toggle('hidden', k !== which); });
+  };
+  if (!lang) { showState('nolang'); return; }
+  const heroLang = $('lnHeroLang'); if (heroLang) heroLang.textContent = lang;
   try {
-    await api('/learn-idea', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ idea }) });
-    msg.textContent = 'Thanks — we\'ll build the most-asked-for stuff first.';
-    msg.style.color = 'var(--green,#22c07a)';
-    el.value = '';
-  } catch(e) {
-    // Best-effort — if the endpoint isn't up yet, still thank the user.
-    msg.textContent = 'Thanks — we\'ll factor that in.';
-    msg.style.color = 'var(--green,#22c07a)';
-    el.value = '';
-  }
-  if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
+    const j = await api('/learn/plan');
+    LN_PLAN = (j && j.plan) || null;
+    if (LN_PLAN && Array.isArray(LN_PLAN.lessons) && LN_PLAN.lessons.length) {
+      paintLearnPlan(); showState('plan');
+    } else {
+      showState('empty');
+    }
+  } catch(e) { showState('empty'); }
 }
+function paintLearnPlan(){
+  if (!LN_PLAN) return;
+  const setT = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  setT('lnPlanLang', LN_PLAN.language || '—');
+  setT('lnPlanLevel', LN_PLAN.level || '—');
+  setT('lnPlanGoal', LN_PLAN.goal || '—');
+  setT('lnPlanMpd', String(LN_PLAN.minutesPerDay || 10));
+  const total = LN_PLAN.lessons.length;
+  const done = LN_PLAN.lessons.filter(l => l.done).length;
+  setT('lnProgressTxt', done + '/' + total);
+  // Progress ring: dasharray = 2πr = 2π·17 ≈ 106.8. Offset is the
+  // portion NOT filled, so full = 0 offset, empty = 106.8.
+  const ring = $('lnRingFg');
+  if (ring) {
+    const pct = total ? (done / total) : 0;
+    const dash = 106.8;
+    ring.setAttribute('stroke-dashoffset', String(dash * (1 - pct)));
+  }
+  const host = $('lnLessons'); if (!host) return;
+  host.innerHTML = LN_PLAN.lessons.map((l, i) =>
+    '<button type="button" class="ln-lcard' + (l.done ? ' done' : '') + '" onclick="openLearnLesson(' + i + ')">' +
+      '<div class="ln-lcard-n">' + (l.done ? '✓' : String(i + 1)) + '</div>' +
+      '<div class="ln-lcard-tt">' +
+        '<div class="ln-lcard-title">' + esc(l.title || ('Lesson ' + (i + 1))) + '</div>' +
+        '<div class="ln-lcard-focus">' + esc(l.focus || '') + '</div>' +
+      '</div>' +
+      '<svg class="ln-lcard-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' +
+    '</button>'
+  ).join('');
+}
+function openLearnSetup(){
+  const bd = $('lnSetupBd'); if (bd) { bd.classList.add('show'); document.body.style.overflow = 'hidden'; }
+  wireLearnSetupOpts();
+}
+function closeLearnSetup(){
+  const bd = $('lnSetupBd'); if (bd) { bd.classList.remove('show'); document.body.style.overflow = ''; }
+  const err = $('lnSetupErr'); if (err) err.classList.add('hidden');
+}
+function wireLearnSetupOpts(){
+  document.querySelectorAll('.ln-opts').forEach(row => {
+    const key = row.dataset.lnQ;
+    row.querySelectorAll('.ln-opt').forEach(btn => {
+      btn.onclick = (ev) => {
+        ev.stopPropagation();
+        row.querySelectorAll('.ln-opt').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        if (key === 'mpd') LN_SETUP.mpd = Number(btn.dataset.v) || 10;
+        else LN_SETUP[key] = btn.dataset.v;
+      };
+    });
+  });
+}
+async function submitLearnSetup(){
+  const btn = $('lnSetupGo'); if (btn) { btn.disabled = true; btn.textContent = '✨ Building your plan…'; }
+  const err = $('lnSetupErr'); if (err) err.classList.add('hidden');
+  try {
+    const j = await api('/learn/plan', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ level: LN_SETUP.level, goal: LN_SETUP.goal, minutesPerDay: LN_SETUP.mpd }) });
+    LN_PLAN = j && j.plan;
+    if (!LN_PLAN) throw new Error('No plan returned.');
+    closeLearnSetup();
+    paintLearnPlan();
+    const setState = (id, hide) => { const el = $(id); if (el) el.classList.toggle('hidden', hide); };
+    setState('lnEmpty', true); setState('lnNoLang', true); setState('lnPlan', false);
+    toast('✨ Your plan is ready!');
+  } catch(e) {
+    if (err) { err.textContent = e.message || 'Could not build the plan — try again.'; err.classList.remove('hidden'); }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✨ Build my plan'; }
+  }
+}
+async function regenLearnPlan(){
+  if (typeof swConfirm === 'function') {
+    const ok = await swConfirm({ title:'Start over?', text:'This clears your current progress and generates a fresh 5-lesson plan.', confirmButtonText:'Yes, restart', cancelButtonText:'Keep this plan' });
+    if (!ok) return;
+  } else if (!confirm('Clear this plan and generate a new one?')) return;
+  try { await api('/learn/plan', { method:'DELETE' }); } catch(e){}
+  LN_PLAN = null;
+  const setState = (id, hide) => { const el = $(id); if (el) el.classList.toggle('hidden', hide); };
+  setState('lnPlan', true); setState('lnEmpty', false);
+  openLearnSetup();
+}
+function openLearnLesson(idx){
+  if (!LN_PLAN || !LN_PLAN.lessons[idx]) return;
+  LN_LESSON_IDX = idx;
+  const l = LN_PLAN.lessons[idx];
+  $('lnLessonNum').textContent = String(idx + 1);
+  $('lnLessonTitle').textContent = l.title || ('Lesson ' + (idx + 1));
+  $('lnLessonFocus').textContent = l.focus || '';
+  const body = $('lnLessonBody');
+  body.innerHTML = (l.phrases || []).map(p =>
+    '<div class="ln-phrase">' +
+      '<div class="ln-phrase-src">' + esc(p.src || '') + '</div>' +
+      '<div class="ln-phrase-dst">' + esc(p.dst || '') + '</div>' +
+    '</div>'
+  ).join('');
+  const done = $('lnLessonDone');
+  if (l.done) { done.classList.add('done'); done.textContent = '✓ Done'; done.disabled = true; }
+  else { done.classList.remove('done'); done.textContent = '✓ Mark this lesson done'; done.disabled = false; }
+  const bd = $('lnLessonBd'); if (bd) { bd.classList.add('show'); document.body.style.overflow = 'hidden'; }
+}
+function closeLearnLesson(){
+  const bd = $('lnLessonBd'); if (bd) { bd.classList.remove('show'); document.body.style.overflow = ''; }
+  LN_LESSON_IDX = null;
+}
+async function markLearnLessonDone(){
+  if (LN_LESSON_IDX == null) return;
+  const btn = $('lnLessonDone'); if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    const j = await api('/learn/lesson/' + LN_LESSON_IDX + '/done', { method:'POST' });
+    if (j && j.plan) LN_PLAN = j.plan;
+    paintLearnPlan();
+    if (btn) { btn.classList.add('done'); btn.textContent = '✓ Done'; }
+    toast('🎉 Lesson done!');
+    setTimeout(closeLearnLesson, 700);
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Mark this lesson done'; }
+    toast(e.message || 'Could not save.');
+  }
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeLearnSetup(); closeLearnLesson(); }
+});
 async function submitCreateParty(){
   const title = $('ptTitle').value.trim();
   const subtitle = $('ptSub').value.trim();

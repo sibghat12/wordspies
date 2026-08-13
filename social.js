@@ -2447,6 +2447,126 @@ Do NOT add quotes, preambles, or explanations.`,
     }
   });
 
+  // ═══ Learn — AI-curated personalised roadmap ═══════════════════════
+  // Owner ask 13 Aug 2026: 'ask people personal preferences what
+  // language they want to learn and make them a small short-term plan
+  // and if they done that learning mark it tick so it shows done in
+  // their profile' + 'ai curated roadmap'.
+  //
+  // Storage: soc:learn:<uid> holds the whole plan as JSON:
+  //   { language, level, goal, minutesPerDay, createdAt, lessons:[
+  //       { title, focus, phrases:[{src,dst}], done, doneAt } * 5 ] }
+  // One plan per user. Regenerating overwrites.
+  api.post('/learn/plan', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      // Learning language comes from the wizard's 'learns' array so
+      // the plan is always for a language the user has actually picked.
+      const language = (Array.isArray(me.learns) && me.learns[0]) || null;
+      if (!language) return res.status(400).json({ error: 'Add a language you\'re learning in your profile first.' });
+      const { level, goal, minutesPerDay } = req.body || {};
+      const okLevels = ['Beginner','Intermediate','Advanced'];
+      if (!okLevels.includes(level)) return res.status(400).json({ error: 'Pick a level.' });
+      const goalStr = String(goal || '').trim().slice(0, 60);
+      if (!goalStr) return res.status(400).json({ error: 'Pick a goal.' });
+      const mpd = Math.max(5, Math.min(60, Number(minutesPerDay) || 10));
+      const client = getAnthropic();
+      if (!client) return res.status(503).json({ error: 'AI not configured yet.' });
+      const nativeLang = (Array.isArray(me.speaks) && me.speaks[0]) || 'English';
+      const system = 'You are an expert language-learning curriculum designer. Output ONLY valid JSON, no prose, no markdown fences. Design a 5-lesson short-term plan tailored to the learner. Each lesson must build on the previous one and be doable in the daily time budget. Focus on the goal — the phrases must be immediately useful for that specific goal.';
+      const userMsg = 'Target language: ' + language + '\n' +
+        'Learner speaks natively: ' + nativeLang + '\n' +
+        'Level: ' + level + '\n' +
+        'Goal: ' + goalStr + '\n' +
+        'Time per day: ' + mpd + ' minutes\n\n' +
+        'Return JSON in EXACTLY this shape:\n' +
+        '{"lessons":[{"title":"2-5 word title","focus":"one sentence describing what this lesson teaches","phrases":[{"src":"phrase in ' + language + '","dst":"translation in ' + nativeLang + '"}]}]}\n\n' +
+        'Rules:\n' +
+        '- Exactly 5 lessons.\n' +
+        '- Exactly 5 phrases per lesson.\n' +
+        '- Phrases must be real things a learner would actually SAY in situations related to the goal (not textbook grammar drills).\n' +
+        '- Titles under 5 words. No emoji in JSON.\n' +
+        '- Match the level: Beginner = present tense, everyday nouns; Intermediate = past/future, opinions; Advanced = conditional, idioms.';
+      let plan;
+      const startTime = Date.now();
+      let usage = { input_tokens: 0, output_tokens: 0 };
+      try {
+        const result = await client.messages.create({
+          model: process.env.BOT_MODEL || 'claude-haiku-4-5',
+          max_tokens: 1800,
+          temperature: 0.6,
+          system,
+          messages: [{ role:'user', content: userMsg }]
+        });
+        const raw = ((result.content && result.content[0] && result.content[0].text) || '').trim();
+        usage = result.usage || usage;
+        // Strip accidental ```json fences if the model added them.
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        plan = JSON.parse(cleaned);
+      } catch (e) {
+        console.error('[learn] generate:', e.message);
+        return res.status(502).json({ error: 'Could not generate the plan — try again in a moment.' });
+      }
+      if (!plan || !Array.isArray(plan.lessons) || plan.lessons.length < 3) {
+        return res.status(502).json({ error: 'The plan came back malformed — try again.' });
+      }
+      const cleanedLessons = plan.lessons.slice(0, 5).map(l => ({
+        title: String((l && l.title) || 'Lesson').slice(0, 60),
+        focus: String((l && l.focus) || '').slice(0, 200),
+        phrases: (Array.isArray(l && l.phrases) ? l.phrases : []).slice(0, 5)
+          .map(p => ({ src: String((p && p.src) || '').slice(0, 200), dst: String((p && p.dst) || '').slice(0, 200) }))
+          .filter(p => p.src && p.dst),
+        done: false, doneAt: null
+      })).filter(l => l.phrases.length > 0);
+      if (cleanedLessons.length < 3) return res.status(502).json({ error: 'Plan too thin — try again.' });
+      const stored = { language, level, goal: goalStr, minutesPerDay: mpd, createdAt: Date.now(), lessons: cleanedLessons };
+      await db.set('soc:learn:' + me.id, JSON.stringify(stored));
+      // Cost log (same shape as ai-usage) — Haiku 4.5: $0.80/M in, $4.00/M out.
+      const cost = ((usage.input_tokens || 0) * 0.80 + (usage.output_tokens || 0) * 4.00) / 1_000_000;
+      const day = new Date().toISOString().slice(0, 10);
+      const logEntry = { u: me.id, kind:'learn-plan', tIn: usage.input_tokens || 0, tOut: usage.output_tokens || 0, $: cost.toFixed(6), ms: Date.now() - startTime, t: Date.now() };
+      try { await db.rpush('soc:ai-usage:' + day, JSON.stringify(logEntry)); await db.ltrim('soc:ai-usage:' + day, -1000, -1); } catch (e) {}
+      res.json({ plan: stored });
+    } catch (e) { console.error('[learn] plan:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.get('/learn/plan', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const raw = await db.get('soc:learn:' + me.id);
+      if (!raw) return res.json({ plan: null });
+      try { res.json({ plan: JSON.parse(raw) }); }
+      catch (e) { res.json({ plan: null }); }
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.post('/learn/lesson/:idx/done', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const idx = Math.max(0, Math.min(4, parseInt(req.params.idx, 10) || 0));
+      const raw = await db.get('soc:learn:' + me.id);
+      if (!raw) return res.status(404).json({ error: 'No plan yet — create one first.' });
+      let plan; try { plan = JSON.parse(raw); } catch (e) { return res.status(500).json({ error: 'Bad plan.' }); }
+      if (!plan.lessons || !plan.lessons[idx]) return res.status(404).json({ error: 'Lesson not found.' });
+      plan.lessons[idx].done = true;
+      plan.lessons[idx].doneAt = Date.now();
+      await db.set('soc:learn:' + me.id, JSON.stringify(plan));
+      res.json({ plan });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.delete('/learn/plan', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      await db.del('soc:learn:' + me.id);
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
   // Called by the game server when a match ends: winners/losers are social
   // profile ids. Everyone gets +1 game played; winners also get +1 win.
   async function recordResult(winnerIds, loserIds) {
