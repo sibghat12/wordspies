@@ -432,20 +432,11 @@ function scanMyRooms(uid) {
     }
   }
 
-  // Parties I host — includes myself when I'm in them, so the strip is
-  // effectively "rooms where I own the keys" whether or not I'm sat inside
-  // right now.
-  if (partyMod && partyMod.rooms) {
-    for (const r of partyMod.rooms.values()) {
-      if (r.hostUid !== uid) continue;
-      push('party', r, {
-        icon: '🎉', title: r.title || 'Party',
-        players: r.members ? r.members.size : 0,
-        href: '/party?room=' + r.code,
-        watchers: 0
-      });
-    }
-  }
+  // Parties are NOT games — owner ask 14 Aug 2026: "a party is just a
+  // party, it shouldn't also show as a game card." The party strip
+  // (wpStrip) + Parties tab already surface my open party; showing it
+  // here again duplicated it as a game. Do not push parties into
+  // scanMyRooms.
 
   // Most-recently-touched first — "my current game" always at the top.
   out.sort((a, b) => (b.lastActivity || 0) - (a.lastActivity || 0));

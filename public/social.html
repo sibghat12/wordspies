@@ -804,6 +804,14 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    Three states share the same wrap: no plan → hero + Create.
    Plan exists → header with progress ring + 5 lesson cards. */
 .ln-wrap{max-width:720px;margin:32px auto 60px;padding:0 12px}
+/* Learn tab page head (v3, 14 Aug 2026) — replaces the old method grid.
+   Plans live inline on the page now; back button is a standalone chip
+   above the detail view. */
+.ln-page-head{text-align:center;margin:0 0 22px}
+.ln-page-head h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:26px;letter-spacing:-.4px;color:var(--ink);margin:0 0 6px}
+.ln-page-head p{font-size:14px;color:var(--sub);margin:0;font-weight:500}
+.ln-page-cta{margin-top:22px;display:flex;justify-content:center}
+#lnPlansDetailView .ln-plans-back{margin:0 0 18px}
 .ln-hero{text-align:center;padding:48px 24px 44px;background:linear-gradient(180deg,#fafbff,#eef1ff);border:1px solid #dce1ff;border-radius:26px;animation:fsFade .28s ease-out}
 .ln-hero-emoji{font-size:62px;line-height:1;margin-bottom:16px;filter:drop-shadow(0 4px 12px rgba(90,123,255,.24))}
 .ln-hero h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:26px;letter-spacing:-.4px;color:var(--ink);margin:0 0 12px}
@@ -893,11 +901,16 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
    burn per phrase). */
 .ln-phrase{display:flex;align-items:flex-start;gap:12px}
 .ln-phrase-txt{flex:1;min-width:0}
-.ln-phrase-speak{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#e8506b,#c93257);color:#fff;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 3px 10px rgba(232,80,107,.24);transition:.16s}
-.ln-phrase-speak:hover{transform:scale(1.06);box-shadow:0 5px 14px rgba(232,80,107,.36)}
+/* WhatsApp-style voice-note play button — neutral idle, filled ink when
+   playing. Swaps a play triangle for pause bars via the .on class. */
+.ln-phrase-speak{width:32px;height:32px;border-radius:50%;background:#eff2f7;color:var(--ink,#16181f);border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .14s,color .14s,transform .1s}
+.ln-phrase-speak svg{width:12px;height:12px;fill:currentColor;pointer-events:none;display:block}
+.ln-phrase-speak .pl-pause{display:none}
+.ln-phrase-speak.on .pl-play{display:none}
+.ln-phrase-speak.on .pl-pause{display:block}
+.ln-phrase-speak:hover{background:#e5e9f0}
 .ln-phrase-speak:active{transform:scale(.94)}
-.ln-phrase-speak.on{background:linear-gradient(135deg,#22c55e,#16a34a);animation:lnSpeakPulse 1s ease-in-out infinite}
-@keyframes lnSpeakPulse{0%,100%{box-shadow:0 3px 10px rgba(34,197,94,.35)}50%{box-shadow:0 3px 18px rgba(34,197,94,.6)}}
+.ln-phrase-speak.on{background:var(--ink,#16181f);color:#fff}
 /* My Plans modal — owner ask 14 Aug 2026 v2. Learn page stays as
    the method grid; tapping AI Plan opens this box with all the
    plans in a 2-column grid. */
@@ -984,10 +997,16 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 /* Location + @handle rows. Tighter icon-to-text gap so '@username'
    reads as one unit. Body font bumped so the address + username are
    comfortably readable at a glance. */
-.mp-info-row{display:flex;align-items:center;gap:4px;font-size:16px;color:var(--sub);font-weight:500;justify-content:center}
+.mp-info-row{display:flex;align-items:center;gap:6px;font-size:16px;color:var(--sub);font-weight:500;justify-content:center}
 @media(min-width:769px){ .mp-info-row{justify-content:flex-start} }
 .mp-info-row .mp-icn{opacity:.6;font-size:14px;width:16px;text-align:center;font-weight:700;margin-right:0}
+.mp-info-row .mp-ico-svg{flex:none;width:14px;height:14px;opacity:.75;color:var(--sub);position:relative;top:-1px}
 .mp-info-row span:last-child{word-break:break-all}
+/* Small "+ Add a bio" chip on /me when the user hasn't written one.
+   Muted secondary look — doesn't compete with the primary Save button. */
+.me-addbio{display:inline-flex;align-self:center;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;background:#f4f5f7;color:var(--sub);border:1px dashed #d7dae0;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;transition:background .12s,color .12s,border-color .12s}
+@media(min-width:769px){ .me-addbio{align-self:flex-start} }
+.me-addbio:hover{background:#eef0f3;color:var(--ink);border-color:#c6cbd3}
 .mp-counts{display:flex;gap:22px;padding:14px 0 4px;justify-content:center;flex-wrap:wrap}
 @media(min-width:769px){ .mp-counts{justify-content:flex-start;gap:26px} }
 .mp-counts>div{display:flex;flex-direction:column;align-items:center}
@@ -1538,6 +1557,29 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .pt-create-btn{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;transition:background .12s}
 .pt-create-btn:hover{background:#000}
 .pt-create-btn span{font-size:19px;line-height:1}
+/* ═══ Floating Action Button — Create party (14 Aug 2026 owner ask
+   "rather than show a fixed + Create a party button, add a floating
+   button on the right corner — + amazing button"). Anchored bottom-
+   right, accent gradient, sits above the mobile tabbar and respects
+   the iOS safe-area. Visibility is gated by body[data-tab] — only
+   shows on Community + Parties (both places where the inline button
+   used to live). Hidden while a game/party/full chat is open so it
+   never overlays those overlays. */
+.fab-create{position:fixed;right:20px;bottom:calc(84px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;padding:0;cursor:pointer;background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);color:#fff;box-shadow:0 8px 22px rgba(124,92,255,.32),0 2px 6px rgba(15,17,25,.14);display:none;align-items:center;justify-content:center;z-index:90;transition:transform .12s ease,box-shadow .18s ease;-webkit-tap-highlight-color:transparent}
+.fab-create svg{width:26px;height:26px;display:block}
+.fab-create:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(124,92,255,.38),0 3px 8px rgba(15,17,25,.16)}
+.fab-create:active{transform:translateY(0);box-shadow:0 6px 16px rgba(124,92,255,.28),0 2px 4px rgba(15,17,25,.12)}
+/* Only show on the two tabs where creating a party makes sense. */
+body[data-tab="wall"] .fab-create,
+body[data-tab="parties"] .fab-create{display:inline-flex}
+/* Hide when any overlay owns the screen — game, party, or full chat. */
+body.in-game .fab-create,
+body.in-party .fab-create,
+body.chatlock .fab-create,
+body.ob-open .fab-create,
+body.authmodal .fab-create{display:none !important}
+/* Desktop: no bottom tabbar, so the FAB can sit closer to the edge. */
+@media(min-width:900px){ .fab-create{bottom:28px;right:28px} }
 .pt-list{display:grid;grid-template-columns:1fr;gap:10px;padding:14px 20px 30px}
 @media(min-width:700px){ .pt-list{grid-template-columns:repeat(2,1fr)} }
 /* Clean white party card — flat, no shadow, matches the Google-clean
@@ -1577,7 +1619,8 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 /* New party-card layout (owner ask 11 Aug 2026 v2): flags on top,
    host on left, speaker+listener counts on right. */
 .pt-card .pt-cflags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.pt-card .pt-cflag{font-size:18px;line-height:1;display:inline-block}
+.pt-card .pt-cflag{display:inline-flex;align-items:center;gap:5px;background:#f4f5f7;color:var(--sub);border-radius:99px;padding:3px 9px 3px 6px;font-size:12px;font-weight:600;line-height:1;letter-spacing:-.1px}
+.pt-card .pt-cflag .fl{font-size:15px;line-height:1}
 .pt-card .pt-cfoot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);gap:12px}
 .pt-card .pt-fhost{display:inline-flex;align-items:center;gap:8px;min-width:0;flex:1}
 .pt-card .pt-fcounts{display:inline-flex;align-items:center;gap:10px;flex-shrink:0}
@@ -1672,6 +1715,18 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .callring .cr-accept{background:#111;box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .callring .cr-accept:hover{background:#000}
 
+/* WhatsApp-Web-style single-session overlay. Shown on the LOSING tab
+   when the same account opens WordSpies elsewhere. Nothing destructive:
+   the cookie stays valid, one tap reclaims the session. */
+.sesskick{position:fixed;inset:0;background:rgba(15,17,32,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:400;display:flex;align-items:center;justify-content:center;padding:22px;animation:crfade .18s}
+.sesskick .sk-inner{background:#fff;border-radius:22px;padding:34px 26px 28px;text-align:center;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.sesskick .sk-ic{font-size:44px;line-height:1;margin-bottom:14px}
+.sesskick .sk-t{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:20px;color:var(--ink);letter-spacing:-.3px;margin-bottom:8px}
+.sesskick .sk-b{color:var(--faint);font-size:14px;line-height:1.5;margin-bottom:22px}
+.sesskick .sk-go{display:inline-block;background:#111;color:#fff;border:0;border-radius:14px;padding:12px 22px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;letter-spacing:.01em;transition:transform .1s,background .12s}
+.sesskick .sk-go:hover{background:#000}
+.sesskick .sk-go:active{transform:scale(.97)}
+
 /* Live parties strip on the Community wall — clean white cards that
    surface currently-live parties so a fresh visitor can see the action
    without hunting the Parties tab. */
@@ -1732,8 +1787,17 @@ body:has(#vApp.chatfull) .phost.mini,#vApp.chatfull ~ .phost.mini{display:none !
 .phost.mini .phost-bar{padding:9px 18px;display:flex;align-items:center;gap:10px;height:100%}
 .phost.mini #phostTitle{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:13px;color:#fff;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .phost.mini .phost-arrow{width:26px;height:26px;border-radius:50%;background:#000;color:#fff;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-.phost.mini .phost-dot{width:8px;height:8px;border-radius:50%;background:#22c07a;flex-shrink:0;box-shadow:0 0 0 3px rgba(34,192,122,.22);animation:phostDot 1.6s ease-in-out infinite}
-@keyframes phostDot{0%,100%{opacity:1}50%{opacity:.55}}
+/* Mini strip is stripped down (owner ask 14 Aug 2026): avatars +
+   party name + one right-arrow that opens the party. No pulse dot,
+   no hint text, no ✕ leave — leave lives inside the party page. */
+.phost.mini .phost-dot,
+.phost.mini .phost-text small,
+.phost.mini .phost-btn.leave{display:none !important}
+/* Repurpose the expand button in mini as a round black arrow pill —
+   same tap target, matches the unused .phost-arrow spec above. */
+.phost.mini .phost-btn.expand{width:28px;height:28px;padding:0;border-radius:50%;background:#fff;color:#16181f;border:0;font-weight:800;font-size:15px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.phost.mini .phost-btn.expand::before{content:'›'}
+.phost.fs  .phost-btn.expand::before{content:'▲'}
 /* Fullscreen mode owns the whole viewport on mobile and a generous
    panel on desktop — no borders/inset, no shadow, just the party. */
 /* Party sheet — Tandem-style bottom-sheet popup. 96% viewport / 4%
@@ -1878,6 +1942,22 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .lvdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle;
   animation:lvpulse 1.6s ease-in-out infinite}
 @keyframes lvpulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* Visitors stripe on the Community tab — slim, dismissable, "N people
+   visited your profile · See who →". Tap opens the /me visitors card.
+   Owner ask 14 Aug 2026: 'small stripe on top of the community'. */
+.vsStripe{display:flex;align-items:center;gap:10px;margin:-4px 20px 14px;padding:10px 12px 10px 14px;border-radius:14px;
+  background:linear-gradient(135deg,#eef1ff,#f6efff);border:1px solid #d8ddff;color:var(--ink);
+  font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s,border-color .12s;text-decoration:none;
+  font-family:inherit;text-align:left;width:calc(100% - 40px);box-sizing:border-box}
+.vsStripe:hover{transform:translateY(-1px);border-color:#5a7bff}
+.vsStripe .vsIco{font-size:16px;flex-shrink:0}
+.vsStripe .vsTxt{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vsStripe .vsCta{color:var(--caccent,#5a7bff);font-weight:700;font-size:12.5px;flex-shrink:0}
+.vsStripe .vsX{background:transparent;border:0;color:var(--sub);font-size:16px;line-height:1;padding:4px 6px;margin-left:2px;
+  cursor:pointer;border-radius:8px;flex-shrink:0}
+.vsStripe .vsX:hover{background:rgba(0,0,0,.06);color:var(--ink)}
+@media(min-width:900px){ .vsStripe{margin:-4px 8px 16px;width:calc(100% - 16px)} }
 
 /* the challenge sheet — pick a friend, we do the rest */
 .chwrap{position:fixed;inset:0;background:rgba(22,24,31,.45);z-index:96;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
@@ -2784,6 +2864,19 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
   <!-- wall -->
   <div id="tabWall">
+    <!-- Slim visitors stripe (owner ask 14 Aug 2026 — 'small stripe on top
+         of the community'). Populated by loadVisitorsStripe(). Tap opens
+         the /me visitors card; ✕ dismisses until the count grows. Hidden
+         when zero unseen visitors, for guests, or on brand-new accounts. -->
+    <div class="vsStripe hidden" id="vsStripe" role="button" tabindex="0"
+         onclick="openVisitorsFromStripe()"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openVisitorsFromStripe()}">
+      <span class="vsIco" aria-hidden="true">👀</span>
+      <span class="vsTxt" id="vsStripeTxt"></span>
+      <span class="vsCta">See who →</span>
+      <button class="vsX" type="button" aria-label="Dismiss"
+              onclick="event.stopPropagation();dismissVisitorsStripe()">✕</button>
+    </div>
     <!-- A quiet nudge on the wall, only when there is genuinely something to
          look at. Nobody finds a tab they have no reason to press. -->
     <a class="lvnudge hidden" id="lvNudge" href="#live" onclick="showTab('live');return false">
@@ -2857,71 +2950,38 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
   </div>
 
-  <!-- ═══ LEARN — placeholder shelf. First step of the LingoLand pivot's
-       language-learning surface. Owner-approved 1 Aug 2026 as v1: friendly
-       coming-soon that captures interest without over-promising. Real
-       curriculum / resources / teacher directory to come in later
-       sessions. ═══ -->
-  <!-- Learn tab — personalised AI roadmap. Owner ask 13 Aug 2026.
-       Three states:
-       - No language picked yet (learns array empty) → prompt to /me
-       - No plan yet → hero + 'Create your plan' button opens setup modal
-       - Plan exists → 5 numbered lesson cards with progress bar -->
+  <!-- Learn tab — personalised AI plans, all inline on the page.
+       14 Aug 2026 redesign: no modal for the plans grid, no dead
+       'Coming soon' tiles. Grid view + detail view swap in place;
+       Escape from detail goes back to the grid. Setup form still
+       opens as a modal (form flow benefits from focus trap). -->
   <div id="tabLearn" class="hidden">
     <div class="ln-wrap">
-      <!-- Method grid — always the visible face of the Learn tab.
-           Tapping 'AI Plan' opens the plans modal (grid of your plans
-           + Create-new). -->
-      <div id="lnEmpty" class="ln-hero">
-        <h2>How would you like to learn?</h2>
-        <p>Pick a method below. More coming as we go — voice-guided lessons, roleplay conversations, and a special Kids Mode are on the way.</p>
-        <div class="ln-methods">
-          <button type="button" class="ln-method on" onclick="openLearnPlans()">
-            <div class="ln-method-emoji">🧭</div>
-            <div class="ln-method-t">AI Plan</div>
-            <div class="ln-method-s" id="lnMethodAiSub">Make your learning plan</div>
-          </button>
-          <div class="ln-method soon"><div class="ln-method-emoji">🗣️</div><div class="ln-method-t">Phrasebooks</div><div class="ln-method-s">Coming soon</div></div>
-          <div class="ln-method soon"><div class="ln-method-emoji">🎭</div><div class="ln-method-t">Roleplay</div><div class="ln-method-s">Coming soon</div></div>
-          <div class="ln-method soon"><div class="ln-method-emoji">🧒</div><div class="ln-method-t">Kids Mode</div><div class="ln-method-s">Coming soon</div></div>
-        </div>
-        <div class="ln-hero-hint">Free, no ads. Tap <b>AI Plan</b> to start.</div>
+      <div class="ln-page-head">
+        <h2>Learn</h2>
+        <p>Your AI-built language plans. Tap one to open its lessons.</p>
       </div>
-      <!-- Shared SVG gradient used by every plan's progress ring — kept
-           at document level so it's available inside the modal too. -->
+
+      <div id="lnPlansGridView">
+        <div class="ln-plans-grid" id="lnPlansGrid"></div>
+        <div class="ln-plans-empty hidden" id="lnPlansEmpty">
+          <div style="font-size:52px;margin-bottom:10px">🌱</div>
+          <div class="ln-empty-t">No plans yet</div>
+          <div class="ln-empty-s">Build one tailored to you in about 5 seconds.</div>
+        </div>
+        <div class="ln-page-cta">
+          <button class="ln-cta" type="button" id="lnNewPlanBtn" onclick="openLearnSetup()">＋ Create new plan</button>
+        </div>
+      </div>
+
+      <div id="lnPlansDetailView" class="hidden">
+        <button class="ln-plans-back" type="button" onclick="showLearnPlansGrid()">← My plans</button>
+        <div id="lnPlansDetailBody"></div>
+      </div>
+
       <svg width="0" height="0" style="position:absolute" aria-hidden="true">
         <defs><linearGradient id="lnGrad" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#e8506b"/><stop offset="100%" stop-color="#7c5cff"/></linearGradient></defs>
       </svg>
-    </div>
-  </div>
-
-  <!-- My Plans modal — 2-col grid of plan cards + Create-new button.
-       Owner ask 14 Aug 2026 v2: 'make it as it was before and than
-       click make your learning plan a box 2 in one row and inside
-       that all the list of the learning plans and progress he can
-       click one and read'. Tapping a card swaps the body into the
-       detail view (progress ring + lesson list). -->
-  <div class="ln-plans-bd" id="lnPlansBd" onclick="if(event.target===this)closeLearnPlans()">
-    <div class="ln-plans-card" role="dialog" aria-modal="true">
-      <div class="ln-plans-head">
-        <button class="ln-plans-back hidden" type="button" id="lnPlansBackBtn" onclick="showLearnPlansGrid()">← My plans</button>
-        <div class="ln-plans-title" id="lnPlansTitle">My learning plans</div>
-        <button class="fs-x" type="button" onclick="closeLearnPlans()" aria-label="Close">✕</button>
-      </div>
-      <div class="ln-plans-body" id="lnPlansBody">
-        <div id="lnPlansGridView">
-          <div class="ln-plans-grid" id="lnPlansGrid"></div>
-          <div class="ln-plans-empty hidden" id="lnPlansEmpty">
-            <div style="font-size:44px;margin-bottom:8px">🌱</div>
-            <div class="ln-empty-t">No plans yet</div>
-            <div class="ln-empty-s">Tap the button below to build your first one.</div>
-          </div>
-        </div>
-        <div id="lnPlansDetailView" class="hidden"></div>
-      </div>
-      <div class="ln-plans-foot">
-        <button class="ln-cta" type="button" id="lnNewPlanBtn" onclick="openLearnSetup()">＋ Create new plan</button>
-      </div>
     </div>
   </div>
 
@@ -3297,15 +3357,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     </div>
     <!-- Language Parties (existing content) -->
     <div id="psubPartiesPane">
-      <div class="pt-hero pt-hero-slim">
-        <button class="pt-create-btn" onclick="openCreateParty()">
-          <span>+</span> Create party
-        </button>
-      </div>
+      <!-- Old inline "+ Create party" button removed 14 Aug 2026 —
+           replaced by the floating action button (.fab-create) that
+           lives near the end of the body. Same handler: openCreateParty(). -->
       <div id="ptList" class="pt-list"></div>
       <div id="ptEmpty" class="pt-empty hidden">
         <span class="big">🎈</span>
-        <div><b>No parties happening right now.</b><br>Be the first — hit <b>Create party</b> above.</div>
+        <div><b>No parties happening right now.</b><br>Be the first — tap the <b>+</b> button in the bottom-right to start one.</div>
       </div>
     </div>
     <!-- Language Clubs (placeholder — full feature re-lands in a
@@ -3365,6 +3423,21 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       </div>
       <div class="pt-err hidden" id="ptErr"></div>
       <button class="pt-mgo" id="ptGoBtn" onclick="submitCreateParty()">🎉 Start party</button>
+    </div>
+  </div>
+
+  <!-- Already-hosting guard dialog (owner ask 14 Aug 2026): if the user
+       tries to create a party while they're already the host of another
+       live one, we surface a friendly dialog instead of a red error toast.
+       Populated by submitCreateParty() when the server returns 409
+       already-hosting. -->
+  <div class="pt-modal hidden" id="ptAlreadyHosting" onclick="if(event.target===this)closeAlreadyHosting()">
+    <div class="pt-msheet">
+      <button class="pt-mclose" onclick="closeAlreadyHosting()">✕</button>
+      <h3>🎉 You're already hosting</h3>
+      <p class="pt-msub">You're already hosting <b id="ptAhTitle">a party</b>. You need to leave it before starting a new one.</p>
+      <button class="pt-mgo" id="ptAhGo" onclick="goToExistingParty()">Take me to my party</button>
+      <button class="pt-mgo" style="margin-top:10px;background:#f4f5f7;color:var(--ink);box-shadow:none" onclick="closeAlreadyHosting()">Cancel</button>
     </div>
   </div>
 
@@ -3521,7 +3594,19 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <div class="mp-meta">
           <h1 class="mp-name"><span id="myName"></span></h1>
           <div class="mp-active">This is your public profile</div>
-          <div class="mp-info-row"><span id="myEmail"></span></div>
+          <!-- Tandem-style header rows on your own profile too — location,
+               local time, and @handle — same three lines as tabMember so
+               'this is what everyone sees' actually matches. Icons: pin
+               + clock SVG (see infoIconPin / infoIconClock helpers). -->
+          <div class="mp-info-row"><span id="myLoc"></span></div>
+          <div class="mp-info-row"><span id="myLocalTime"></span></div>
+          <div class="mp-info-row"><span id="myHandle"></span></div>
+          <!-- Owner ask 14 Aug 2026: if you haven't written a bio yet,
+               show a small tappable "+ Add a bio" chip that scrolls the
+               editor into view — instead of nothing (or worse, the
+               seeded 'Hey! I'm really into languages…' placeholder we
+               used to fall back to). -->
+          <button type="button" class="me-addbio hidden" id="myAddBioChip" onclick="focusBioEditor()">+ Add a bio</button>
           <div class="mp-actions">
             <button class="mp-btn primary" onclick="saveProfile()">💾 Save profile</button>
             <button class="mp-btn line" onclick="logout()">Log out</button>
@@ -3701,7 +3786,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="btn btn-line" style="color:var(--err);border-color:var(--err)" onclick="confirmDelete()">Delete account</button>
       <div class="note" style="color:var(--err);margin-top:10px">This action cannot be undone. You'll lose all your profile data and game history.</div>
     </div>
-    <div class="note">Your photo appears on the community wall.<br>Max 2 MB — JPG, PNG or WebP.</div>
     </div>
   </div>
 
@@ -3732,6 +3816,20 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="cr-decline" onclick="declineCall()">✕ Decline</button>
       <button class="cr-accept" onclick="acceptCall()">📞 Answer</button>
     </div>
+  </div>
+</div>
+
+<!-- Single-session overlay (WhatsApp Web-style). Rendered when the same
+     account opens WordSpies in another tab / browser / device. Not
+     destructive — clicking "Use here" simply re-registers this tab as
+     the active one. Bypassed while the user is in a party or an active
+     game so mid-conversation audio never gets kicked. -->
+<div class="sesskick hidden" id="sessKick" role="dialog" aria-modal="true" aria-labelledby="skTitle">
+  <div class="sk-inner">
+    <div class="sk-ic">🖥️</div>
+    <div class="sk-t" id="skTitle">WordSpies is open elsewhere</div>
+    <div class="sk-b">Only one window can be active at a time. Click below to use WordSpies here instead.</div>
+    <button class="sk-go" onclick="reclaimSession()">Use WordSpies here</button>
   </div>
 </div>
 
@@ -3775,7 +3873,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <b id="phostTitle">Party</b>
       <small id="phostSub" class="hidden"></small>
     </div>
-    <button class="phost-btn expand" id="phostExpand" title="Open party">▲</button>
+    <button class="phost-btn expand" id="phostExpand" title="Open party" aria-label="Open party"></button>
     <button class="phost-btn leave" id="phostLeave" title="Leave party">✕</button>
   </div>
   <div class="phost-frame" id="phostFrameWrap"><iframe id="phostFrame" allow="microphone; autoplay" title="Party"></iframe></div>
@@ -3798,6 +3896,16 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   </div>
   <div class="ghost-frame" id="ghostFrameWrap"><iframe id="ghostFrame" title="Game"></iframe></div>
 </div>
+
+<!-- ═══ Floating Action Button — "Create a party" ══════════════════
+     Replaces the old inline .pt-create-btn (see removal note in
+     #psubPartiesPane above). CSS class .fab-create gates visibility
+     to Community + Parties tabs via body[data-tab=...] and hides
+     itself while a game/party/full chat is open. Same handler as
+     before — openCreateParty() — so all downstream flow is untouched. -->
+<button type="button" id="fabCreateParty" class="fab-create" onclick="openCreateParty()" aria-label="Create a party" title="Create a party">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+</button>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -4263,6 +4371,14 @@ function enterApp(justJoined){
   // from today onwards must finish it.
   const WIZARD_CUTOFF = Date.parse('2026-08-02T00:00:00Z');
   const needsWizard = ME && !ME.onboardedAt && ME.createdAt && ME.createdAt >= WIZARD_CUTOFF;
+  // Single-active-session: mark this tab as THE active session for the
+  // account. Older tabs get the WhatsApp-Web-style "use here to resume"
+  // overlay on their next 5s poll. Idempotent — safe to call from boot,
+  // post-login, and every enterApp path (including wizard mid-flow, so
+  // opening a 2nd tab during signup also kicks the 1st tab gracefully).
+  // Skipped mid-party/mid-game so audio never gets kicked. See
+  // registerSession() / checkSession().
+  if (typeof registerSession === 'function' && !inActiveVoice()) registerSession();
   if (needsWizard) {
     obStart();
     return;
@@ -4527,7 +4643,9 @@ function obStart(){
     $('obFirstName').value = parts[0] || '';
     $('obLastName').value = parts.slice(1).join(' ') || '';
     $('obEmail').value = ME.email || '';
-    $('obTalkAbout').value = ME.talkAbout || '';
+    // Don't prefill the wizard with the seeded default — treat it as
+    // empty so users write their own thing (owner ask 14 Aug 2026).
+    $('obTalkAbout').value = realTalkAbout(ME.talkAbout);
     const purp = document.getElementById('obPurpose');
     if (purp) purp.value = ME.purpose || '';
     const part = document.getElementById('obPartner');
@@ -5268,6 +5386,163 @@ async function loadMyVisitors(){
   }).join('');
   card.classList.remove('hidden');
 }
+
+// ---- Community-tab visitors stripe (owner ask 14 Aug 2026) ----------
+// A slim stripe at the top of #tabWall that surfaces "N people visited
+// your profile" so users see it without having to open /me. Shares the
+// /visits endpoint with loadMyVisitors — no new server route. Dismiss
+// state per-user in localStorage; re-appears only when the latest visit
+// timestamp grows past the dismiss mark. Cached for 60s to avoid
+// hammering the endpoint on rapid tab switches.
+let __vsCache = { at: 0, list: null };
+function __vsDismissKey(){ return 'wsVisitorStripeDismissed:' + ((ME && ME.id) || 'anon'); }
+function __vsDismissedAt(){
+  try { return parseInt(localStorage.getItem(__vsDismissKey())) || 0; }
+  catch(e) { return 0; }
+}
+async function loadVisitorsStripe(force){
+  const el = document.getElementById('vsStripe');
+  const txt = document.getElementById('vsStripeTxt');
+  if (!el || !txt) return;
+  // Guests, logged-out, or brand-new users with no uid yet: never show.
+  if (GUEST || !ME || !ME.id) { el.classList.add('hidden'); return; }
+  // Brand-new accounts that haven't finished onboarding won't have a
+  // publicly-visible profile yet, so nobody could have visited them.
+  if (!ME.photo) { el.classList.add('hidden'); return; }
+  const now = Date.now();
+  let list = __vsCache.list;
+  if (force || !list || (now - __vsCache.at) > 60000) {
+    try {
+      const j = await api('/visits');
+      list = (j && Array.isArray(j.visitors)) ? j.visitors : [];
+      __vsCache = { at: now, list };
+    } catch(e) { el.classList.add('hidden'); return; }
+  }
+  const dismissedAt = __vsDismissedAt();
+  // Count NEW visits since last dismiss. On first load (no dismiss
+  // recorded) fall back to visits in the last 24h so the stripe has a
+  // sensible starting number instead of showing every visit ever.
+  const cutoff = dismissedAt || (now - 24 * 60 * 60 * 1000);
+  const fresh = list.filter(v => v && typeof v.t === 'number' && v.t > cutoff);
+  if (!fresh.length) { el.classList.add('hidden'); return; }
+  const n = fresh.length;
+  txt.textContent = n + (n === 1 ? ' person visited your profile' : ' people visited your profile');
+  el.classList.remove('hidden');
+}
+function dismissVisitorsStripe(){
+  const el = document.getElementById('vsStripe');
+  if (el) el.classList.add('hidden');
+  // Persist the newest visit timestamp we've seen so the stripe only
+  // returns when a NEWER visit shows up. Falls back to "now" if the
+  // cache isn't populated yet (rare — the stripe wouldn't be visible).
+  const list = (__vsCache && Array.isArray(__vsCache.list)) ? __vsCache.list : [];
+  const newest = list.reduce((m, v) => (v && v.t > m ? v.t : m), 0) || Date.now();
+  try { localStorage.setItem(__vsDismissKey(), String(newest)); } catch(e){}
+}
+function openVisitorsFromStripe(){
+  // Reuse the existing /me visitors card — don't build a second surface.
+  // Clearing the dismiss lets loadMyVisitors paint fresh, and paintMe
+  // already calls loadMyVisitors on tab open.
+  dismissVisitorsStripe();
+  try { showTab('me'); } catch(e){}
+  // Scroll the visitors card into view after paintMe has run.
+  setTimeout(() => {
+    const card = document.getElementById('meVisitorsCard');
+    if (card && !card.classList.contains('hidden')) {
+      try { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(e){}
+    }
+  }, 250);
+}
+// Background poll: while Community is visible, refresh the stripe every
+// 60s so new visits surface without a manual reload. Cheap — cached +
+// silent on failure.
+setInterval(() => {
+  if (document.hidden) return;
+  const wall = document.getElementById('tabWall');
+  if (!wall || wall.classList.contains('hidden')) return;
+  try { loadVisitorsStripe(true); } catch(e){}
+}, 60000);
+
+// Tiny inline SVGs for the pin + clock rows on the profile hero.
+// Same weight as the mic/headphone icons on party cards so the profile
+// hero doesn't feel visually out of family. currentColor lets us paint
+// them with --sub via .mp-ico-svg.
+function infoIconPin(){
+  return '<svg class="mp-ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+}
+function infoIconClock(){
+  return '<svg class="mp-ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+}
+// Server seeded these strings into some accounts' talkAbout during the
+// early Speaky-style backfill (see social.js DEFAULT_TALK_LEGACY /
+// TALK_LONG). Owner ask 14 Aug 2026: never surface them as if the user
+// wrote them — treat as empty everywhere on the client. Real user
+// text still shows normally.
+const SEEDED_TALKABOUT = new Set([
+  "Hey! I'm really into languages, culture, and good conversations."
+]);
+function realTalkAbout(t){
+  if (!t) return '';
+  const s = String(t).trim();
+  if (!s) return '';
+  return SEEDED_TALKABOUT.has(s) ? '' : s;
+}
+// Same idea for bio: if a legacy record ever stored the seeded string
+// in .bio, don't show it. Cheap safeguard, no false positives on real
+// bios because we only match the exact string.
+function realBio(b){
+  if (!b) return '';
+  const s = String(b).trim();
+  if (!s) return '';
+  return SEEDED_TALKABOUT.has(s) ? '' : s;
+}
+// Deterministic @handle from a member/self object. Extracted so /me and
+// tabMember render the exact same handle (used to only live inside
+// openMemberObj).
+function handleFor(u){
+  if (!u) return '';
+  return '@' + (u.name || '').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,20) + (u.id || '').slice(0, 4);
+}
+// Scroll the /me bio textarea into view + focus it. Fired by the
+// "+ Add a bio" chip on the /me hero. Silent no-op if the textarea
+// isn't mounted (guest mode etc.).
+function focusBioEditor(){
+  const t = document.getElementById('fBio');
+  if (!t) return;
+  try { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){ t.scrollIntoView(); }
+  setTimeout(() => { try { t.focus({ preventScroll: true }); } catch(e){ t.focus(); } }, 260);
+}
+// Keep the "local time" rows on /me + tabMember ticking without a full
+// repaint. Runs every 60s (aligned to the next minute) so the HH:MM
+// stays honest for users who leave the profile open. Silent no-op
+// when the rows aren't mounted / we don't have a country.
+(function tickLocalTimeRows(){
+  const step = () => {
+    try {
+      const me = document.getElementById('myLocalTime');
+      if (me && window.ME && ME.cc) {
+        const t = localTimeForCC(ME.cc);
+        if (t && t !== '—') me.innerHTML = infoIconClock() + ' ' + esc(t) + ' <span style="opacity:.7">local time</span>';
+      }
+      const other = document.getElementById('mLocalTime');
+      // curMember holds the id whose profile is currently open (see
+      // openMemberObj). Look them up in MEMBERS for the cc.
+      if (other && window.curMember && Array.isArray(window.MEMBERS)) {
+        const m = MEMBERS.find(x => x && x.id === curMember);
+        if (m && m.cc) {
+          const t = localTimeForCC(m.cc);
+          if (t && t !== '—') other.innerHTML = infoIconClock() + ' ' + esc(t) + ' <span style="opacity:.7">local time</span>';
+        }
+      }
+    } catch(e){}
+  };
+  // Align the first tick to the next minute so we flip at :00 seconds,
+  // then every 60s after that.
+  const now = new Date();
+  const msToNextMin = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
+  setTimeout(() => { step(); setInterval(step, 60000); }, Math.max(1000, msToNextMin));
+})();
+
 function paintMe(){
   const tick = mark(ME);
   // Belt and braces: the chip at the top gets swapped out in guest mode, so
@@ -5280,8 +5555,36 @@ function paintMe(){
   $('myRate').textContent = winRate(ME);
   $('mySince').textContent = new Date(ME.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
   $('fMyName').value = ME.name || '';
-  $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = ME.bio || '';
-  $('myEmail').textContent = ME.location || 'Add your city below';
+  $('fBirth').value = ME.birthdate || ''; $('fLoc').value = ME.location || ''; $('fBio').value = realBio(ME.bio);
+  // Legacy #myEmail shell (no longer in the DOM) — keep the guard so a
+  // future re-add doesn't 500 while the new rows do the real work.
+  if ($('myEmail')) $('myEmail').textContent = ME.location || 'Add your city below';
+  // Tandem-style header rows on /me — same three lines as tabMember,
+  // driven by the same helpers so nothing drifts.
+  const myLocEl = document.getElementById('myLoc');
+  if (myLocEl) {
+    const locTxt = ME.location || ME.country || '';
+    myLocEl.innerHTML = locTxt
+      ? infoIconPin() + ' ' + (ME.cc ? flag(ME.cc) + ' ' : '') + esc(locTxt)
+      : '';
+    myLocEl.parentElement.style.display = locTxt ? '' : 'none';
+  }
+  const myTimeEl = document.getElementById('myLocalTime');
+  if (myTimeEl) {
+    const t = localTimeForCC(ME.cc);
+    const show = ME.cc && t && t !== '—';
+    myTimeEl.innerHTML = show ? infoIconClock() + ' ' + esc(t) + ' <span style="opacity:.7">local time</span>' : '';
+    myTimeEl.parentElement.style.display = show ? '' : 'none';
+  }
+  const myHandleEl = document.getElementById('myHandle');
+  if (myHandleEl) {
+    const h = handleFor(ME);
+    myHandleEl.textContent = h;
+    myHandleEl.parentElement.style.display = h.length > 1 ? '' : 'none';
+  }
+  // "+ Add a bio" chip — visible only when the user has no bio yet.
+  const addBio = document.getElementById('myAddBioChip');
+  if (addBio) addBio.classList.toggle('hidden', !!realBio(ME.bio));
   // Real-map hero: show a Leaflet map centred on the user's city.
   // Only runs on desktop (.mp-hero is display:none on mobile).
   try { if (window.matchMedia('(min-width:769px)').matches) initProfileMap('meMap', 'meLocPill', 'meLocPillTxt', ME.location, ME.cc, ME.country); } catch(e){}
@@ -5295,10 +5598,13 @@ function paintMe(){
   // and re-fetches quietly.
   try { FS_CACHE.following = null; FS_CACHE.followers = null; FS_CACHE.blocked = null; loadFollowsData(); } catch(e){}
   // Show your own "Let's talk about" quote at the top of your profile
-  // so you can see what other people see.
+  // so you can see what other people see. Seeded default is filtered
+  // out (see realTalkAbout) so a stale backfill string doesn't look
+  // like you wrote it.
   const mq = document.getElementById('myQuote');
   if (mq) {
-    if (ME.talkAbout) { mq.innerHTML = esc(ME.talkAbout).replace(/\n/g,'<br>'); mq.classList.remove('hidden'); }
+    const tq = realTalkAbout(ME.talkAbout);
+    if (tq) { mq.innerHTML = esc(tq).replace(/\n/g,'<br>'); mq.classList.remove('hidden'); }
     else mq.classList.add('hidden');
   }
   // Sync the Speaky-style chip editors + textareas from ME each paint.
@@ -5396,6 +5702,11 @@ function showTab(t){
   }
   clearInterval(chatTimer); chatTimer = null;
   clearInterval(liveTimer); liveTimer = null;
+  // Broadcast the active tab on <body> so CSS can gate floating UI
+  // (e.g. .fab-create is only visible on Community + Parties). Set
+  // BEFORE we toggle .hidden so no in-flight paint sees the wrong
+  // combination. Owner ask 14 Aug 2026 (floating "+ Create party").
+  try { document.body.dataset.tab = t; } catch(e){}
   [['tabWall','wall'],['tabLive','live'],['tabGames','games'],['tabParties','parties'],['tabLearn','learn'],['tabMe','me'],['tabMember','member'],['tabChats','chats'],['tabChat','chat']]
     .forEach(([id, key]) => $(id) && $(id).classList.toggle('hidden', t !== key));
   // desktop: show the chat list AND the open chat side by side
@@ -5468,6 +5779,10 @@ function showTab(t){
   // keeps the tab badge honest while you're somewhere else.
   if (t === 'live') { refreshLive(); liveTimer = setInterval(refreshLive, 5000); }
   if (t === 'games' || t === 'wall') refreshMyRooms();
+  // Refresh the top-of-Community visitors stripe every time the tab is
+  // opened. Cached inside loadVisitorsStripe so rapid tab-flipping is
+  // cheap. Owner ask 14 Aug 2026.
+  if (t === 'wall') { try { loadVisitorsStripe(); } catch(e){} }
   // Community + Games benefit from an immediate /api/live so the parties
   // strip / live pill light up on landing, not 20s later.
   if (t === 'wall' || t === 'games' || t === 'live') refreshLive();
@@ -5504,8 +5819,13 @@ function paintParties(list){
     // Language flags on top (owner ask 11 Aug 2026 v2 — 'show flags
     // in the card, flag 1 flag 2, then title, then subtitle, host
     // on left, speaker+listener counts on right').
+    // Owner ask 14 Aug 2026: show flag AND language name together (was
+    // just the flag emoji). Keep it as a small muted pill so it reads
+    // as metadata, not a headline.
     const flagRow = (Array.isArray(p.langs) && p.langs.length)
-      ? '<div class="pt-cflags">' + p.langs.slice(0, 4).map(l => `<span class="pt-cflag">${flagFromLangName(l)}</span>`).join('') + '</div>'
+      ? '<div class="pt-cflags">' + p.langs.slice(0, 4).map(l =>
+          `<span class="pt-cflag"><span class="fl">${flagFromLangName(l)}</span>${esc(l)}</span>`
+        ).join('') + '</div>'
       : '';
     return `<a class="pt-card" href="/party?room=${esc(p.code)}">
       ${flagRow}
@@ -5524,12 +5844,12 @@ function paintParties(list){
     </a>`;
   }).join('');
 }
-// Local flag lookup (in-file so we don't depend on any external map).
+// Flag lookup. Delegates to flagFor (COMMON_LANGS derived from LANGS)
+// so party cards, club chips, and the translate picker never drift.
+// 'Any' is a party-only pseudo-language, handled inline.
 function flagFromLangName(name){
-  const m = { English:'🇬🇧', Spanish:'🇪🇸', French:'🇫🇷', German:'🇩🇪', Italian:'🇮🇹',
-    Portuguese:'🇵🇹', Russian:'🇷🇺', Japanese:'🇯🇵', Korean:'🇰🇷', Mandarin:'🇨🇳',
-    Arabic:'🇸🇦', Hindi:'🇮🇳', Turkish:'🇹🇷', Dutch:'🇳🇱', Polish:'🇵🇱', Any:'🌍' };
-  return m[name] || '🌐';
+  if (name === 'Any') return '🌍';
+  try { return flagFor(name); } catch(_) { return '🌐'; }
 }
 
 // Tiny inline SVG icons for the speaker + listener count chips.
@@ -5588,10 +5908,9 @@ function paintClubChips(){
     if (a === 'Any') return 1; if (b === 'Any') return -1;
     return a.localeCompare(b);
   });
-  const flagOf = { English:'🇬🇧', Spanish:'🇪🇸', French:'🇫🇷', German:'🇩🇪', Italian:'🇮🇹',
-    Portuguese:'🇧🇷', Russian:'🇷🇺', Japanese:'🇯🇵', Korean:'🇰🇷', Mandarin:'🇨🇳',
-    Arabic:'🇸🇦', Any:'🌍' };
-  const chips = [{ name:'All', flag:'🌐' }].concat(langs.map(l => ({ name: l, flag: flagOf[l] || '🌐' })));
+  // Uses flagFromLangName so this stays synced with the master LANGS
+  // list — no local table to drift.
+  const chips = [{ name:'All', flag:'🌐' }].concat(langs.map(l => ({ name: l, flag: flagFromLangName(l) })));
   host.innerHTML = chips.map(ch => {
     const on = ch.name === _clubLang ? 'on' : '';
     return `<button class="club-chip ${on}" onclick="pickClubLang('${esc(ch.name)}')"><span class="club-chip-fl">${ch.flag}</span> ${esc(ch.name)}</button>`;
@@ -5730,7 +6049,12 @@ async function toggleJoinClub(){
   } catch(e){ if (typeof toast === 'function') toast(e.message || 'Something went wrong.'); }
 }
 function shareClub(){
-  const url = location.origin + '/social#club=' + (_curClub ? _curClub.id : '');
+  // Prefer the SSR-friendly pretty URL — /clubs/<slug> renders unique
+  // meta + Open Graph tags on the server so a paste into WhatsApp,
+  // Discord, Twitter etc. shows a proper preview. Falls back to the
+  // raw id if no slug (very old records) so nothing ever breaks.
+  const slug = _curClub && (_curClub.slug || _curClub.id);
+  const url = location.origin + '/clubs/' + encodeURIComponent(slug || '');
   try { navigator.clipboard.writeText(url); if (typeof toast === 'function') toast('Link copied'); }
   catch(e){ if (typeof toast === 'function') toast('Could not copy.'); }
 }
@@ -5806,15 +6130,9 @@ function closeCreateParty(){ $('ptCreate').classList.add('hidden'); $('ptErr').c
 function paintPtFlags(){
   const host = document.getElementById('ptFlags');
   if (!host) return;
-  const langs = (typeof COMMON_LANGS !== 'undefined' && COMMON_LANGS) ? COMMON_LANGS : [
-    { name:'English',    flag:'🇬🇧' }, { name:'Spanish', flag:'🇪🇸' },
-    { name:'French',     flag:'🇫🇷' }, { name:'German',  flag:'🇩🇪' },
-    { name:'Italian',    flag:'🇮🇹' }, { name:'Portuguese', flag:'🇵🇹' },
-    { name:'Japanese',   flag:'🇯🇵' }, { name:'Korean',  flag:'🇰🇷' },
-    { name:'Mandarin',   flag:'🇨🇳' }, { name:'Arabic',  flag:'🇸🇦' },
-    { name:'Russian',    flag:'🇷🇺' }, { name:'Hindi',   flag:'🇮🇳' },
-    { name:'Turkish',    flag:'🇹🇷' }, { name:'Dutch',   flag:'🇳🇱' }, { name:'Polish', flag:'🇵🇱' },
-  ];
+  // COMMON_LANGS is derived from LANGS and always available; kept the
+  // typeof-guard for peace of mind but the fallback is now empty.
+  const langs = (typeof COMMON_LANGS !== 'undefined' && COMMON_LANGS) ? COMMON_LANGS : [];
   host.innerHTML = '';
   langs.forEach(({ name, flag }) => {
     const b = document.createElement('button');
@@ -5832,13 +6150,17 @@ function paintPtFlags(){
 }
 // Dropdown-summary line under the languages label (owner ask 11 Aug
 // 2026 v2 — 'select dropdown so user can select multiple').
+// Owner ask 14 Aug 2026: show flag + language name (was flag-only) so
+// the collapsed button reads like the party card metadata elsewhere.
 function updatePtFlagsSummary(){
   const sum = document.getElementById('ptFlagsSummary');
   if (!sum) return;
   if (!_ptLangs.size) { sum.textContent = 'Select languages'; return; }
   const arr = Array.from(_ptLangs);
-  const flags = arr.slice(0, 6).map(n => flagFromLangName(n)).join(' ');
-  sum.innerHTML = flags + (arr.length > 6 ? ` <span style="color:var(--sub)">+${arr.length-6}</span>` : '');
+  const shown = arr.slice(0, 3).map(n =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px"><span style="font-size:15px;line-height:1">${flagFromLangName(n)}</span><span>${esc(n)}</span></span>`
+  ).join('');
+  sum.innerHTML = shown + (arr.length > 3 ? ` <span style="color:var(--sub)">+${arr.length-3}</span>` : '');
 }
 function togglePtFlagsDropdown(){
   const host = document.getElementById('ptFlags');
@@ -5869,47 +6191,140 @@ let LN_LESSON_IDX = null;
 // the browser default. Owner ask 13 Aug 2026: voice notes on every
 // phrase in a lesson.
 const LN_LANG_TO_BCP = {
-  'English':'en-US','Spanish':'es-ES','French':'fr-FR','German':'de-DE',
-  'Italian':'it-IT','Portuguese':'pt-PT','Russian':'ru-RU','Chinese':'zh-CN',
-  'Japanese':'ja-JP','Korean':'ko-KR','Arabic':'ar-SA','Hindi':'hi-IN',
-  'Urdu':'ur-PK','Indonesian':'id-ID','Turkish':'tr-TR','Dutch':'nl-NL',
-  'Swedish':'sv-SE','Polish':'pl-PL','Norwegian':'no-NO','Danish':'da-DK',
-  'Finnish':'fi-FI','Greek':'el-GR','Hebrew':'he-IL','Thai':'th-TH',
-  'Vietnamese':'vi-VN','Ukrainian':'uk-UA','Romanian':'ro-RO','Bengali':'bn-BD',
-  'Persian':'fa-IR','Swahili':'sw-KE'
+  'Amharic':'am-ET','Arabic':'ar-SA','Armenian':'hy-AM','Azerbaijani':'az-AZ',
+  'Bengali':'bn-BD','Bulgarian':'bg-BG','Burmese':'my-MM','Chinese':'zh-CN',
+  'Croatian':'hr-HR','Czech':'cs-CZ','Danish':'da-DK','Dutch':'nl-NL',
+  'English':'en-US','Estonian':'et-EE','Finnish':'fi-FI','French':'fr-FR',
+  'Georgian':'ka-GE','German':'de-DE','Greek':'el-GR','Gujarati':'gu-IN',
+  'Hebrew':'he-IL','Hindi':'hi-IN','Hungarian':'hu-HU','Icelandic':'is-IS',
+  'Indonesian':'id-ID','Italian':'it-IT','Japanese':'ja-JP','Kazakh':'kk-KZ',
+  'Khmer':'km-KH','Korean':'ko-KR','Kurdish':'ku','Latvian':'lv-LV',
+  'Lithuanian':'lt-LT','Malay':'ms-MY','Mandarin':'zh-CN','Marathi':'mr-IN',
+  'Nepali':'ne-NP','Norwegian':'no-NO','Persian':'fa-IR','Polish':'pl-PL',
+  'Portuguese':'pt-PT','Punjabi':'pa-IN','Romanian':'ro-RO','Russian':'ru-RU',
+  'Serbian':'sr-RS','Sinhala':'si-LK','Slovak':'sk-SK','Spanish':'es-ES',
+  'Swahili':'sw-KE','Swedish':'sv-SE','Tagalog':'fil-PH','Tamil':'ta-IN',
+  'Telugu':'te-IN','Thai':'th-TH','Turkish':'tr-TR','Ukrainian':'uk-UA',
+  'Urdu':'ur-PK','Uzbek':'uz-UZ','Vietnamese':'vi-VN','Yoruba':'yo-NG',
+  'Zulu':'zu-ZA'
 };
-function speakLessonPhrase(text, langName, btnEl){
+// ── Lesson-phrase TTS ─────────────────────────────────────────────
+// Owner ask 14 Aug 2026: "use ElevenLabs everything we use speech".
+// Path: ElevenLabs multilingual v2 via /api/social/tts (server-side
+// disk cache keyed on sha256(text|lang|voice) — every unique phrase
+// costs one API call site-wide). Second cache layer here in the page
+// via the Cache Storage API so the same phrase in the same tab
+// doesn't even hit the server. If ElevenLabs is down or the user is
+// offline, we silently fall back to browser speechSynthesis so the
+// button never feels broken.
+let _lnAudio = null; // currently-playing MP3, so we can stop on replay
+function _lnStopAudio(){
+  if (_lnAudio) { try { _lnAudio.pause(); _lnAudio.src = ''; } catch(e){} _lnAudio = null; }
+}
+async function _lnFetchTTS(text, primaryLang){
+  const bodyStr = JSON.stringify({ text, lang: primaryLang });
+  // Deterministic URL key for the Cache API (the real request is a
+  // POST which Cache API can't store, so we key on a GET-shaped URL
+  // and cache the response body under it).
+  const cacheKey = '/api/social/tts?k=' + encodeURIComponent(primaryLang + '|' + text);
+  let cache = null;
+  try { cache = await caches.open('tts-v1'); } catch(e){}
+  if (cache) {
+    const hit = await cache.match(cacheKey).catch(() => null);
+    if (hit) return await hit.blob();
+  }
+  const res = await fetch('/api/social/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: bodyStr
+  });
+  if (!res.ok) throw new Error('tts ' + res.status);
+  const blob = await res.blob();
+  if (cache) {
+    try {
+      const wrapped = new Response(blob.slice(0, blob.size, blob.type), {
+        headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=31536000, immutable' }
+      });
+      await cache.put(cacheKey, wrapped);
+    } catch(e){}
+  }
+  return blob;
+}
+function _lnSpeakBrowser(text, langName, btnEl){
   try {
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis) { if (btnEl) btnEl.classList.remove('on'); return; }
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(String(text || ''));
     const bcp = LN_LANG_TO_BCP[langName] || 'en-US';
     u.lang = bcp;
     u.rate = 0.92;
     u.pitch = 1;
-    // Pick a voice matching the language if one is installed.
     const voices = speechSynthesis.getVoices();
     const match = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(bcp.slice(0,2)));
     if (match) u.voice = match;
-    if (btnEl) {
-      document.querySelectorAll('.ln-phrase-speak.on').forEach(b => b.classList.remove('on'));
-      btnEl.classList.add('on');
-      u.onend = u.onerror = () => btnEl.classList.remove('on');
-    }
+    if (btnEl) u.onend = u.onerror = () => btnEl.classList.remove('on');
     speechSynthesis.speak(u);
+  } catch(e){ if (btnEl) btnEl.classList.remove('on'); }
+}
+async function speakLessonPhrase(text, langName, btnEl){
+  const cleaned = String(text || '').trim();
+  if (!cleaned) return;
+  const bcp = LN_LANG_TO_BCP[langName] || 'en-US';
+  const primary = bcp.split('-')[0].toLowerCase();
+  _lnStopAudio();
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch(e){} }
+  if (btnEl) {
+    document.querySelectorAll('.ln-phrase-speak.on').forEach(b => b.classList.remove('on'));
+    btnEl.classList.add('on');
+  }
+  try {
+    const blob = await _lnFetchTTS(cleaned, primary);
+    const url = URL.createObjectURL(blob);
+    _lnAudio = new Audio(url);
+    const clear = () => {
+      if (btnEl) btnEl.classList.remove('on');
+      try { URL.revokeObjectURL(url); } catch(e){}
+      _lnAudio = null;
+    };
+    _lnAudio.onended = clear;
+    _lnAudio.onerror = clear;
+    await _lnAudio.play().catch(() => { throw new Error('play blocked'); });
+  } catch(e) {
+    // Fallback — browser speechSynthesis. Never leave the user muted.
+    _lnSpeakBrowser(cleaned, langName, btnEl);
+  }
+}
+// Preload up to 5 currently-visible lesson phrases in parallel so tap
+// → sound is instant on the second+ press. Best-effort — a preload
+// miss just means the first tap does one real fetch.
+async function preloadLessonPhrases(container){
+  try {
+    if (!container) return;
+    const btns = Array.from(container.querySelectorAll('.ln-phrase-speak')).slice(0, 5);
+    await Promise.all(btns.map(b => {
+      const t = b.dataset && b.dataset.src;
+      const l = b.dataset && b.dataset.lang;
+      if (!t || !l) return null;
+      const bcp = LN_LANG_TO_BCP[l] || 'en-US';
+      return _lnFetchTTS(String(t).trim(), bcp.split('-')[0].toLowerCase()).catch(() => null);
+    }));
   } catch(e){}
 }
 // Load current plan and paint. Called every time the Learn tab opens
 // so 'done' ticks from another session (or a fresh plan generated
 // elsewhere) show up immediately.
-// Owner ask 14 Aug 2026 v2: Learn page is now the method grid ONLY.
-// Tapping AI Plan opens the modal — that's where the plans live.
+// 14 Aug 2026 (v3): plans grid lives on the Learn page directly (no
+// modal). Every time the tab opens, fetch + paint the grid; if a plan
+// detail was already open, refresh it in place.
 async function loadLearnPlan(){
   try {
     const j = await api('/learn/plans');
     LN_PLANS = (j && Array.isArray(j.plans)) ? j.plans : [];
   } catch(e) { LN_PLANS = []; }
   updateAiMethodSubtitle();
+  const d = document.getElementById('lnPlansDetailView');
+  if (d && !d.classList.contains('hidden')) refreshOpenPlanDetail();
+  else paintLearnPlansGrid();
 }
 function updateAiMethodSubtitle(){
   const sub = document.getElementById('lnMethodAiSub');
@@ -5979,25 +6394,17 @@ function planDetailHtml(plan){
     '<button type="button" class="ln-plandel" onclick="deleteLearnPlan(\'' + esc(plan.id) + '\')">🗑 Delete this plan</button>' +
   '</div>';
 }
-function openLearnPlans(){
-  const bd = document.getElementById('lnPlansBd');
-  if (!bd) return;
-  bd.classList.add('show');
-  document.body.style.overflow = 'hidden';
-  showLearnPlansGrid();
-}
-function closeLearnPlans(){
-  const bd = document.getElementById('lnPlansBd');
-  if (!bd) return;
-  bd.classList.remove('show');
-  document.body.style.overflow = '';
-}
+// Inline page layout: the plans grid + detail view are two sibling
+// panels inside #tabLearn; we just toggle .hidden on each. openLearn*
+// / closeLearn* names kept as thin aliases so any old callers still
+// resolve, and so the Esc handler can safely fall back to the grid.
+function openLearnPlans(){ showLearnPlansGrid(); }
+function closeLearnPlans(){ showLearnPlansGrid(); }
 function showLearnPlansGrid(){
-  document.getElementById('lnPlansTitle').textContent = 'My learning plans';
-  document.getElementById('lnPlansBackBtn').classList.add('hidden');
-  document.getElementById('lnPlansGridView').classList.remove('hidden');
-  document.getElementById('lnPlansDetailView').classList.add('hidden');
-  document.getElementById('lnNewPlanBtn').classList.remove('hidden');
+  const g = document.getElementById('lnPlansGridView');
+  const d = document.getElementById('lnPlansDetailView');
+  if (g) g.classList.remove('hidden');
+  if (d) d.classList.add('hidden');
   paintLearnPlansGrid();
 }
 function paintLearnPlansGrid(){
@@ -6017,19 +6424,21 @@ function showLearnPlanDetail(planId){
   if (!plan) return;
   LN_ACTIVE_PLAN_ID = planId;
   LN_PLAN = plan;
-  document.getElementById('lnPlansTitle').textContent = plan.language;
-  document.getElementById('lnPlansBackBtn').classList.remove('hidden');
-  document.getElementById('lnPlansGridView').classList.add('hidden');
-  document.getElementById('lnPlansDetailView').classList.remove('hidden');
-  document.getElementById('lnPlansDetailView').innerHTML = planDetailHtml(plan);
-  document.getElementById('lnNewPlanBtn').classList.add('hidden');
+  const g = document.getElementById('lnPlansGridView');
+  const d = document.getElementById('lnPlansDetailView');
+  const body = document.getElementById('lnPlansDetailBody');
+  if (body) body.innerHTML = planDetailHtml(plan);
+  if (g) g.classList.add('hidden');
+  if (d) d.classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 function refreshOpenPlanDetail(){
   if (!LN_ACTIVE_PLAN_ID) return;
   const plan = LN_PLANS.find(p => p && p.id === LN_ACTIVE_PLAN_ID);
   if (!plan) return;
-  const dv = document.getElementById('lnPlansDetailView');
-  if (dv && !dv.classList.contains('hidden')) dv.innerHTML = planDetailHtml(plan);
+  const d = document.getElementById('lnPlansDetailView');
+  const body = document.getElementById('lnPlansDetailBody');
+  if (d && !d.classList.contains('hidden') && body) body.innerHTML = planDetailHtml(plan);
 }
 function openLearnSetup(){
   const bd = $('lnSetupBd'); if (bd) { bd.classList.add('show'); document.body.style.overflow = 'hidden'; }
@@ -6086,9 +6495,6 @@ async function submitLearnSetup(){
     LN_PLANS.push(newPlan);
     updateAiMethodSubtitle();
     closeLearnSetup();
-    // Open the plans modal if it isn't already showing.
-    const bd = document.getElementById('lnPlansBd');
-    if (bd && !bd.classList.contains('show')) openLearnPlans();
     showLearnPlanDetail(newPlan.id);
     toast('✨ Your plan is ready!');
   } catch(e) {
@@ -6125,7 +6531,10 @@ function openLearnLesson(planId, idx){
   const targetLang = (LN_PLAN && LN_PLAN.language) || '';
   body.innerHTML = (l.phrases || []).map((p, pi) =>
     '<div class="ln-phrase">' +
-      '<button type="button" class="ln-phrase-speak" data-src="' + esc(p.src || '') + '" data-lang="' + esc(targetLang) + '" data-idx="' + pi + '" aria-label="Hear this phrase">🔊</button>' +
+      '<button type="button" class="ln-phrase-speak" data-src="' + esc(p.src || '') + '" data-lang="' + esc(targetLang) + '" data-idx="' + pi + '" aria-label="Hear this phrase">' +
+        '<svg class="pl-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>' +
+        '<svg class="pl-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>' +
+      '</button>' +
       '<div class="ln-phrase-txt">' +
         '<div class="ln-phrase-src">' + esc(p.src || '') + '</div>' +
         '<div class="ln-phrase-dst">' + esc(p.dst || '') + '</div>' +
@@ -6140,6 +6549,9 @@ function openLearnLesson(planId, idx){
       speakLessonPhrase(btn.dataset.src, btn.dataset.lang, btn);
     };
   });
+  // Warm the cache for the first few visible phrases — tap → sound
+  // feels instant once the mp3 blob is already in the page cache.
+  preloadLessonPhrases(body);
   const done = $('lnLessonDone');
   if (l.done) { done.classList.add('done'); done.textContent = '✓ Done'; done.disabled = true; }
   else { done.classList.remove('done'); done.textContent = '✓ Mark this lesson done'; done.disabled = false; }
@@ -6174,6 +6586,10 @@ async function markLearnLessonDone(){
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeLearnSetup(); closeLearnLesson(); closeLearnPlans(); }
 });
+// Stashed by submitCreateParty when the server rejects with 409
+// already-hosting — read by goToExistingParty() when the user taps
+// "Take me to my party" on the guard dialog.
+let _existingHostRoom = null;
 async function submitCreateParty(){
   const title = $('ptTitle').value.trim();
   const subtitle = $('ptSub').value.trim();
@@ -6184,6 +6600,16 @@ async function submitCreateParty(){
     const r = await fetch('/api/parties', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ title, subtitle, visibility, langs: Array.from(_ptLangs) }) });
     const j = await r.json();
+    // Owner ask 14 Aug 2026: friendly dialog when the user is already
+    // hosting another live party — instead of a red error toast.
+    if (r.status === 409 && j && j.error === 'already-hosting') {
+      _existingHostRoom = { code: j.code, title: j.title || 'your party' };
+      const t = $('ptAhTitle'); if (t) t.textContent = _existingHostRoom.title;
+      closeCreateParty();
+      $('ptAlreadyHosting').classList.remove('hidden');
+      btn.disabled = false; btn.textContent = '🎉 Start party';
+      return;
+    }
     if (!r.ok) throw new Error(j.error || 'Could not create the party.');
     // Owner ask 2 Aug 2026: 'the moment I create the party, either
     // open a full popup so I can close it and go back to messages,
@@ -6197,6 +6623,14 @@ async function submitCreateParty(){
     $('ptErr').textContent = e.message; $('ptErr').classList.remove('hidden');
     btn.disabled = false; btn.textContent = '🎉 Start party';
   }
+}
+function closeAlreadyHosting(){ $('ptAlreadyHosting') && $('ptAlreadyHosting').classList.add('hidden'); }
+function goToExistingParty(){
+  const s = _existingHostRoom;
+  closeAlreadyHosting();
+  if (!s || !s.code) return;
+  if (typeof openPartyInApp === 'function') openPartyInApp(s.code, s.title);
+  else location.href = '/party?room=' + s.code;
 }
 
 // ---------- 🎮 my open games ----------
@@ -6490,6 +6924,84 @@ function rejoinParty(ev){
 refreshPartyBar();
 setInterval(refreshPartyBar, 15000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshPartyBar(); });
+
+// ═══════════════════════════════════════════════════════════════════
+// Single active session (owner ask 14 Aug 2026 — WhatsApp-Web-style).
+// When the same account opens WordSpies in a NEW tab / browser / device,
+// the new tab wins and the old tabs get a soft "Use here to resume"
+// overlay. Nothing destructive: cookie stays valid, one tap reclaims.
+//
+// Constraint: never disrupt an active party or game — mid-conversation
+// audio must not be silently kicked. We skip enforcement whenever the
+// party bar is active (localStorage.wsActiveParty set) or the game
+// shell is hosting an embedded game (PHOST_CODE / wsActiveGame).
+// The user can still leave party/game and be enforced on the next poll.
+// ═══════════════════════════════════════════════════════════════════
+let SESS_SID = null;                 // this tab's sessionId once registered
+let SESS_KICKED = false;             // once shown, stop polling
+const SESS_POLL_MS = 5000;
+
+function inActiveVoice() {
+  // Any of these means the user is mid-session in something we must not
+  // disrupt: an audio party (partyHost iframe visible or partyBar rejoin
+  // pill live), a call room, or an active game embedded in the shell.
+  try {
+    if (document.body.classList.contains('in-party')) return true;
+    if (document.body.classList.contains('in-game')) return true;
+    if (localStorage.getItem('wsActiveParty')) return true;
+    if (localStorage.getItem('wsActiveGame')) return true;
+  } catch (e) {}
+  return false;
+}
+
+async function registerSession() {
+  if (GUEST) return;
+  try {
+    const r = await fetch('/api/social/session/register', { method:'POST', credentials:'include' });
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j && j.sid) {
+      SESS_SID = j.sid;
+      SESS_KICKED = false;
+      const el = document.getElementById('sessKick');
+      if (el) el.classList.add('hidden');
+    }
+  } catch (e) {}
+}
+
+async function checkSession() {
+  if (GUEST || !SESS_SID || SESS_KICKED) return;
+  if (document.hidden) return;                        // don't poll while hidden
+  if (inActiveVoice()) return;                        // never disrupt live voice
+  try {
+    const r = await fetch('/api/social/session/check?sid=' + encodeURIComponent(SESS_SID), { cache:'no-store' });
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j && j.current === false) showSessionKick();
+  } catch (e) {}
+}
+
+function showSessionKick() {
+  if (SESS_KICKED) return;
+  SESS_KICKED = true;
+  const el = document.getElementById('sessKick');
+  if (el) el.classList.remove('hidden');
+  // Best-effort quiet: some background pollers keep touching the network,
+  // but stopping the session poller is enough to avoid busy loops.
+}
+
+async function reclaimSession() {
+  // User tapped "Use WordSpies here" on the losing tab. Re-register makes
+  // THIS tab the current one; the other tab will notice on its next poll.
+  await registerSession();
+  const el = document.getElementById('sessKick');
+  if (el) el.classList.add('hidden');
+}
+
+// Poll while visible. Also re-check the moment the tab becomes visible
+// again (returning from another app should surface the overlay fast).
+setInterval(checkSession, SESS_POLL_MS);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkSession(); });
 
 // ═══════════════════════════════════════════════════════════════════
 // Persistent game-session pill. Owner ask 1 Aug 2026: 'if he left the
@@ -7077,7 +7589,9 @@ function paintLiveGames(j){
   paintCommunityPartyStrip(games.filter(g => g.game === 'party'));
 
   // "Happening now" banner — rendered on both Community + Games tabs.
-  paintLiveBanners(games);
+  // Parties are surfaced by paintCommunityPartyStrip above; including them
+  // here too would double-render a party as a "game card" (owner ask 14 Aug 2026).
+  paintLiveBanners(games.filter(g => g.game !== 'party'));
   const gameCardMap = {
     wordspies: 'cntWordspies', ludo: 'cntLudo', pool: 'cntPool',
     four: 'cntFour', meld: 'cntMeld', spy: 'cntSpy'
@@ -8678,23 +9192,94 @@ async function msCorrect(){
 //   when curActMsg.mine, and msTranslate re-guards it).
 //   Original bubble is never touched; the translation appears as a new
 //   element right after it (green tint, small header, × to dismiss).
-const COMMON_LANGS = [
-  { name:'English',    flag:'🇬🇧' },
-  { name:'Spanish',    flag:'🇪🇸' },
-  { name:'French',     flag:'🇫🇷' },
-  { name:'German',     flag:'🇩🇪' },
-  { name:'Italian',    flag:'🇮🇹' },
-  { name:'Portuguese', flag:'🇵🇹' },
-  { name:'Japanese',   flag:'🇯🇵' },
-  { name:'Korean',     flag:'🇰🇷' },
-  { name:'Mandarin',   flag:'🇨🇳' },
-  { name:'Arabic',     flag:'🇸🇦' },
-  { name:'Russian',    flag:'🇷🇺' },
-  { name:'Hindi',      flag:'🇮🇳' },
-  { name:'Turkish',    flag:'🇹🇷' },
-  { name:'Dutch',      flag:'🇳🇱' },
-  { name:'Polish',     flag:'🇵🇱' },
+// Master language list (single source of truth).
+// Owner ask 14 Aug 2026: 'all languages available everywhere'. Every
+// downstream picker (party create, translate, profile chips, wizard,
+// AI Learn) derives from LANGS below. Add a language once, appears
+// everywhere. Alphabetised for scanability. Mandarin is kept as an
+// alias for Chinese (same code 'zh') because legacy user data + club
+// seeds use both names.
+const LANGS = [
+  {c:'am', f:'🇪🇹', n:'Amharic'},
+  {c:'ar', f:'🇸🇦', n:'Arabic'},
+  {c:'hy', f:'🇦🇲', n:'Armenian'},
+  {c:'az', f:'🇦🇿', n:'Azerbaijani'},
+  {c:'bn', f:'🇧🇩', n:'Bengali'},
+  {c:'bg', f:'🇧🇬', n:'Bulgarian'},
+  {c:'my', f:'🇲🇲', n:'Burmese'},
+  {c:'zh', f:'🇨🇳', n:'Chinese'},
+  {c:'hr', f:'🇭🇷', n:'Croatian'},
+  {c:'cs', f:'🇨🇿', n:'Czech'},
+  {c:'da', f:'🇩🇰', n:'Danish'},
+  {c:'nl', f:'🇳🇱', n:'Dutch'},
+  {c:'en', f:'🇬🇧', n:'English'},
+  {c:'et', f:'🇪🇪', n:'Estonian'},
+  {c:'fi', f:'🇫🇮', n:'Finnish'},
+  {c:'fr', f:'🇫🇷', n:'French'},
+  {c:'ka', f:'🇬🇪', n:'Georgian'},
+  {c:'de', f:'🇩🇪', n:'German'},
+  {c:'el', f:'🇬🇷', n:'Greek'},
+  {c:'gu', f:'🇮🇳', n:'Gujarati'},
+  {c:'he', f:'🇮🇱', n:'Hebrew'},
+  {c:'hi', f:'🇮🇳', n:'Hindi'},
+  {c:'hu', f:'🇭🇺', n:'Hungarian'},
+  {c:'is', f:'🇮🇸', n:'Icelandic'},
+  {c:'id', f:'🇮🇩', n:'Indonesian'},
+  {c:'it', f:'🇮🇹', n:'Italian'},
+  {c:'ja', f:'🇯🇵', n:'Japanese'},
+  {c:'kk', f:'🇰🇿', n:'Kazakh'},
+  {c:'km', f:'🇰🇭', n:'Khmer'},
+  {c:'ko', f:'🇰🇷', n:'Korean'},
+  {c:'ku', f:'🇮🇶', n:'Kurdish'},
+  {c:'lv', f:'🇱🇻', n:'Latvian'},
+  {c:'lt', f:'🇱🇹', n:'Lithuanian'},
+  {c:'ms', f:'🇲🇾', n:'Malay'},
+  {c:'zh', f:'🇨🇳', n:'Mandarin'},
+  {c:'mr', f:'🇮🇳', n:'Marathi'},
+  {c:'ne', f:'🇳🇵', n:'Nepali'},
+  {c:'no', f:'🇳🇴', n:'Norwegian'},
+  {c:'fa', f:'🇮🇷', n:'Persian'},
+  {c:'pl', f:'🇵🇱', n:'Polish'},
+  {c:'pt', f:'🇵🇹', n:'Portuguese'},
+  {c:'pa', f:'🇮🇳', n:'Punjabi'},
+  {c:'ro', f:'🇷🇴', n:'Romanian'},
+  {c:'ru', f:'🇷🇺', n:'Russian'},
+  {c:'sr', f:'🇷🇸', n:'Serbian'},
+  {c:'si', f:'🇱🇰', n:'Sinhala'},
+  {c:'sk', f:'🇸🇰', n:'Slovak'},
+  {c:'es', f:'🇪🇸', n:'Spanish'},
+  {c:'sw', f:'🇰🇪', n:'Swahili'},
+  {c:'sv', f:'🇸🇪', n:'Swedish'},
+  {c:'tl', f:'🇵🇭', n:'Tagalog'},
+  {c:'ta', f:'🇮🇳', n:'Tamil'},
+  {c:'te', f:'🇮🇳', n:'Telugu'},
+  {c:'th', f:'🇹🇭', n:'Thai'},
+  {c:'tr', f:'🇹🇷', n:'Turkish'},
+  {c:'uk', f:'🇺🇦', n:'Ukrainian'},
+  {c:'ur', f:'🇵🇰', n:'Urdu'},
+  {c:'uz', f:'🇺🇿', n:'Uzbek'},
+  {c:'vi', f:'🇻🇳', n:'Vietnamese'},
+  {c:'yo', f:'🇳🇬', n:'Yoruba'},
+  {c:'zu', f:'🇿🇦', n:'Zulu'}
 ];
+// Language code → country code for the circular flag SVGs
+// (hatscripts/circle-flags). Kept next to LANGS so adding a language
+// only requires updating this file in two adjacent places.
+const LANG_TO_CC = {
+  am:'et', ar:'sa', hy:'am', az:'az', bn:'bd', bg:'bg', my:'mm', zh:'cn',
+  hr:'hr', cs:'cz', da:'dk', nl:'nl', en:'gb', et:'ee', fi:'fi', fr:'fr',
+  ka:'ge', de:'de', el:'gr', gu:'in', he:'il', hi:'in', hu:'hu', is:'is',
+  id:'id', it:'it', ja:'jp', kk:'kz', km:'kh', ko:'kr', ku:'iq', lv:'lv',
+  lt:'lt', ms:'my', mr:'in', ne:'np', no:'no', fa:'ir', pl:'pl', pt:'pt',
+  pa:'in', ro:'ro', ru:'ru', sr:'rs', si:'lk', sk:'sk', es:'es', sw:'ke',
+  sv:'se', tl:'ph', ta:'in', te:'in', th:'th', tr:'tr', uk:'ua', ur:'pk',
+  uz:'uz', vi:'vn', yo:'ng', zu:'za'
+};
+// COMMON_LANGS is derived from LANGS so party-creation + translate
+// pickers stay in sync with the profile picker automatically. Shape
+// {name, flag} is kept for backwards compatibility with existing
+// call sites (flagFor, xlat setup, ptFlags).
+const COMMON_LANGS = LANGS.map(l => ({ name: l.n, flag: l.f }));
 const LANG_NAMES = COMMON_LANGS.map(l => l.name);
 function flagFor(name){
   const k = String(name || '').toLowerCase();
@@ -9245,7 +9830,27 @@ const CC_TZ = {
   TW:'Asia/Taipei', SA:'Asia/Riyadh', AE:'Asia/Dubai', IL:'Asia/Jerusalem',
   IR:'Asia/Tehran', IQ:'Asia/Baghdad', EG:'Africa/Cairo', ZA:'Africa/Johannesburg',
   NG:'Africa/Lagos', KE:'Africa/Nairobi', MA:'Africa/Casablanca',
-  AU:'Australia/Sydney', NZ:'Pacific/Auckland'
+  AU:'Australia/Sydney', NZ:'Pacific/Auckland',
+  // Owner ask 14 Aug 2026 extension: Caucasus + Central Asia so the
+  // clock row still renders for users signed up from those countries.
+  AM:'Asia/Yerevan', GE:'Asia/Tbilisi', AZ:'Asia/Baku', KZ:'Asia/Almaty',
+  UZ:'Asia/Tashkent', KG:'Asia/Bishkek', TM:'Asia/Ashgabat', TJ:'Asia/Dushanbe',
+  MN:'Asia/Ulaanbaatar', MM:'Asia/Yangon', KH:'Asia/Phnom_Penh', LA:'Asia/Vientiane',
+  // Extra Europe / Middle-East / Africa gaps to reduce '—' fallbacks.
+  HU:'Europe/Budapest', RO:'Europe/Bucharest', BG:'Europe/Sofia',
+  HR:'Europe/Zagreb', RS:'Europe/Belgrade', SK:'Europe/Bratislava',
+  SI:'Europe/Ljubljana', LT:'Europe/Vilnius', LV:'Europe/Riga', EE:'Europe/Tallinn',
+  IS:'Atlantic/Reykjavik', LU:'Europe/Luxembourg', MT:'Europe/Malta',
+  CY:'Asia/Nicosia', JO:'Asia/Amman', LB:'Asia/Beirut', SY:'Asia/Damascus',
+  KW:'Asia/Kuwait', QA:'Asia/Qatar', BH:'Asia/Bahrain', OM:'Asia/Muscat',
+  YE:'Asia/Aden', DZ:'Africa/Algiers', TN:'Africa/Tunis', LY:'Africa/Tripoli',
+  SN:'Africa/Dakar', GH:'Africa/Accra', CI:'Africa/Abidjan', ET:'Africa/Addis_Ababa',
+  UG:'Africa/Kampala', TZ:'Africa/Dar_es_Salaam', ZW:'Africa/Harare',
+  // Extra Americas.
+  UY:'America/Montevideo', BO:'America/La_Paz', PY:'America/Asuncion',
+  EC:'America/Guayaquil', DO:'America/Santo_Domingo', CU:'America/Havana',
+  GT:'America/Guatemala', CR:'America/Costa_Rica', PA:'America/Panama',
+  HN:'America/Tegucigalpa', SV:'America/El_Salvador', NI:'America/Managua'
 };
 function localTimeForCC(cc){
   const tz = CC_TZ[(cc || '').toUpperCase()];
@@ -9322,7 +9927,10 @@ function renderWall(){
     const fol = FOLLOWING.has(m.id);
     // Speaky-style horizontal card: photo on the LEFT, name + quote +
     // language flags on the right.
-    const talkSnip = m.talkAbout ? esc(String(m.talkAbout).slice(0, 110)) + (m.talkAbout.length > 110 ? '…' : '') : '';
+    // Filter out the seeded default (see realTalkAbout) so wall cards
+    // don't advertise a fake bio the user didn't write.
+    const _talkRaw = realTalkAbout(m.talkAbout);
+    const talkSnip = _talkRaw ? esc(_talkRaw.slice(0, 110)) + (_talkRaw.length > 110 ? '…' : '') : '';
     const photo = m.photo
       ? `<img src="${esc(m.photo)}" alt="" loading="lazy">`
       : `<div class="pcircph g${hue(m.name)}">${esc(m.name[0].toUpperCase())}</div>`;
@@ -9502,16 +10110,29 @@ function openMemberObj(m){
   // Active status placeholder — replaced by API call below if online.
   $('mActive').textContent = 'Active: recently';
   // Location + handle rows.
-  // Tandem-style profile header (owner ask 10 Aug 2026): 📍 location,
-  // 🕐 local time in their country, and @ username — three things.
-  $('mLoc').innerHTML = '📍 ' + flag(m.cc) + ' ' + esc(m.location || m.country || 'Somewhere on Earth');
-  $('mLocalTime').innerHTML = '🕐 ' + esc(localTimeForCC(m.cc));
+  // Tandem-style profile header (owner ask 10 Aug 2026 + icon polish
+  // 14 Aug 2026): pin location, clock local time, @ username — three
+  // things. Inline SVGs (see infoIconPin / infoIconClock) so the icons
+  // match the mic/headphone style used on party cards instead of
+  // stacking emoji glyphs on a text row.
+  const _locTxt = m.location || m.country || 'Somewhere on Earth';
+  $('mLoc').innerHTML = infoIconPin() + ' ' + (m.cc ? flag(m.cc) + ' ' : '') + esc(_locTxt);
+  const _localT = localTimeForCC(m.cc);
+  const _localRow = document.getElementById('mLocalTime');
+  if (_localRow) {
+    if (m.cc && _localT && _localT !== '—') {
+      _localRow.innerHTML = infoIconClock() + ' ' + esc(_localT) + ' <span style="opacity:.7">local time</span>';
+      _localRow.parentElement.style.display = '';
+    } else {
+      _localRow.textContent = '';
+      _localRow.parentElement.style.display = 'none';
+    }
+  }
   // Real-map hero for the member profile — see initProfileMap() for
   // caching + Nominatim details. Desktop-only (.mp-hero is display:none
   // on mobile).
   try { if (window.matchMedia('(min-width:769px)').matches) initProfileMap('memberMap', 'memberLocPill', 'memberLocPillTxt', m.location, m.cc, m.country); } catch(e){}
-  const handle = '@' + (m.name || '').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,20) + (m.id || '').slice(0, 4);
-  $('mHandle').textContent = handle;
+  $('mHandle').textContent = handleFor(m);
   // Counts default while we fetch the real numbers.
   $('mFollowers').textContent = '—'; $('mFollowing').textContent = '—'; $('mRecCount').textContent = '0';
   // Content cards — each block self-hides when empty.
@@ -9524,16 +10145,21 @@ function openMemberObj(m){
   // 'About [FirstName]' — bio card with personalised heading.
   // Falls back to talkAbout if bio is empty so at least the intro
   // reads as a proper 'About' rather than 'Let's talk about'.
+  // Owner ask 14 Aug 2026: never fall back to the seeded
+  // "Hey! I'm really into languages…" placeholder — realBio /
+  // realTalkAbout strip it so the card just hides on other users'
+  // profiles instead of putting words in their mouth.
   const _firstName = String(m.name || 'them').split(' ')[0];
   const _aboutTitle = document.getElementById('mAboutTitle');
   if (_aboutTitle) _aboutTitle.textContent = 'About ' + _firstName;
-  const _aboutText = (m.bio && m.bio.trim()) ? m.bio.trim()
-    : (m.talkAbout && m.talkAbout.trim()) ? m.talkAbout.trim() : '';
+  const _bio = realBio(m.bio);
+  const _talk = realTalkAbout(m.talkAbout);
+  const _aboutText = _bio || _talk || '';
   setCard('mAboutCard', 'mAbout', _aboutText ? esc(_aboutText).replace(/\n/g,'<br>') : '', true);
   // 'Let's talk about' only shows if we have a distinct talkAbout that
   // we didn't already surface as the About body (i.e. bio existed).
-  const _showQuote = m.talkAbout && m.bio && m.talkAbout.trim() !== m.bio.trim();
-  setCard('mQuoteCard', 'mQuote', _showQuote ? esc(m.talkAbout).replace(/\n/g,'<br>') : '', true);
+  const _showQuote = _talk && _bio && _talk !== _bio;
+  setCard('mQuoteCard', 'mQuote', _showQuote ? esc(_talk).replace(/\n/g,'<br>') : '', true);
   // Purpose + partner-type free-text cards (owner v7).
   setCard('mPurposeCard', 'mPurpose', m.purpose     ? esc(m.purpose).replace(/\n/g,'<br>')     : '', true);
   setCard('mPartnerCard', 'mPartner', m.partnerType ? esc(m.partnerType).replace(/\n/g,'<br>') : '', true);
@@ -9723,29 +10349,11 @@ async function faceCheck(file){
 // + save/load into the editor and display on member profiles.
 // ═════════════════════════════════════════════════════════════════════
 
-// Common language flag list. Codes match Speaky's ISO-2 style so we can
-// swap in a bigger set later without breaking stored profiles.
-const LANGS = [
-  {c:'en', f:'🇬🇧', n:'English'},   {c:'es', f:'🇪🇸', n:'Spanish'},   {c:'fr', f:'🇫🇷', n:'French'},
-  {c:'de', f:'🇩🇪', n:'German'},   {c:'it', f:'🇮🇹', n:'Italian'},   {c:'pt', f:'🇵🇹', n:'Portuguese'},
-  {c:'ru', f:'🇷🇺', n:'Russian'},  {c:'zh', f:'🇨🇳', n:'Chinese'},   {c:'ja', f:'🇯🇵', n:'Japanese'},
-  {c:'ko', f:'🇰🇷', n:'Korean'},   {c:'ar', f:'🇸🇦', n:'Arabic'},    {c:'hi', f:'🇮🇳', n:'Hindi'},
-  {c:'ur', f:'🇵🇰', n:'Urdu'},     {c:'id', f:'🇮🇩', n:'Indonesian'},{c:'tr', f:'🇹🇷', n:'Turkish'},
-  {c:'nl', f:'🇳🇱', n:'Dutch'},    {c:'sv', f:'🇸🇪', n:'Swedish'},   {c:'pl', f:'🇵🇱', n:'Polish'},
-  {c:'no', f:'🇳🇴', n:'Norwegian'},{c:'da', f:'🇩🇰', n:'Danish'},    {c:'fi', f:'🇫🇮', n:'Finnish'},
-  {c:'el', f:'🇬🇷', n:'Greek'},    {c:'he', f:'🇮🇱', n:'Hebrew'},    {c:'th', f:'🇹🇭', n:'Thai'},
-  {c:'vi', f:'🇻🇳', n:'Vietnamese'},{c:'uk',f:'🇺🇦', n:'Ukrainian'}, {c:'ro', f:'🇷🇴', n:'Romanian'},
-  {c:'bn', f:'🇧🇩', n:'Bengali'},  {c:'fa', f:'🇮🇷', n:'Persian'},   {c:'sw', f:'🇰🇪', n:'Swahili'}
-];
+// LANGS + LANG_TO_CC now live near the top of this file, next to
+// COMMON_LANGS (single source of truth). See the block just above the
+// COMMON_LANGS declaration. langByCode / langFlag helpers still live
+// here because they're only referenced from within functions below.
 const langByCode = c => LANGS.find(l => l.c === c);
-// Real circular country flags via hatscripts/circle-flags CDN (MIT-licensed,
-// SVG, free). Maps our language codes to the appropriate country code.
-const LANG_TO_CC = {
-  en:'gb', es:'es', fr:'fr', de:'de', it:'it', pt:'pt', ru:'ru', zh:'cn',
-  ja:'jp', ko:'kr', ar:'sa', hi:'in', ur:'pk', id:'id', tr:'tr', nl:'nl',
-  sv:'se', pl:'pl', no:'no', da:'dk', fi:'fi', el:'gr', he:'il', th:'th',
-  vi:'vn', uk:'ua', ro:'ro', bn:'bd', fa:'ir', sw:'ke'
-};
 const langFlag = c => {
   const cc = LANG_TO_CC[c] || 'un'; // 'un' = United Nations placeholder for unknown
   return `<img class="cflag" src="https://hatscripts.github.io/circle-flags/flags/${cc}.svg" alt="${esc(c)}" loading="lazy">`;
@@ -9862,7 +10470,9 @@ function syncProfileEditor(){
   EDIT_GOALS = [...(ME.goals || [])];
   renderChips('fSpeaksChips', EDIT_SPEAKS, 'speaks');
   renderChips('fLearnsChips', EDIT_LEARNS, 'learns');
-  const talk = document.getElementById('fTalk'); if (talk) talk.value = ME.talkAbout || '';
+  // Seeded default filtered so the editor starts empty for those users
+  // (owner ask 14 Aug 2026) — prevents the placeholder becoming a save.
+  const talk = document.getElementById('fTalk'); if (talk) talk.value = realTalkAbout(ME.talkAbout);
   const purp = document.getElementById('fPurpose'); if (purp) purp.value = ME.purpose || '';
   const part = document.getElementById('fPartner'); if (part) part.value = ME.partnerType || '';
   const recs = document.getElementById('fRecs'); if (recs) recs.value = ME.recs || '';
@@ -9957,6 +10567,33 @@ async function setupGoogle(){
 function maybeWelcome(){ /* retired — no popup */ }
 
 // ---------- boot ----------
+// Deep-link into a specific club by slug. Fires whether the user is
+// logged in or a guest (club feed is public). Triggered by /social?club=<slug>,
+// which is where the SSR /clubs/<slug> preview page hands users off.
+// Resolves the slug against the loaded clubs list (falls back to the
+// server's /api/clubs/<slug-or-id> lookup, which accepts either).
+async function openClubFromDeepLinkParam() {
+  try {
+    const slug = new URLSearchParams(location.search).get('club');
+    if (!slug) return;
+    // Swap to the Social tab → Clubs sub-tab so the detail view is
+    // over the right pane when the user backs out of it.
+    if (typeof showTab === 'function') showTab('parties');
+    if (typeof showPSub === 'function') showPSub('clubs');
+    // Wait for the clubs list to hydrate (loadClubs is fired by
+    // showPSub('clubs') the first time). Best-effort, then hand off to
+    // openClub — which pulls fresh data from the server anyway.
+    for (let i = 0; i < 40 && !_clubsLoaded; i++) await new Promise(r => setTimeout(r, 100));
+    let id = slug;
+    if (Array.isArray(_clubsAll)) {
+      const hit = _clubsAll.find(c => c && (c.slug === slug || c.id === slug));
+      if (hit) id = hit.id;
+    }
+    if (typeof openClub === 'function') openClub(id);
+    // Clean the URL so refreshes / back-nav don't loop the deep link.
+    history.replaceState(null, '', '/social');
+  } catch (e) { /* silent — deep link failure must never break boot */ }
+}
 (async () => {
   try { ME = (await api('/me')).me; } catch(e){}
   setTimeout(maybeWelcome, 900);
@@ -9964,6 +10601,10 @@ function maybeWelcome(){ /* retired — no popup */ }
 
   if (ME) {
     enterApp();
+    // Note: enterApp() calls registerSession() for us (single-active-
+    // session guard — WhatsApp-Web-style). Older tabs will surface the
+    // "Use here to resume" overlay on their next 5s poll. Skipped while
+    // in an active party / game so mid-call audio never gets kicked.
     // deep link straight to the games shelf: /social#games
     if (location.hash === '#games') showTab('games');
     // /social#live — where the "Live" button on a watch bar sends you back to
@@ -10015,6 +10656,10 @@ function maybeWelcome(){ /* retired — no popup */ }
       else setMode('login');                // no Google key — the form is already up
     }
   }
+  // ?club=<slug> deep-link — SSR /clubs/<slug> preview page redirects
+  // real users here, and this bit finishes the hand-off by opening the
+  // club feed inside the SPA. Runs in both ME + GUEST branches.
+  openClubFromDeepLinkParam();
 })();
 </script>
 

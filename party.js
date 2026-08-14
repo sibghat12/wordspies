@@ -143,6 +143,21 @@ function mount(app, io, options = {}) {
   app.post('/api/parties', jsonBody, async (req, res) => {
     const uid = options.uidFromReq ? await options.uidFromReq(req) : null;
     if (!uid) return res.status(401).json({ error: 'Log in to host a party.' });
+    // Owner ask 14 Aug 2026: 'if I am host in one party, don't let me
+    // make/start a new party until I leave that one'. r.hostUid is the
+    // original creator and is never reassigned — the room belongs to
+    // them until closeParty or the 10-min no-host auto-end. Skip DM
+    // call rooms (isCall) — those are 2-person phone calls, not parties.
+    for (const r of rooms.values()) {
+      if (r.isCall) continue;
+      if (r.hostUid !== uid) continue;
+      return res.status(409).json({
+        error: 'already-hosting',
+        code: r.code,
+        title: r.title || 'Untitled party',
+        message: 'You are already hosting "' + (r.title || 'Untitled party') + '". Leave it first.'
+      });
+    }
     const title    = cleanText((req.body || {}).title,    60) || 'Untitled party';
     const subtitle = cleanText((req.body || {}).subtitle, 120);
     const vis = ((req.body || {}).visibility === 'private') ? 'private' : 'public';

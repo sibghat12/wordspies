@@ -160,6 +160,30 @@ body.embed .wsfoot {
 }
 body.embed { padding-top: 0 !important; padding-bottom: 20px !important; }
 body.embed .wrap { padding-top: 0 !important; }
+
+/* ── invite friends (matches codenames look) ─── */
+.ov{position:fixed;inset:0;background:rgba(20,22,30,.55);display:flex;align-items:center;justify-content:center;z-index:80;padding:16px;backdrop-filter:blur(3px)}
+.ov.hidden{display:none}
+.invpanel{background:#fff;border-radius:20px;max-width:400px;width:100%;padding:20px 18px 16px;text-align:left;display:flex;flex-direction:column;max-height:82vh;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.invpanel h2{font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;margin-bottom:3px}
+.invpanel .sub{font-size:12.5px;color:var(--sub);font-weight:500;margin-bottom:12px;line-height:1.5}
+.invlist{overflow-y:auto;flex:1;margin:0 -6px;padding:0 6px;min-height:60px}
+.invrow{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;cursor:pointer;transition:background .14s}
+.invrow:hover{background:#f4f4f7}
+.invrow.on{background:#ffe8ec}
+.invrow .av{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#e6e9f2;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--sub);overflow:hidden}
+.invrow .av img{width:100%;height:100%;object-fit:cover}
+.invrow .nm{flex:1;min-width:0}
+.invrow .nm b{display:block;font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.invrow .nm span{font-size:11px;color:var(--faint);font-weight:500}
+.invrow .odot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none}
+.invrow .tick{width:22px;height:22px;border-radius:7px;border:1.5px solid #d3d8e6;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:800}
+.invrow.on .tick{background:var(--accent, #e8506b);border-color:var(--accent, #e8506b)}
+.invrow.sent{opacity:.55;cursor:default}
+.invpanel .empty{font-size:12.5px;color:var(--sub);font-weight:500;text-align:center;padding:22px 8px;line-height:1.65}
+.invpanel .empty a{color:var(--accent, #e8506b);font-weight:600;text-decoration:none}
+.invfoot{display:flex;gap:8px;margin-top:12px}
+.invfoot .btn{flex:1;min-height:44px;font-size:13.5px}
 </style>
 </head>
 <body>
@@ -186,17 +210,17 @@ if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed
         <img id="meImg" style="width:34px;height:34px;border-radius:50%;object-fit:cover" alt="">
         <span style="font-size:13.5px;font-weight:600">Playing as <span id="meNm"></span></span>
       </div>
-      <label class="fl">Against the bot</label>
-      <div class="row">
-        <button class="btn btn-line" onclick="startBot('easy')">😌 Easy</button>
-        <button class="btn btn-dark" onclick="startBot('normal')">🙂 Normal</button>
-        <button class="btn btn-line" onclick="startBot('hard')">😈 Hard</button>
-      </div>
       <label class="fl">Against a friend</label>
       <button class="btn btn-accent" id="createBtn">Start a game &amp; invite</button>
       <div class="row" style="margin-top:10px">
         <input type="text" id="codeIn" maxlength="4" placeholder="CODE" style="flex:1;text-transform:uppercase;text-align:center;letter-spacing:4px;font-weight:700">
         <button class="btn btn-line" id="joinBtn" style="flex:1.6">Join</button>
+      </div>
+      <label class="fl">🤖 Play with the Bots</label>
+      <div class="row">
+        <button class="btn btn-line" onclick="startBot('easy')">😌 Easy</button>
+        <button class="btn btn-dark" onclick="startBot('normal')">🙂 Normal</button>
+        <button class="btn btn-line" onclick="startBot('hard')">😈 Hard</button>
       </div>
       <div class="err hidden" id="homeErr"></div>
     </div>
@@ -225,7 +249,7 @@ if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed
     <div class="card center">
       <h2 style="font-size:17px;font-weight:700">Your table is ready</h2>
       <div class="codebox"><div style="font-size:11.5px;font-weight:700;letter-spacing:.09em;color:var(--faint);text-transform:uppercase;margin-bottom:6px">Room code</div><div class="code" id="lobbyCode"></div></div>
-      <button class="btn btn-dark" id="shareBtn">📤 Send the link</button>
+      <button class="btn btn-dark" id="inviteFriendsBtn">👥 Invite friends</button>
       <button class="btn btn-line" id="copyBtn" style="margin-top:10px">Copy link</button>
       <div id="friendRow" class="hidden"></div>
       <p class="mut"><span class="waitdot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;animation:pulse 1.3s infinite"></span>Waiting for your friend — or <a href="#" id="lobbyBot">play the bot instead</a></p>
@@ -242,6 +266,19 @@ if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed
       <div class="bigword" id="overTxt"></div>
       <div class="center" style="font-size:13px;color:var(--sub);margin-bottom:14px" id="overSub"></div>
       <button class="btn btn-dark" id="againBtn">Go again</button>
+    </div>
+  </div>
+</div>
+
+<!-- 👥 invite friends — same picker style as the WordSpies game -->
+<div id="invOv" class="ov hidden" onclick="if(event.target===this)closeInvite()">
+  <div class="invpanel">
+    <h2>👥 Invite friends</h2>
+    <div class="sub">People you follow, follow you, or have chatted with. They get a message and an email.</div>
+    <div class="invlist" id="invList"></div>
+    <div class="invfoot">
+      <button class="btn btn-line" onclick="closeInvite()">Close</button>
+      <button class="btn btn-dark" id="invSend" disabled>Send invite</button>
     </div>
   </div>
 </div>
@@ -317,11 +354,6 @@ function startBot(level) {
   conn().emit('create', { name: myName() }, () => socket.emit('addBot', { level }));
 }
 $('lobbyBot').onclick = e => { e.preventDefault(); socket && socket.emit('addBot', { level: 'normal' }); };
-$('shareBtn').onclick = () => {
-  const url = location.origin + '/four?room=' + S.code;
-  if (navigator.share) navigator.share({ title: 'Connect 4', text: 'Play me at Connect 4 — one tap, no signup.', url }).catch(() => {});
-  else copyLink();
-};
 function copyLink() {
   navigator.clipboard.writeText(location.origin + '/four?room=' + S.code).then(() => flash('Link copied.'));
 }
@@ -455,6 +487,91 @@ function render() {
   }
 }
 function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+// ── invite friends (mirrors the codenames game) ────────────────────────
+let invPicked = new Set();
+let invSent = new Set();
+let invPeople = [];
+
+$('inviteFriendsBtn').onclick = openInvite;
+
+async function openInvite(){
+  if (!S || !S.code) return;
+  invPicked = new Set();
+  $('invOv').classList.remove('hidden');
+  $('invList').innerHTML = '<div class="empty">Loading your people…</div>';
+  $('invSend').disabled = true;
+  try {
+    const r = await fetch('/api/social/people', { credentials: 'same-origin' });
+    if (r.status === 401) {
+      $('invList').innerHTML = '<div class="empty">You need to be logged in to invite friends.<br><a href="/">Log in on the Community</a> and come back to your room.</div>';
+      return;
+    }
+    const j = await r.json();
+    invPeople = (j && j.people) || [];
+    renderInvite();
+  } catch(e){
+    $('invList').innerHTML = '<div class="empty">Couldn\'t load your list — try again in a moment.</div>';
+  }
+}
+window.closeInvite = () => $('invOv').classList.add('hidden');
+
+function renderInvite(){
+  const list = $('invList');
+  if (!invPeople.length){
+    list.innerHTML = '<div class="empty">No one here yet.<br>Follow a few people on the <a href="/">Community</a> and they\'ll show up.</div>';
+    $('invSend').disabled = true;
+    return;
+  }
+  list.innerHTML = invPeople.map(p => {
+    const done = invSent.has(p.id);
+    const on = invPicked.has(p.id);
+    const av = p.photo
+      ? `<span class="av"><img src="${esc(p.photo)}" alt="" loading="lazy"></span>`
+      : `<span class="av">${esc((p.name || '?').charAt(0).toUpperCase())}</span>`;
+    return `<div class="invrow${on ? ' on' : ''}${done ? ' sent' : ''}" data-id="${esc(p.id)}">
+      ${av}
+      <div class="nm"><b>${esc(p.name || 'Player')}</b><span>${done ? 'Invited ✓' : esc(p.rel || '')}</span></div>
+      ${p.online ? '<div class="odot" title="Online now"></div>' : ''}
+      <div class="tick">${on ? '✓' : ''}</div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.invrow').forEach(row => {
+    const id = row.dataset.id;
+    if (invSent.has(id)) return;
+    row.onclick = () => {
+      invPicked.has(id) ? invPicked.delete(id) : invPicked.add(id);
+      renderInvite();
+    };
+  });
+  $('invSend').disabled = !invPicked.size;
+  $('invSend').textContent = invPicked.size ? 'Send invite (' + invPicked.size + ')' : 'Send invite';
+}
+
+$('invSend').onclick = async () => {
+  if (!invPicked.size || !S || !S.code) return;
+  const ids = [...invPicked];
+  $('invSend').disabled = true;
+  $('invSend').textContent = 'Sending…';
+  try {
+    const r = await fetch('/api/social/invite', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: S.code, ids, game: 'four' })
+    });
+    const j = await r.json();
+    if (!j || j.error) { flash(j && j.error ? j.error : 'Couldn\'t send that.'); renderInvite(); return; }
+    (j.ids || []).forEach(id => invSent.add(id));
+    invPicked = new Set();
+    flash(j.sent === 1 ? 'Invite sent ✓' : 'Invites sent to ' + j.sent + ' friends ✓');
+    renderInvite();
+    if (j.sent) setTimeout(closeInvite, 700);
+  } catch(e){
+    flash('Couldn\'t send that — check your connection.');
+    renderInvite();
+  }
+};
 </script>
 <script src="/a2hs.js" defer></script>
 <script>window.WS_GAME = { slug: 'four', label: '🔴 Connect 4' };</script>

@@ -259,6 +259,7 @@ if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed
         <input type="text" id="codeIn" maxlength="4" placeholder="CODE" style="flex:1;text-transform:uppercase;text-align:center;letter-spacing:4px;font-weight:700">
         <button class="btn btn-line" id="joinBtn" style="flex:1.6">Join</button>
       </div>
+      <button class="btn btn-dark" id="botBtn" style="margin-top:10px">🤖 Play with the Bots</button>
       <div class="err hidden" id="homeErr"></div>
     </div>
     <p class="mut">Start a table, send the code to two or three friends, and watch them drop into the seats as they arrive.</p>
@@ -428,6 +429,17 @@ const myName = () => (ME && ME.name) || $('nameIn').value.trim();
 function needName() { if (!myName()) { flash('Type your name first.'); return true; } return false; }
 
 $('createBtn').onclick = () => { if (needName()) return; conn().emit('create', { name: myName() }, () => {}); };
+$('botBtn').onclick = () => {
+  // Solo vs bots: create a room, fill the other three seats with bots,
+  // then start immediately. Same three server events the lobby uses.
+  if (needName()) return;
+  conn().emit('create', { name: myName() }, () => {
+    socket.emit('addBot');
+    socket.emit('addBot');
+    socket.emit('addBot');
+    setTimeout(() => socket.emit('start'), 60);
+  });
+};
 $('joinBtn').onclick = () => {
   if (needName()) return;
   const code = $('codeIn').value.trim().toUpperCase();

@@ -25,11 +25,43 @@ const MAX_CLUB_DESC     = 500;
 const MAX_POSTS         = 200;   // cap per club to protect Redis
 const MAX_COMMENTS      = 100;   // cap per post
 
+// Canonical site origin used inside the SSR club pages (og:url, JSON-LD,
+// sitemap). Kept as a constant so a future domain change is one edit.
+const SITE = 'https://wordspies.co.uk';
+
 function newId(prefix) {
   return prefix + '_' + crypto.randomBytes(6).toString('base64url');
 }
 function clean(s, max) {
   return String(s == null ? '' : s).replace(/[\r]/g, '').trim().slice(0, max);
+}
+// Kebab-case slug from a club name. Strips diacritics + emoji + all
+// non-ASCII so titles like "Русский Разговорный" fall back cleanly to
+// the club id (which is already an ASCII slug). Bounded length keeps
+// URLs sane.
+function slugify(s) {
+  return String(s == null ? '' : s)
+    .normalize('NFKD').replace(/[̀-ͯ]/g, '')  // strip combining marks
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
+// Minimal HTML entity encoding for safe interpolation into meta content
+// attributes + JSON-LD. Never trust user-supplied names/descs here.
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+// Public slug for a club — prefers an explicit slug field, otherwise
+// slugifies the name, and falls back to the raw id if the name yielded
+// nothing usable (e.g. all non-ASCII).
+function slugForClub(c) {
+  if (!c) return '';
+  if (c.slug) return String(c.slug);
+  const s = slugify(c.name || '');
+  return s || String(c.id || '');
 }
 
 // Default clubs seeded on first boot if the /clubs set is empty.
@@ -201,13 +233,53 @@ function mount(app, api, db, opts) {
 
   seedIfEmpty(db);
 
+  // In-memory slug -> id index for the public /clubs/:slug SSR route.
+  // Built lazily on first hit and refreshed if a slug lookup misses
+  // (covers newly added clubs since boot). Redis is source of truth;
+  // this map is just a fast lookup so we don't scan every request.
+  let slugIndex = null;             // Map<slug, id>
+  let slugIndexBuiltAt = 0;
+  async function buildSlugIndex() {
+    const map = new Map();
+    try {
+      const ids = await db.smembers('soc:clubs');
+      for (const id of ids) {
+        const raw = await db.get('soc:club:' + id);
+        if (!raw) continue;
+        let c = null; try { c = JSON.parse(raw); } catch (e) { continue; }
+        if (!c) continue;
+        const slug = slugForClub(c);
+        if (slug && !map.has(slug)) map.set(slug, c.id);
+        // Always allow the raw id as a lookup key too, so old links
+        // like /clubs/club_english_pronunciation keep resolving.
+        if (c.id && !map.has(c.id)) map.set(c.id, c.id);
+      }
+    } catch (e) { /* return empty map on failure */ }
+    slugIndex = map;
+    slugIndexBuiltAt = Date.now();
+    return map;
+  }
+  async function resolveSlug(slugOrId) {
+    if (!slugOrId) return null;
+    if (!slugIndex) await buildSlugIndex();
+    let id = slugIndex.get(slugOrId);
+    if (!id && Date.now() - slugIndexBuiltAt > 5000) {
+      // Miss on a stale index — rebuild once then re-check.
+      await buildSlugIndex();
+      id = slugIndex.get(slugOrId);
+    }
+    return id || null;
+  }
+
   async function fetchClub(id) {
     try {
       const raw = await db.get('soc:club:' + id);
       if (!raw) return null;
       const club = JSON.parse(raw);
       const memberCount = await db.scard('soc:club:' + id + ':members');
-      return { ...club, memberCount };
+      // Always attach a slug so the SPA can build shareable URLs
+      // without having to know the slug rules itself.
+      return { ...club, memberCount, slug: slugForClub(club) };
     } catch (e) { return null; }
   }
 
@@ -355,8 +427,225 @@ function mount(app, api, db, opts) {
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
+  // ── Public SSR route: /clubs/:slug ─────────────────────────────────
+  // Each club gets its own crawlable URL with unique <title>, meta
+  // description, Open Graph / Twitter card tags and JSON-LD, so shared
+  // links in WhatsApp, Discord, Twitter and Google Search render a real
+  // preview instead of the generic app landing. The body ships a tiny
+  // JS bootstrap that hands the user off to /social?club=<slug>, which
+  // is where the interactive SPA opens the club UI. Bots that don't
+  // execute JS still get all the SEO/preview content.
+  //
+  // Registered on `app` (not `api`) so the path is /clubs/:slug — the
+  // /api/clubs collection JSON route on `api` lives under /api/clubs
+  // and is unaffected.
+  function coverUrlFor(c) {
+    // Mirror the client's clubPhotoUrl() so the OG image matches what
+    // the user sees inside the app. Deterministic per club id.
+    const seed = encodeURIComponent((c && c.id) || 'club');
+    return 'https://picsum.photos/seed/' + seed + '/1200/630';
+  }
+  function clubPage(club, posts) {
+    const slug = slugForClub(club);
+    const url = SITE + '/clubs/' + encodeURIComponent(slug);
+    const name = club.name || 'Language Club';
+    const emoji = club.emoji || '🌐';
+    const lang = club.lang || '';
+    const mc = Number(club.memberCount) || 0;
+    const pc = (posts && posts.length) || 0;
+    const title = name + (lang && lang !== 'Any' ? ' — ' + lang + ' language club' : '') + ' | WordSpies';
+    const bareDesc = (club.desc || 'A friendly WordSpies language club.').trim();
+    const desc = (bareDesc + ' Join ' + mc.toLocaleString() + ' ' + (mc === 1 ? 'member' : 'members') + ' practising together on WordSpies.').slice(0, 300);
+    const cover = coverUrlFor(club);
+    // JSON-LD: DiscussionForumPosting is the closest schema.org fit for
+    // a topic-based community feed (each club is a forum, each post a
+    // reply). CollectionPage wrap-around gives it a stable identity.
+    const jsonld = {
+      '@context': 'https://schema.org',
+      '@type': 'DiscussionForumPosting',
+      '@id': url,
+      url: url,
+      headline: name,
+      name: name,
+      description: bareDesc.slice(0, 300),
+      inLanguage: lang || 'en',
+      image: cover,
+      author: { '@type': 'Organization', name: 'WordSpies' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'WordSpies',
+        logo: { '@type': 'ImageObject', url: SITE + '/icon-192.png' }
+      },
+      interactionStatistic: [
+        { '@type': 'InteractionCounter', interactionType: 'https://schema.org/JoinAction',    userInteractionCount: mc },
+        { '@type': 'InteractionCounter', interactionType: 'https://schema.org/CommentAction', userInteractionCount: pc }
+      ],
+      dateCreated: new Date(Number(club.createdAt) || Date.now()).toISOString()
+    };
+    const spaHref = '/social?club=' + encodeURIComponent(slug);
+    return `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0f7500">
+<link rel="canonical" href="${esc(url)}">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<meta property="og:site_name" content="WordSpies">
+<meta property="og:locale" content="en_GB">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${esc(name + ' ' + emoji)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:url" content="${esc(url)}">
+<meta property="og:image" content="${esc(cover)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(name)}">
+<meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:image" content="${esc(cover)}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">${JSON.stringify(jsonld)}</script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;background:#fafafa;color:#1c1e21;line-height:1.55}
+.wrap{max-width:720px;margin:0 auto;padding:32px 22px 60px}
+.logo{font-family:'Fredoka',sans-serif;font-weight:600;font-size:22px;text-decoration:none;display:inline-block;margin-bottom:18px}
+.logo .r{color:#ff4d6b}.logo .b{color:#3d7bff}
+.cover{border-radius:20px;overflow:hidden;height:220px;background:#3d7bff center/cover no-repeat;background-image:url('${esc(cover)}');margin-bottom:20px;position:relative}
+.cover::after{content:'';position:absolute;inset:auto 0 0 0;height:65%;background:linear-gradient(to top,rgba(0,0,0,.55),transparent)}
+h1{font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:28px;letter-spacing:-.4px;margin:0 0 8px;color:#111318}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;color:#5f6675;font-size:13.5px;font-weight:500;margin-bottom:16px}
+.meta .chip{background:#f4f5f7;border-radius:99px;padding:5px 12px}
+.desc{font-size:16px;color:#242628;margin:0 0 26px}
+.cta{background:linear-gradient(135deg,#0f7500,#22c07a);color:#fff;padding:14px 26px;border-radius:99px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;box-shadow:0 8px 22px rgba(15,117,0,.28)}
+.cta:hover{filter:brightness(1.06)}
+.note{color:#7b8090;font-size:12.5px;margin-top:22px}
+.posts{margin-top:32px;border-top:1px solid #e6e8ec;padding-top:22px}
+.posts h2{font-size:17px;font-weight:700;color:#374151;margin:0 0 12px}
+.post{background:#fff;border:1px solid #eef0f4;border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.post .who{font-weight:700;font-size:13.5px;color:#111318;margin-bottom:4px}
+.post .body{font-size:14px;color:#242628;white-space:pre-wrap;word-wrap:break-word}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
+  <div class="cover" role="img" aria-label="${esc(name)} cover"></div>
+  <h1>${esc(name)} ${esc(emoji)}</h1>
+  <div class="meta">
+    ${lang ? `<span class="chip">${esc(lang)}</span>` : ''}
+    <span class="chip">${mc.toLocaleString()} ${mc === 1 ? 'member' : 'members'}</span>
+    ${pc ? `<span class="chip">${pc} recent ${pc === 1 ? 'post' : 'posts'}</span>` : ''}
+  </div>
+  <p class="desc">${esc(bareDesc)}</p>
+  <a class="cta" href="${esc(spaHref)}">Open club →</a>
+  <p class="note">You're on the preview page. Tap the button above to open the live club feed inside WordSpies.</p>
+  ${posts && posts.length ? `<div class="posts"><h2>Recent posts</h2>${
+    posts.slice(0, 5).map(p => `<div class="post"><div class="who">${esc(p.name || 'Member')}</div><div class="body">${esc((p.text || '').slice(0, 500))}</div></div>`).join('')
+  }</div>` : ''}
+</div>
+<script>
+// Hand the user off to the SPA. Runs after DOM parse so bots that
+// don't execute JS still index the rendered content above. Delay is
+// deliberate — gives crawlers a beat to see the page before we swap
+// them into the app, and stops back-button loops (we replaceState so
+// they can back out of the SPA to wherever they came from).
+(function(){
+  try {
+    var isBot = /bot|crawler|spider|slurp|facebookexternalhit|whatsapp|twitterbot|linkedinbot|discordbot|slackbot|telegrambot|preview|embedly/i.test(navigator.userAgent || '');
+    if (isBot) return;
+    setTimeout(function(){
+      try { window.location.replace(${JSON.stringify(spaHref)}); } catch (e) {}
+    }, 60);
+  } catch (e) {}
+})();
+</script>
+</body></html>`;
+  }
+  function notFoundPage(slug) {
+    const url = SITE + '/clubs/' + encodeURIComponent(slug || '');
+    return `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club not found — WordSpies</title>
+<meta name="description" content="This WordSpies language club could not be found. Browse all clubs to find one that fits your language.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="${esc(url)}">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#fafafa;color:#1c1e21;padding:60px 22px;text-align:center}
+h1{font-size:26px;margin:0 0 12px}
+p{color:#5f6675;font-size:15px;margin:0 0 22px}
+a{background:#0f7500;color:#fff;padding:12px 22px;border-radius:99px;text-decoration:none;font-weight:600}
+</style></head>
+<body>
+<h1>Club not found</h1>
+<p>The club you're looking for doesn't exist or has been removed.</p>
+<a href="/social">Browse all clubs</a>
+</body></html>`;
+  }
+  app.get('/clubs/:slug', async (req, res) => {
+    const slug = String(req.params.slug || '').toLowerCase().slice(0, 120);
+    try {
+      const id = await resolveSlug(slug);
+      if (!id) {
+        res.status(404).type('html').send(notFoundPage(slug));
+        return;
+      }
+      const club = await fetchClub(id);
+      if (!club) {
+        res.status(404).type('html').send(notFoundPage(slug));
+        return;
+      }
+      // If the request came in via the raw id (legacy) but the club
+      // has a nicer slug, 301 to the canonical URL so link equity
+      // consolidates on one path.
+      const canonicalSlug = slugForClub(club);
+      if (canonicalSlug && slug !== canonicalSlug) {
+        return res.redirect(301, '/clubs/' + encodeURIComponent(canonicalSlug));
+      }
+      const posts = await fetchPosts(id, 10).catch(() => []);
+      res.setHeader('Cache-Control', 'public, max-age=120');
+      res.type('html').send(clubPage(club, posts));
+    } catch (e) {
+      // Never 500 an SEO landing route — degrade to a soft 404.
+      res.status(404).type('html').send(notFoundPage(slug));
+    }
+  });
+
+  // Clubs sitemap — separate file so it can be regenerated on the fly
+  // without touching the static /public/sitemap.xml. robots.txt lists
+  // both. Includes every club, ordered by member count (proxy for
+  // "how alive is this page") so the strongest URLs come first.
+  app.get('/sitemap-clubs.xml', async (req, res) => {
+    try {
+      const ids = await db.smembers('soc:clubs');
+      const rows = [];
+      for (const id of ids) {
+        const c = await fetchClub(id);
+        if (!c) continue;
+        rows.push(c);
+      }
+      rows.sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0));
+      const urls = rows.map(c => {
+        const slug = slugForClub(c);
+        const lastmod = new Date(Number(c.createdAt) || Date.now()).toISOString().slice(0, 10);
+        return `  <url><loc>${SITE}/clubs/${encodeURIComponent(slug)}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`;
+      }).join('\n');
+      res.setHeader('Cache-Control', 'public, max-age=600');
+      res.type('application/xml').send(
+        `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+      );
+    } catch (e) {
+      res.status(500).type('application/xml').send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>\n');
+    }
+  });
+
   console.log('clubs module: mounted');
-  return { fetchClub, fetchPosts };
+  return { fetchClub, fetchPosts, slugForClub, resolveSlug };
 }
 
 module.exports = { mount };

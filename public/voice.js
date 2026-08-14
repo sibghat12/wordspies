@@ -635,8 +635,19 @@
          try { await openMic(); }
          catch (e) { emit('mic', { on: false, err: e.message || 'Microphone permission denied.' }); throw e; }
          micOn = true;
+         // Announce mic-on to the room BEFORE the Cloudflare publish round-trip
+         // so peers' mic chips flip the instant we unmute. The v-tracks event
+         // that fires after publishTrack() is authoritative for audio routing
+         // (subscribers use trackNames), but it can take 300-800ms and it
+         // never fires at all if publishTrack throws — leaving remote UIs
+         // stuck showing us as muted. Owner bug 2026-08-14: 'I speak, mic
+         // is on for me but others can't see my mic is on'.
+         try { socket.emit('v-mic', { on: true }); } catch (e) {}
          if (activePath.publishLocal) { try { await activePath.publishLocal(); } catch (e) { console.warn(e); } }
        } else {
+         // Announce mic-off up-front so peers' chips flip immediately, before
+         // the unpublish round-trip. Same reasoning as the mic-on branch.
+         try { socket.emit('v-mic', { on: false }); } catch (e) {}
          if (activePath && activePath.unpublishLocal) { try { await activePath.unpublishLocal(); } catch (e) {} }
          closeMic();
          micOn = false;

@@ -475,9 +475,26 @@ const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 // Language-name → flag emoji lookup for the header chips. Kept local so
 // party.html has no runtime dependency on /social.html's constants.
 // Owner ask 14 Aug 2026: show flag + name of the party's language(s).
-const PARTY_LANG_FLAG = { English:'🇬🇧', Spanish:'🇪🇸', French:'🇫🇷', German:'🇩🇪', Italian:'🇮🇹',
-  Portuguese:'🇵🇹', Russian:'🇷🇺', Japanese:'🇯🇵', Korean:'🇰🇷', Mandarin:'🇨🇳', Chinese:'🇨🇳',
-  Arabic:'🇸🇦', Hindi:'🇮🇳', Turkish:'🇹🇷', Dutch:'🇳🇱', Polish:'🇵🇱', Any:'🌍' };
+// Mirrors the master LANGS list in /social.html — when adding a
+// language, update both places. Alphabetised.
+const PARTY_LANG_FLAG = {
+  Amharic:'🇪🇹', Arabic:'🇸🇦', Armenian:'🇦🇲', Azerbaijani:'🇦🇿',
+  Bengali:'🇧🇩', Bulgarian:'🇧🇬', Burmese:'🇲🇲', Chinese:'🇨🇳',
+  Croatian:'🇭🇷', Czech:'🇨🇿', Danish:'🇩🇰', Dutch:'🇳🇱',
+  English:'🇬🇧', Estonian:'🇪🇪', Finnish:'🇫🇮', French:'🇫🇷',
+  Georgian:'🇬🇪', German:'🇩🇪', Greek:'🇬🇷', Gujarati:'🇮🇳',
+  Hebrew:'🇮🇱', Hindi:'🇮🇳', Hungarian:'🇭🇺', Icelandic:'🇮🇸',
+  Indonesian:'🇮🇩', Italian:'🇮🇹', Japanese:'🇯🇵', Kazakh:'🇰🇿',
+  Khmer:'🇰🇭', Korean:'🇰🇷', Kurdish:'🇮🇶', Latvian:'🇱🇻',
+  Lithuanian:'🇱🇹', Malay:'🇲🇾', Mandarin:'🇨🇳', Marathi:'🇮🇳',
+  Nepali:'🇳🇵', Norwegian:'🇳🇴', Persian:'🇮🇷', Polish:'🇵🇱',
+  Portuguese:'🇵🇹', Punjabi:'🇮🇳', Romanian:'🇷🇴', Russian:'🇷🇺',
+  Serbian:'🇷🇸', Sinhala:'🇱🇰', Slovak:'🇸🇰', Spanish:'🇪🇸',
+  Swahili:'🇰🇪', Swedish:'🇸🇪', Tagalog:'🇵🇭', Tamil:'🇮🇳',
+  Telugu:'🇮🇳', Thai:'🇹🇭', Turkish:'🇹🇷', Ukrainian:'🇺🇦',
+  Urdu:'🇵🇰', Uzbek:'🇺🇿', Vietnamese:'🇻🇳', Yoruba:'🇳🇬',
+  Zulu:'🇿🇦', Any:'🌍'
+};
 function paintPartyLangs(langs){
   const host = $('pLangs'); if (!host) return;
   const arr = Array.isArray(langs) ? langs : [];

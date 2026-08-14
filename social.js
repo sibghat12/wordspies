@@ -19,6 +19,11 @@ const SESS_TTL = 60 * 60 * 24 * 90; // 90 days
 const PHOTO_DIR = process.env.SOC_PHOTOS || path.join(__dirname, 'social-photos');
 const VOICE_DIR = process.env.SOC_VOICE   || path.join(__dirname, 'social-voice');
 const IMAGE_DIR = process.env.SOC_IMAGES  || path.join(__dirname, 'social-images');
+// TTS cache — every unique {text, lang, voice} hits ElevenLabs at most
+// once site-wide. Files land under /opt/wordspies/tts-cache/<sha>.mp3
+// in prod. Phrases don't expire — cache lives forever until we manually
+// clean up. See /api/social/tts below.
+const TTS_CACHE_DIR = process.env.SOC_TTS_CACHE || path.join(__dirname, 'tts-cache');
 // "Continue with Google": set SOC_GOOGLE_CLIENT_ID in the service environment
 // to switch the button on. Without it, email sign-up still works fine.
 const GOOGLE_CLIENT_ID = process.env.SOC_GOOGLE_CLIENT_ID || null;
@@ -27,6 +32,7 @@ function mount(app, redis) {
   fs.mkdirSync(PHOTO_DIR, { recursive: true });
   fs.mkdirSync(VOICE_DIR, { recursive: true });
   fs.mkdirSync(IMAGE_DIR, { recursive: true });
+  fs.mkdirSync(TTS_CACHE_DIR, { recursive: true });
 
   // ---- tiny store: redis when available, in-memory otherwise (local dev) ----
   const mem = new Map();
@@ -977,6 +983,56 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // route prefix; failure to load can't take down the rest of social.
   try { require('./clubs').mount(app, api, db, { userFromReq }); }
   catch (e) { console.error('clubs module failed to load:', e.message); }
+
+  // ─── WhatsApp-Web-style single active session (owner ask 14 Aug 2026) ──
+  // When the same account opens WordSpies in a NEW tab / browser / device,
+  // the new tab wins and the old tabs politely disable themselves with a
+  // "You opened WordSpies in another window — click here to resume" overlay.
+  // Nothing destructive: the cookie stays valid, so the user can reclaim
+  // the session with one tap (which then supersedes the new tab, and so on).
+  //
+  // Mechanics:
+  //   1. Client calls POST /session/register on load (post-login). Server
+  //      writes a fresh random sessionId to soc:activeSess:<uid> with a
+  //      short TTL and returns it. Client keeps it in memory.
+  //   2. Client polls GET /session/check?sid=<mine> every ~5s while the
+  //      tab is visible. Server returns { current: sid === stored }.
+  //   3. When current === false, the client shows the soft overlay + stops
+  //      most background work. Clicking "Take over" just calls /register
+  //      again — the older tab is now the "current" one and any OTHER tab
+  //      that was current will discover it on its next poll.
+  //   4. Party / active-game tabs SKIP registration entirely so the mic
+  //      never gets kicked mid-conversation (owner constraint).
+  //
+  // Redis key: soc:activeSess:<uid> → sessionId (hex). TTL == SESS_TTL
+  // so a truly abandoned account eventually falls out.
+  const SID_TTL = 60 * 60 * 24 * 7;   // 7 days — plenty for the poll to refresh
+  const ACTIVE_SID_KEY = uid => 'soc:activeSess:' + uid;
+
+  api.post('/session/register', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      const sid = crypto.randomBytes(16).toString('hex');
+      await db.set(ACTIVE_SID_KEY(u.id), sid, SID_TTL);
+      res.json({ sid });
+    } catch (e) { console.error('session/register:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  api.get('/session/check', async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.json({ current: true, loggedOut: true });
+      const mine = String(req.query.sid || '');
+      if (!/^[a-f0-9]{32}$/.test(mine)) return res.json({ current: true });   // no sid → don't kick
+      const stored = await db.get(ACTIVE_SID_KEY(u.id));
+      // If Redis has forgotten (TTL expired, restart on in-memory), consider
+      // the caller current rather than kicking them out on our own housekeeping.
+      if (!stored) return res.json({ current: true });
+      res.json({ current: stored === mine });
+    } catch (e) { console.error('session/check:', e.message); res.json({ current: true }); }
+  });
   // Voice messages in DMs. Client records a short opus/webm blob (60 s max),
   // POSTs it here as multipart form-data, we save under /social-voice with a
   // random name, return the URL. Client then sends /message with kind:'voice'
@@ -2078,6 +2134,141 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       res.send(buf);
     } catch (e) {
       console.error('[voice] error:', e.message);
+      res.status(500).json({ error: 'Something went wrong.' });
+    }
+  });
+
+  // ─── POST /api/social/tts ──────────────────────────────────────────
+  // General-purpose text-to-speech for the Learn tab lesson phrases
+  // (and any future TTS surface). Every unique {text, lang, voice}
+  // triple is generated exactly once via ElevenLabs and then served
+  // from disk forever — so 1000 users tapping the same phrase = 1 API
+  // call. Client falls back to browser speechSynthesis on 4xx/5xx.
+  //
+  // Owner ask 14 Aug 2026: "use ElevenLabs everything we use speech".
+  // Cost concern: ~$0.15 per 1K chars, so cache aggression is the
+  // whole game. Disk cache (not Redis) because phrases accumulate
+  // forever and audio blobs don't belong in Redis.
+  //
+  // BCP-47 → ElevenLabs voice mapping. eleven_multilingual_v2 handles
+  // 29 languages with a single voice, so we default all Latin-alphabet
+  // languages to Rachel (warm, neutral). CJK + a few others get more
+  // native-sounding picks from the free voice library.
+  const TTS_VOICE_FOR_LANG = {
+    // Default = Rachel; add overrides only when a different voice reads
+    // the language noticeably better.
+    'ja': 'oWAxZDx7w5VEj9dCyTzz', // Grace — decent JP prosody
+    'zh': 'oWAxZDx7w5VEj9dCyTzz',
+    'ko': 'oWAxZDx7w5VEj9dCyTzz',
+    'ar': 'pNInz6obpgDQGcFmaJgB', // Adam — deeper for Arabic
+    'hi': 'pFZP5JQG7iQjIQuC4Bku', // Lily
+    'ur': 'pFZP5JQG7iQjIQuC4Bku'
+  };
+  const TTS_DEFAULT_VOICE = '21m00Tcm4TlvDq8ikWAM'; // Rachel
+
+  api.post('/tts', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      // Guests denied — TTS costs real money and every logged-in user
+      // is rate-limited below. If we ever want a public lesson demo we
+      // can loosen this and rely on a stricter per-IP bucket.
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      if (process.env.AI_VOICE_ENABLED === 'false') return res.status(503).json({ error: 'Voice is off.' });
+      if (!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ error: 'Voice is not configured.' });
+      // 60/min per IP — a page preloading 5 phrases + a few taps
+      // won't hit it, but a runaway loop will.
+      if (limited(req, 'tts', 60)) return res.status(429).json({ error: 'Slow down a little ✋' });
+
+      const body = req.body || {};
+      const text = String(body.text || '').trim().slice(0, 500);
+      const lang = String(body.lang || 'en').trim().slice(0, 12).toLowerCase();
+      const voiceIn = String(body.voice || '').trim();
+      if (!text) return res.status(400).json({ error: 'Empty text.' });
+
+      // Only allow voice IDs we know — never let the client point us
+      // at an arbitrary ElevenLabs voice ID (they'd pay for the
+      // request, we'd log the cost).
+      const primaryLang = lang.split('-')[0].split('_')[0];
+      const voiceId = (voiceIn && Object.values(TTS_VOICE_FOR_LANG).includes(voiceIn))
+        ? voiceIn
+        : (TTS_VOICE_FOR_LANG[primaryLang] || TTS_DEFAULT_VOICE);
+
+      // Cache key = sha256(text|lang|voice). Same text in the same
+      // language and voice always hits the same file.
+      const hash = crypto.createHash('sha256').update(text + '|' + primaryLang + '|' + voiceId).digest('hex');
+      const cachePath = path.join(TTS_CACHE_DIR, hash + '.mp3');
+
+      const sendCached = (buf, hit) => {
+        res.setHeader('Content-Type', 'audio/mpeg');
+        // Long browser cache — the URL is stable per {text,lang,voice}.
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        res.setHeader('X-TTS-Cache', hit ? 'HIT' : 'MISS');
+        res.setHeader('Content-Length', String(buf.length));
+        res.send(buf);
+      };
+
+      // Cache hit — no API call, no cost.
+      try {
+        const cached = await fs.promises.readFile(cachePath);
+        return sendCached(cached, true);
+      } catch (e) { /* miss, fall through */ }
+
+      // Cache miss — call ElevenLabs. Multilingual v2 handles 29
+      // languages from one voice; the model auto-detects the language
+      // from the text, so we don't need to pass a language hint.
+      const model = process.env.TTS_MODEL || 'eleven_multilingual_v2';
+      const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_22050_32`;
+      let upstream;
+      try {
+        const controller = new AbortController();
+        const to = setTimeout(() => controller.abort(), 5000);
+        try {
+          upstream = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'xi-api-key': process.env.ELEVENLABS_API_KEY,
+              'Content-Type': 'application/json',
+              'Accept': 'audio/mpeg'
+            },
+            body: JSON.stringify({
+              text,
+              model_id: model,
+              voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true }
+            }),
+            signal: controller.signal
+          });
+        } finally { clearTimeout(to); }
+      } catch (e) {
+        console.error('[tts] fetch failed:', e.message);
+        return res.status(502).json({ error: 'TTS unreachable.' });
+      }
+      if (!upstream.ok) {
+        const errBody = await upstream.text().catch(() => '');
+        console.error('[tts] ElevenLabs', upstream.status, errBody.slice(0, 200));
+        return res.status(upstream.status === 401 || upstream.status === 402 ? 503 : 502).json({ error: 'TTS failed.' });
+      }
+      const buf = Buffer.from(await upstream.arrayBuffer());
+
+      // Persist to disk BEFORE responding so a slow write can't lose
+      // the audio if the client bails. Best-effort — if disk is full
+      // we still serve the audio, just skip cache.
+      try { await fs.promises.writeFile(cachePath, buf); }
+      catch (e) { console.error('[tts] cache write failed:', e.message); }
+
+      // Cost log — same soc:ai-usage list the Learn plan generator
+      // uses, so the daily spend rollup covers everything AI-touched
+      // in one place. 0-cost cache hits are NOT logged.
+      try {
+        const day = new Date().toISOString().slice(0, 10);
+        const cost = (text.length / 1000) * 0.15; // eleven_multilingual_v2 tier
+        const entry = { kind: 'tts', u: me.id, lang: primaryLang, voice: voiceId, chars: text.length, bytes: buf.length, $: cost.toFixed(6), t: Date.now() };
+        await db.rpush('soc:ai-usage:' + day, JSON.stringify(entry));
+        await db.ltrim('soc:ai-usage:' + day, -2000, -1);
+      } catch (e) { /* logging never blocks the response */ }
+
+      return sendCached(buf, false);
+    } catch (e) {
+      console.error('[tts] error:', e.message);
       res.status(500).json({ error: 'Something went wrong.' });
     }
   });
