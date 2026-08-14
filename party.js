@@ -57,6 +57,12 @@ function mount(app, io, options = {}) {
       // their mic is currently open. Clients render the mic mute/unmute
       // chip from this and the local micOn state for self.
       tracks: (m.vTracks || []).slice(0, 4),
+      // Explicit mic-on flag driven by the v-mic event (fires the instant
+      // the user taps unmute, before Cloudflare's publish round-trip
+      // completes and before vTracks is populated). Lets remote clients
+      // flip the mic chip immediately. Owner bug 2026-08-14: 'I speak,
+      // my mic is on for me but others can't see my mic is on'.
+      micOn: !!m.micOn,
       handRaised: !!m.handRaised, handAt: m.handAt || 0,
       // How many of your 2 messages you've used (only sent back to yourself
       // via the personal `you` field below).
@@ -64,6 +70,7 @@ function mount(app, io, options = {}) {
     }));
     return {
       code: r.code, title: r.title, subtitle: r.subtitle || '',
+      langs: Array.isArray(r.langs) ? r.langs : [],
       visibility: r.visibility, hostUid: r.hostUid, hostId: r.hostId,
       createdAt: r.createdAt, touched: r.touched,
       cap: r.cap, count: r.members.size,
@@ -191,6 +198,16 @@ function mount(app, io, options = {}) {
 
       const prof = socket.profile;
       const uid = prof && prof.uid;
+      // Owner ask 14 Aug 2026: "guests should NOT be able to join a party
+      // — push them to make an account first." Belt-and-braces guard —
+      // the client also pre-checks and redirects to /social?login=1&next=,
+      // but reject at the socket too so a hand-crafted client can't sneak
+      // in as a Guest. The 'auth-required' code lets the client redirect
+      // cleanly to signup instead of just showing a toast.
+      if (!uid) {
+        socket.emit('err', { msg: 'Please make an account to join this party.', code: 'auth-required' });
+        return;
+      }
       // Private-party gate: host + their circle. A call room
       // (isCall=true) also has an explicit callWhitelist so the callee
       // can join even when they're not in the caller's follow circle.
@@ -200,9 +217,6 @@ function mount(app, io, options = {}) {
       // users who received the link get in regardless of circle.
       // (Fixes owner-reported: 'users can't join with the link'.)
       if (r.visibility === 'private' && uid !== r.hostUid) {
-        if (!uid) {
-          return fail('This is a private party — please log in first, then open the link again.');
-        }
         // Logged-in user with the link: treated as invited, added to
         // the room's callWhitelist so they can re-enter freely.
         if (!r.callWhitelist) r.callWhitelist = new Set();
@@ -214,7 +228,18 @@ function mount(app, io, options = {}) {
       // shouldn't be more than one but if there is — dead sockets that
       // never cleaned up — we don't want stale seats). Carry over the
       // most-recent seat's role/msgs/hand so a refresh reseats correctly.
+      //
+      // Owner bug 2026-08-14 (two-tab same-user): the mic-on / vTracks /
+      // cfSession that Tab A published were being wiped when Tab B took
+      // the seat — so Tab B (and every other participant) saw the user
+      // as muted even though Tab A's mic was still hot on Cloudflare.
+      // Carry those over too. If ANY previous socket for this uid was
+      // still connected AND had mic open, the seat stays "unmuted" from
+      // the room's POV. Tab A's socket still gets 'replaced' + leaves
+      // the room, but its audio stream on CF keeps flowing until the
+      // user closes that tab — matching what listeners actually hear.
       let carryRole = null, carryMsgs = 0, carryHand = false, carriedAt = 0;
+      let carryMic = false, carryTracks = [], carryCfSession = null, carryFrom = 0;
       if (uid) {
         const toDelete = [];
         for (const [oldId, m] of r.members) {
@@ -225,6 +250,16 @@ function mount(app, io, options = {}) {
             carryMsgs = m.msgsUsed || 0;
             carryHand = !!m.handRaised;
             carriedAt = t;
+          }
+          // Mic/tracks/cfSession: prefer a still-connected socket (the
+          // one actually publishing right now) over a disconnected seat
+          // in its grace window. Tie-break by most-recent connected.
+          const rank = m.connected ? 2 : (m.discAt ? 1 : 0);
+          if (rank > carryFrom || (rank === carryFrom && (m.discAt || 0) >= carriedAt)) {
+            carryMic = !!m.micOn;
+            carryTracks = Array.isArray(m.vTracks) ? m.vTracks.slice() : [];
+            carryCfSession = m.cfSession || null;
+            carryFrom = rank;
           }
           toDelete.push(oldId);
         }
@@ -247,7 +282,14 @@ function mount(app, io, options = {}) {
         photo: (prof && prof.photo) || null,
         role,
         connected: true, msgsUsed: carryMsgs, handRaised: carryHand,
-        cfSession: (data && data.cfSession) || null
+        // Carry over the mic/publish state from the prior same-uid seat
+        // so a second tab / device doesn't reset the user to "muted"
+        // while the original tab is still actively publishing to CF.
+        // Only speakers/hosts can be treated as unmuted from the room's
+        // POV — matches the guard in the v-mic handler below.
+        micOn: (role === 'host' || role === 'speaker') ? carryMic : false,
+        vTracks: (role === 'host' || role === 'speaker') ? carryTracks : [],
+        cfSession: (data && data.cfSession) || carryCfSession || null
       };
       r.members.set(socket.id, member);
       if (role === 'host' && (!r.hostId || isCreator)) r.hostId = socket.id;
@@ -327,6 +369,10 @@ function mount(app, io, options = {}) {
       // AND emit a targeted 'force-mute' event so their client tears
       // down its local mic stream.
       target.vTracks = [];
+      // Also clear the explicit mic-on flag so their remote chip flips
+      // to muted the instant we demote them — without waiting for their
+      // client's force-mute handler to emit v-mic {on:false} back.
+      target.micOn = false;
       const tsock = nsp.sockets.get(target.id);
       if (tsock) { try { tsock.emit('force-mute'); } catch (e) {} }
       // The ORIGINAL host (creatorUid) can't be demoted — otherwise a fresh
@@ -451,6 +497,21 @@ function mount(app, io, options = {}) {
       }
       socket.emit('v-roster', { peers });
     });
+    // Lightweight mic-on/off signal, decoupled from Cloudflare publish.
+    // v-tracks is authoritative for audio routing but arrives 300-800ms
+    // late (after the CF /tracks/new round-trip) and never fires at all
+    // if publishTrack throws — leaving remote UIs stuck showing the
+    // speaker as muted. v-mic fires immediately from setMic() so the
+    // chip flips in sync with the local UI. Owner bug 2026-08-14.
+    socket.on('v-mic', (data) => {
+      if (!room || !me) return;
+      // Only speakers/hosts can be "unmuted" from the room's POV — a
+      // listener who tries to open a mic gets rejected here so their
+      // chip never lights up on other people's screens.
+      if (me.role !== 'host' && me.role !== 'speaker') return;
+      me.micOn = !!(data && data.on);
+      broadcast(room);
+    });
     socket.on('v-tracks', (data) => {
       if (!room || !me) return;
       // Reject publish attempts from listeners. Their voice.js may have
@@ -511,7 +572,10 @@ function mount(app, io, options = {}) {
         return;
       }
       const m = r.members.get(socket.id);
-      if (m) { m.connected = false; m.discAt = Date.now(); }
+      // Also clear vTracks + micOn on disconnect so a slot in the 5-min
+      // grace window doesn't visually show a green mic chip for someone
+      // who's gone offline. Rejoin repopulates both via v-join/v-mic.
+      if (m) { m.connected = false; m.discAt = Date.now(); m.vTracks = []; m.micOn = false; }
       socket.to(r.code).emit('v-peer', { id: socket.id, on: false });
       broadcast(r);
     });
