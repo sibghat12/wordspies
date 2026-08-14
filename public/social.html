@@ -2869,8 +2869,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        - Plan exists → 5 numbered lesson cards with progress bar -->
   <div id="tabLearn" class="hidden">
     <div class="ln-wrap">
-      <!-- State A: no plan yet -->
-      <div id="lnEmpty" class="ln-hero hidden">
+      <!-- Method grid — always the visible face of the Learn tab.
+           Tapping 'AI Plan' opens the plans modal (grid of your plans
+           + Create-new). -->
+      <div id="lnEmpty" class="ln-hero">
         <h2>How would you like to learn?</h2>
         <p>Pick a method below. More coming as we go — voice-guided lessons, roleplay conversations, and a special Kids Mode are on the way.</p>
         <div class="ln-methods">
