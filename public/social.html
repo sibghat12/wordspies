@@ -1117,15 +1117,17 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
      - Reference count + quote icon (quiet grey) if refCount > 0.
    Owner clarified 1 Aug 2026. */
 .wcard-newref{position:absolute;top:10px;right:10px;z-index:2;background:#00c2a0;color:#fff;font-size:8.5px;font-weight:800;letter-spacing:.7px;padding:2.5px 8px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18)}
-/* References badge on member cards — real typographic curly-quote look,
-   green tint (owner ask 14 Aug 2026: 'make it a good quote icon, maybe
-   blue... or green'). */
-.wcard-refct{position:absolute;top:8px;right:8px;z-index:2;display:inline-flex;align-items:center;gap:4px;
-  color:#15803d;background:#dcfce7;border:1px solid #86efac;
-  padding:3px 9px 3px 8px;border-radius:999px;
-  font-size:12px;font-weight:800;letter-spacing:.2px;
-  box-shadow:0 1px 3px rgba(34,197,94,.15)}
-.wcard-refct svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
+/* References badge on member cards. Count sits OUTSIDE the icon —
+   number in plain dark-green ink on the card, icon in a small green
+   circle beside it (owner ask 14 Aug 2026 v2). */
+.wcard-refct{position:absolute;top:8px;right:8px;z-index:2;display:inline-flex;align-items:center;gap:5px;
+  background:transparent;border:0;padding:0}
+.wcard-refct-n{color:#15803d;font-size:13px;font-weight:800;letter-spacing:.2px;
+  text-shadow:0 1px 2px rgba(255,255,255,.9)}
+.wcard-refct-i{width:22px;height:22px;border-radius:50%;background:#dcfce7;border:1px solid #86efac;
+  color:#15803d;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 1px 3px rgba(34,197,94,.18)}
+.wcard-refct-i svg{width:12px;height:12px;fill:currentColor;display:block}
 .wcard{position:relative}
 .mp-2col{display:grid;gap:16px}
 @media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
@@ -1680,7 +1682,16 @@ body.authmodal .fab-create{display:none !important}
 .pt-msheet{position:relative;background:#fff;border-radius:22px;padding:26px 24px 22px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.32);animation:ptmodal .22s cubic-bezier(.2,1.1,.4,1)}
 /* Big variant used by the party-creation dialog (owner ask 10 Aug
    2026 — 'make it big popup'). Wider, taller, chip grid for flags. */
-.pt-msheet-big{max-width:520px;padding:26px 26px 22px;max-height:90vh;overflow-y:auto}
+/* Party create sheet — extra breathing room top/bottom + wider side
+   padding + more space between fields (owner ask 14 Aug 2026). */
+.pt-msheet-big{max-width:520px;padding:34px 32px 30px;max-height:90vh;overflow-y:auto}
+.pt-msheet-big .pt-flabel{margin:20px 0 8px}
+.pt-msheet-big .pt-flabel:first-of-type{margin-top:22px}
+.pt-msheet-big .pt-finput,
+.pt-msheet-big .pt-fselect{padding:13px 16px}
+.pt-msheet-big .pt-mgo{margin-top:28px;padding:15px}
+.pt-msheet-big h3{margin-bottom:4px}
+@media(max-width:520px){.pt-msheet-big{padding:26px 20px 24px}}
 /* Language multi-select dropdown (owner ask 11 Aug 2026 v2). Button
    shows the currently-chosen flags; opens the chip grid below. */
 .pt-fselect{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .12s}
@@ -2650,6 +2661,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    row entry, not a shout). Small, gold, sits with the pin/clock/handle. */
 .rf-founder-chip{display:inline-flex;align-items:center;gap:5px;background:#fff8e2;border:1px solid #f0d685;
   color:#7a5300;border-radius:99px;padding:3px 9px;font-size:11.5px;font-weight:700;line-height:1.3;margin-left:2px}
+/* Developer chip (owner-only override) — blue, sits in the same slot. */
+.rf-dev-chip{display:inline-flex;align-items:center;gap:5px;background:#e0f2fe;border:1px solid #7dd3fc;
+  color:#0c4a6e;border-radius:99px;padding:3px 9px;font-size:11.5px;font-weight:700;line-height:1.3;margin-left:2px}
+/* DEV badge in the mark() slot next to the name — small, dark blue pill. */
+.dev-badge{display:inline-flex;align-items:center;gap:3px;background:#0c4a6e;color:#fff;border-radius:6px;
+  padding:1px 6px;font-size:9.5px;font-weight:800;letter-spacing:.6px;line-height:1.4;margin-left:4px;
+  font-family:'Inter',system-ui,sans-serif}
 /* Your referrals: X / 5 tile on /me — subtle, sits below the visitors card. */
 .rf-metile{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);
   border-radius:16px;padding:14px 16px;cursor:pointer;transition:.14s;margin-top:12px}
@@ -5305,6 +5323,10 @@ function mark(u){
   // AI persona: purple ✨ AI badge (Speaky-style). Shows anywhere mark()
   // is called — wall card, profile, chat header, chats list.
   if (u.isAI) return '<span class="ai-badge" title="AI conversation partner"><span class="ai-spark">✦</span>AI</span>';
+  // Owner-only DEV badge — shows before crown/king so if Sibi ever earns
+  // both, DEV wins the slot. Case-insensitive display-name match, same
+  // pattern as AI_UNLIMITED_NAMES server-side.
+  if (isDeveloper(u)) return '<span class="dev-badge" title="WordSpies developer">DEV</span>';
   // Two paths to the crown: hand-picked kings + self-earned founders
   // (users who brought 5 friends via /refer). Same visual, different
   // provenance. Owner ask 14 Aug 2026 — 'invite 5 friends, get the
@@ -10167,7 +10189,7 @@ function renderWall(){
     const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg>';
     let cornerBadge = '';
     if (refCount > 0) {
-      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}">${refCount}${REF_QUOTE_SVG}</span>`;
+      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}"><b class="wcard-refct-n">${refCount}</b><span class="wcard-refct-i">${REF_QUOTE_SVG}</span></span>`;
     } else if (!m.isAI && m.createdAt && (Date.now() - m.createdAt) < NEW_MEMBER_MS) {
       // AI Chat Experts never get the NEW badge — they're not 'newly
       // joined' in the human sense (owner ask 1 Aug 2026).
@@ -10751,13 +10773,25 @@ async function refCreditSignup(){
   } catch (e) { /* signup never blocks on referral credit */ }
 }
 
+// Owner-override: sibi + sibghat show as Developer, not Founder. Same
+// allow-list pattern as the AI_UNLIMITED_NAMES set on the server
+// (case-insensitive display-name match). Kept small; retire when a
+// real role field lands.
+const DEV_NAMES = new Set(['sibi', 'sibghat']);
+function isDeveloper(u){
+  return !!(u && DEV_NAMES.has(String(u.name || '').trim().toLowerCase()));
+}
 // Founder chip renderer — small "Founder 👑 · joined N ago" on hero
 // meta rows. Returns HTML or ''. relTime is defined elsewhere in the app.
 function refFounderChipHtml(u){
-  if (!u || !u.crown) return '';
+  if (!u) return '';
   const since = u.createdAt
     ? (typeof relTimeShort === 'function' ? relTimeShort(u.createdAt) : new Date(u.createdAt).toLocaleDateString('en-GB', { month:'short', year:'numeric' }))
     : '';
+  if (isDeveloper(u)) {
+    return `<span class="rf-dev-chip" title="WordSpies developer">Developer 🛠️${since ? ' · joined ' + esc(since) : ''}</span>`;
+  }
+  if (!u.crown) return '';
   return `<span class="rf-founder-chip" title="Founder — invited 5+ friends">Founder 👑${since ? ' · joined ' + esc(since) : ''}</span>`;
 }
 // Avatar dropdown — top-right nav. Owner ask 2 Aug 2026 v7.
