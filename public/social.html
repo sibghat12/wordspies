@@ -4,6 +4,19 @@
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+<!-- Referral capture (owner ask 14 Aug 2026 — "invite your friends").
+     If the visitor lands with ?ref=<CODE> in the URL, stash it in a
+     30-day cookie AND localStorage so signup completion can credit the
+     inviter no matter which entry point they use. Runs synchronously so
+     the token is available even if the user goes straight to signup. -->
+<script>(function(){try{
+  var m=/[?&]ref=([A-Za-z0-9]{5,10})\b/.exec(location.search||'');
+  if(!m)return;
+  var code=m[1].toUpperCase(),
+      exp=new Date(Date.now()+30*24*60*60*1000).toUTCString();
+  document.cookie='wsRef='+encodeURIComponent(code)+'; Path=/; Max-Age='+(30*24*60*60)+'; SameSite=Lax; Expires='+exp;
+  try{localStorage.setItem('wsRef',code);}catch(e){}
+}catch(e){}})();</script>
 
 <meta charset="UTF-8">
 <!-- maximum-scale=1 is what stops iOS zooming the whole layout every time a
@@ -812,6 +825,31 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ln-page-head p{font-size:14px;color:var(--sub);margin:0;font-weight:500}
 .ln-page-cta{margin-top:22px;display:flex;justify-content:center}
 #lnPlansDetailView .ln-plans-back{margin:0 0 18px}
+/* Big gradient hero — the star of the Learn page. Bigger the emptier the
+   grid; below the plans once you have some. Owner ask 14 Aug 2026:
+   'make it more amazing design — actually create your customized
+   learning plan'. */
+.ln-heroCta{position:relative;overflow:hidden;border-radius:24px;padding:28px 24px 26px;text-align:center;
+  color:#fff;margin:0 0 22px;
+  background:radial-gradient(circle at 20% 20%, rgba(255,255,255,.22), transparent 55%),
+             linear-gradient(135deg,#e8506b 0%,#a04ee0 55%,#5a7bff 100%);
+  box-shadow:0 18px 40px -18px rgba(126,71,232,.55)}
+.ln-heroCta::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(circle at 90% 110%, rgba(255,255,255,.18), transparent 45%);pointer-events:none}
+.ln-heroCta-emoji{font-size:44px;line-height:1;margin-bottom:12px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
+.ln-heroCta h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:24px;letter-spacing:-.3px;
+  color:#fff;margin:0 0 8px;line-height:1.15}
+.ln-heroCta p{font-size:13.5px;color:rgba(255,255,255,.88);margin:0 auto 18px;max-width:380px;line-height:1.55;font-weight:500}
+.ln-heroCta-btn{background:#fff;color:var(--ink,#16181f);border:0;padding:13px 26px;border-radius:999px;
+  font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;
+  box-shadow:0 8px 22px rgba(20,15,50,.24);transition:.18s;display:inline-flex;align-items:center;gap:8px}
+.ln-heroCta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(20,15,50,.32)}
+.ln-heroCta-btn:active{transform:translateY(0)}
+.ln-heroCta.compact{padding:18px 22px}
+.ln-heroCta.compact .ln-heroCta-emoji{font-size:30px;margin-bottom:6px}
+.ln-heroCta.compact h2{font-size:18px;margin-bottom:2px}
+.ln-heroCta.compact p{font-size:12.5px;margin-bottom:12px}
+.ln-heroCta.compact .ln-heroCta-btn{padding:10px 20px;font-size:13px}
 .ln-hero{text-align:center;padding:48px 24px 44px;background:linear-gradient(180deg,#fafbff,#eef1ff);border:1px solid #dce1ff;border-radius:26px;animation:fsFade .28s ease-out}
 .ln-hero-emoji{font-size:62px;line-height:1;margin-bottom:16px;filter:drop-shadow(0 4px 12px rgba(90,123,255,.24))}
 .ln-hero h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:26px;letter-spacing:-.4px;color:var(--ink);margin:0 0 12px}
@@ -1079,8 +1117,15 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
      - Reference count + quote icon (quiet grey) if refCount > 0.
    Owner clarified 1 Aug 2026. */
 .wcard-newref{position:absolute;top:10px;right:10px;z-index:2;background:#00c2a0;color:#fff;font-size:8.5px;font-weight:800;letter-spacing:.7px;padding:2.5px 8px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18)}
-.wcard-refct{position:absolute;top:10px;right:10px;z-index:2;display:inline-flex;align-items:center;gap:3px;color:#7b8595;font-size:12.5px;font-weight:700}
-.wcard-refct svg{width:14px;height:14px;fill:currentColor}
+/* References badge on member cards — real typographic curly-quote look,
+   green tint (owner ask 14 Aug 2026: 'make it a good quote icon, maybe
+   blue... or green'). */
+.wcard-refct{position:absolute;top:8px;right:8px;z-index:2;display:inline-flex;align-items:center;gap:4px;
+  color:#15803d;background:#dcfce7;border:1px solid #86efac;
+  padding:3px 9px 3px 8px;border-radius:999px;
+  font-size:12px;font-weight:800;letter-spacing:.2px;
+  box-shadow:0 1px 3px rgba(34,197,94,.15)}
+.wcard-refct svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
 .wcard{position:relative}
 .mp-2col{display:grid;gap:16px}
 @media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
@@ -1952,6 +1997,18 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
   font-family:inherit;text-align:left;width:calc(100% - 40px);box-sizing:border-box}
 .vsStripe:hover{transform:translateY(-1px);border-color:#5a7bff}
 .vsStripe .vsIco{font-size:16px;flex-shrink:0}
+/* Blurred overlapping visitor faces — Tinder-style tease. Blur teases
+   who visited without giving it away, driving the tap to /me. */
+.vsStripe .vsAvs{display:inline-flex;flex-shrink:0;align-items:center;padding-right:2px}
+.vsStripe .vsAv{width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:#e6e9f2;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  color:var(--sub);box-shadow:0 1px 3px rgba(20,30,60,.14);flex-shrink:0}
+.vsStripe .vsAv + .vsAv{margin-left:-12px}
+.vsStripe .vsAv img{width:100%;height:100%;object-fit:cover;filter:blur(4px);transform:scale(1.15)}
+.vsStripe .vsMore{width:30px;height:30px;border-radius:50%;border:2px solid #fff;
+  background:linear-gradient(135deg,#e8506b,#7c5cff);color:#fff;font-size:11px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;margin-left:-12px;flex-shrink:0;
+  box-shadow:0 1px 3px rgba(20,30,60,.14);letter-spacing:.2px}
 .vsStripe .vsTxt{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vsStripe .vsCta{color:var(--caccent,#5a7bff);font-weight:700;font-size:12.5px;flex-shrink:0}
 .vsStripe .vsX{background:transparent;border:0;color:var(--sub);font-size:16px;line-height:1;padding:4px 6px;margin-left:2px;
@@ -2521,6 +2578,87 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 .gcard:hover{transform:translateY(-3px)}
 .gcard .gn{font-family:'Fredoka',system-ui,sans-serif;font-size:15.5px;font-weight:600;letter-spacing:-.1px}
 .gcard .gbtns a,.gcard .gbtns button{border-radius:12px;font-weight:800}
+
+/* ═════ 👑 REFERRAL / "Invite your friends, win 1 year free" ═════
+   Owner ask 14 Aug 2026. Reuses the .pt-modal backdrop pattern from the
+   party create sheet so we don't invent a fourth modal style. The pill
+   sits on the wall filter row and pulses ONCE per session to draw the
+   eye without becoming banner blindness. Colours borrow the existing
+   crown gold (#e8b423 via #kgold gradient) + accent red so the modal
+   feels part of the same visual family as the King badge. */
+.rfpill{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#fff5d6,#ffe89a);
+  color:#7a5300;border:1px solid #f0c34a;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:700;
+  cursor:pointer;white-space:nowrap;line-height:1;box-shadow:0 1px 4px rgba(240,195,74,.25);
+  margin-left:auto;flex-shrink:0}
+.rfpill:hover{filter:brightness(1.03)}
+.rfpill:active{transform:translateY(1px)}
+.rfpill.pulse{animation:rfpulse 1.8s ease-out 1 both}
+@keyframes rfpulse{
+  0%{box-shadow:0 0 0 0 rgba(240,195,74,.55)}
+  70%{box-shadow:0 0 0 10px rgba(240,195,74,0)}
+  100%{box-shadow:0 0 0 0 rgba(240,195,74,0)}
+}
+@media(max-width:520px){.rfpill{font-size:11.5px;padding:5px 10px}}
+/* Bottom-sheet on mobile, centred card on desktop — mirrors .pt-modal. */
+.rfmodal{position:fixed;inset:0;background:rgba(15,17,25,.68);z-index:220;display:none;align-items:center;justify-content:center;padding:16px}
+.rfmodal.on{display:flex}
+.rfsheet{background:#fff;border-radius:22px;max-width:440px;width:100%;max-height:92vh;overflow-y:auto;
+  padding:26px 24px 22px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.32);animation:rfslide .22s ease}
+@keyframes rfslide{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.rfclose{position:absolute;top:12px;right:12px;background:#f2f4f7;border:0;width:34px;height:34px;border-radius:50%;
+  font-size:15px;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.rfclose:hover{background:#e6e8ec;color:var(--ink)}
+.rftitle{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.3px;
+  text-align:center;margin:2px 0 6px;color:var(--ink)}
+.rfsub{text-align:center;color:var(--sub);font-size:14px;line-height:1.5;margin:0 4px 18px}
+.rfsub b{color:var(--ink)}
+.rfprog{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 18px}
+.rfbar{flex:1;height:8px;background:#f0f1f4;border-radius:99px;overflow:hidden;max-width:200px}
+.rfbar-fill{height:100%;background:linear-gradient(90deg,#e8b423,#ffd76b);border-radius:99px;transition:width .35s ease;width:0}
+.rfprog-txt{font-weight:700;font-size:14px;color:var(--ink);letter-spacing:-.1px}
+.rfprog-txt b{color:#e8b423}
+.rfshare{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.rfshare button{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 6px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink);
+  transition:.14s;font-family:inherit}
+.rfshare button:hover{border-color:#c9cdd5;background:#fbfbfc;transform:translateY(-1px)}
+.rfshare button:active{transform:translateY(0)}
+.rfshare-ic{font-size:22px;line-height:1}
+.rfshare-wa .rfshare-ic{color:#25d366}
+.rfshare-tg .rfshare-ic{color:#2aabee}
+.rfshare-x .rfshare-ic{color:#000}
+.rfshare-ig{background:linear-gradient(135deg,#fdf497,#fd5949,#d6249f,#285AEB)!important;color:#fff!important;border-color:transparent!important}
+.rfshare-ig .rfshare-ic{color:#fff}
+.rfshare-cp .rfshare-ic{color:var(--accent)}
+.rfshare-nv .rfshare-ic{color:var(--ink)}
+.rflink{margin-top:16px;display:flex;align-items:center;gap:8px;background:#f6f7f9;border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+  color:var(--sub)}
+.rflink-code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:600}
+.rflink-cp{background:transparent;border:0;padding:4px 8px;cursor:pointer;color:var(--accent);font-weight:700;font-size:12px;font-family:inherit;border-radius:6px}
+.rflink-cp:hover{background:#fff}
+.rfwon{text-align:center;padding:8px 0 4px}
+.rfwon-crown{font-size:56px;line-height:1;margin:0 0 6px;
+  background:linear-gradient(180deg,#ffdc74,#e8b423 55%,#a97b0f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 3px 8px rgba(232,180,35,.35))}
+.rfwon-title{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:24px;letter-spacing:-.3px;color:var(--ink);margin:0 0 6px}
+.rfwon-sub{color:var(--sub);font-size:14px;line-height:1.5;margin:0 8px 12px}
+.rfwon-until{display:inline-block;background:#fff8e2;border:1px solid #f0d685;color:#7a5300;border-radius:99px;
+  padding:5px 12px;font-size:12px;font-weight:700;margin-bottom:10px}
+.rfwon-more{color:var(--sub);font-size:12.5px;margin:14px 4px 8px;text-align:center}
+/* Founder chip on profile headers (owner ask 14 Aug 2026 — subtle meta
+   row entry, not a shout). Small, gold, sits with the pin/clock/handle. */
+.rf-founder-chip{display:inline-flex;align-items:center;gap:5px;background:#fff8e2;border:1px solid #f0d685;
+  color:#7a5300;border-radius:99px;padding:3px 9px;font-size:11.5px;font-weight:700;line-height:1.3;margin-left:2px}
+/* Your referrals: X / 5 tile on /me — subtle, sits below the visitors card. */
+.rf-metile{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);
+  border-radius:16px;padding:14px 16px;cursor:pointer;transition:.14s;margin-top:12px}
+.rf-metile:hover{border-color:#c9cdd5;background:#fbfbfc}
+.rf-metile-crown{font-size:28px;line-height:1;flex-shrink:0}
+.rf-metile-mid{flex:1;min-width:0}
+.rf-metile-title{font-weight:700;font-size:14px;color:var(--ink);letter-spacing:-.1px}
+.rf-metile-sub{font-size:12px;color:var(--sub);margin-top:2px}
+.rf-metile-cta{color:var(--accent);font-weight:700;font-size:13px;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -2847,6 +2985,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
            Blocked users / Support = inside Settings; About = footer). -->
       <div class="avmenu" id="avMenu" role="menu" aria-hidden="true">
         <a class="avitem" role="menuitem" onclick="avGo('profile')">My profile</a>
+        <a class="avitem" role="menuitem" onclick="avGo('invite')">Invite friends 👑</a>
         <a class="avitem" role="menuitem" onclick="avGo('settings')">Settings</a>
         <div class="avdiv"></div>
         <a class="avitem" role="menuitem" onclick="avGo('logout')">Log out</a>
@@ -2871,7 +3010,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="vsStripe hidden" id="vsStripe" role="button" tabindex="0"
          onclick="openVisitorsFromStripe()"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openVisitorsFromStripe()}">
-      <span class="vsIco" aria-hidden="true">👀</span>
+      <span class="vsAvs" id="vsStripeAvs" aria-hidden="true"></span>
       <span class="vsTxt" id="vsStripeTxt"></span>
       <span class="vsCta">See who →</span>
       <button class="vsX" type="button" aria-label="Dismiss"
@@ -2923,6 +3062,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
                  (they're always-available conversation partners). -->
             <button class="fchip" data-f="ai" title="AI conversation partners always ready to chat">✦ Chat Experts</button>
           </div>
+          <!-- 👑 Invite pill (owner ask 14 Aug 2026). Hidden by default;
+               refUpdatePill() reveals it once ME is loaded + hides it
+               again if the user already earned the crown. -->
+          <button type="button" class="rfpill hidden" id="rfWallPill" onclick="openReferModal()" aria-label="Invite friends and win 1 year free">
+            <span aria-hidden="true">👑</span><span>Invite &amp; win 1yr free</span>
+          </button>
         </div>
         <div id="wallBody"></div>
         <div class="empty hidden" id="wallEmpty">No spies found yet.<br>You're one of the first — invite your friends!</div>
@@ -2957,21 +3102,17 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        opens as a modal (form flow benefits from focus trap). -->
   <div id="tabLearn" class="hidden">
     <div class="ln-wrap">
-      <div class="ln-page-head">
-        <h2>Learn</h2>
-        <p>Your AI-built language plans. Tap one to open its lessons.</p>
-      </div>
-
       <div id="lnPlansGridView">
+        <!-- Gradient hero-CTA. Full size when there are no plans yet;
+             .compact once plans exist so the grid gets the real estate. -->
+        <div class="ln-heroCta" id="lnHeroCta">
+          <div class="ln-heroCta-emoji">✨</div>
+          <h2 id="lnHeroCtaTitle">Create your customized learning plan</h2>
+          <p id="lnHeroCtaSub">Personalized AI-built lessons in seconds. Free forever.</p>
+          <button class="ln-heroCta-btn" type="button" id="lnNewPlanBtn" onclick="openLearnSetup()">＋ Start your plan</button>
+        </div>
         <div class="ln-plans-grid" id="lnPlansGrid"></div>
-        <div class="ln-plans-empty hidden" id="lnPlansEmpty">
-          <div style="font-size:52px;margin-bottom:10px">🌱</div>
-          <div class="ln-empty-t">No plans yet</div>
-          <div class="ln-empty-s">Build one tailored to you in about 5 seconds.</div>
-        </div>
-        <div class="ln-page-cta">
-          <button class="ln-cta" type="button" id="lnNewPlanBtn" onclick="openLearnSetup()">＋ Create new plan</button>
-        </div>
+        <div class="ln-plans-empty hidden" id="lnPlansEmpty"></div>
       </div>
 
       <div id="lnPlansDetailView" class="hidden">
@@ -3649,6 +3790,22 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <div class="me-vis-strip" id="meVisitorsStrip"></div>
         </section>
 
+        <!-- 👑 Your referrals tile (owner ask 14 Aug 2026). Subtle
+             counter — tap opens the invite modal. Painted by
+             refPaintMeTile() on every paintMe(). Self-hides for AI /
+             guest and swaps to a "Founder — 1 year free unlocked" cell
+             once the crown is earned. -->
+        <div class="rf-metile hidden" id="rfMeTile" role="button" tabindex="0"
+             onclick="openReferModal()"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openReferModal()}">
+          <span class="rf-metile-crown" aria-hidden="true">👑</span>
+          <div class="rf-metile-mid">
+            <div class="rf-metile-title" id="rfMeTileTitle">Your referrals: 0 / 5</div>
+            <div class="rf-metile-sub" id="rfMeTileSub">Bring 5 friends, unlock 1 year free.</div>
+          </div>
+          <span class="rf-metile-cta" id="rfMeTileCta">Invite →</span>
+        </div>
+
         <section class="mp-card">
           <h3>Your name</h3>
           <input class="me-input" id="fMyName" maxlength="15" placeholder="Your name" autocomplete="off">
@@ -4171,7 +4328,12 @@ $('authGo').onclick = async () => {
       const j = await api(mode === 'signup' ? '/signup' : '/login', {
         method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
       });
-      ME = j.me; enterApp(mode === 'signup');
+      ME = j.me;
+      // Credit the inviter if the signup came from a ?ref=<CODE> link
+      // (cookie/localStorage stashed on landing). Fire-and-forget —
+      // signup NEVER blocks on this call (see refCreditSignup).
+      if (mode === 'signup' && typeof refCreditSignup === 'function') { refCreditSignup(); }
+      enterApp(mode === 'signup');
     }
   } catch(e){ $('authErr').style.color = 'var(--err)'; $('authErr').textContent = e.message; }
   $('authGo').disabled = false;
@@ -5143,7 +5305,12 @@ function mark(u){
   // AI persona: purple ✨ AI badge (Speaky-style). Shows anywhere mark()
   // is called — wall card, profile, chat header, chats list.
   if (u.isAI) return '<span class="ai-badge" title="AI conversation partner"><span class="ai-spark">✦</span>AI</span>';
-  if (u.king) return KING_SVG;
+  // Two paths to the crown: hand-picked kings + self-earned founders
+  // (users who brought 5 friends via /refer). Same visual, different
+  // provenance. Owner ask 14 Aug 2026 — 'invite 5 friends, get the
+  // crown badge'. The tooltip lets curious taps see why it's there.
+  if (u.king) return KING_SVG.replace('aria-label="King"', 'aria-label="King" title="King — WordSpies founding member"');
+  if (u.crown) return KING_SVG.replace('aria-label="King"', 'aria-label="Founder" title="Founder — invited 5+ friends"');
   // Blue 'Founding member' tick retired 1 Aug 2026 per owner ask
   // ('remove the blue tick'). Kept the .vtick CSS + the mark()
   // signature intact so any cached HTML doesn't break; we just
@@ -5427,6 +5594,20 @@ async function loadVisitorsStripe(force){
   if (!fresh.length) { el.classList.add('hidden'); return; }
   const n = fresh.length;
   txt.textContent = n + (n === 1 ? ' person visited your profile' : ' people visited your profile');
+  // Blurred overlapping face stack — up to 3 faces + "+N" chip.
+  const avs = document.getElementById('vsStripeAvs');
+  if (avs) {
+    const show = fresh.slice(0, 3);
+    const more = n - show.length;
+    avs.innerHTML = show.map(v => {
+      const u = (v && v.user) || {};
+      const photo = u.photo || '';
+      const initial = String(u.name || '?').trim().charAt(0).toUpperCase() || '?';
+      return photo
+        ? '<span class="vsAv"><img src="' + esc(photo) + '" alt="" loading="lazy"></span>'
+        : '<span class="vsAv">' + esc(initial) + '</span>';
+    }).join('') + (more > 0 ? '<span class="vsMore">+' + more + '</span>' : '');
+  }
   el.classList.remove('hidden');
 }
 function dismissVisitorsStripe(){
@@ -5579,8 +5760,9 @@ function paintMe(){
   const myHandleEl = document.getElementById('myHandle');
   if (myHandleEl) {
     const h = handleFor(ME);
-    myHandleEl.textContent = h;
-    myHandleEl.parentElement.style.display = h.length > 1 ? '' : 'none';
+    const fchip = (typeof refFounderChipHtml === 'function') ? refFounderChipHtml(ME) : '';
+    myHandleEl.innerHTML = esc(h) + (fchip ? ' ' + fchip : '');
+    myHandleEl.parentElement.style.display = h.length > 1 || fchip ? '' : 'none';
   }
   // "+ Add a bio" chip — visible only when the user has no bio yet.
   const addBio = document.getElementById('myAddBioChip');
@@ -5611,6 +5793,9 @@ function paintMe(){
   try { syncProfileEditor(); } catch(e){}
   paintMePhotoStrip();
   paintTabs();
+  // 👑 Referral pill on the wall header + Your referrals tile on /me.
+  try { refUpdatePill(); } catch(e){}
+  try { refPaintMeTile(); } catch(e){}
 }
 
 // Extra-photos strip on the /me tab (owner ask 10 Aug 2026).
@@ -6409,14 +6594,23 @@ function showLearnPlansGrid(){
 }
 function paintLearnPlansGrid(){
   const grid = document.getElementById('lnPlansGrid');
-  const emptyEl = document.getElementById('lnPlansEmpty');
-  if (!grid || !emptyEl) return;
+  const hero = document.getElementById('lnHeroCta');
+  const heroTitle = document.getElementById('lnHeroCtaTitle');
+  const heroSub = document.getElementById('lnHeroCtaSub');
+  const heroBtn = document.getElementById('lnNewPlanBtn');
+  if (!grid) return;
   if (!LN_PLANS.length) {
     grid.innerHTML = '';
-    emptyEl.classList.remove('hidden');
+    if (hero) hero.classList.remove('compact');
+    if (heroTitle) heroTitle.textContent = 'Create your customized learning plan';
+    if (heroSub) heroSub.textContent = 'Personalized AI-built lessons in seconds. Free forever.';
+    if (heroBtn) heroBtn.textContent = '＋ Start your plan';
   } else {
     grid.innerHTML = LN_PLANS.map(p => planMiniHtml(p)).join('');
-    emptyEl.classList.add('hidden');
+    if (hero) hero.classList.add('compact');
+    if (heroTitle) heroTitle.textContent = 'Add another plan';
+    if (heroSub) heroSub.textContent = 'Learning another language? Build a second plan tailored to it.';
+    if (heroBtn) heroBtn.textContent = '＋ New plan';
   }
 }
 function showLearnPlanDetail(planId){
@@ -6617,6 +6811,7 @@ async function submitCreateParty(){
     // overlay you can minimise back to /social with the ← FAB) so
     // navigation state and community context are never lost.
     closeCreateParty();
+    if (typeof refBumpAction === 'function') refBumpAction();
     if (typeof openPartyInApp === 'function') openPartyInApp(j.code, title);
     else location.href = '/party?room=' + j.code;
   } catch(e){
@@ -9796,6 +9991,7 @@ async function toggleFollow(){
     $('followBtn').textContent = on ? '＋ Follow' : '✓ Following';
     $('mFollowers').textContent = j.followers;
     toast(on ? 'Unfollowed' : '⭐ Following!');
+    if (!on && typeof refBumpAction === 'function') refBumpAction();
   } catch(e){ toast(e.message); }
 }
 
@@ -9965,7 +10161,10 @@ function renderWall(){
     // stacked .wcard-corner container.
     const NEW_MEMBER_MS = 7 * 24 * 3600 * 1000;
     const refCount = m.refCount || 0;
-    const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3l3 3v-3h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-9.5 9-1.3-.4a1.5 1.5 0 0 1-1-1.4v-.9c0-.8.7-1.5 1.5-1.5H11V7H9.7c-1.8 0-3.3 1.5-3.3 3.3v.9c0 1.5 1 2.7 2.4 3.1l1.7.4zm5.9 0-1.3-.4a1.5 1.5 0 0 1-1-1.4v-.9c0-.8.7-1.5 1.5-1.5H17V7h-1.3c-1.8 0-3.3 1.5-3.3 3.3v.9c0 1.5 1 2.7 2.4 3.1l1.6.4z"/></svg>';
+    // Two proper curly quote glyphs — reads instantly as "reference /
+    // testimonial" instead of the old chat-bubble that looked like a
+    // message icon.
+    const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg>';
     let cornerBadge = '';
     if (refCount > 0) {
       cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}">${refCount}${REF_QUOTE_SVG}</span>`;
@@ -10132,7 +10331,11 @@ function openMemberObj(m){
   // caching + Nominatim details. Desktop-only (.mp-hero is display:none
   // on mobile).
   try { if (window.matchMedia('(min-width:769px)').matches) initProfileMap('memberMap', 'memberLocPill', 'memberLocPillTxt', m.location, m.cc, m.country); } catch(e){}
-  $('mHandle').textContent = handleFor(m);
+  // Handle + optional founder chip (owner ask 14 Aug 2026 — small "Founder 👑"
+  // in the meta row, only if this user has earned the crown).
+  const _handleTxt = handleFor(m);
+  const _fchip = (typeof refFounderChipHtml === 'function') ? refFounderChipHtml(m) : '';
+  $('mHandle').innerHTML = esc(_handleTxt) + (_fchip ? ' ' + _fchip : '');
   // Counts default while we fetch the real numbers.
   $('mFollowers').textContent = '—'; $('mFollowing').textContent = '—'; $('mRecCount').textContent = '0';
   // Content cards — each block self-hides when empty.
@@ -10264,6 +10467,299 @@ async function shareMyProfile(){
   try { window.prompt('Copy your profile link:', url); } catch (e) {}
 }
 
+// ═════════════════════════════════════════════════════════════════════
+// 👑 REFERRAL / "Invite your friends, win 1 year free"
+// Owner ask 14 Aug 2026. All the client-side plumbing for the pill,
+// modal, share sheet, /me tile, founder chip, and post-signup credit.
+// Degrades gracefully — if /refer/* endpoints are missing (cold-start
+// after a bad deploy) the modal still renders as 0/5 and shows the
+// user's link so shares still work.
+// ═════════════════════════════════════════════════════════════════════
+const REF_GOAL = 5;
+let REF_STATE = null;               // last GET /refer/state payload
+let REF_LASTFOCUS = null;           // element that had focus before open
+
+function refShareUrl(code){
+  const c = code || (ME && ME.refCode) || '';
+  return location.origin + '/?ref=' + encodeURIComponent(c);
+}
+function refShareMsg(code){
+  return 'Come join me on WordSpies — free language exchange with real people + AI experts. ' + refShareUrl(code);
+}
+async function refFetchState(){
+  try {
+    const r = await fetch('/api/social/refer/state', { credentials:'same-origin' });
+    if (!r.ok) throw new Error('state ' + r.status);
+    return await r.json();
+  } catch (e) {
+    // Graceful fallback so the modal still opens & the pill still works.
+    return {
+      code: (ME && ME.refCode) || '',
+      count: 0, goal: REF_GOAL,
+      crown: !!(ME && ME.crown),
+      founderUntil: (ME && ME.founderUntil) || null
+    };
+  }
+}
+// Paints the "Your referrals: X / 5" tile on /me. Fetches current
+// state lazily so we don't hammer /refer/state on every paintMe;
+// caches for 30s in REF_STATE.
+let REF_STATE_AT = 0;
+async function refPaintMeTile(){
+  const tile = document.getElementById('rfMeTile');
+  if (!tile) return;
+  if (!ME || GUEST || ME.isAI) { tile.classList.add('hidden'); return; }
+  tile.classList.remove('hidden');
+  // Fresh state if older than 30s or missing.
+  if (!REF_STATE || (Date.now() - REF_STATE_AT) > 30_000) {
+    REF_STATE = await refFetchState(); REF_STATE_AT = Date.now();
+  }
+  const s = REF_STATE || { count:0, goal:REF_GOAL, crown:false, founderUntil:null };
+  const titleEl = document.getElementById('rfMeTileTitle');
+  const subEl = document.getElementById('rfMeTileSub');
+  const ctaEl = document.getElementById('rfMeTileCta');
+  if (s.crown) {
+    const untilD = s.founderUntil
+      ? new Date(s.founderUntil).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+      : null;
+    if (titleEl) titleEl.textContent = "You're a founder";
+    if (subEl) subEl.textContent = untilD ? '1 year free — until ' + untilD : '1 year free — unlocked.';
+    if (ctaEl) ctaEl.textContent = 'Share more →';
+  } else {
+    if (titleEl) titleEl.textContent = 'Your referrals: ' + (s.count || 0) + ' / ' + s.goal;
+    if (subEl) subEl.textContent = 'Bring ' + Math.max(0, s.goal - s.count) + ' more, unlock 1 year free.';
+    if (ctaEl) ctaEl.textContent = 'Invite →';
+  }
+}
+// Reveal / hide the wall pill based on ME + earned state. Also
+// triggers the one-per-session subtle pulse.
+function refUpdatePill(){
+  const pill = document.getElementById('rfWallPill');
+  if (!pill) return;
+  if (!ME || ME.isAI || GUEST) { pill.classList.add('hidden'); return; }
+  // Already earned? Hide — no need to keep nagging.
+  if (ME.crown) { pill.classList.add('hidden'); return; }
+  pill.classList.remove('hidden');
+  try {
+    if (!sessionStorage.getItem('wsRefPulseShown')) {
+      pill.classList.add('pulse');
+      sessionStorage.setItem('wsRefPulseShown', '1');
+      setTimeout(() => pill.classList.remove('pulse'), 2200);
+    }
+  } catch(e){}
+}
+
+async function openReferModal(){
+  if (!ME || GUEST) { requireLogin && requireLogin('Invite friends'); return; }
+  const modal = document.getElementById('rfModal');
+  const body = document.getElementById('rfBody');
+  if (!modal || !body) return;
+  REF_LASTFOCUS = document.activeElement;
+  modal.classList.add('on');
+  document.body.style.overflow = 'hidden';
+  body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--faint)">Loading…</div>';
+  REF_STATE = await refFetchState();
+  refPaintModal();
+  // Focus trap: land on the close button so screen-reader users know
+  // where they are + Esc / Tab work sensibly.
+  const closeBtn = document.querySelector('#rfModal .rfclose');
+  if (closeBtn) closeBtn.focus();
+}
+function closeReferModal(){
+  const modal = document.getElementById('rfModal');
+  if (!modal) return;
+  modal.classList.remove('on');
+  document.body.style.overflow = '';
+  if (REF_LASTFOCUS && REF_LASTFOCUS.focus) { try { REF_LASTFOCUS.focus(); } catch(e){} }
+  REF_LASTFOCUS = null;
+}
+// Esc closes; Tab wraps inside the sheet.
+document.addEventListener('keydown', ev => {
+  const modal = document.getElementById('rfModal');
+  if (!modal || !modal.classList.contains('on')) return;
+  if (ev.key === 'Escape') { ev.preventDefault(); closeReferModal(); return; }
+  if (ev.key === 'Tab') {
+    const focusables = modal.querySelectorAll('button, [href], input, [tabindex]:not([tabindex="-1"])');
+    if (!focusables.length) return;
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  }
+});
+
+function refPaintModal(){
+  const body = document.getElementById('rfBody');
+  const s = REF_STATE || { code:'', count:0, goal:REF_GOAL, crown:false, founderUntil:null };
+  const url = refShareUrl(s.code);
+  const pct = Math.min(100, Math.round((s.count / s.goal) * 100));
+  const nativeShare = ('share' in navigator);
+  if (s.crown) {
+    // Celebration state — "You're a founder 👑, 1 year free unlocked."
+    const untilD = s.founderUntil
+      ? new Date(s.founderUntil).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+      : null;
+    body.innerHTML = `
+      <div class="rfwon">
+        <div class="rfwon-crown" aria-hidden="true">👑</div>
+        <h3 class="rftitle" id="rfTitle">You're a founder</h3>
+        <p class="rfwon-sub">Thanks for bringing your friends. <b>1 year of everything, free</b> — unlocked.</p>
+        ${untilD ? `<div class="rfwon-until">until ${esc(untilD)}</div>` : ''}
+        <p class="rfwon-more">Keep sharing — help more people find the app.</p>
+        ${refShareGridHtml(s.code, nativeShare)}
+        ${refLinkRowHtml(url)}
+      </div>`;
+  } else {
+    // Progress state — 0..4/5.
+    body.innerHTML = `
+      <h3 class="rftitle" id="rfTitle">Win 1 year free 👑</h3>
+      <p class="rfsub">WordSpies is new. Bring <b>5 friends</b> and unlock a <b>founder crown</b> + <b>1 year of everything free</b>. Share your link — no catch.</p>
+      <div class="rfprog" aria-label="Referral progress">
+        <div class="rfbar"><div class="rfbar-fill" style="width:${pct}%"></div></div>
+        <div class="rfprog-txt"><b>${s.count}</b> / ${s.goal}</div>
+      </div>
+      ${refShareGridHtml(s.code, nativeShare)}
+      ${refLinkRowHtml(url)}
+    `;
+  }
+}
+function refShareGridHtml(code, nativeShare){
+  const msg = refShareMsg(code);
+  const url = refShareUrl(code);
+  const enc = encodeURIComponent;
+  // Instagram has no direct share URL — we fall back to copy-link.
+  return `<div class="rfshare">
+    <button type="button" class="rfshare-wa" onclick="refShareTo('wa','${esc(code)}')" aria-label="Share on WhatsApp">
+      <span class="rfshare-ic" aria-hidden="true">💬</span><span>WhatsApp</span>
+    </button>
+    <button type="button" class="rfshare-tg" onclick="refShareTo('tg','${esc(code)}')" aria-label="Share on Telegram">
+      <span class="rfshare-ic" aria-hidden="true">✈️</span><span>Telegram</span>
+    </button>
+    <button type="button" class="rfshare-x" onclick="refShareTo('x','${esc(code)}')" aria-label="Share on X">
+      <span class="rfshare-ic" aria-hidden="true">𝕏</span><span>X</span>
+    </button>
+    <button type="button" class="rfshare-ig" onclick="refShareTo('ig','${esc(code)}')" aria-label="Copy link for Instagram">
+      <span class="rfshare-ic" aria-hidden="true">📷</span><span>Instagram</span>
+    </button>
+    <button type="button" class="rfshare-cp" onclick="refShareTo('cp','${esc(code)}')" aria-label="Copy link">
+      <span class="rfshare-ic" aria-hidden="true">🔗</span><span>Copy link</span>
+    </button>
+    ${nativeShare ? `<button type="button" class="rfshare-nv" onclick="refShareTo('nv','${esc(code)}')" aria-label="More share options">
+      <span class="rfshare-ic" aria-hidden="true">⇪</span><span>More</span>
+    </button>` : ''}
+  </div>`;
+}
+function refLinkRowHtml(url){
+  // Show a short display form (strip protocol) but copy the full URL.
+  const display = url.replace(/^https?:\/\//, '');
+  return `<div class="rflink" title="${esc(url)}">
+    <span class="rflink-code">${esc(display)}</span>
+    <button type="button" class="rflink-cp" onclick="refShareTo('cp','${esc((REF_STATE && REF_STATE.code) || '')}')" aria-label="Copy link">Copy</button>
+  </div>`;
+}
+async function refShareTo(kind, code){
+  const url = refShareUrl(code);
+  const msg = refShareMsg(code);
+  const enc = encodeURIComponent;
+  if (kind === 'wa') {
+    window.open('https://wa.me/?text=' + enc(msg), '_blank', 'noopener');
+    return;
+  }
+  if (kind === 'tg') {
+    window.open('https://t.me/share/url?url=' + enc(url) + '&text=' + enc('Come join me on WordSpies — free language exchange.'), '_blank', 'noopener');
+    return;
+  }
+  if (kind === 'x') {
+    window.open('https://x.com/intent/tweet?text=' + enc('Come join me on WordSpies — free language exchange with real people + AI experts.') + '&url=' + enc(url), '_blank', 'noopener');
+    return;
+  }
+  if (kind === 'ig') {
+    // Instagram has no direct share URL for arbitrary text/links — copy
+    // and prompt the user to paste in their story or DM.
+    await refCopyToClipboard(url);
+    toast('🔗 Link copied — paste in your Instagram story or DMs');
+    return;
+  }
+  if (kind === 'cp') {
+    await refCopyToClipboard(url);
+    toast('🔗 Link copied ✓');
+    return;
+  }
+  if (kind === 'nv') {
+    try {
+      if (navigator.share) { await navigator.share({ title:'WordSpies', text:'Come join me on WordSpies!', url }); return; }
+    } catch (e) { /* user cancelled */ }
+    await refCopyToClipboard(url);
+    toast('🔗 Link copied ✓');
+    return;
+  }
+}
+async function refCopyToClipboard(text){
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text); return true;
+    }
+  } catch (e) {}
+  // Legacy fallback for iOS Safari when not on HTTPS (dev only).
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-1000px';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    return true;
+  } catch (e) { return false; }
+}
+
+// Nudge trigger: after 3 meaningful actions in a session, show the modal
+// once. Callers: postWall, joinParty, followUser, learn-lesson complete.
+// Local state — refuses to fire twice for the same user.
+function refBumpAction(){
+  try {
+    if (!ME || GUEST || ME.crown) return;
+    const key = 'wsRefNudgeShown:' + (ME.id || 'anon');
+    if (localStorage.getItem(key)) return;
+    const cKey = 'wsRefActions:' + (ME.id || 'anon');
+    const n = (parseInt(sessionStorage.getItem(cKey)) || 0) + 1;
+    sessionStorage.setItem(cKey, String(n));
+    if (n >= 3) {
+      localStorage.setItem(key, String(Date.now()));
+      // Small delay so the action's own success feedback lands first.
+      setTimeout(() => { try { openReferModal(); } catch(e){} }, 900);
+    }
+  } catch (e) {}
+}
+
+// Post-signup credit — called from enterApp() when a freshly-created
+// user lands. Reads the wsRef cookie/localStorage stashed by the
+// landing-page snippet and POSTs it to /refer/credit. Fire-and-forget.
+async function refCreditSignup(){
+  try {
+    let code = '';
+    try { code = localStorage.getItem('wsRef') || ''; } catch(e){}
+    if (!code) {
+      const m = /(?:^|; )wsRef=([^;]+)/.exec(document.cookie || '');
+      if (m) code = decodeURIComponent(m[1]);
+    }
+    if (!code || !/^[A-Za-z0-9]{5,10}$/.test(code)) return;
+    await fetch('/api/social/refer/credit', {
+      method:'POST', credentials:'same-origin',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ code: code.toUpperCase() })
+    }).catch(()=>{});
+    // Clear on best-effort so we don't credit twice from the same device.
+    try { localStorage.removeItem('wsRef'); } catch(e){}
+    try { document.cookie = 'wsRef=; Path=/; Max-Age=0; SameSite=Lax'; } catch(e){}
+  } catch (e) { /* signup never blocks on referral credit */ }
+}
+
+// Founder chip renderer — small "Founder 👑 · joined N ago" on hero
+// meta rows. Returns HTML or ''. relTime is defined elsewhere in the app.
+function refFounderChipHtml(u){
+  if (!u || !u.crown) return '';
+  const since = u.createdAt
+    ? (typeof relTimeShort === 'function' ? relTimeShort(u.createdAt) : new Date(u.createdAt).toLocaleDateString('en-GB', { month:'short', year:'numeric' }))
+    : '';
+  return `<span class="rf-founder-chip" title="Founder — invited 5+ friends">Founder 👑${since ? ' · joined ' + esc(since) : ''}</span>`;
+}
 // Avatar dropdown — top-right nav. Owner ask 2 Aug 2026 v7.
 function toggleAvatarMenu(ev){
   if (ev) ev.stopPropagation();
@@ -10293,6 +10789,7 @@ function avGo(kind){
   switch (kind) {
     case 'profile':   showTab('me'); break;
     case 'share':     shareMyProfile(); break;
+    case 'invite':    openReferModal(); break;
     case 'langs':     showTab('me'); scrollTo('pfLangSection'); break;
     case 'xlat':      openXlatSetup(() => {}); break;
     case 'settings':  showTab('me'); scrollTo('pfSettingsSection'); break;
@@ -10541,7 +11038,14 @@ async function setupGoogle(){
           // enter DOB there along with name + email'.
           const j = await api('/google', { method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({ credential: resp.credential, birthdate: 'pending' }) });
-          ME = j.me; enterApp(true);
+          ME = j.me;
+          // Credit the inviter (only if this was a first-visit new account).
+          // /google returns u.fresh:true for freshly-created records; we
+          // check via createdAt window as a safety net.
+          if (ME && ME.createdAt && (Date.now() - ME.createdAt) < 60_000 && typeof refCreditSignup === 'function') {
+            refCreditSignup();
+          }
+          enterApp(true);
         } catch(e){
           $('authErr').textContent = e.message;
         }
@@ -10815,6 +11319,18 @@ async function openClubFromDeepLinkParam() {
     <div class="fs-body" id="fsBody">
       <div class="fs-loading">Loading…</div>
     </div>
+  </div>
+</div>
+
+<!-- 👑 Referral / "Invite your friends, win 1 year free" modal.
+     Owner ask 14 Aug 2026. Two states: progress (0-4 friends) and
+     celebration (5+, crown earned). openReferModal() picks the right
+     one based on GET /refer/state. Focus-trapped + Esc-to-close +
+     keyboard-nav — see ref.js block below. -->
+<div class="rfmodal" id="rfModal" role="dialog" aria-modal="true" aria-labelledby="rfTitle" onclick="if(event.target===this)closeReferModal()">
+  <div class="rfsheet" id="rfSheet" tabindex="-1">
+    <button class="rfclose" type="button" onclick="closeReferModal()" aria-label="Close">✕</button>
+    <div id="rfBody"><div style="text-align:center;padding:30px 0;color:var(--faint)">Loading…</div></div>
   </div>
 </div>
 

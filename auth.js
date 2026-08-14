@@ -86,7 +86,8 @@ function mount(api, ctx) {
       if (await db.get('soc:email:' + email)) return res.status(409).json({ error: 'That email is already registered — try logging in.' });
       if (await db.get('soc:uname:' + name.toLowerCase())) return res.status(409).json({ error: 'That name is taken.' });
       const id = crypto.randomBytes(9).toString('hex');
-      const geo = await geoFromIp(reqIp(req));
+      const ip = reqIp(req);
+      const geo = await geoFromIp(ip);
       const user = {
         id, name, email, passHash: bcrypt.hashSync(password, 10),
         bio: '', location: geoLabel(geo),
@@ -94,7 +95,11 @@ function mount(api, ctx) {
         birthdate,
         ageVerifiedAt: Date.now(),
         games: 0, wins: 0, createdAt: Date.now(),
-        termsAcceptedAt: Date.now()
+        termsAcceptedAt: Date.now(),
+        // Stored for referral anti-fraud (same-IP-as-referrer signups
+        // don't credit — see /refer/credit in social.js). Never surfaced
+        // via pub() so it stays private.
+        signupIp: ip || ''
       };
       await db.set('soc:user:' + id, JSON.stringify(user));
       await db.set('soc:email:' + email, id);
@@ -192,7 +197,8 @@ function mount(api, ctx) {
         let name = base, n = 1;
         while (await db.get('soc:uname:' + name.toLowerCase())) { n++; name = (base.slice(0, 12) + ' ' + n).trim(); }
         const id = crypto.randomBytes(9).toString('hex');
-        const geo = await geoFromIp(reqIp(req));
+        const ip = reqIp(req);
+        const geo = await geoFromIp(ip);
         user = {
           id, name, email, passHash: null, googleId: g.sub,
           bio: '', location: geoLabel(geo),
@@ -201,7 +207,9 @@ function mount(api, ctx) {
           ageVerifiedAt: isPending ? null : Date.now(),
           ageGatePending: isPending ? true : false,
           termsAcceptedAt: Date.now(),
-          games: 0, wins: 0, createdAt: Date.now(), fresh: true
+          games: 0, wins: 0, createdAt: Date.now(), fresh: true,
+          // Stored for referral anti-fraud (see /refer/credit).
+          signupIp: ip || ''
         };
         await db.set('soc:user:' + id, JSON.stringify(user));
         await db.set('soc:email:' + email, id);

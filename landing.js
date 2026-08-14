@@ -445,6 +445,7 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
         <span class="pill">100% free forever</span>
         <span class="pill">AI corrections built in</span>
         <span class="pill">Real people from 90+ countries</span>
+        <span class="pill">👑 Founders program — invite 5 friends, get 1 year free</span>
       </div>
       <div class="playersrow">
         <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>

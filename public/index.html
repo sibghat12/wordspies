@@ -4,6 +4,16 @@
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
+<!-- Referral capture (owner ask 14 Aug 2026). If the visitor lands with
+     ?ref=<CODE> on the codenames page (share links may point anywhere),
+     stash it for 30 days so signup completion credits the inviter. -->
+<script>(function(){try{
+  var m=/[?&]ref=([A-Za-z0-9]{5,10})\b/.exec(location.search||'');
+  if(!m)return;
+  var code=m[1].toUpperCase();
+  document.cookie='wsRef='+encodeURIComponent(code)+'; Path=/; Max-Age='+(30*24*60*60)+'; SameSite=Lax';
+  try{localStorage.setItem('wsRef',code);}catch(e){}
+}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Codenames Online — Play Free with Friends, No Sign-Up | WordSpies</title>

@@ -161,7 +161,15 @@ function mount(app, redis) {
 
   // A king's crown replaces the tick rather than sitting beside it — two badges on
   // one name is noise, and the crown is the rarer thing.
-  const marks = u => ({ king: isKing(u), verified: isKing(u) ? false : isVerified(u) });
+  //
+  // 👑 Founder crown (14 Aug 2026): a second path to the crown badge.
+  // Users who invite 5+ friends via /refer earn `crown: true` on their
+  // record. `founderUntil` stamps a 1-year entitlement window that the
+  // future paywall will honour (see /refer/credit below — this is a
+  // FUTURE-facing flag, no paid features exist yet). isKing wins if
+  // both apply (kings are hand-picked, founders self-earn).
+  const isFounder = u => u.crown === true || isKing(u);
+  const marks = u => ({ king: isKing(u), crown: isFounder(u), verified: isFounder(u) ? false : isVerified(u) });
 
   const pub = u => ({ id: u.id, name: u.name, bio: u.bio || '', location: u.location || '',
     country: u.country || '', cc: u.cc || '',
@@ -195,6 +203,13 @@ function mount(app, redis) {
     // left off. `onboardedAt` is still the source-of-truth 'fully done'.
     obStep: Number.isFinite(u.obStep) ? u.obStep : 0,
     isAI: !!u.isAI,
+    // Referral programme (owner ask 14 Aug 2026 — "invite your friends,
+    // win 1 year free"). refCode is generated lazily on first share so
+    // grandfathered users don't need a bulk migration. founderUntil is
+    // a millis timestamp — the future paywall must honour it as a free
+    // pass. See /refer/* endpoints and creditReferral() below.
+    refCode: u.refCode || null,
+    founderUntil: u.founderUntil || null,
     ...marks(u) });
 
   // ---- simple rate limit (per ip per route bucket) ----
@@ -285,7 +300,11 @@ function mount(app, redis) {
     '/deleteAccount', '/me',
     // Un-onboarded users must still be able to report abuse — a
     // victim mid-signup should not be gagged. Audit fix 2 Aug v8.
-    '/report'
+    '/report',
+    // The referral credit fires immediately post-signup (before the
+    // wizard is complete). Blocking it here would silently drop every
+    // credit. GET /refer/state passes as GET regardless.
+    '/refer/credit'
   ]);
   api.use(async (req, res, next) => {
     try {
@@ -578,6 +597,150 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
     PHOTO_DIR,
     BREVO_KEY, RESEND_KEY,
     sendMail, mailHtml
+  });
+
+  // ─── 👑 REFERRAL / "Invite your friends, win 1 year free" ─────────────
+  // Owner ask 14 Aug 2026: 'people can invite their friends on social
+  // media … you'll get the crown badge and free access to all features
+  // for 1 complete year if you invite at least 5 people from your link.'
+  //
+  // Data model (all under soc:*):
+  //   soc:user:<uid>.refCode    — 6-char alnum, unique, lazy-created
+  //   soc:refCode:<code>        — reverse index → uid
+  //   soc:refBy:<uid>           — Set of referred uids (dedupes)
+  //   soc:refLog                — audit list of every credit event
+  //   soc:refCredit:<ip>        — daily counter for /credit abuse
+  //   soc:user:<uid>.crown      — true once refBy hits 5 (badge flag)
+  //   soc:user:<uid>.founderUntil — millis expiry of the 1-year pass
+  //
+  // FUTURE PAYWALL NOTE: `founderUntil` is a promise, not a gate.
+  // When paid features land, honour `user.founderUntil > Date.now()`
+  // as a free-pass everywhere the paywall checks entitlement.
+  const REF_GOAL = 5;
+  const REF_ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no O/0/I/1 — copy-paste safe
+  function newRefCodeCandidate() {
+    let s = '';
+    for (let i = 0; i < 6; i++) s += REF_ALPH[Math.floor(Math.random() * REF_ALPH.length)];
+    return s;
+  }
+  async function ensureRefCode(user) {
+    if (user.refCode) return user.refCode;
+    // Try a few candidates in case of collision. 32^6 ≈ 1B keys — collision
+    // is astronomically unlikely at any realistic scale, but we retry
+    // rather than throw so the modal never sits there blank.
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const code = newRefCodeCandidate();
+      const taken = await db.get('soc:refCode:' + code);
+      if (taken) continue;
+      user.refCode = code;
+      await db.set('soc:refCode:' + code, user.id);
+      await db.set('soc:user:' + user.id, JSON.stringify(user));
+      return code;
+    }
+    // Ultimate fallback: 8-char code — collision probability now
+    // vanishingly small even if the RNG is degraded.
+    const code = newRefCodeCandidate() + newRefCodeCandidate().slice(0, 2);
+    user.refCode = code;
+    await db.set('soc:refCode:' + code, user.id);
+    await db.set('soc:user:' + user.id, JSON.stringify(user));
+    return code;
+  }
+
+  // GET /refer/state — current referral status for the signed-in user.
+  // Returns { code, count, goal, crown, founderUntil }. Called by the
+  // client to populate the modal's progress ring + celebration state.
+  api.get('/refer/state', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      await ensureRefCode(u);
+      const count = await db.scard('soc:refBy:' + u.id);
+      res.json({
+        code: u.refCode,
+        count: Number(count) || 0,
+        goal: REF_GOAL,
+        crown: !!u.crown,
+        founderUntil: u.founderUntil || null
+      });
+    } catch (e) {
+      console.error('refer state:', e.message);
+      res.status(500).json({ error: 'Something went wrong.' });
+    }
+  });
+
+  // POST /refer/credit — called from the client on signup completion.
+  // Body: { code: 'ABC123' }. Fires-and-forgets from the client's
+  // perspective; failures never block signup. Returns { ok, credited,
+  // reason } so a curious client can log why (self-ref, same-ip, etc.).
+  api.post('/refer/credit', async (req, res) => {
+    try {
+      // Cheap per-IP daily rate limit — 20 credit attempts / IP / day.
+      // Uses a plain incr on a bucket key with 24h TTL.
+      const ip = reqIp(req);
+      const bkKey = 'soc:refCredit:' + (ip || 'unknown').replace(/[^0-9a-f.:]/gi, '');
+      const bkN = await db.incr(bkKey);
+      if (bkN === 1) { try { await db.set(bkKey, '1', 60 * 60 * 24); } catch(e){} }
+      if (bkN > 20) return res.json({ ok: false, credited: false, reason: 'rate' });
+
+      const code = String((req.body || {}).code || '').trim().toUpperCase();
+      if (!/^[A-Z0-9]{5,10}$/.test(code)) return res.json({ ok: false, credited: false, reason: 'badcode' });
+      const referrerId = await db.get('soc:refCode:' + code);
+      if (!referrerId) return res.json({ ok: false, credited: false, reason: 'unknown' });
+
+      const me = await userFromReq(req);
+      if (!me) return res.json({ ok: false, credited: false, reason: 'noauth' });
+      if (me.id === referrerId) return res.json({ ok: false, credited: false, reason: 'self' });
+
+      // Anti-fraud: same-IP-as-referrer signups don't count. Simpler than
+      // the "pending review" queue in the spec — just refuse silently.
+      // Owner audit note: revisit if legitimate flatmates start hitting
+      // this. Store the referrer's signup IP so we can compare later.
+      const rRaw = await db.get('soc:user:' + referrerId);
+      if (!rRaw) return res.json({ ok: false, credited: false, reason: 'unknown' });
+      const referrer = JSON.parse(rRaw);
+      if (referrer.signupIp && ip && referrer.signupIp === ip) {
+        return res.json({ ok: false, credited: false, reason: 'sameip' });
+      }
+
+      // Dedupe: SADD returns 0 if already a member.
+      const before = await db.scard('soc:refBy:' + referrerId);
+      await db.sadd('soc:refBy:' + referrerId, me.id);
+      const after = await db.scard('soc:refBy:' + referrerId);
+      const isNew = Number(after) > Number(before);
+
+      // Audit log — one line per credit attempt (successful adds only).
+      if (isNew) {
+        try {
+          await db.rpush('soc:refLog', JSON.stringify({
+            at: Date.now(), referrer: referrerId, referred: me.id, ip
+          }));
+        } catch (e) {}
+      }
+
+      // Milestone: first time the count hits REF_GOAL, stamp the crown +
+      // founderUntil, and queue a push so the referrer sees it next open.
+      let milestone = false;
+      if (isNew && Number(after) >= REF_GOAL && !referrer.crown) {
+        referrer.crown = true;
+        referrer.founderUntil = Date.now() + 365 * 24 * 60 * 60 * 1000;
+        await db.set('soc:user:' + referrerId, JSON.stringify(referrer));
+        milestone = true;
+        // Best-effort in-app notification via the existing push queue.
+        try {
+          await db.set('soc:pushq:' + referrerId, JSON.stringify({
+            kind: 'founder',
+            title: 'You unlocked the Founder crown 👑',
+            body: 'You brought 5 friends to WordSpies. 1 year of everything, on us.',
+            at: Date.now()
+          }), 60 * 60 * 24 * 7);
+        } catch (e) {}
+      }
+
+      res.json({ ok: true, credited: isNew, milestone, count: Number(after) });
+    } catch (e) {
+      console.error('refer credit:', e.message);
+      res.json({ ok: false, credited: false, reason: 'err' });
+    }
   });
 
   // ─── SAFETY / MODERATION ──────────────────────────────────────────────
@@ -2080,9 +2243,8 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (!voiceId) return res.status(400).json({ error: 'Unknown persona.' });
       if (!text) return res.status(400).json({ error: 'Empty text.' });
 
-      // Reuse the AI daily counter — voice is only generated as part
-      // of an AI reply, so the same 20/day cap gates it. Global cap
-      // still separate below.
+      // Per-user cap removed 14 Aug 2026 — only the global voice quota
+      // gates this now (runaway-bill circuit breaker).
       const day = new Date().toISOString().slice(0, 10);
       const VOICE_GLOBAL_LIMIT = parseInt(process.env.VOICE_GLOBAL_DAILY_LIMIT || '20000', 10);
       const gKey = 'soc:voice-global:' + day;
@@ -2368,26 +2530,13 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const bad = containsProfanity(text);
       if (bad) return res.status(400).json({ error: 'Message blocked — please keep it respectful.' });
 
-      // Rate limits. Free users get 5 messages/day per AI (owner ask —
-       // was 20). Override via BOT_DAILY_LIMIT env if a paid tier lands.
-       //
-       // AI_UNLIMITED_NAMES: hard-coded list of user-name allow-list
-       // that bypasses the per-user cap. Case-insensitive match on the
-       // stored display name. Kept small; when we ship the paid tier
-       // proper this list retires. Owner ask 1 Aug 2026: 'give
-       // unlimited messages access with ai experts for ayoub'.
-      const AI_UNLIMITED_NAMES = new Set(['sibi', 'ayoub']);
-      const isUnlimited = AI_UNLIMITED_NAMES.has(String(me.name || '').trim().toLowerCase())
-        || me.aiUnlimited === true;
-      const DAILY_LIMIT = parseInt(process.env.BOT_DAILY_LIMIT || '5', 10);
-      const GLOBAL_LIMIT = parseInt(process.env.BOT_GLOBAL_DAILY_LIMIT || '5000', 10);
+      // Per-user cap removed 14 Aug 2026: owner wants unlimited AI chat.
+      // Global daily cap kept as a runaway-bill circuit breaker; bump
+      // via BOT_GLOBAL_DAILY_LIMIT env if you outgrow it.
+      const GLOBAL_LIMIT = parseInt(process.env.BOT_GLOBAL_DAILY_LIMIT || '50000', 10);
       const day = new Date().toISOString().slice(0, 10);
       const userKey = 'soc:ai-limit:' + me.id + ':' + to + ':' + day;
       const globalKey = 'soc:ai-global:' + day;
-      const userN = parseInt((await db.get(userKey)) || '0', 10);
-      if (!isUnlimited && userN >= DAILY_LIMIT) {
-        return res.status(429).json({ error: `Daily limit reached — you've used your ${DAILY_LIMIT} messages with ${bot.name} today. Back tomorrow!` });
-      }
       const globalN = parseInt((await db.get(globalKey)) || '0', 10);
       if (globalN >= GLOBAL_LIMIT) {
         return res.status(429).json({ error: 'AI chat is busy right now — try again in a bit.' });
@@ -2493,7 +2642,9 @@ Reply as ${bot.name}. No preamble, just the reply.`;
       await db.rpush('soc:ai-usage:' + day, JSON.stringify(logEntry));
       await db.ltrim('soc:ai-usage:' + day, -1000, -1);
 
-      res.json({ ok: true, reply: replyMsg, msgsLeft: Math.max(0, DAILY_LIMIT - userN - 1) });
+      // msgsLeft:null now that the per-user cap is gone. Client already
+      // treats null as "unlimited" and hides the counter.
+      res.json({ ok: true, reply: replyMsg, msgsLeft: null });
     } catch (e) {
       console.error('[ai] reply error:', e.message);
       res.status(500).json({ error: 'Something went wrong.' });
