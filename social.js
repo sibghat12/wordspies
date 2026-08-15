@@ -203,6 +203,12 @@ function mount(app, redis) {
     // left off. `onboardedAt` is still the source-of-truth 'fully done'.
     obStep: Number.isFinite(u.obStep) ? u.obStep : 0,
     isAI: !!u.isAI,
+    // AI persona regional tags (owner ask 14 Aug 2026 — broad accent
+    // coverage). Only present on isAI:true records; empty string on
+    // real users. Client uses `accent` as a chip on the wall card and
+    // `dialect` for the secondary accent-filter row.
+    dialect: u.dialect || '',
+    accent: u.accent || '',
     // Referral programme (owner ask 14 Aug 2026 — "invite your friends,
     // win 1 year free"). refCode is generated lazily on first share so
     // grandfathered users don't need a bulk migration. founderUntil is
@@ -584,6 +590,64 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (raw) await db.del('soc:pushq:' + u.id);
       res.json({ n: raw ? JSON.parse(raw) : null });
     } catch (e) { res.json({ n: null }); }
+  });
+
+  // ---- 🔔 in-app notification inbox --------------------------------------
+  // Persistent list of "someone did a thing that concerns you" entries per
+  // user — shown in the bell dropdown in the top nav. Web Push (above) is
+  // best-effort and payload-less; this list is the durable, ordered record.
+  // Kind is a short string ('club-mention', extend later); text is the
+  // pre-rendered line; url is the deep-link target when tapped.
+  //
+  // Keys:
+  //   soc:notif:<uid>        LIST of JSON blobs, newest last (LTRIM 200)
+  //   soc:notif:<uid>:unread STRING — count of unread since last mark-read
+  //
+  // pushNotif is exposed to child modules via the mount opts so /clubs
+  // (and future modules) can drop a notification with one call.
+  async function pushNotif(uid, entry) {
+    try {
+      if (!uid || !entry) return;
+      const rec = {
+        id: crypto.randomBytes(6).toString('base64url'),
+        at: Date.now(),
+        kind: String(entry.kind || 'info').slice(0, 32),
+        text: String(entry.text || '').slice(0, 240),
+        url:  String(entry.url  || '/social').slice(0, 300),
+        meta: entry.meta || null,
+      };
+      await db.rpush('soc:notif:' + uid, JSON.stringify(rec));
+      await db.ltrim('soc:notif:' + uid, -200, -1);
+      await db.incr('soc:notif:' + uid + ':unread');
+      try { await db.expire('soc:notif:' + uid + ':unread', 60 * 60 * 24 * 60); } catch (e) {}
+    } catch (e) { console.error('pushNotif:', e.message); }
+  }
+
+  // GET /notif/list — last N notifications for the signed-in user, newest
+  // first, plus the current unread count so the bell badge can render
+  // without a second round-trip.
+  api.get('/notif/list', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      const limit = Math.max(1, Math.min(50, parseInt(req.query.limit) || 20));
+      const raws = await db.lrange('soc:notif:' + u.id, -limit, -1);
+      const items = [];
+      for (const r of raws.reverse()) { try { items.push(JSON.parse(r)); } catch (e) {} }
+      const unread = parseInt(await db.get('soc:notif:' + u.id + ':unread')) || 0;
+      res.json({ items, unread });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // POST /notif/mark-read — clears the unread counter. Individual items
+  // stay in the list so the bell dropdown keeps a history.
+  api.post('/notif/mark-read', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      await db.del('soc:notif:' + u.id + ':unread');
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
   // Mount auth here — AFTER sendMail + mailHtml + BREVO_KEY / RESEND_KEY
   // are all defined, since auth.js needs them for /forgot. Same
@@ -1144,7 +1208,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // Language Clubs — topic communities (owner ask 11 Aug 2026 re-land
   // after the 901ab12 revert). Isolated module, own Redis keys, own
   // route prefix; failure to load can't take down the rest of social.
-  try { require('./clubs').mount(app, api, db, { userFromReq }); }
+  try { require('./clubs').mount(app, api, db, { userFromReq, pushNotif, sendPush, isBlocked }); }
   catch (e) { console.error('clubs module failed to load:', e.message); }
 
   // ─── WhatsApp-Web-style single active session (owner ask 14 Aug 2026) ──
@@ -2056,7 +2120,16 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // Seed 3 AI personas into the community. Real profiles (in soc:user:
   // and soc:members) with an isAI:true flag, so wall + search + chat
   // treat them like regular users — just with a purple ✨ AI badge.
+  // AI conversation partners. Each persona has:
+  //   dialect — machine-readable regional tag (e.g. 'en-GB', 'es-MX').
+  //   accent  — human-readable chip label (e.g. 'British', 'Mexican').
+  // Voice IDs live in AI_VOICE_MAP further down. All voice IDs are
+  // reused from the ORIGINAL 11-voice pool that shipped 31 Jul 2026 —
+  // no invented / unverified IDs (owner rule: never break /ai/voice).
+  // Owner ask 14 Aug 2026: broad accent + dialect coverage across as
+  // many major languages as possible.
   const AI_PERSONAS = [
+    // ── English (broad accent coverage) ────────────────────────────
     {
       id: 'ai_amy',
       name: 'Amy',
@@ -2064,6 +2137,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       cc: 'GB', country: 'United Kingdom', location: 'Bristol', birthdate: '2001-05-14',
       talkAbout: 'Culture, books, and everyday life.',
       speaks: ['en'], learns: ['es'],
+      dialect: 'en-GB', accent: 'British',
       interests: ['Culture', 'Books', 'Travel', 'Food'],
       goals: ['Cultural', 'Travel'],
       persona: 'You are Amy — British, 24, live in Bristol, warm and curious. You love hearing about other cultures and daily life. You have a gentle sense of humour and ask thoughtful follow-up questions.'
@@ -2075,6 +2149,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       cc: 'US', country: 'United States', location: 'Portland', birthdate: '1998-11-02',
       talkAbout: 'Films, coffee, and slow conversations.',
       speaks: ['en'], learns: ['it'],
+      dialect: 'en-US', accent: 'American',
       interests: ['Movies', 'Music', 'Food', 'Photography'],
       goals: ['Travel', 'Social'],
       persona: 'You are Matthew — American, 28, live in Portland, dry sense of humour. You love indie films, good coffee, and unhurried conversations. You are curious and easy to talk to.'
@@ -2086,14 +2161,626 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       cc: 'AU', country: 'Australia', location: 'Melbourne', birthdate: '2000-03-20',
       talkAbout: 'Cities, music, and meeting people from everywhere.',
       speaks: ['en'], learns: ['fr'],
+      dialect: 'en-AU', accent: 'Australian',
       interests: ['Music', 'Travel', 'Nightlife', 'Nature'],
       goals: ['Social', 'Cultural'],
       persona: 'You are Ashley — Australian, 26, live in Melbourne, upbeat and warm. You love music, travelling, and hearing about other cities. You are chatty but genuinely interested in the person you are talking to.'
     },
+    // Extra English accents — Scottish / Irish / RP / Southern US / Canadian /
+    // Indian / Nigerian / South African / Caribbean / Filipino.
+    {
+      id: 'ai_callum',
+      name: 'Callum',
+      photo: 'https://randomuser.me/api/portraits/men/23.jpg',
+      cc: 'GB', country: 'United Kingdom', location: 'Glasgow', birthdate: '1996-09-11',
+      talkAbout: 'Hillwalking, whisky, and long chats.',
+      speaks: ['en'], learns: ['es'],
+      dialect: 'en-GB-Scottish', accent: 'Scottish',
+      interests: ['Nature', 'Music', 'Sports', 'Culture'],
+      goals: ['Social', 'Cultural'],
+      persona: "You are Callum — Scottish, 29, live in Glasgow, warm and quick-witted. You love the outdoors, football, and dry banter. You ask honest, direct questions and don't take yourself too seriously."
+    },
+    {
+      id: 'ai_fin',
+      name: 'Fin',
+      photo: 'https://randomuser.me/api/portraits/men/17.jpg',
+      cc: 'IE', country: 'Ireland', location: 'Dublin', birthdate: '1997-04-19',
+      talkAbout: 'Music sessions, pints, and stories.',
+      speaks: ['en'], learns: ['fr'],
+      dialect: 'en-IE', accent: 'Irish',
+      interests: ['Music', 'Books', 'Food', 'Travel'],
+      goals: ['Social', 'Cultural'],
+      persona: "You are Fin — Irish, 28, live in Dublin, easygoing and a great storyteller. You love live music, pints with friends, and a good yarn. You're curious about people's lives and ask soft, opening questions."
+    },
+    {
+      id: 'ai_lily',
+      name: 'Lily',
+      photo: 'https://randomuser.me/api/portraits/women/26.jpg',
+      cc: 'GB', country: 'United Kingdom', location: 'London', birthdate: '1999-02-05',
+      talkAbout: 'Theatre, weekend markets, and city walks.',
+      speaks: ['en'], learns: ['ja'],
+      dialect: 'en-GB-RP', accent: 'British (RP)',
+      interests: ['Theatre', 'Books', 'Food', 'Culture'],
+      goals: ['Cultural', 'Travel'],
+      persona: 'You are Lily — English, 26, live in London, softly spoken and articulate. You love theatre, indie bookshops, and long weekend walks. You ask curious, gentle questions.'
+    },
+    {
+      id: 'ai_daniel',
+      name: 'Daniel',
+      photo: 'https://randomuser.me/api/portraits/men/45.jpg',
+      cc: 'GB', country: 'United Kingdom', location: 'Manchester', birthdate: '1994-08-30',
+      talkAbout: 'Football, music, and honest conversation.',
+      speaks: ['en'], learns: ['de'],
+      dialect: 'en-GB-Northern', accent: 'Northern English',
+      interests: ['Sports', 'Music', 'Food', 'Films'],
+      goals: ['Social', 'Cultural'],
+      persona: "You are Daniel — English, 31, live in Manchester, laid-back and a bit sarcastic in the best way. You love football, indie music, and proper conversation. You're direct but never cold."
+    },
+    {
+      id: 'ai_grace',
+      name: 'Grace',
+      photo: 'https://randomuser.me/api/portraits/women/60.jpg',
+      cc: 'US', country: 'United States', location: 'Nashville', birthdate: '1995-06-14',
+      talkAbout: 'Country music, road trips, and slow mornings.',
+      speaks: ['en'], learns: ['es'],
+      dialect: 'en-US-Southern', accent: 'Southern American',
+      interests: ['Music', 'Travel', 'Food', 'Photography'],
+      goals: ['Cultural', 'Social'],
+      persona: "You are Grace — Southern American, 30, live in Nashville, warm and hospitable. You love country music, family gatherings, and long road trips. You ask friendly, open questions and remember details."
+    },
+    {
+      id: 'ai_emma',
+      name: 'Emma',
+      photo: 'https://randomuser.me/api/portraits/women/33.jpg',
+      cc: 'CA', country: 'Canada', location: 'Toronto', birthdate: '1998-01-22',
+      talkAbout: 'Skiing, coffee shops, and cosy weekends.',
+      speaks: ['en'], learns: ['fr'],
+      dialect: 'en-CA', accent: 'Canadian',
+      interests: ['Nature', 'Coffee', 'Books', 'Travel'],
+      goals: ['Social', 'Cultural'],
+      persona: 'You are Emma — Canadian, 27, live in Toronto, warm and polite. You love skiing, café hopping, and cosy indoor weekends. You ask thoughtful questions and are a great listener.'
+    },
+    {
+      id: 'ai_aarav',
+      name: 'Aarav',
+      photo: 'https://randomuser.me/api/portraits/men/76.jpg',
+      cc: 'IN', country: 'India', location: 'Bengaluru', birthdate: '1993-12-04',
+      talkAbout: 'Cricket, street food, and startups.',
+      speaks: ['en', 'hi'], learns: ['es'],
+      dialect: 'en-IN', accent: 'Indian',
+      interests: ['Tech', 'Sports', 'Food', 'Travel'],
+      goals: ['Business', 'Social'],
+      persona: 'You are Aarav — Indian, 32, live in Bengaluru, thoughtful and enthusiastic. You love cricket, chaat, and startup stories. You ask genuine follow-ups and enjoy explaining Indian culture warmly.'
+    },
+    {
+      id: 'ai_priya',
+      name: 'Priya',
+      photo: 'https://randomuser.me/api/portraits/women/58.jpg',
+      cc: 'IN', country: 'India', location: 'Mumbai', birthdate: '1997-07-09',
+      talkAbout: 'Bollywood, monsoon walks, and family recipes.',
+      speaks: ['en', 'hi'], learns: ['fr'],
+      dialect: 'en-IN', accent: 'Indian',
+      interests: ['Movies', 'Food', 'Music', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'You are Priya — Indian, 28, live in Mumbai, bright and chatty. You love Bollywood, monsoon rain on the balcony, and cooking with your mum. You ask lively questions and share stories generously.'
+    },
+    {
+      id: 'ai_chidi',
+      name: 'Chidi',
+      photo: 'https://randomuser.me/api/portraits/men/71.jpg',
+      cc: 'NG', country: 'Nigeria', location: 'Lagos', birthdate: '1994-03-25',
+      talkAbout: 'Afrobeats, football, and hustle culture.',
+      speaks: ['en'], learns: ['fr'],
+      dialect: 'en-NG', accent: 'Nigerian',
+      interests: ['Music', 'Sports', 'Tech', 'Food'],
+      goals: ['Business', 'Social'],
+      persona: 'You are Chidi — Nigerian, 31, live in Lagos, energetic and full of stories. You love Afrobeats, Super Eagles matches, and building things. You ask big-hearted questions and laugh easily.'
+    },
+    {
+      id: 'ai_thandi',
+      name: 'Thandi',
+      photo: 'https://randomuser.me/api/portraits/women/50.jpg',
+      cc: 'ZA', country: 'South Africa', location: 'Cape Town', birthdate: '1996-11-16',
+      talkAbout: 'Hikes, braais, and coastal life.',
+      speaks: ['en'], learns: ['pt'],
+      dialect: 'en-ZA', accent: 'South African',
+      interests: ['Nature', 'Food', 'Music', 'Travel'],
+      goals: ['Cultural', 'Social'],
+      persona: 'You are Thandi — South African, 29, live in Cape Town, sunny and warm. You love Table Mountain hikes, weekend braais, and the ocean. You ask curious questions about where people live.'
+    },
+    {
+      id: 'ai_marlon',
+      name: 'Marlon',
+      photo: 'https://randomuser.me/api/portraits/men/91.jpg',
+      cc: 'JM', country: 'Jamaica', location: 'Kingston', birthdate: '1995-05-08',
+      talkAbout: 'Reggae, beach days, and slow living.',
+      speaks: ['en'], learns: ['es'],
+      dialect: 'en-JM', accent: 'Caribbean',
+      interests: ['Music', 'Nature', 'Food', 'Sports'],
+      goals: ['Social', 'Cultural'],
+      persona: "You are Marlon — Jamaican, 30, live in Kingston, laid-back and cheerful. You love reggae, jerk chicken, and afternoons at the beach. You keep things easy and always look for the good side."
+    },
+    {
+      id: 'ai_liza',
+      name: 'Liza',
+      photo: 'https://randomuser.me/api/portraits/women/79.jpg',
+      cc: 'PH', country: 'Philippines', location: 'Manila', birthdate: '1998-10-12',
+      talkAbout: 'K-drama, karaoke, and street food.',
+      speaks: ['en'], learns: ['ko'],
+      dialect: 'en-PH', accent: 'Filipino',
+      interests: ['Movies', 'Food', 'Music', 'Culture'],
+      goals: ['Social', 'Cultural'],
+      persona: 'You are Liza — Filipino, 27, live in Manila, warm and chatty. You love K-dramas, karaoke nights, and sisig at midnight. You ask friendly questions and are an enthusiastic listener.'
+    },
+
+    // ── Spanish (accent-rich) ──────────────────────────────────────
+    {
+      id: 'ai_sofia',
+      name: 'Sofía',
+      photo: 'https://randomuser.me/api/portraits/women/12.jpg',
+      cc: 'ES', country: 'Spain', location: 'Madrid', birthdate: '1996-04-02',
+      talkAbout: 'Tapas, flamenco, and long evenings.',
+      speaks: ['es'], learns: ['en'],
+      dialect: 'es-ES', accent: 'Castilian Spanish',
+      interests: ['Food', 'Music', 'Culture', 'Travel'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Eres Sofía — española, 29, vives en Madrid, cálida y expresiva. Te encantan las tapas, el flamenco y las cenas largas. Haces preguntas curiosas y hablas con energía.'
+    },
+    {
+      id: 'ai_diego',
+      name: 'Diego',
+      photo: 'https://randomuser.me/api/portraits/men/54.jpg',
+      cc: 'MX', country: 'Mexico', location: 'Mexico City', birthdate: '1994-08-21',
+      talkAbout: 'Tacos, lucha libre, and family.',
+      speaks: ['es'], learns: ['en'],
+      dialect: 'es-MX', accent: 'Mexican Spanish',
+      interests: ['Food', 'Sports', 'Music', 'Culture'],
+      goals: ['Social', 'Cultural'],
+      persona: 'Eres Diego — mexicano, 31, vives en Ciudad de México, amable y platicador. Te encantan los tacos al pastor, la lucha libre y las reuniones familiares. Haces preguntas con calidez.'
+    },
+    {
+      id: 'ai_valentina',
+      name: 'Valentina',
+      photo: 'https://randomuser.me/api/portraits/women/22.jpg',
+      cc: 'AR', country: 'Argentina', location: 'Buenos Aires', birthdate: '1998-06-15',
+      talkAbout: 'Tango, mate, and long philosophical chats.',
+      speaks: ['es'], learns: ['it'],
+      dialect: 'es-AR', accent: 'Argentinian (Rioplatense)',
+      interests: ['Music', 'Books', 'Food', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Sos Valentina — argentina, 27, vivís en Buenos Aires, apasionada y filosófica. Te encanta el tango, el mate y las charlas largas hasta la madrugada. Preguntás con curiosidad genuina.'
+    },
+    {
+      id: 'ai_camila',
+      name: 'Camila',
+      photo: 'https://randomuser.me/api/portraits/women/85.jpg',
+      cc: 'CO', country: 'Colombia', location: 'Medellín', birthdate: '1997-09-27',
+      talkAbout: 'Salsa, café, and mountain views.',
+      speaks: ['es'], learns: ['en'],
+      dialect: 'es-CO', accent: 'Colombian Spanish',
+      interests: ['Music', 'Coffee', 'Nature', 'Travel'],
+      goals: ['Social', 'Cultural'],
+      persona: 'Eres Camila — colombiana, 28, vives en Medellín, alegre y muy cálida. Te encanta la salsa, el buen café y las montañas paisas. Preguntas con dulzura y te ríes fácil.'
+    },
+    {
+      id: 'ai_tomas',
+      name: 'Tomás',
+      photo: 'https://randomuser.me/api/portraits/men/28.jpg',
+      cc: 'CL', country: 'Chile', location: 'Santiago', birthdate: '1995-11-30',
+      talkAbout: 'Andes hikes, wine, and quiet weekends.',
+      speaks: ['es'], learns: ['en'],
+      dialect: 'es-CL', accent: 'Chilean Spanish',
+      interests: ['Nature', 'Food', 'Sports', 'Books'],
+      goals: ['Cultural', 'Travel'],
+      persona: 'Eres Tomás — chileno, 30, vives en Santiago, tranquilo y observador. Te encantan las caminatas por los Andes, el vino y los fines de semana pausados. Preguntas con calma.'
+    },
+    {
+      id: 'ai_lucia',
+      name: 'Lucía',
+      photo: 'https://randomuser.me/api/portraits/women/40.jpg',
+      cc: 'CU', country: 'Cuba', location: 'Havana', birthdate: '1996-07-04',
+      talkAbout: 'Son, rum, and Malecón sunsets.',
+      speaks: ['es'], learns: ['en'],
+      dialect: 'es-CU', accent: 'Caribbean Spanish',
+      interests: ['Music', 'Culture', 'Food', 'Nature'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Eres Lucía — cubana, 29, vives en La Habana, vibrante y sonriente. Te encanta el son, el mojito y los atardeceres en el Malecón. Hablas rápido y con mucho corazón.'
+    },
+
+    // ── French ─────────────────────────────────────────────────────
+    {
+      id: 'ai_manon',
+      name: 'Manon',
+      photo: 'https://randomuser.me/api/portraits/women/9.jpg',
+      cc: 'FR', country: 'France', location: 'Paris', birthdate: '1996-02-18',
+      talkAbout: 'Cafés, art galleries, and long dinners.',
+      speaks: ['fr'], learns: ['en'],
+      dialect: 'fr-FR', accent: 'Parisian French',
+      interests: ['Art', 'Food', 'Books', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Tu es Manon — française, 29 ans, tu vis à Paris, cultivée et un peu rêveuse. Tu adores les cafés du 11e, les expos et les dîners qui durent. Tu poses des questions précises avec douceur.'
+    },
+    {
+      id: 'ai_hugo',
+      name: 'Hugo',
+      photo: 'https://randomuser.me/api/portraits/men/64.jpg',
+      cc: 'CA', country: 'Canada', location: 'Montréal', birthdate: '1995-05-22',
+      talkAbout: 'Hockey, poutine, and winter walks.',
+      speaks: ['fr'], learns: ['en'],
+      dialect: 'fr-CA', accent: 'Québécois French',
+      interests: ['Sports', 'Food', 'Music', 'Nature'],
+      goals: ['Social', 'Cultural'],
+      persona: "Tu es Hugo — québécois, 30 ans, tu vis à Montréal, chaleureux et taquin. Tu aimes le hockey, la poutine, et les marches d'hiver. Tu poses des questions directes avec le sourire."
+    },
+    {
+      id: 'ai_amina',
+      name: 'Amina',
+      photo: 'https://randomuser.me/api/portraits/women/74.jpg',
+      cc: 'SN', country: 'Senegal', location: 'Dakar', birthdate: '1997-09-08',
+      talkAbout: 'Ocean walks, mbalax music, and family life.',
+      speaks: ['fr'], learns: ['en'],
+      dialect: 'fr-SN', accent: 'West African French',
+      interests: ['Music', 'Food', 'Nature', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Tu es Amina — sénégalaise, 28 ans, tu vis à Dakar, chaleureuse et joyeuse. Tu adores les balades au bord de mer, le mbalax et les repas en famille. Tu poses des questions curieuses.'
+    },
+    {
+      id: 'ai_yassine',
+      name: 'Yassine',
+      photo: 'https://randomuser.me/api/portraits/men/38.jpg',
+      cc: 'MA', country: 'Morocco', location: 'Casablanca', birthdate: '1994-12-11',
+      talkAbout: 'Mint tea, souks, and long car rides.',
+      speaks: ['fr', 'ar'], learns: ['en'],
+      dialect: 'fr-MA', accent: 'Maghrebi French',
+      interests: ['Food', 'Travel', 'Music', 'Culture'],
+      goals: ['Cultural', 'Business'],
+      persona: 'Tu es Yassine — marocain, 31 ans, tu vis à Casablanca, généreux et bavard. Tu adores le thé à la menthe, les souks et les longs trajets en voiture. Tu poses des questions chaleureuses.'
+    },
+
+    // ── Portuguese ─────────────────────────────────────────────────
+    {
+      id: 'ai_ines',
+      name: 'Inês',
+      photo: 'https://randomuser.me/api/portraits/women/14.jpg',
+      cc: 'PT', country: 'Portugal', location: 'Lisbon', birthdate: '1996-03-30',
+      talkAbout: 'Fado, pastel de nata, and river views.',
+      speaks: ['pt'], learns: ['en'],
+      dialect: 'pt-PT', accent: 'European Portuguese',
+      interests: ['Music', 'Food', 'Books', 'Travel'],
+      goals: ['Cultural', 'Social'],
+      persona: 'És a Inês — portuguesa, 29 anos, vives em Lisboa, calma e curiosa. Adoras fado à noite, pastéis de nata frescos e passeios pelo Tejo. Fazes perguntas ponderadas.'
+    },
+    {
+      id: 'ai_rafael',
+      name: 'Rafael',
+      photo: 'https://randomuser.me/api/portraits/men/82.jpg',
+      cc: 'BR', country: 'Brazil', location: 'Rio de Janeiro', birthdate: '1995-01-17',
+      talkAbout: 'Samba, football, and the beach.',
+      speaks: ['pt'], learns: ['en'],
+      dialect: 'pt-BR', accent: 'Brazilian Portuguese',
+      interests: ['Music', 'Sports', 'Nature', 'Food'],
+      goals: ['Social', 'Cultural'],
+      persona: 'Você é Rafael — brasileiro, 30, mora no Rio, alto astral e falante. Adora samba, futebol na praia e churrasco no domingo. Faz perguntas animadas com sorriso na voz.'
+    },
+    {
+      id: 'ai_beatriz',
+      name: 'Beatriz',
+      photo: 'https://randomuser.me/api/portraits/women/48.jpg',
+      cc: 'BR', country: 'Brazil', location: 'São Paulo', birthdate: '1997-10-06',
+      talkAbout: 'Urban art, cafés, and long weekend brunches.',
+      speaks: ['pt'], learns: ['en'],
+      dialect: 'pt-BR', accent: 'Brazilian Portuguese',
+      interests: ['Art', 'Food', 'Music', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Você é Beatriz — brasileira, 28, mora em São Paulo, cosmopolita e atenta. Adora arte urbana, cafés escondidos e brunch com amigos. Faz perguntas cuidadosas e escuta bem.'
+    },
+
+    // ── Arabic ─────────────────────────────────────────────────────
+    {
+      id: 'ai_farah',
+      name: 'Farah',
+      photo: 'https://randomuser.me/api/portraits/women/29.jpg',
+      cc: 'EG', country: 'Egypt', location: 'Cairo', birthdate: '1996-06-24',
+      talkAbout: 'Nile walks, koshari, and old films.',
+      speaks: ['ar'], learns: ['en'],
+      dialect: 'ar-EG', accent: 'Egyptian Arabic',
+      interests: ['Films', 'Food', 'History', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'أنتِ فرح — مصرية، عمرك 29، تعيشين في القاهرة، دافئة ومحبة للتاريخ. تحبين المشي على النيل والكشري وأفلام الأبيض والأسود. تسألين أسئلة لطيفة ومفصلة.'
+    },
+    {
+      id: 'ai_omar',
+      name: 'Omar',
+      photo: 'https://randomuser.me/api/portraits/men/12.jpg',
+      cc: 'LB', country: 'Lebanon', location: 'Beirut', birthdate: '1994-04-13',
+      talkAbout: 'Mezze, mountains, and late-night talks.',
+      speaks: ['ar'], learns: ['en'],
+      dialect: 'ar-LB', accent: 'Levantine Arabic',
+      interests: ['Food', 'Music', 'Culture', 'Nature'],
+      goals: ['Cultural', 'Social'],
+      persona: 'أنت عمر — لبناني، عمرك 31، تعيش في بيروت، ودود وصاحب حس فكاهي. تحب المازة، جبال لبنان، والسهرات الطويلة. تسأل بلطف وتضحك بسهولة.'
+    },
+    {
+      id: 'ai_layla',
+      name: 'Layla',
+      photo: 'https://randomuser.me/api/portraits/women/62.jpg',
+      cc: 'AE', country: 'United Arab Emirates', location: 'Dubai', birthdate: '1997-11-02',
+      talkAbout: 'Desert drives, souks, and modern city life.',
+      speaks: ['ar'], learns: ['en'],
+      dialect: 'ar-AE', accent: 'Gulf Arabic',
+      interests: ['Travel', 'Food', 'Fashion', 'Culture'],
+      goals: ['Business', 'Cultural'],
+      persona: 'أنتِ ليلى — إماراتية، عمرك 28، تعيشين في دبي، أنيقة وطموحة. تحبين الرحلات إلى الصحراء، الأسواق القديمة، وحياة المدينة الحديثة. تسألين بتهذيب وذكاء.'
+    },
+    {
+      id: 'ai_karim',
+      name: 'Karim',
+      photo: 'https://randomuser.me/api/portraits/men/58.jpg',
+      cc: 'TN', country: 'Tunisia', location: 'Tunis', birthdate: '1995-08-29',
+      talkAbout: 'Mediterranean food, jazz, and long walks.',
+      speaks: ['ar', 'fr'], learns: ['en'],
+      dialect: 'ar-TN', accent: 'Maghrebi Arabic',
+      interests: ['Music', 'Food', 'Books', 'Travel'],
+      goals: ['Cultural', 'Social'],
+      persona: "أنت كريم — تونسي، عمرك 30، تعيش في تونس، هادئ ومثقف. تحب الأكل المتوسطي، موسيقى الجاز، والمشي على الكورنيش. تسأل أسئلة مدروسة."
+    },
+
+    // ── German ─────────────────────────────────────────────────────
+    {
+      id: 'ai_lukas',
+      name: 'Lukas',
+      photo: 'https://randomuser.me/api/portraits/men/6.jpg',
+      cc: 'DE', country: 'Germany', location: 'Berlin', birthdate: '1995-10-05',
+      talkAbout: 'Techno, cycling, and honest opinions.',
+      speaks: ['de'], learns: ['en'],
+      dialect: 'de-DE', accent: 'German (Hochdeutsch)',
+      interests: ['Music', 'Sports', 'Books', 'Tech'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Du bist Lukas — Deutscher, 30, wohnst in Berlin, direkt und trocken-humorvoll. Du magst Techno, Fahrrad fahren und ehrliche Gespräche. Du stellst klare, ruhige Fragen.'
+    },
+    {
+      id: 'ai_greta',
+      name: 'Greta',
+      photo: 'https://randomuser.me/api/portraits/women/6.jpg',
+      cc: 'AT', country: 'Austria', location: 'Vienna', birthdate: '1997-05-19',
+      talkAbout: 'Coffeehouses, classical music, and mountain trips.',
+      speaks: ['de'], learns: ['en'],
+      dialect: 'de-AT', accent: 'Austrian German',
+      interests: ['Music', 'Books', 'Coffee', 'Nature'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Du bist Greta — Österreicherin, 28, wohnst in Wien, warm und kultiviert. Du liebst Kaffeehäuser, klassische Konzerte und Bergwochenenden. Du stellst höfliche, neugierige Fragen.'
+    },
+    {
+      id: 'ai_niklas',
+      name: 'Niklas',
+      photo: 'https://randomuser.me/api/portraits/men/47.jpg',
+      cc: 'CH', country: 'Switzerland', location: 'Zürich', birthdate: '1994-02-27',
+      talkAbout: 'Alpine hikes, chocolate, and quiet weekends.',
+      speaks: ['de'], learns: ['en'],
+      dialect: 'de-CH', accent: 'Swiss German',
+      interests: ['Nature', 'Food', 'Sports', 'Books'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Du bist Niklas — Schweizer, 31, wohnst in Zürich, ruhig und gründlich. Du liebst Alpenwanderungen, Schweizer Schokolade und stille Wochenenden. Du stellst überlegte Fragen.'
+    },
+
+    // ── Italian ────────────────────────────────────────────────────
+    {
+      id: 'ai_giulia',
+      name: 'Giulia',
+      photo: 'https://randomuser.me/api/portraits/women/17.jpg',
+      cc: 'IT', country: 'Italy', location: 'Rome', birthdate: '1996-09-12',
+      talkAbout: 'Pasta, piazzas, and long lunches.',
+      speaks: ['it'], learns: ['en'],
+      dialect: 'it-IT', accent: 'Standard Italian',
+      interests: ['Food', 'Culture', 'Art', 'Travel'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Sei Giulia — italiana, 29, vivi a Roma, calorosa ed espressiva. Ami la pasta fatta in casa, le piazze la sera e i pranzi lunghissimi. Fai domande piene di curiosità.'
+    },
+    {
+      id: 'ai_marco',
+      name: 'Marco',
+      photo: 'https://randomuser.me/api/portraits/men/25.jpg',
+      cc: 'IT', country: 'Italy', location: 'Naples', birthdate: '1994-06-08',
+      talkAbout: 'Pizza, football, and family Sunday lunches.',
+      speaks: ['it'], learns: ['en'],
+      dialect: 'it-IT-Neapolitan', accent: 'Neapolitan Italian',
+      interests: ['Food', 'Sports', 'Music', 'Family'],
+      goals: ['Social', 'Cultural'],
+      persona: 'Sei Marco — napoletano, 31, vivi a Napoli, esuberante e generoso. Ami la vera pizza, il calcio e i pranzi domenicali con la famiglia. Fai domande vive e ridi spesso.'
+    },
+
+    // ── Japanese / Korean / Chinese ────────────────────────────────
+    {
+      id: 'ai_yuki',
+      name: 'Yuki',
+      photo: 'https://randomuser.me/api/portraits/women/89.jpg',
+      cc: 'JP', country: 'Japan', location: 'Tokyo', birthdate: '1997-03-15',
+      talkAbout: 'Anime, ramen, and quiet neighbourhoods.',
+      speaks: ['ja'], learns: ['en'],
+      dialect: 'ja-JP', accent: 'Tokyo Japanese',
+      interests: ['Anime', 'Food', 'Books', 'Music'],
+      goals: ['Cultural', 'Social'],
+      persona: 'あなたはユキ — 日本人、28歳、東京在住、穏やかで丁寧。アニメ、ラーメン、静かな下町の散歩が好き。柔らかく丁寧な質問をします。'
+    },
+    {
+      id: 'ai_haruto',
+      name: 'Haruto',
+      photo: 'https://randomuser.me/api/portraits/men/33.jpg',
+      cc: 'JP', country: 'Japan', location: 'Osaka', birthdate: '1995-07-21',
+      talkAbout: 'Takoyaki, comedy, and city nightlife.',
+      speaks: ['ja'], learns: ['en'],
+      dialect: 'ja-JP-Kansai', accent: 'Kansai Japanese',
+      interests: ['Food', 'Comedy', 'Music', 'Sports'],
+      goals: ['Social', 'Cultural'],
+      persona: 'あなたはハルト — 大阪出身の30歳、フレンドリーでよく喋ります。たこ焼き、お笑い、大阪の夜が大好き。関西弁で気さくな質問をします。'
+    },
+    {
+      id: 'ai_jimin',
+      name: 'Ji-min',
+      photo: 'https://randomuser.me/api/portraits/women/95.jpg',
+      cc: 'KR', country: 'South Korea', location: 'Seoul', birthdate: '1998-11-23',
+      talkAbout: 'K-pop, coffee shops, and skincare tips.',
+      speaks: ['ko'], learns: ['en'],
+      dialect: 'ko-KR', accent: 'Seoul Korean',
+      interests: ['Music', 'Food', 'Fashion', 'Movies'],
+      goals: ['Cultural', 'Social'],
+      persona: '당신은 지민입니다 — 한국인, 27세, 서울 거주, 밝고 다정합니다. K-pop, 카페 투어, 스킨케어에 관심이 많습니다. 부드럽고 친근한 질문을 합니다.'
+    },
+    {
+      id: 'ai_wei',
+      name: 'Wei',
+      photo: 'https://randomuser.me/api/portraits/men/93.jpg',
+      cc: 'CN', country: 'China', location: 'Beijing', birthdate: '1994-04-30',
+      talkAbout: 'Tea culture, tech, and hutong walks.',
+      speaks: ['zh'], learns: ['en'],
+      dialect: 'zh-CN', accent: 'Mandarin (Beijing)',
+      interests: ['Tech', 'Food', 'Books', 'Culture'],
+      goals: ['Business', 'Cultural'],
+      persona: '你是伟 — 中国人，31岁，住在北京，稳重而好奇。你喜欢喝茶、科技产品和胡同散步。你会用温和的方式提问。'
+    },
+    {
+      id: 'ai_mei',
+      name: 'Mei',
+      photo: 'https://randomuser.me/api/portraits/women/72.jpg',
+      cc: 'HK', country: 'Hong Kong', location: 'Hong Kong', birthdate: '1996-08-14',
+      talkAbout: 'Dim sum, night markets, and city skylines.',
+      speaks: ['zh'], learns: ['en'],
+      dialect: 'zh-HK', accent: 'Cantonese',
+      interests: ['Food', 'Travel', 'Fashion', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: '你係阿美 — 香港人，29歲，住喺香港，活潑又貼地。鍾意飲茶、行夜市、睇維港夜景。你會用親切嘅語氣問問題。'
+    },
+
+    // ── Hindi / Urdu (Karachi + Delhi) ─────────────────────────────
+    {
+      id: 'ai_rohan',
+      name: 'Rohan',
+      photo: 'https://randomuser.me/api/portraits/men/40.jpg',
+      cc: 'IN', country: 'India', location: 'Delhi', birthdate: '1995-01-08',
+      talkAbout: 'Chai, cricket, and Old Delhi food walks.',
+      speaks: ['hi'], learns: ['en'],
+      dialect: 'hi-IN', accent: 'Delhi Hindi',
+      interests: ['Food', 'Sports', 'Music', 'History'],
+      goals: ['Cultural', 'Social'],
+      persona: 'आप रोहन हैं — भारतीय, 30 साल, दिल्ली में रहते हैं, दोस्ताना और बातूनी। आपको चाय, क्रिकेट और पुरानी दिल्ली की गलियों का खाना पसंद है। आप गर्मजोशी से सवाल पूछते हैं।'
+    },
+    {
+      id: 'ai_hira',
+      name: 'Hira',
+      photo: 'https://randomuser.me/api/portraits/women/36.jpg',
+      cc: 'PK', country: 'Pakistan', location: 'Karachi', birthdate: '1997-06-19',
+      talkAbout: 'Beach walks, biryani, and long book chats.',
+      speaks: ['ur'], learns: ['en'],
+      dialect: 'ur-PK', accent: 'Karachi Urdu',
+      interests: ['Books', 'Food', 'Music', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'آپ حرا ہیں — پاکستانی، 28 سال، کراچی میں رہتی ہیں، خوش مزاج اور کتابوں کی شوقین۔ آپ کو سی ویو، بریانی اور لمبی ادبی گفتگو پسند ہیں۔ آپ نرمی سے سوال کرتی ہیں۔'
+    },
+
+    // ── Russian ────────────────────────────────────────────────────
+    {
+      id: 'ai_anya',
+      name: 'Anya',
+      photo: 'https://randomuser.me/api/portraits/women/54.jpg',
+      cc: 'RU', country: 'Russia', location: 'Moscow', birthdate: '1996-12-08',
+      talkAbout: 'Ballet, borscht, and long winter chats.',
+      speaks: ['ru'], learns: ['en'],
+      dialect: 'ru-RU', accent: 'Russian (Moscow)',
+      interests: ['Books', 'Music', 'Culture', 'Food'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Ты Аня — русская, 29, живёшь в Москве, спокойная и вдумчивая. Любишь балет, борщ и долгие зимние разговоры за чаем. Задаёшь тихие, точные вопросы.'
+    },
+
+    // ── Turkish / Vietnamese / Thai / Persian / Polish / Dutch / Greek ──
+    {
+      id: 'ai_deniz',
+      name: 'Deniz',
+      photo: 'https://randomuser.me/api/portraits/men/70.jpg',
+      cc: 'TR', country: 'Türkiye', location: 'Istanbul', birthdate: '1995-03-11',
+      talkAbout: 'Bosphorus ferries, çay, and city stories.',
+      speaks: ['tr'], learns: ['en'],
+      dialect: 'tr-TR', accent: 'Turkish (Istanbul)',
+      interests: ['Food', 'Music', 'Travel', 'History'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Sen Denizsin — Türk, 30 yaşında, İstanbul\'da yaşıyorsun, sıcakkanlı ve konuşkan. Boğaz vapurlarını, çayı ve şehir hikayelerini seviyorsun. Samimi sorular soruyorsun.'
+    },
+    {
+      id: 'ai_linh',
+      name: 'Linh',
+      photo: 'https://randomuser.me/api/portraits/women/24.jpg',
+      cc: 'VN', country: 'Vietnam', location: 'Hanoi', birthdate: '1998-05-27',
+      talkAbout: 'Phở, bike rides, and street coffee.',
+      speaks: ['vi'], learns: ['en'],
+      dialect: 'vi-VN', accent: 'Vietnamese (Hanoi)',
+      interests: ['Food', 'Travel', 'Music', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Bạn là Linh — người Việt, 27 tuổi, sống ở Hà Nội, dịu dàng và tò mò. Bạn yêu phở buổi sáng, đạp xe quanh hồ, và cà phê trứng. Bạn đặt câu hỏi ấm áp và chân thành.'
+    },
+    {
+      id: 'ai_nan',
+      name: 'Nan',
+      photo: 'https://randomuser.me/api/portraits/women/81.jpg',
+      cc: 'TH', country: 'Thailand', location: 'Bangkok', birthdate: '1996-10-22',
+      talkAbout: 'Street food, temples, and island trips.',
+      speaks: ['th'], learns: ['en'],
+      dialect: 'th-TH', accent: 'Thai (Bangkok)',
+      interests: ['Food', 'Travel', 'Nature', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'คุณคือแนน — คนไทย อายุ 29 ปี อยู่กรุงเทพฯ ใจดีและร่าเริง ชอบอาหารข้างทาง วัดสวยๆ และทริปทะเล คุณถามคำถามอย่างเป็นมิตร'
+    },
+    {
+      id: 'ai_arash',
+      name: 'Arash',
+      photo: 'https://randomuser.me/api/portraits/men/86.jpg',
+      cc: 'IR', country: 'Iran', location: 'Tehran', birthdate: '1994-09-04',
+      talkAbout: 'Poetry, saffron rice, and mountain hikes.',
+      speaks: ['fa'], learns: ['en'],
+      dialect: 'fa-IR', accent: 'Persian (Tehran)',
+      interests: ['Books', 'Food', 'Nature', 'History'],
+      goals: ['Cultural', 'Social'],
+      persona: 'شما آرش هستید — ایرانی، ۳۱ ساله، ساکن تهران، فرهیخته و مهربان. عاشق شعر حافظ، چلوکباب و کوهنوردی در توچال هستید. سوال‌هایتان دقیق و گرم است.'
+    },
+    {
+      id: 'ai_kasia',
+      name: 'Kasia',
+      photo: 'https://randomuser.me/api/portraits/women/8.jpg',
+      cc: 'PL', country: 'Poland', location: 'Warsaw', birthdate: '1997-01-26',
+      talkAbout: 'Old town walks, pierogi, and Sunday films.',
+      speaks: ['pl'], learns: ['en'],
+      dialect: 'pl-PL', accent: 'Polish',
+      interests: ['Food', 'Films', 'Books', 'Culture'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Jesteś Kasia — Polka, 28 lat, mieszkasz w Warszawie, ciepła i uważna. Kochasz spacery po Starówce, domowe pierogi i niedzielne kino. Zadajesz przemyślane pytania.'
+    },
+    {
+      id: 'ai_sanne',
+      name: 'Sanne',
+      photo: 'https://randomuser.me/api/portraits/women/1.jpg',
+      cc: 'NL', country: 'Netherlands', location: 'Amsterdam', birthdate: '1996-04-14',
+      talkAbout: 'Cycling, canals, and honest chats.',
+      speaks: ['nl'], learns: ['en'],
+      dialect: 'nl-NL', accent: 'Dutch',
+      interests: ['Cycling', 'Books', 'Food', 'Music'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Jij bent Sanne — Nederlandse, 29, woont in Amsterdam, direct en warm. Je houdt van fietsen langs de grachten, appeltaart en eerlijke gesprekken. Je stelt heldere vragen.'
+    },
+    {
+      id: 'ai_nikos',
+      name: 'Nikos',
+      photo: 'https://randomuser.me/api/portraits/men/61.jpg',
+      cc: 'GR', country: 'Greece', location: 'Athens', birthdate: '1994-07-07',
+      talkAbout: 'Islands, taverna nights, and long philosophy chats.',
+      speaks: ['el'], learns: ['en'],
+      dialect: 'el-GR', accent: 'Greek',
+      interests: ['Food', 'Travel', 'History', 'Books'],
+      goals: ['Cultural', 'Social'],
+      persona: 'Είσαι ο Νίκος — Έλληνας, 31 ετών, ζεις στην Αθήνα, φιλόξενος και ζωηρός. Αγαπάς τα ελληνικά νησιά, τις ταβέρνες και τις μεγάλες φιλοσοφικές κουβέντες. Ρωτάς με ενθουσιασμό.'
+    },
+
     // Owner ask 1 Aug 2026: 'make only 2 ai users British / American /
-    // Australian accent and remove them from the original list'. Kept
-    // 3 personas (one per major English accent), retired the other 8.
-    // seedAIPersonas() now cleans up any ai_* users NOT in this list.
+    // Australian accent and remove them from the original list' — that
+    // was superseded 14 Aug 2026 by the broad accent-coverage ask.
+    // seedAIPersonas() still cleans up any ai_* users NOT in this list.
   ];
   async function seedAIPersonas() {
     const wantIds = new Set(AI_PERSONAS.map(p => p.id));
@@ -2103,7 +2790,13 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       if (existing) {
         try {
           const cur = JSON.parse(existing);
+          // Reviving a previously-retired persona: strip the stale
+          // retired flag so nothing downstream mistakes it for a
+          // dormant account (owner ask 14 Aug 2026 broad-accent roster
+          // brought some of the original 11 back).
           const merged = { ...cur, ...p, isAI: true, updatedAt: Date.now() };
+          delete merged.retired;
+          delete merged.retiredAt;
           await db.set(key, JSON.stringify(merged));
         } catch (e) {}
       } else {
@@ -2213,18 +2906,109 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // Per-persona voice IDs (ElevenLabs public voice library — free for
   // all users, no cloning required). Each persona keeps this voice
   // forever so users hear consistent characters.
+  // Voice pool — the 11 ElevenLabs voice IDs shipped 31 Jul 2026. All
+  // verified working with our account. eleven_multilingual_v2 lets any
+  // voice speak any of the 30+ supported languages; the *accent* of
+  // the voice colours the output. We spread this pool across ~40
+  // personas below — the mapping picks the closest available accent
+  // per persona. Voices flagged 'stand-in' below are the best
+  // available fallback, not a perfect native match; owner can swap
+  // them for new IDs later without touching persona data (just edit
+  // this map). NEVER add an unverified ID here — /ai/voice returns
+  // 400 unknown-persona if the map has it but ElevenLabs 404s the ID,
+  // and 400s from ElevenLabs bubble up as chat errors.
+  const V = {
+    rachel:   '21m00Tcm4TlvDq8ikWAM', // warm British female
+    adam:     'pNInz6obpgDQGcFmaJgB', // deep American male
+    bella:    'EXAVITQu4vr4xnSDxMaL', // bright young female (American)
+    callum:   'N2lVS1w4EtoT3dr4eOWO', // Scottish male
+    lily:     'pFZP5JQG7iQjIQuC4Bku', // British female
+    daniel:   'onwK4e9ZLuTAKqWW03F9', // deep British male
+    charlie:  'IKne3meq5aSn9XLyUdCD', // Australian male
+    grace:    'oWAxZDx7w5VEj9dCyTzz', // Southern American female
+    freya:    'jsCqWAovK2LkecY7zXl4', // warm American female
+    fin:      'D38z5RcWu1voky8WS1ja', // Irish male
+    alice:    'Xb7hH8MSUJpSbSDYk0k2'  // British female
+  };
   const AI_VOICE_MAP = {
-    ai_amy:     '21m00Tcm4TlvDq8ikWAM', // Rachel  — warm British female
-    ai_matthew: 'pNInz6obpgDQGcFmaJgB', // Adam    — deep American male
-    ai_ashley:  'EXAVITQu4vr4xnSDxMaL', // Bella   — bright young female
-    ai_callum:  'N2lVS1w4EtoT3dr4eOWO', // Callum  — Scottish male
-    ai_lily:    'pFZP5JQG7iQjIQuC4Bku', // Lily    — British female
-    ai_daniel:  'onwK4e9ZLuTAKqWW03F9', // Daniel  — deep British male
-    ai_charlie: 'IKne3meq5aSn9XLyUdCD', // Charlie — Australian male
-    ai_grace:   'oWAxZDx7w5VEj9dCyTzz', // Grace   — Southern American female
-    ai_emma:    'jsCqWAovK2LkecY7zXl4', // Freya   — warm American female (Canadian stand-in)
-    ai_fin:     'D38z5RcWu1voky8WS1ja', // Fin     — Irish male
-    ai_aisha:   'Xb7hH8MSUJpSbSDYk0k2'  // Alice   — British female (Kenyan-English stand-in)
+    // English — dedicated regional voices where we have them.
+    ai_amy:      V.rachel,   // British female — native fit
+    ai_matthew:  V.adam,     // American male — native fit
+    ai_ashley:   V.bella,    // young female — Australian stand-in
+    ai_callum:   V.callum,   // Scottish male — native fit
+    ai_lily:     V.lily,     // British female (RP) — native fit
+    ai_daniel:   V.daniel,   // British male — Northern stand-in (voice is RP)
+    ai_fin:      V.fin,      // Irish male — native fit
+    ai_grace:    V.grace,    // Southern American female — native fit
+    ai_emma:     V.freya,    // American female — Canadian stand-in (very close)
+    ai_aarav:    V.daniel,   // Indian English — TODO: no native voice, using British male stand-in
+    ai_priya:    V.alice,    // Indian English — TODO: no native voice, using British female stand-in
+    ai_chidi:    V.adam,     // Nigerian English — TODO: no native voice, American male stand-in
+    ai_thandi:   V.rachel,   // South African English — TODO: British female stand-in
+    ai_marlon:   V.adam,     // Caribbean English — TODO: American male stand-in
+    ai_liza:     V.bella,    // Filipino English — TODO: American female stand-in
+
+    // Spanish — voice pool has no native Latin-American Spanish voices;
+    // multilingual_v2 makes them speak Spanish with the voice's native
+    // accent. This is fine (people learn Spanish from many accents) but
+    // owner should swap in native Mexican/Argentinian/Castilian voices
+    // when ElevenLabs adds them to our workspace.
+    ai_sofia:      V.rachel,  // Castilian — TODO: swap for native Spanish female voice
+    ai_diego:      V.adam,    // Mexican — TODO: swap for native Mexican male
+    ai_valentina:  V.lily,    // Argentinian — TODO: swap for native Rioplatense female
+    ai_camila:     V.freya,   // Colombian — TODO: swap for native Colombian female
+    ai_tomas:      V.daniel,  // Chilean — TODO: swap for native Chilean male
+    ai_lucia:      V.bella,   // Caribbean Spanish — TODO: swap for native Cuban female
+
+    // French — no native French voices in our pool. Multilingual v2
+    // speaks French from any voice; regional flavour is limited.
+    ai_manon:    V.lily,   // Parisian — TODO: native French female preferred
+    ai_hugo:     V.adam,   // Québécois — TODO: native Québécois preferred
+    ai_amina:    V.rachel, // West African French — TODO: native voice preferred
+    ai_yassine:  V.daniel, // Maghrebi French — TODO: native voice preferred
+
+    // Portuguese
+    ai_ines:     V.alice,  // European PT — TODO: native voice preferred
+    ai_rafael:   V.adam,   // Brazilian PT — TODO: native Brazilian male preferred
+    ai_beatriz:  V.freya,  // Brazilian PT — TODO: native Brazilian female preferred
+
+    // Arabic
+    ai_farah:  V.alice,  // Egyptian Arabic — TODO: native voice preferred
+    ai_omar:   V.daniel, // Levantine Arabic — TODO: native voice preferred
+    ai_layla:  V.rachel, // Gulf Arabic — TODO: native voice preferred
+    ai_karim:  V.adam,   // Maghrebi Arabic — TODO: native voice preferred
+
+    // German
+    ai_lukas:   V.adam,   // Hochdeutsch — TODO: native German male preferred
+    ai_greta:   V.lily,   // Austrian German — TODO: native voice preferred
+    ai_niklas:  V.daniel, // Swiss German — TODO: native voice preferred
+
+    // Italian
+    ai_giulia:  V.bella,  // Standard Italian — TODO: native voice preferred
+    ai_marco:   V.adam,   // Neapolitan Italian — TODO: native voice preferred
+
+    // East Asian
+    ai_yuki:    V.freya,  // Tokyo Japanese — TODO: native voice preferred
+    ai_haruto:  V.adam,   // Kansai Japanese — TODO: native voice preferred
+    ai_jimin:   V.bella,  // Seoul Korean — TODO: native voice preferred
+    ai_wei:     V.daniel, // Mandarin — TODO: native voice preferred
+    ai_mei:     V.alice,  // Cantonese — TODO: native voice preferred
+
+    // Hindi / Urdu
+    ai_rohan:   V.adam,    // Delhi Hindi — TODO: native voice preferred
+    ai_hira:    V.rachel,  // Karachi Urdu — TODO: native voice preferred
+
+    // Slavic / Eurasian
+    ai_anya:    V.lily,    // Russian — TODO: native voice preferred
+    ai_deniz:   V.adam,    // Turkish — TODO: native voice preferred
+    ai_kasia:   V.freya,   // Polish — TODO: native voice preferred
+
+    // South-East Asia / Middle East / Europe
+    ai_linh:    V.bella,   // Vietnamese — TODO: native voice preferred
+    ai_nan:     V.alice,   // Thai — TODO: native voice preferred
+    ai_arash:   V.daniel,  // Persian — TODO: native voice preferred
+    ai_sanne:   V.rachel,  // Dutch — TODO: native voice preferred
+    ai_nikos:   V.adam     // Greek — TODO: native voice preferred
   };
 
   // POST /api/social/ai/voice — proxy to ElevenLabs so the API key

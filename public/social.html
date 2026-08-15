@@ -618,6 +618,19 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 /* Wall card + profile name should absorb the badge nicely. */
 .wcard-name .ai-badge{margin-left:4px;padding:2px 7px 2px 5px;font-size:9.5px}
 .mp-name .ai-badge{font-size:11.5px;padding:3px 9px 3px 6px;margin-left:10px;vertical-align:5px}
+/* Accent chip on wall cards (AI personas). Reads as a soft language
+   tag under the name — 'British', 'Mexican Spanish', 'Kansai Japanese'.
+   Owner ask 14 Aug 2026 — broad accent coverage; chip helps users pick
+   the accent they want to practise. */
+.wcard-accent{display:inline-flex;align-items:center;gap:4px;background:#f4f2ff;border:1px solid #e5e0ff;color:#5b3fd6;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin-top:2px;letter-spacing:.1px;line-height:1.3;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Secondary accent-filter row under 'Chat Experts'. Hidden by default;
+   only shown when the AI filter is active. Scrolls horizontally on
+   mobile so the row never breaks the layout when there are 15+ chips. */
+.acrow{display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:0 0 8px;margin:-4px 0 8px;scrollbar-width:none;-ms-overflow-style:none;flex-wrap:nowrap}
+.acrow::-webkit-scrollbar{display:none}
+.acrow .achip{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;transition:.12s;white-space:nowrap}
+.acrow .achip:hover{border-color:#c9cfe3}
+.acrow .achip.on{background:#5b3fd6;color:#fff;border-color:#5b3fd6}
 
 /* Typing dots that show while an AI is composing a reply. */
 .ai-typing{align-self:flex-start;background:var(--panel);border-radius:14px;padding:10px 14px;margin:4px 12px;display:inline-flex;gap:4px}
@@ -1035,7 +1048,7 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 /* Location + @handle rows. Tighter icon-to-text gap so '@username'
    reads as one unit. Body font bumped so the address + username are
    comfortably readable at a glance. */
-.mp-info-row{display:flex;align-items:center;gap:6px;font-size:16px;color:var(--sub);font-weight:500;justify-content:center}
+.mp-info-row{display:flex;align-items:center;gap:6px;font-size:14.5px;color:var(--sub);font-weight:400;justify-content:center}
 @media(min-width:769px){ .mp-info-row{justify-content:flex-start} }
 .mp-info-row .mp-icn{opacity:.6;font-size:14px;width:16px;text-align:center;font-weight:700;margin-right:0}
 .mp-info-row .mp-ico-svg{flex:none;width:14px;height:14px;opacity:.75;color:var(--sub);position:relative;top:-1px}
@@ -1053,8 +1066,25 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 /* Chat + Follow are equal-width columns, "…" is a fixed square.
    Mobile: stack. Desktop: 1fr 1fr auto grid so the two main buttons
    are always the same width. */
-.mp-actions{display:grid;grid-template-columns:1fr;gap:10px;padding-top:6px;width:100%;position:relative}
-@media(min-width:769px){ .mp-actions{grid-template-columns:1fr 1fr 46px} }
+/* Icon+label action row on member profile (owner ask 14 Aug 2026 —
+   'simple icons with one text below, not full buttons'). Three columns,
+   subtle circles, tiny caption underneath. */
+.mp-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 0 4px;width:100%;position:relative}
+.mp-iact{display:flex;flex-direction:column;align-items:center;gap:6px;background:transparent;border:0;
+  padding:8px 4px;cursor:pointer;border-radius:12px;transition:background .12s,transform .1s;
+  color:var(--ink);font-family:inherit}
+.mp-iact:hover{background:#f4f5f7}
+.mp-iact:active{transform:scale(.94)}
+.mp-iact-ic{width:44px;height:44px;border-radius:50%;background:#f2f4f7;display:inline-flex;
+  align-items:center;justify-content:center;color:var(--ink);transition:background .14s,color .14s}
+.mp-iact-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;display:block}
+.mp-iact-lbl{font-size:11.5px;font-weight:600;color:var(--sub);line-height:1.2}
+.mp-iact.primary .mp-iact-ic{background:linear-gradient(135deg,#e8506b,#7c5cff);color:#fff}
+.mp-iact.on .mp-iact-ic{background:#22c55e;color:#fff}
+.mp-iact.on .mp-iact-lbl{color:#15803d}
+/* Legacy classes kept as thin passthroughs so any older render paths still
+   look OK if they surface a .mp-btn button somewhere. */
 .mp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:14px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;border:1px solid transparent;transition:background .12s,color .12s,transform .1s;min-width:0}
 .mp-btn:active{transform:scale(.97)}
 .mp-btn.primary{background:var(--accent);color:#fff}
@@ -1117,17 +1147,16 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
      - Reference count + quote icon (quiet grey) if refCount > 0.
    Owner clarified 1 Aug 2026. */
 .wcard-newref{position:absolute;top:10px;right:10px;z-index:2;background:#00c2a0;color:#fff;font-size:8.5px;font-weight:800;letter-spacing:.7px;padding:2.5px 8px;border-radius:99px;text-transform:uppercase;box-shadow:0 1px 2px rgba(0,194,160,.18)}
-/* References badge on member cards. Count sits OUTSIDE the icon —
-   number in plain dark-green ink on the card, icon in a small green
-   circle beside it (owner ask 14 Aug 2026 v2). */
-.wcard-refct{position:absolute;top:8px;right:8px;z-index:2;display:inline-flex;align-items:center;gap:5px;
-  background:transparent;border:0;padding:0}
-.wcard-refct-n{color:#15803d;font-size:13px;font-weight:800;letter-spacing:.2px;
-  text-shadow:0 1px 2px rgba(255,255,255,.9)}
-.wcard-refct-i{width:22px;height:22px;border-radius:50%;background:#dcfce7;border:1px solid #86efac;
-  color:#15803d;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
-  box-shadow:0 1px 3px rgba(34,197,94,.18)}
-.wcard-refct-i svg{width:12px;height:12px;fill:currentColor;display:block}
+/* References badge on member cards — icon-free, just the count in a
+   clean green pill with a plain "refs" label. Owner ask 14 Aug 2026 v3:
+   'don't like the quote icon' — drop it, keep the number legible. */
+.wcard-refct{position:absolute;top:8px;right:8px;z-index:2;display:inline-flex;align-items:baseline;gap:3px;
+  color:#15803d;background:#dcfce7;border:1px solid #86efac;
+  padding:3px 10px;border-radius:999px;
+  font-size:12px;font-weight:800;letter-spacing:.2px;line-height:1.3;
+  box-shadow:0 1px 3px rgba(34,197,94,.15)}
+.wcard-refct-n{font-weight:800}
+.wcard-refct-t{font-size:10.5px;font-weight:700;opacity:.75;text-transform:uppercase;letter-spacing:.4px}
 .wcard{position:relative}
 .mp-2col{display:grid;gap:16px}
 @media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
@@ -1596,6 +1625,42 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .cd-comment-add input{flex:1;border:1px solid var(--line);border-radius:99px;padding:7px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none;background:#fff}
 .cd-comment-add input:focus{border-color:var(--ink)}
 .cd-comment-add button{background:var(--ink);color:#fff;border:0;border-radius:99px;padding:6px 14px;font-family:'Inter',sans-serif;font-weight:500;font-size:12px;cursor:pointer}
+/* ── @mentions in club post/comment text ─────────────────────────────
+   Kept subtle so the mention is legible-first, decorative-second:
+   accent-tinted, semibold, no background, underline on hover only. */
+.cmention{color:var(--accent);font-weight:600;text-decoration:none;cursor:pointer}
+.cmention:hover{text-decoration:underline}
+/* ── Autocomplete dropdown for @ picker (posts + comments) ───────────
+   Floating panel positioned by JS relative to the composer. Kept a
+   fixed max-height with scroll so a long friend list never overflows
+   the viewport. z-index above the club detail chrome. */
+.menpick{position:absolute;z-index:80;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(15,20,35,.14);min-width:220px;max-width:280px;max-height:260px;overflow-y:auto;padding:4px}
+.menpick-r{display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink)}
+.menpick-r:hover,.menpick-r.on{background:#eef1ff}
+.menpick-a{width:28px;height:28px;border-radius:50%;background:#e6e8ef center/cover no-repeat;flex-shrink:0;font-size:12px;font-weight:600;color:#7b8090;display:flex;align-items:center;justify-content:center}
+.menpick-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menpick-r small{color:var(--faint);font-size:11.5px;font-weight:500}
+/* Composer needs relative positioning so the dropdown anchors to it. */
+.cd-composer,.cd-comment-add{position:relative}
+/* ── Notification bell button + dropdown in top nav ─────────────────
+   Matches the .mechip visual weight (34×34 circle, thin border) so
+   the bell + avatar read as a pair on the right of the nav. Badge is
+   the same accent pill used on tab badges elsewhere. */
+.topnav .tnbell{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--sub);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:relative;padding:0;flex-shrink:0;transition:background .12s,color .12s}
+.topnav .tnbell:hover{background:#f4f5f7;color:var(--ink)}
+.topnav .tnbell .tnbell-b{position:absolute;top:-3px;right:-3px;background:var(--accent);color:#fff;font-size:10px;font-weight:800;min-width:16px;height:16px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 0 2px #fff}
+.notifmenu{position:absolute;top:56px;right:74px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px rgba(15,20,35,.14);width:340px;max-width:calc(100vw - 24px);max-height:70vh;overflow:hidden;display:none;z-index:90;flex-direction:column}
+.notifmenu.on{display:flex}
+.notifmenu-h{padding:12px 14px;border-bottom:1px solid #f0f2f5;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:var(--ink)}
+.notifmenu-list{overflow-y:auto;flex:1;padding:6px}
+.notifmenu-empty{padding:22px 14px;text-align:center;color:var(--faint);font-size:13px}
+.notifmenu-r{display:block;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--ink);cursor:pointer;font-family:'Inter',sans-serif}
+.notifmenu-r:hover{background:#f4f5f7}
+.notifmenu-r .notifmenu-t{font-size:13.5px;line-height:1.4;color:var(--ink)}
+.notifmenu-r .notifmenu-w{font-size:11.5px;color:var(--faint);margin-top:2px}
+@media(max-width:640px){
+  .notifmenu{top:auto;right:8px;left:8px;width:auto;max-width:none;position:fixed;bottom:auto;top:64px}
+}
 
 .pt-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;padding:14px 20px 6px;flex-wrap:wrap}
 .pt-hero h2{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.5px;color:var(--ink)}
@@ -2981,6 +3046,20 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="tnlive" id="tnLive" onclick="showTab('live')" title="Live games right now">
         <span class="tnlivedot"></span>LIVE<span class="tnlivecnt" id="tnLiveCnt">0</span>
       </button>
+      <!-- 🔔 Notifications bell — opens a dropdown listing the last 20
+           in-app notifications (club mentions today; extend to more kinds
+           later). Hidden for guests; only enters the DOM as visible once
+           `enterApp()` unlocks the shell. -->
+      <button class="tnbell hidden" id="tnBell" onclick="toggleNotifMenu(event)" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.09a3 3 0 0 1-.88 2.12L4 15.34V16h16v-.66l-1.12-1.13A3 3 0 0 1 18 12.09V9a6 6 0 0 0-6-6Zm-2 15a2 2 0 0 0 4 0Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span class="badge tnbell-b hidden" id="tnBellBadge"></span>
+      </button>
+      <div class="notifmenu" id="notifMenu" role="menu" aria-hidden="true">
+        <div class="notifmenu-h">Notifications</div>
+        <div class="notifmenu-list" id="notifList">
+          <div class="notifmenu-empty">Nothing new yet.</div>
+        </div>
+      </div>
       <!-- Blog + How-to-play were living here as top-nav chrome. Moved to
            the marketing footer per owner ask; kept out of the app to
            reduce clutter. -->
@@ -3080,6 +3159,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
                  (they're always-available conversation partners). -->
             <button class="fchip" data-f="ai" title="AI conversation partners always ready to chat">✦ Chat Experts</button>
           </div>
+          <!-- Accent / dialect filter row — visible only when the
+               'Chat Experts' filter is on. Chips are built dynamically
+               from the personas loaded into MEMBERS so we never show
+               an accent with 0 people behind it. Owner ask 14 Aug 2026:
+               broad accent coverage across AI personas. -->
+          <div class="acrow hidden" id="acRow"></div>
           <!-- 👑 Invite pill (owner ask 14 Aug 2026). Hidden by default;
                refUpdatePill() reveals it once ME is loaded + hides it
                again if the user already earned the crown. -->
@@ -3419,9 +3504,18 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
                from this surface per owner ask; the same actions
                still live on the wall card kebab. -->
           <div class="mp-actions">
-            <button class="mp-btn primary" onclick="openChatWith(curMember)">💬 Chat</button>
-            <button class="mp-btn line" id="followBtn" onclick="toggleFollow()">＋ Follow</button>
-            <button class="mp-btn line" onclick="startCallWithCurMember()">📞 Call</button>
+            <button type="button" class="mp-iact primary" onclick="openChatWith(curMember)" aria-label="Chat">
+              <span class="mp-iact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5A8 8 0 1 1 21 12z"/></svg></span>
+              <span class="mp-iact-lbl">Chat</span>
+            </button>
+            <button type="button" class="mp-iact" id="followBtn" onclick="toggleFollow()" aria-label="Follow">
+              <span class="mp-iact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+              <span class="mp-iact-lbl" id="followBtnLbl">Follow</span>
+            </button>
+            <button type="button" class="mp-iact" onclick="startCallWithCurMember()" aria-label="Call">
+              <span class="mp-iact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.1-1.2a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg></span>
+              <span class="mp-iact-lbl">Call</span>
+            </button>
           </div>
           <!-- Legacy stat targets kept as hidden shells so old JS writes
                don't error even though the block itself is retired. -->
@@ -3550,7 +3644,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
           <div class="cd-composer">
             <div class="cd-cavatar" id="cdMyAvatar"></div>
             <div class="cd-cinput">
-              <textarea id="cdPostText" placeholder="Write something…" rows="2" maxlength="1200"></textarea>
+              <textarea id="cdPostText" placeholder="Write something… (type @ to mention a friend)" rows="2" maxlength="1200" oninput="onMentionInput(event,'p')" onkeydown="return onMentionKeydown(event,'p')"></textarea>
               <button id="cdPostBtn" onclick="submitClubPost()">Post</button>
             </div>
           </div>
@@ -4581,6 +4675,11 @@ function enterApp(justJoined){
   }
 
   paintMe(); loadMembers(); refreshBlocks();
+  // 🔔 In-app notifications: reveal the bell button (hidden while
+  // guest), then run one immediate poll so a mention that landed while
+  // the tab was offline still lights up the badge on first paint.
+  try { const _bell = document.getElementById('tnBell'); if (_bell) _bell.classList.remove('hidden'); } catch(e){}
+  if (typeof pollNotifBadge === 'function') pollNotifBadge();
   pingLoop(); if (!window.__pingT) window.__pingT = setInterval(pingLoop, 25000);
   // the moment you swipe away, say so — a push should land straight away, not
   // after the next tick, and the moment you come back it should fall silent
@@ -5025,6 +5124,11 @@ async function obFinish(){
     chip.onclick = () => showTab('me');
   }
   paintMe(); loadMembers(); refreshBlocks();
+  // 🔔 In-app notifications: reveal the bell button (hidden while
+  // guest), then run one immediate poll so a mention that landed while
+  // the tab was offline still lights up the badge on first paint.
+  try { const _bell = document.getElementById('tnBell'); if (_bell) _bell.classList.remove('hidden'); } catch(e){}
+  if (typeof pollNotifBadge === 'function') pollNotifBadge();
   pingLoop(); if (!window.__pingT) window.__pingT = setInterval(pingLoop, 25000);
   showTab('wall');
 }
@@ -6216,7 +6320,7 @@ function renderClubPost(p){
   const commentsHtml = (p.comments || []).map(cm => `
     <div class="cd-comment">
       <div class="cd-cavatar" style="${cm.photo ? `background-image:url('${cm.photo}')` : ''}"></div>
-      <div class="cd-comment-b"><b>${esc(cm.name)}</b>${esc(cm.text)}</div>
+      <div class="cd-comment-b"><b>${esc(cm.name)}</b>${renderMentionText(cm.text, cm.mentions)}</div>
     </div>`).join('');
   return `
     <div class="cd-post" data-id="${esc(p.id)}">
@@ -6224,17 +6328,42 @@ function renderClubPost(p){
         <div class="cd-cavatar" style="background-image:${photoBg}"></div>
         <div><div class="cd-post-who">${esc(p.name)}</div><div class="cd-post-when">${_clubWhen(p.createdAt)}</div></div>
       </div>
-      <p class="cd-post-body">${esc(p.text)}</p>
+      <p class="cd-post-body">${renderMentionText(p.text, p.mentions)}</p>
       <div class="cd-post-actions">
         <button onclick="likeClubPost('${esc(p.id)}')" class="${liked ? 'cd-liked' : ''}">${liked ? '❤️' : '🤍'} ${(p.likes || []).length || ''} Like</button>
         <button onclick="focusClubComment('${esc(p.id)}')">💬 ${(p.comments || []).length || ''} Comment</button>
       </div>
       ${commentsHtml ? '<div class="cd-post-comments">' + commentsHtml + '</div>' : ''}
       <div class="cd-comment-add">
-        <input id="cdCommentInp_${esc(p.id)}" type="text" placeholder="Write a comment…" maxlength="400">
+        <input id="cdCommentInp_${esc(p.id)}" type="text" placeholder="Write a comment…" maxlength="400" oninput="onMentionInput(event,'c_${esc(p.id)}')" onkeydown="return onMentionKeydown(event,'c_${esc(p.id)}')">
         <button onclick="submitClubComment('${esc(p.id)}')">Send</button>
       </div>
     </div>`;
+}
+
+// ── @mentions client helper: escape body text, then splice in tappable
+// chips for each stored mention. Uses .replace with the FIRST unmatched
+// @<name> occurrence per mention (in order) so duplicate names remain
+// safe. If the raw text no longer contains the mention (e.g. author
+// edited the string down — we don't support edits yet, but future-proof),
+// the chip is silently skipped and plain @name stays visible. Fallback
+// on missing mentions array = plain escaped text.
+function renderMentionText(text, mentions){
+  const raw = String(text == null ? '' : text);
+  const safe = esc(raw);
+  if (!Array.isArray(mentions) || !mentions.length) return safe;
+  // Work on the escaped string so we never inject unescaped user data —
+  // the mention name is also escaped before insertion.
+  let out = safe;
+  for (const m of mentions) {
+    if (!m || !m.id || !m.name) continue;
+    const needle = '@' + esc(m.name);
+    const idx = out.indexOf(needle);
+    if (idx < 0) continue;
+    const chip = '<a class="cmention" data-uid="' + esc(m.id) + '" onclick="openMemberById(\'' + esc(m.id).replace(/'/g, "\\'") + '\')">@' + esc(m.name) + '</a>';
+    out = out.slice(0, idx) + chip + out.slice(idx + needle.length);
+  }
+  return out;
 }
 function _clubWhen(ts){
   const d = Date.now() - ts;
@@ -6274,11 +6403,13 @@ async function submitClubPost(){
   const btn = document.getElementById('cdPostBtn');
   btn.disabled = true;
   try {
+    const mentions = collectMentions('p', text);
     const j = await api('/clubs/' + encodeURIComponent(_curClub.id) + '/posts', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text, mentions })
     });
     el.value = '';
+    clearMentionState('p');
     _curClub.posts.unshift(j.post);
     paintClubFeed();
   } catch(e){ if (typeof toast === 'function') toast(e.message || 'Could not post.'); }
@@ -6310,19 +6441,258 @@ async function submitClubComment(pid){
   const text = inp.value.trim();
   if (!text) return;
   try {
+    const key = 'c_' + pid;
+    const mentions = collectMentions(key, text);
     const j = await api('/clubs/' + encodeURIComponent(_curClub.id) + '/posts/' + encodeURIComponent(pid) + '/comments', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text, mentions })
     });
     const p = _curClub.posts.find(x => x.id === pid);
     if (p) {
       p.comments = p.comments || [];
       p.comments.push(j.comment);
       inp.value = '';
+      clearMentionState(key);
       paintClubFeed();
     }
   } catch(e){ if (typeof toast === 'function') toast(e.message || 'Could not comment.'); }
 }
+
+// ─── @mention autocomplete + notification bell ───────────────────────
+// Composer key: 'p' = the club post composer, 'c_<pid>' = each comment
+// input. Each composer keeps its own draft mention list in _menState so
+// two open composers can't leak into each other. On submit, collectMentions
+// filters the draft list down to mentions whose @name is still present in
+// the final text (users can delete the chip text and we honour it).
+const _menState = new Map();   // key -> [{id,name}, …]
+let _menOpen = null;           // { key, el, matches, hi, anchor }
+let _menCircle = null;         // cached /people list — refetched every 60s
+let _menCircleAt = 0;
+
+function _menStateFor(key){
+  if (!_menState.has(key)) _menState.set(key, []);
+  return _menState.get(key);
+}
+function clearMentionState(key){ _menState.delete(key); closeMentionPicker(); }
+
+// Text-area agnostic — works on <input> and <textarea>. Fires on each
+// keystroke; when the caret is inside an @token we open (or update) the
+// picker below the field.
+async function onMentionInput(ev, key){
+  const el = ev.target;
+  if (!el) return;
+  // Was that keystroke inside an @ token? Look back from the caret to
+  // the nearest whitespace or start-of-string. Bail if the char right
+  // before '@' is alphanumeric or '.' / '/' — that's an email or URL.
+  const caret = el.selectionStart || 0;
+  const before = el.value.slice(0, caret);
+  const m = before.match(/(?:^|[^\w./])@([A-Za-z0-9 _\-']{0,30})$/);
+  if (!m) return closeMentionPicker();
+  const query = (m[1] || '').toLowerCase();
+  const anchorStart = caret - m[0].length + (m[0].startsWith('@') ? 0 : 1);
+  // ^ anchor is the offset of the '@' char itself.
+  try {
+    const list = await _menFetchPeople();
+    const q = query;
+    let matches = list;
+    if (q) {
+      // Prefix first, then contains — stable ranking so keystrokes don't
+      // rearrange the results under the user's finger.
+      const prefix = list.filter(u => u.name.toLowerCase().startsWith(q));
+      const rest   = list.filter(u => !u.name.toLowerCase().startsWith(q) && u.name.toLowerCase().includes(q));
+      matches = [...prefix, ...rest];
+    }
+    matches = matches.slice(0, 8);
+    if (!matches.length) return closeMentionPicker();
+    _menOpen = { key, el, matches, hi: 0, anchor: anchorStart, query };
+    _menRender();
+  } catch (e) { closeMentionPicker(); }
+}
+
+// Arrow / Enter / Escape navigation over the open picker. Returns false
+// so the composer swallows the keystroke when the picker consumed it.
+function onMentionKeydown(ev, key){
+  if (!_menOpen || _menOpen.key !== key) return true;
+  const k = ev.key;
+  if (k === 'Escape') { ev.preventDefault(); closeMentionPicker(); return false; }
+  if (k === 'ArrowDown') { ev.preventDefault(); _menOpen.hi = Math.min(_menOpen.matches.length - 1, _menOpen.hi + 1); _menRender(); return false; }
+  if (k === 'ArrowUp')   { ev.preventDefault(); _menOpen.hi = Math.max(0, _menOpen.hi - 1); _menRender(); return false; }
+  if (k === 'Enter' || k === 'Tab') {
+    ev.preventDefault();
+    const pick = _menOpen.matches[_menOpen.hi];
+    if (pick) _menCommit(pick);
+    return false;
+  }
+  return true;
+}
+
+function _menCommit(user){
+  if (!_menOpen) return;
+  const { el, anchor, key } = _menOpen;
+  const caret = el.selectionStart || 0;
+  const before = el.value.slice(0, anchor);
+  const after  = el.value.slice(caret);
+  const chip = '@' + user.name;
+  el.value = before + chip + ' ' + after;
+  const newCaret = (before + chip + ' ').length;
+  el.setSelectionRange(newCaret, newCaret);
+  el.focus();
+  // Track this mention on the composer state so submit can pass it
+  // through to the server (matching by name alone is ambiguous).
+  const list = _menStateFor(key);
+  if (!list.some(m => m.id === user.id)) list.push({ id: user.id, name: user.name });
+  closeMentionPicker();
+}
+
+function _menRender(){
+  if (!_menOpen) return;
+  let pop = document.getElementById('menPick');
+  if (!pop) {
+    pop = document.createElement('div');
+    pop.id = 'menPick';
+    pop.className = 'menpick';
+    document.body.appendChild(pop);
+  }
+  const { el, matches, hi } = _menOpen;
+  pop.innerHTML = matches.map((u, i) => {
+    const initial = (u.name || '?').charAt(0).toUpperCase();
+    const bg = u.photo ? `background-image:url('${u.photo}')` : '';
+    return `<div class="menpick-r${i === hi ? ' on' : ''}" data-i="${i}">
+      <div class="menpick-a" style="${bg}">${u.photo ? '' : esc(initial)}</div>
+      <div class="menpick-n">${esc(u.name)} <small>${esc(u.rel || '')}</small></div>
+    </div>`;
+  }).join('');
+  // Click handling — mousedown so it fires before the textarea blur.
+  pop.querySelectorAll('.menpick-r').forEach(row => {
+    row.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const i = parseInt(row.dataset.i);
+      const pick = _menOpen && _menOpen.matches[i];
+      if (pick) _menCommit(pick);
+    });
+  });
+  // Position under the composer field (input or textarea).
+  const rect = el.getBoundingClientRect();
+  pop.style.top  = (window.scrollY + rect.bottom + 6) + 'px';
+  pop.style.left = (window.scrollX + rect.left) + 'px';
+}
+
+function closeMentionPicker(){
+  const pop = document.getElementById('menPick');
+  if (pop) pop.remove();
+  _menOpen = null;
+}
+document.addEventListener('click', (e) => {
+  // Close the picker if the user clicks anywhere outside it or the
+  // active composer field.
+  if (!_menOpen) return;
+  const pop = document.getElementById('menPick');
+  if (pop && (pop.contains(e.target) || e.target === _menOpen.el)) return;
+  closeMentionPicker();
+});
+
+async function _menFetchPeople(){
+  if (_menCircle && (Date.now() - _menCircleAt < 60000)) return _menCircle;
+  try {
+    const j = await api('/people');
+    // Rank: mutual friends first, then followers, then following.
+    const rank = u => u.rel === 'friend' ? 0 : u.rel === 'follows you' ? 1 : u.rel === 'you follow' ? 2 : 3;
+    _menCircle = (j.people || []).slice().sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+    _menCircleAt = Date.now();
+  } catch (e) { _menCircle = _menCircle || []; }
+  return _menCircle;
+}
+
+// Walk the draft mention list and keep only those whose @name still
+// appears in the final text. Handles a user typing @Alex then deleting
+// the whole chip — the id shouldn't leak to the server.
+function collectMentions(key, text){
+  const list = _menStateFor(key);
+  const t = String(text || '');
+  const out = [];
+  for (const m of list) {
+    if (t.indexOf('@' + m.name) >= 0) out.push({ id: m.id, name: m.name });
+    if (out.length >= 10) break;
+  }
+  return out;
+}
+
+// ── Notification bell (top nav) ──────────────────────────────────────
+let _notifOpen = false;
+async function toggleNotifMenu(ev){
+  if (ev) ev.stopPropagation();
+  const menu = document.getElementById('notifMenu');
+  if (!menu) return;
+  _notifOpen = !menu.classList.contains('on');
+  menu.classList.toggle('on', _notifOpen);
+  menu.setAttribute('aria-hidden', String(!_notifOpen));
+  if (_notifOpen) {
+    await loadNotifs();
+    // Clear unread badge on open — items stay in the list.
+    try { await api('/notif/mark-read', { method:'POST' }); } catch(e){}
+    _paintNotifBadge(0);
+  }
+}
+document.addEventListener('click', (e) => {
+  if (!_notifOpen) return;
+  const menu = document.getElementById('notifMenu');
+  const bell = document.getElementById('tnBell');
+  if (menu && (menu.contains(e.target) || (bell && bell.contains(e.target)))) return;
+  menu.classList.remove('on'); menu.setAttribute('aria-hidden', 'true');
+  _notifOpen = false;
+});
+async function loadNotifs(){
+  const list = document.getElementById('notifList');
+  if (!list) return;
+  try {
+    const j = await api('/notif/list?limit=20');
+    const items = j.items || [];
+    if (!items.length) { list.innerHTML = '<div class="notifmenu-empty">Nothing new yet.</div>'; return; }
+    list.innerHTML = items.map(it => {
+      const url = it.url || '/social';
+      return `<a class="notifmenu-r" href="${esc(url)}" onclick="_notifTap(event,'${esc(url)}')">
+        <div class="notifmenu-t">${esc(it.text || '')}</div>
+        <div class="notifmenu-w">${_clubWhen(it.at || Date.now())}</div>
+      </a>`;
+    }).join('');
+  } catch (e) { list.innerHTML = '<div class="notifmenu-empty">Could not load.</div>'; }
+}
+function _notifTap(ev, url){
+  // Intercept so we can close the menu + hand deep-link URLs into the SPA
+  // rather than doing a full navigation when we're already on /social.
+  ev.preventDefault();
+  const menu = document.getElementById('notifMenu');
+  if (menu) { menu.classList.remove('on'); menu.setAttribute('aria-hidden','true'); }
+  _notifOpen = false;
+  try {
+    const u = new URL(url, location.origin);
+    if (u.pathname === '/social') {
+      // Deep-link into a club via ?club=<slug> — reuse the existing helper.
+      history.replaceState(null, '', u.pathname + u.search + u.hash);
+      if (typeof openClubFromDeepLinkParam === 'function') openClubFromDeepLinkParam();
+      return;
+    }
+  } catch (e) {}
+  location.href = url;
+}
+function _paintNotifBadge(n){
+  const b = document.getElementById('tnBellBadge');
+  const bell = document.getElementById('tnBell');
+  if (!b || !bell) return;
+  if (ME && !GUEST) bell.classList.remove('hidden');
+  else bell.classList.add('hidden');
+  if (!n || n <= 0) { b.classList.add('hidden'); return; }
+  b.textContent = n > 9 ? '9+' : String(n);
+  b.classList.remove('hidden');
+}
+async function pollNotifBadge(){
+  if (!ME || GUEST) return;
+  try {
+    const j = await api('/notif/list?limit=1');
+    _paintNotifBadge(j.unread || 0);
+  } catch (e) {}
+}
+setInterval(pollNotifBadge, 45000);
 
 function openCreateParty(){
   if (GUEST) { requireLogin('🎉 Log in to host a party'); return; }
@@ -8516,10 +8886,73 @@ function showAITyping(on){
 // language code, then whatever the browser gave us. No API key, no
 // cost, works offline on any modern browser. On by default per owner
 // ask — user can silence via the mute toggle in the chat header.
+// Browser SpeechSynthesis fallback map. lang → BCP-47 primary code,
+// used when ElevenLabs is unavailable. Extended 14 Aug 2026 to cover
+// the broad accent roster; pickVoice() will match on lang alone if
+// none of the preferred names exist on the user's machine.
 const AI_VOICE = {
+  // English
   ai_amy:     { lang: 'en-GB', names: ['Kate', 'Serena', 'Google UK English Female', 'Google UK English', 'Karen', 'Fiona'] },
   ai_matthew: { lang: 'en-US', names: ['Alex', 'Fred', 'Aaron', 'Google US English', 'Samantha'] },
-  ai_ashley:  { lang: 'en-AU', names: ['Karen', 'Google English (Australia)', 'Google en-AU', 'Rishi', 'Tessa'] }
+  ai_ashley:  { lang: 'en-AU', names: ['Karen', 'Google English (Australia)', 'Google en-AU', 'Rishi', 'Tessa'] },
+  ai_callum:  { lang: 'en-GB', names: ['Daniel', 'Google UK English Male'] },
+  ai_fin:     { lang: 'en-IE', names: ['Moira', 'Google en-IE'] },
+  ai_lily:    { lang: 'en-GB', names: ['Kate', 'Serena', 'Google UK English Female'] },
+  ai_daniel:  { lang: 'en-GB', names: ['Daniel', 'Google UK English Male'] },
+  ai_grace:   { lang: 'en-US', names: ['Samantha', 'Ava', 'Google US English'] },
+  ai_emma:    { lang: 'en-CA', names: ['Samantha', 'Google US English'] },
+  ai_aarav:   { lang: 'en-IN', names: ['Rishi', 'Veena', 'Google en-IN'] },
+  ai_priya:   { lang: 'en-IN', names: ['Veena', 'Rishi', 'Google en-IN'] },
+  ai_chidi:   { lang: 'en-NG', names: ['Google en-NG', 'Daniel'] },
+  ai_thandi:  { lang: 'en-ZA', names: ['Tessa', 'Google en-ZA'] },
+  ai_marlon:  { lang: 'en-US', names: ['Daniel', 'Fred'] },
+  ai_liza:    { lang: 'en-PH', names: ['Google en-PH', 'Samantha'] },
+  // Spanish
+  ai_sofia:      { lang: 'es-ES', names: ['Mónica', 'Google español', 'Marisol'] },
+  ai_diego:      { lang: 'es-MX', names: ['Paulina', 'Juan', 'Google español de Estados Unidos'] },
+  ai_valentina:  { lang: 'es-AR', names: ['Diego', 'Google español'] },
+  ai_camila:     { lang: 'es-CO', names: ['Google español', 'Paulina'] },
+  ai_tomas:      { lang: 'es-CL', names: ['Diego', 'Google español'] },
+  ai_lucia:      { lang: 'es-CU', names: ['Paulina', 'Google español'] },
+  // French
+  ai_manon:   { lang: 'fr-FR', names: ['Amelie', 'Thomas', 'Google français'] },
+  ai_hugo:    { lang: 'fr-CA', names: ['Amelie', 'Google français du Canada'] },
+  ai_amina:   { lang: 'fr-FR', names: ['Amelie', 'Google français'] },
+  ai_yassine: { lang: 'fr-FR', names: ['Thomas', 'Google français'] },
+  // Portuguese
+  ai_ines:    { lang: 'pt-PT', names: ['Joana', 'Google português'] },
+  ai_rafael:  { lang: 'pt-BR', names: ['Luciana', 'Google português do Brasil'] },
+  ai_beatriz: { lang: 'pt-BR', names: ['Luciana', 'Google português do Brasil'] },
+  // Arabic
+  ai_farah:   { lang: 'ar-EG', names: ['Maged', 'Google العربية'] },
+  ai_omar:    { lang: 'ar-LB', names: ['Maged', 'Google العربية'] },
+  ai_layla:   { lang: 'ar-AE', names: ['Maged', 'Google العربية'] },
+  ai_karim:   { lang: 'ar-MA', names: ['Maged', 'Google العربية'] },
+  // German
+  ai_lukas:   { lang: 'de-DE', names: ['Anna', 'Google Deutsch', 'Markus'] },
+  ai_greta:   { lang: 'de-AT', names: ['Anna', 'Google Deutsch'] },
+  ai_niklas:  { lang: 'de-CH', names: ['Anna', 'Google Deutsch'] },
+  // Italian
+  ai_giulia:  { lang: 'it-IT', names: ['Alice', 'Luca', 'Google italiano'] },
+  ai_marco:   { lang: 'it-IT', names: ['Luca', 'Google italiano'] },
+  // East Asian
+  ai_yuki:    { lang: 'ja-JP', names: ['Kyoko', 'Google 日本語', 'Otoya'] },
+  ai_haruto:  { lang: 'ja-JP', names: ['Otoya', 'Google 日本語'] },
+  ai_jimin:   { lang: 'ko-KR', names: ['Yuna', 'Google 한국의'] },
+  ai_wei:     { lang: 'zh-CN', names: ['Ting-Ting', 'Google 普通话（中国大陆）'] },
+  ai_mei:     { lang: 'zh-HK', names: ['Sin-Ji', 'Google 粤語（香港）'] },
+  // Hindi / Urdu
+  ai_rohan:   { lang: 'hi-IN', names: ['Lekha', 'Google हिन्दी'] },
+  ai_hira:    { lang: 'ur-PK', names: ['Lekha', 'Google हिन्दी'] },
+  // Slavic / Eurasian / SE Asia / etc.
+  ai_anya:    { lang: 'ru-RU', names: ['Milena', 'Yuri', 'Google русский'] },
+  ai_deniz:   { lang: 'tr-TR', names: ['Yelda', 'Google Türkçe'] },
+  ai_linh:    { lang: 'vi-VN', names: ['Linh', 'Google Tiếng Việt'] },
+  ai_nan:     { lang: 'th-TH', names: ['Kanya', 'Google ภาษาไทย'] },
+  ai_arash:   { lang: 'fa-IR', names: ['Google فارسی'] },
+  ai_kasia:   { lang: 'pl-PL', names: ['Zosia', 'Google polski'] },
+  ai_sanne:   { lang: 'nl-NL', names: ['Xander', 'Google Nederlands', 'Ellen'] },
+  ai_nikos:   { lang: 'el-GR', names: ['Melina', 'Google Ελληνικά'] }
 };
 let AI_VOICE_ON = true;
 // Voices load asynchronously in Chrome — call this once to warm them.
@@ -9339,12 +9772,17 @@ async function msSpeak(){
   // Kill any in-flight audio first.
   stopServerVoice();
   if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch(e){} }
-  // Try ElevenLabs first (persona=ai_amy → Rachel voice, warm British).
+  // Try ElevenLabs first. If we're chatting with an AI persona, use
+  // that persona's voice (so tap-to-speak matches the AI's own accent);
+  // otherwise fall back to ai_amy as a neutral default. Owner ask
+  // 14 Aug 2026: personas now cover many accents; a hardcoded ai_amy
+  // here would ignore all of them.
+  const speakAs = (CUR_CHAT_IS_AI && curChat && String(curChat).startsWith('ai_')) ? curChat : 'ai_amy';
   try {
     const res = await fetch('/api/social/ai/voice', {
       method: 'POST',
       headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ persona: 'ai_amy', text: cleaned })
+      body: JSON.stringify({ persona: speakAs, text: cleaned })
     });
     if (!res.ok) throw new Error('server voice ' + res.status);
     const blob = await res.blob();
@@ -10009,8 +10447,10 @@ async function toggleFollow(){
   try {
     const on = $('followBtn').dataset.f;
     const j = await api(on ? '/unfollow' : '/follow', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: curMember }) });
-    $('followBtn').dataset.f = on ? '' : '1';
-    $('followBtn').textContent = on ? '＋ Follow' : '✓ Following';
+    const nowOn = !on;
+    $('followBtn').dataset.f = nowOn ? '1' : '';
+    $('followBtn').classList.toggle('on', nowOn);
+    $('followBtnLbl').textContent = nowOn ? 'Following' : 'Follow';
     $('mFollowers').textContent = j.followers;
     toast(on ? 'Unfollowed' : '⭐ Following!');
     if (!on && typeof refBumpAction === 'function') refBumpAction();
@@ -10085,6 +10525,10 @@ let wallFilter = 'all';
 // change; it just costs a function call.
 function resetWallPage(){ /* no-op: pagination removed */ }
 function renderWall(){
+  // Keep the accent sub-filter row in sync with the current MEMBERS
+  // + wallFilter. Cheap (single pass over ~40 personas) and covers
+  // the first-paint case where the row is empty until members load.
+  if (typeof buildAccentRow === 'function') buildAccentRow();
   const q = ($('q').value || '').toLowerCase();
   const WEEK7 = 7 * 24 * 3600 * 1000;
   // only members with a photo appear on the wall — and my own card is
@@ -10102,6 +10546,11 @@ function renderWall(){
   if (wallFilter === 'online')      list = list.filter(m => m.online && !(ME && m.id === ME.id));
   else if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
   else if (wallFilter === 'ai')     list = list.filter(m => m.isAI);
+  // Secondary accent filter — only meaningful when the AI filter is on.
+  // wallAccent === 'all' or unset means no accent narrowing.
+  if (wallFilter === 'ai' && wallAccent && wallAccent !== 'all') {
+    list = list.filter(m => m.accent === wallAccent);
+  }
   // (Retired: 'new' + 'kings' filter branches — their chips were
   // removed in 7865fce + earlier. Dead branches deleted 2 Aug 2026 v8.)
   // Sort: win-rate first (for the codenames era), then games, then
@@ -10189,18 +10638,25 @@ function renderWall(){
     const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg>';
     let cornerBadge = '';
     if (refCount > 0) {
-      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}"><b class="wcard-refct-n">${refCount}</b><span class="wcard-refct-i">${REF_QUOTE_SVG}</span></span>`;
+      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}"><b class="wcard-refct-n">${refCount}</b><span class="wcard-refct-t">${refCount === 1 ? 'ref' : 'refs'}</span></span>`;
     } else if (!m.isAI && m.createdAt && (Date.now() - m.createdAt) < NEW_MEMBER_MS) {
       // AI Chat Experts never get the NEW badge — they're not 'newly
       // joined' in the human sense (owner ask 1 Aug 2026).
       cornerBadge = '<span class="wcard-newref" title="New member">NEW</span>';
     }
+    // Accent chip — only on AI personas that have an accent tag
+    // (owner ask 14 Aug 2026). Placed under the name so users can
+    // pick 'the Scottish one' at a glance.
+    const accentChip = (m.isAI && m.accent)
+      ? `<div class="wcard-accent" title="Accent / dialect">✦ ${esc(m.accent)}</div>`
+      : '';
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
       ${cornerBadge}
       <div class="wcard-photo">${photo}</div>
       <div class="wcard-body">
         <div class="wcard-name">${esc(m.name)}${mark(m)}${m.online ? '<span class="wcard-dot" title="Online"></span>' : ''}</div>
+        ${accentChip}
         ${talkSnip ? `<p class="wcard-talk">${talkSnip}</p>` : `<p class="wcard-talk wcard-empty">Hello 👋</p>`}
         ${langsRow}
         ${seenTxt ? `<div class="wcard-seen ${m.online ? 'is-online' : ''}">${seenTxt}</div>` : ''}
@@ -10297,9 +10753,39 @@ async function wallFollow(e, id, btn){
 document.querySelectorAll('.fchip').forEach(b => b.onclick = () => {
   wallFilter = b.dataset.f;
   document.querySelectorAll('.fchip').forEach(x => x.classList.toggle('on', x === b));
+  // Reset the accent sub-filter whenever the main filter changes so
+  // switching to All / Online doesn't secretly leave an accent
+  // restriction in place when the user comes back to Chat Experts.
+  wallAccent = 'all';
+  buildAccentRow();
   resetWallPage();
   renderWall();
 });
+// Accent-filter row is built from the AI personas currently in
+// MEMBERS. Shown only when the 'Chat Experts' filter is active.
+let wallAccent = 'all';
+function buildAccentRow(){
+  const row = document.getElementById('acRow');
+  if (!row) return;
+  if (wallFilter !== 'ai') { row.classList.add('hidden'); row.innerHTML = ''; return; }
+  const seen = new Map(); // accent -> count
+  for (const m of MEMBERS || []) {
+    if (!m.isAI || !m.accent) continue;
+    seen.set(m.accent, (seen.get(m.accent) || 0) + 1);
+  }
+  const accents = Array.from(seen.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  if (!accents.length) { row.classList.add('hidden'); row.innerHTML = ''; return; }
+  const chips = ['<button class="achip ' + (wallAccent === 'all' ? 'on' : '') + '" data-acc="all">All accents</button>']
+    .concat(accents.map(([a, n]) => `<button class="achip ${wallAccent === a ? 'on' : ''}" data-acc="${esc(a)}">${esc(a)}</button>`));
+  row.innerHTML = chips.join('');
+  row.classList.remove('hidden');
+  row.querySelectorAll('.achip').forEach(b => b.onclick = () => {
+    wallAccent = b.dataset.acc;
+    row.querySelectorAll('.achip').forEach(x => x.classList.toggle('on', x === b));
+    resetWallPage();
+    renderWall();
+  });
+}
 function openMember(i){
   const m = window.__wallList[i]; if (m) openMemberObj(m);
 }
@@ -10433,12 +10919,13 @@ function openMemberObj(m){
     $('mPhotosCard').classList.add('hidden');
   }
   // Follow button reset, then fill from API.
-  $('followBtn').textContent = '＋ Follow'; $('followBtn').dataset.f = '';
+  $('followBtnLbl').textContent = 'Follow'; $('followBtn').dataset.f = ''; $('followBtn').classList.remove('on');
   api('/user/' + m.id).then(j => {
     $('mFollowers').textContent = j.followers || 0;
     $('mFollowing').textContent = j.following || 0;
-    $('followBtn').textContent = j.isFollowing ? '✓ Following' : '＋ Follow';
+    $('followBtnLbl').textContent = j.isFollowing ? 'Following' : 'Follow';
     $('followBtn').dataset.f = j.isFollowing ? '1' : '';
+    $('followBtn').classList.toggle('on', !!j.isFollowing);
     if (j.online) $('mActive').innerHTML = '<span style="color:var(--green)">● Online now</span>';
     else if (j.lastActive) $('mActive').textContent = 'Active: ' + j.lastActive;
   }).catch(()=>{});

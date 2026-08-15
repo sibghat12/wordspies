@@ -24,6 +24,12 @@ const MAX_CLUB_NAME     = 60;
 const MAX_CLUB_DESC     = 500;
 const MAX_POSTS         = 200;   // cap per club to protect Redis
 const MAX_COMMENTS      = 100;   // cap per post
+const MAX_MENTIONS      = 10;    // per post or comment — hard cap so a bad
+                                 // actor can't fan out to 1000 users at once.
+const MAX_MENTION_NOTIFS_PER_DAY = 30; // per author — additional throttle
+                                       // on the sendPush side of mentions,
+                                       // so 30 posts × 10 mentions is not the
+                                       // ceiling — 30 individual notifs is.
 
 // Canonical site origin used inside the SSR club pages (og:url, JSON-LD,
 // sitemap). Kept as a constant so a future domain change is one edit.
@@ -230,8 +236,72 @@ async function seedIfEmpty(db) {
 function mount(app, api, db, opts) {
   const options = opts || {};
   const userFromReq = options.userFromReq || (() => null);
+  // Optional helpers injected by social.js at mount time. If any are
+  // missing (e.g. clubs.js used standalone in a test), mentions still
+  // land + get stored, they just don't deliver notifications.
+  const pushNotif = typeof options.pushNotif === 'function' ? options.pushNotif : null;
+  const sendPush  = typeof options.sendPush  === 'function' ? options.sendPush  : null;
+  const isBlocked = typeof options.isBlocked === 'function' ? options.isBlocked : (async () => false);
 
   seedIfEmpty(db);
+
+  // ── @mentions helpers ────────────────────────────────────────────────
+  // Accept a raw client-supplied mention list and produce a clean list of
+  // {id, name} — validated against real users, block-aware in both
+  // directions, deduped, and capped at MAX_MENTIONS. Silently drops any
+  // entry that fails a check; never throws, so a bad payload never
+  // blocks a legitimate post.
+  async function resolveMentions(rawList, authorUid) {
+    if (!Array.isArray(rawList) || !rawList.length) return [];
+    const seen = new Set();
+    const out = [];
+    for (const m of rawList) {
+      if (!m || typeof m !== 'object') continue;
+      const id = String(m.id || '').trim();
+      if (!id || id === authorUid || seen.has(id)) continue;
+      seen.add(id);
+      // Real user? Users live at soc:user:<id> — a get is cheap.
+      const raw = await db.get('soc:user:' + id);
+      if (!raw) continue;
+      // Block-aware both directions: if either side has blocked the
+      // other, the mention silently disappears so notifs never leak.
+      if (await isBlocked(authorUid, id)) continue;
+      let name = '';
+      try { name = String((m.name || JSON.parse(raw).name || '')).slice(0, 60); } catch (e) {}
+      if (!name) continue;
+      out.push({ id, name });
+      if (out.length >= MAX_MENTIONS) break;
+    }
+    return out;
+  }
+
+  // Deliver a mention notification to each resolved recipient — in-app via
+  // pushNotif (bell dropdown) + web push via sendPush. Rate-limited per
+  // author with a rolling 24h counter so a spammer with 100 mentions/hour
+  // can't drown recipients: after MAX_MENTION_NOTIFS_PER_DAY sends we
+  // stop knocking (the mention is still stored + rendered in the post).
+  async function notifyMentions(mentions, author, club, deepUrl) {
+    if (!Array.isArray(mentions) || !mentions.length) return;
+    const dayKey = 'soc:mention-quota:' + author.id + ':' + new Date().toISOString().slice(0, 10);
+    let sent = 0;
+    try { sent = parseInt(await db.get(dayKey)) || 0; } catch (e) {}
+    for (const m of mentions) {
+      if (sent >= MAX_MENTION_NOTIFS_PER_DAY) break;
+      const text = author.name + ' mentioned you in ' + (club.name || 'a club');
+      if (pushNotif) {
+        try { await pushNotif(m.id, { kind: 'club-mention', text, url: deepUrl, meta: { clubId: club.id, from: author.id } }); } catch (e) {}
+      }
+      if (sendPush) {
+        try { await sendPush(m.id, 'club-mention', '💬 You were mentioned', text, deepUrl); } catch (e) {}
+      }
+      sent++;
+      try {
+        await db.set(dayKey, String(sent), 60 * 60 * 26);
+        // set() with ttl already stamps expiry on Redis; the extra
+        // 2h buffer beyond 24h means late-night quota resets cleanly.
+      } catch (e) {}
+    }
+  }
 
   // In-memory slug -> id index for the public /clubs/:slug SSR route.
   // Built lazily on first hit and refreshed if a slug lookup misses
@@ -355,17 +425,27 @@ function mount(app, api, db, opts) {
       if (!club) return res.status(404).json({ error: 'Club not found.' });
       const text = clean((req.body || {}).text, MAX_POST_CHARS);
       if (!text) return res.status(400).json({ error: 'Write something first.' });
+      // @mentions — client sends a resolved list alongside the text so we
+      // don't have to fuzzy-match names on the server (users can have the
+      // same display name). Validated + block-filtered in resolveMentions.
+      const mentions = await resolveMentions((req.body || {}).mentions, me.id);
       const pid = newId('p');
       const post = {
         id: pid, clubId: id,
         uid: me.id, name: me.name, photo: me.photo || null,
         text, createdAt: Date.now(),
         likes: [], comments: [],
+        mentions,
       };
       await db.set('soc:club:' + id + ':post:' + pid, JSON.stringify(post));
       await db.rpush('soc:club:' + id + ':posts', pid);
       // Trim to last MAX_POSTS ids
       await db.ltrim('soc:club:' + id + ':posts', -MAX_POSTS, -1);
+      // Fire-and-forget notifications so the write never blocks on
+      // push delivery latency.
+      const slug = slugForClub(club);
+      const deepUrl = '/social?club=' + encodeURIComponent(slug || id) + '#post=' + pid;
+      notifyMentions(mentions, me, club, deepUrl).catch(e => console.error('club mention notify:', e.message));
       res.json({ post });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -402,10 +482,20 @@ function mount(app, api, db, opts) {
       if (!raw) return res.status(404).json({ error: 'Post not found.' });
       const post = JSON.parse(raw);
       post.comments = post.comments || [];
-      const c = { id: newId('c'), uid: me.id, name: me.name, photo: me.photo || null, text, at: Date.now() };
+      const mentions = await resolveMentions((req.body || {}).mentions, me.id);
+      const c = { id: newId('c'), uid: me.id, name: me.name, photo: me.photo || null, text, at: Date.now(), mentions };
       post.comments.push(c);
       if (post.comments.length > MAX_COMMENTS) post.comments.splice(0, post.comments.length - MAX_COMMENTS);
       await db.set(key, JSON.stringify(post));
+      // Notify mentioned users (fire-and-forget). Deep-link points at
+      // the parent post so tapping the notification lands them on the
+      // comment thread rather than the club root.
+      const club = await fetchClub(id);
+      if (club) {
+        const slug = slugForClub(club);
+        const deepUrl = '/social?club=' + encodeURIComponent(slug || id) + '#post=' + pid;
+        notifyMentions(mentions, me, club, deepUrl).catch(e => console.error('club comment mention notify:', e.message));
+      }
       res.json({ comment: c, commentCount: post.comments.length });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
