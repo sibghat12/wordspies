@@ -7677,12 +7677,20 @@ function dismissGameBar(ev){
   const bar = $('gameBar'); if (bar) bar.classList.add('hidden');
 }
 window.dismissGameBar = dismissGameBar;
+// BUG-023 fix: whitelist of paths the game bar is allowed to resume
+// into. If a stale stamp or malicious writer puts anything else in
+// localStorage, we ignore it (rather than making the pill a
+// one-tap redirect to any URL).
+const KNOWN_GAME_PATHS = /^\/(codenames|spy|wordchain|guessword|wordrace|four|pool|meld|hoop|ludo)(\?.*)?$/;
 function refreshGameBar(){
   const bar = $('gameBar');
   if (!bar) return;
   let s = null;
   try { s = JSON.parse(localStorage.getItem('wsActiveGame') || 'null'); } catch(e){}
-  if (!s || !s.path || (s.t && Date.now() - s.t > GAME_STALE_MS)) {
+  const validPath = s && typeof s.path === 'string' && KNOWN_GAME_PATHS.test(s.path);
+  if (!s || !validPath || (s.t && Date.now() - s.t > GAME_STALE_MS)) {
+    // Clear the stamp if it's junk so we don't keep re-checking.
+    if (s && !validPath) { try { localStorage.removeItem('wsActiveGame'); } catch(e){} }
     bar.classList.add('hidden');
     return;
   }
