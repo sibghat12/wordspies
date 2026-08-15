@@ -3897,15 +3897,25 @@ Do NOT add quotes, preambles, or explanations.`,
   // ═══ Exam prep — IELTS / TOEFL plan generator (owner ask 15 Aug 2026) ══
   // Stores the exam plan in the SAME soc:learns:<uid> list so the client's
   // plan-detail renderer works unchanged; the only difference is `kind:'exam'`
-  // plus the exam metadata. Rate-limit 10 generations/day per user (shared
-  // counter with any future paid-cost endpoints we add later — a single
-  // Redis INCR + 24h TTL, cheap and self-healing).
+  // Rate-limit N generations/day per user (Redis INCR + 26h TTL,
+  // cheap and self-healing). Owner ask 15 Aug 2026: bumped default
+  // 10 → 30 and added dev-name bypass (same allow-list pattern as
+  // AI_UNLIMITED_NAMES) so the owner can test freely without daily
+  // reset. Override the cap globally via PLAN_GEN_DAILY_MAX env.
   const EXAM_KINDS = new Set(['IELTS-Academic','IELTS-General','TOEFL']);
-  const PLAN_GEN_DAILY_MAX = 10;
-  async function planGenBumpAndCheck(uid) {
+  const PLAN_GEN_DAILY_MAX = parseInt(process.env.PLAN_GEN_DAILY_MAX || '30', 10);
+  const PLAN_GEN_DEV_NAMES = new Set(['sibi', 'sibghat']);
+  async function planGenBumpAndCheck(me) {
+    // me is the full user object so we can look at .name for the bypass.
     // Returns { ok:true } or { ok:false, remaining:0 } — mirrors the fire-
     // and-forget pattern used elsewhere so a Redis blip doesn't lock users
     // out of the feature.
+    const uid = me && me.id;
+    if (!uid) return { ok: true, remaining: PLAN_GEN_DAILY_MAX };
+    // Developer bypass (case-insensitive name match) — Sibi/Sibghat can
+    // regenerate plans as often as they need for dev + demo work.
+    const nameKey = String((me && me.name) || '').trim().toLowerCase();
+    if (PLAN_GEN_DEV_NAMES.has(nameKey)) return { ok: true, remaining: 9999 };
     try {
       const day = new Date().toISOString().slice(0, 10);
       const key = 'soc:plan-gen:' + day + ':' + uid;
@@ -3940,8 +3950,8 @@ Do NOT add quotes, preambles, or explanations.`,
       if (existingPre.length >= LEARN_MAX_PLANS) {
         return res.status(400).json({ error: 'You have ' + LEARN_MAX_PLANS + ' plans already. Delete an old one first.' });
       }
-      // Daily generation cap.
-      const gate = await planGenBumpAndCheck(me.id);
+      // Daily generation cap (dev-name bypass inside).
+      const gate = await planGenBumpAndCheck(me);
       if (!gate.ok) return res.status(429).json({ error: 'Daily plan-generation limit reached — try again tomorrow.' });
       const client = getAnthropic();
       if (!client) return res.status(503).json({ error: 'AI not configured yet.' });
