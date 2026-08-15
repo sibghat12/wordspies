@@ -251,8 +251,6 @@ function mount(app, redis) {
       return { ...u.streak, bumped: true, wasReset: s.lastDay && s.lastDay !== yesterday };
     } catch (e) { console.warn('[streak] bump failed:', e.message); return null; }
   }
-  // Exposed so party.js can fire it too (via options.bumpStreak).
-  api.__bumpStreak = bumpStreak;
 
   // ---- simple rate limit (per ip per route bucket) ----
   // WORDSPIES_TEST_MODE bypasses this so /tmp/*.js suites can create
