@@ -3974,44 +3974,61 @@ Do NOT add quotes, preambles, or explanations.`,
         '- "dst" = a model/exemplar answer or the marking-criteria hit-points, written at the target ' + scoreLabel + ' level (band-appropriate vocabulary, grammar range, task-response depth).\n' +
         '- Calibrate difficulty to ' + scoreLabel + ' and pace so a learner with ' + weeksUntil + ' weeks and ' + mpd + ' min/day can realistically finish.\n' +
         '- Titles under 5 words. No emoji in JSON.';
+      // Two-attempt Haiku call — first with the rich prompt, retry with
+      // a MUCH simpler prompt if the first response can't be parsed.
+      // Also bumped max_tokens so 5 exam lessons × 5 verbose items don't
+      // clip mid-JSON (silent truncation was probably the root cause).
       let plan;
       const startTime = Date.now();
       let usage = { input_tokens: 0, output_tokens: 0 };
       let rawForDebug = '';
-      try {
-        const result = await client.messages.create({
-          model: process.env.BOT_MODEL || 'claude-haiku-4-5',
-          max_tokens: 2600,
-          temperature: 0.4,
-          system,
-          messages: [{ role:'user', content: userMsg }]
-        });
-        const raw = ((result.content && result.content[0] && result.content[0].text) || '').trim();
-        rawForDebug = raw;
-        usage = result.usage || usage;
-        // Robust JSON extraction: (1) strip any markdown fences, (2) if
-        // Haiku wrapped prose around the JSON, isolate the first {...}
-        // block via balance-count. Prior version only stripped outer
-        // fences and choked on prose-prefixed responses.
-        let cleaned = raw.replace(/```(?:json)?/gi, '').trim();
-        try {
-          plan = JSON.parse(cleaned);
-        } catch (parseErr) {
+      let lastError = '';
+      const tryParse = (raw) => {
+        let cleaned = String(raw || '').replace(/```(?:json)?/gi, '').trim();
+        // Strip JS-style comments and trailing commas — Haiku sometimes
+        // emits these despite instructions.
+        cleaned = cleaned.replace(/\/\/[^\n]*/g, '').replace(/,(\s*[}\]])/g, '$1');
+        try { return JSON.parse(cleaned); } catch (e1) {
           const first = cleaned.indexOf('{');
           const last = cleaned.lastIndexOf('}');
           if (first >= 0 && last > first) {
-            const slice = cleaned.slice(first, last + 1);
-            plan = JSON.parse(slice);
-          } else {
-            throw parseErr;
+            return JSON.parse(cleaned.slice(first, last + 1));
           }
+          throw e1;
         }
-      } catch (e) {
-        // Log the head of the raw response so we can see what Haiku sent
-        // when a parse fails. Truncated to keep the log line small.
-        console.error('[learn] exam-plan generate:', e.message,
-          '| raw head:', String(rawForDebug || '').slice(0, 400).replace(/\s+/g, ' '));
-        return res.status(502).json({ error: 'Could not generate the plan — try again in a moment.' });
+      };
+      for (let attempt = 0; attempt < 2 && !plan; attempt++) {
+        try {
+          const useSimpler = attempt === 1;
+          const promptToUse = useSimpler
+            ? (system + '\n\nCRITICAL: Return ONLY the raw JSON object. No prose, no markdown, no explanation. Start with { and end with }.')
+            : system;
+          const result = await client.messages.create({
+            model: process.env.BOT_MODEL || 'claude-haiku-4-5',
+            max_tokens: 3500,
+            temperature: attempt === 0 ? 0.4 : 0.2,
+            system: promptToUse,
+            messages: [{ role:'user', content: userMsg }]
+          });
+          const raw = ((result.content && result.content[0] && result.content[0].text) || '').trim();
+          rawForDebug = raw;
+          usage = result.usage || usage;
+          plan = tryParse(raw);
+        } catch (e) {
+          lastError = e && e.message;
+          console.error('[learn] exam-plan attempt', attempt + 1, 'failed:', lastError,
+            '| raw head:', String(rawForDebug || '').slice(0, 300).replace(/\s+/g, ' '));
+          // Loop to attempt 2 with the stricter prompt.
+        }
+      }
+      if (!plan) {
+        // Surface WHY the parse failed to the client so we can diagnose
+        // without needing droplet log access. Truncated so no huge blob
+        // leaks. This is temporary — remove when Haiku behaves.
+        const snippet = String(rawForDebug || '').slice(0, 120).replace(/[\r\n]+/g, ' ');
+        return res.status(502).json({
+          error: 'AI returned unparseable output. First 120 chars: ' + (snippet || '(empty)') + ' ... last error: ' + (lastError || 'unknown').slice(0, 80)
+        });
       }
       if (!plan || !Array.isArray(plan.lessons) || plan.lessons.length < 3) {
         return res.status(502).json({ error: 'The plan came back malformed — try again.' });
