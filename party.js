@@ -63,6 +63,10 @@ function mount(app, io, options = {}) {
       // flip the mic chip immediately. Owner bug 2026-08-14: 'I speak,
       // my mic is on for me but others can't see my mic is on'.
       micOn: !!m.micOn,
+      // Connection-quality bucket ('good' | 'weak' | 'bad'). Set by the
+      // speaker's own client via v-quality on transition; omitted (undefined)
+      // for 'good' so publicView payload stays small on the common path.
+      quality: (m.quality && m.quality !== 'good') ? m.quality : undefined,
       handRaised: !!m.handRaised, handAt: m.handAt || 0,
       // How many of your 2 messages you've used (only sent back to yourself
       // via the personal `you` field below).
@@ -388,6 +392,9 @@ function mount(app, io, options = {}) {
       // to muted the instant we demote them — without waiting for their
       // client's force-mute handler to emit v-mic {on:false} back.
       target.micOn = false;
+      // Clear the connection-quality bucket too — listeners don't publish
+      // so the signal chip on their card no longer means anything.
+      target.quality = 'good';
       const tsock = nsp.sockets.get(target.id);
       if (tsock) { try { tsock.emit('force-mute'); } catch (e) {} }
       // The ORIGINAL host (creatorUid) can't be demoted — otherwise a fresh
@@ -527,6 +534,22 @@ function mount(app, io, options = {}) {
       me.micOn = !!(data && data.on);
       broadcast(room);
     });
+    // Speaker's own connection-quality bucket ('good' | 'weak' | 'bad').
+    // Fired by voice.js when the outbound RTP stats transition to a new
+    // bucket (2 consecutive polls of the same bucket, ~6s cadence min).
+    // Owner ask 15 Aug 2026: 'if some connection is bad or less as host
+    // or speaker, please show a red signal on their profile'. Listeners
+    // don't publish audio → no meaningful outbound stats → we ignore
+    // any v-quality event from a listener.
+    socket.on('v-quality', (data) => {
+      if (!room || !me) return;
+      if (me.role !== 'host' && me.role !== 'speaker') return;
+      var b = data && data.bucket;
+      if (b !== 'good' && b !== 'weak' && b !== 'bad') return;
+      if (me.quality === b) return;
+      me.quality = b;
+      broadcast(room);
+    });
     socket.on('v-tracks', (data) => {
       if (!room || !me) return;
       // Reject publish attempts from listeners. Their voice.js may have
@@ -590,7 +613,7 @@ function mount(app, io, options = {}) {
       // Also clear vTracks + micOn on disconnect so a slot in the 5-min
       // grace window doesn't visually show a green mic chip for someone
       // who's gone offline. Rejoin repopulates both via v-join/v-mic.
-      if (m) { m.connected = false; m.discAt = Date.now(); m.vTracks = []; m.micOn = false; }
+      if (m) { m.connected = false; m.discAt = Date.now(); m.vTracks = []; m.micOn = false; m.quality = 'good'; }
       socket.to(r.code).emit('v-peer', { id: socket.id, on: false });
       broadcast(r);
     });

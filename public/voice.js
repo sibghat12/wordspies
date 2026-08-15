@@ -332,6 +332,13 @@
     localTrackNames: [],                 // trackNames Cloudflare gave us for our own published tracks
     subscribed: {},                      // peerSessionId+trackName → true (dedup once CONFIRMED)
     pending: [],                         // remote peers we couldn't subscribe to yet (pc not ready)
+    // Last-seen roster of remote peers, keyed by remote cfSession → { cfSession, tracks }.
+    // Used by the reconciliation sweep (below) to retry any subscribe that
+    // silently failed (transient CF 500, InvalidStateError during renegotiation,
+    // dropped v-peer packet). Without this, one bad renegotiation could leave a
+    // listener permanently unable to hear a speaker until the speaker toggles
+    // their mic. Owner bug 2026-08-15: "she can't hear me or anything".
+    _knownPeers: {},
     // ── negotiation mutex ──────────────────────────────────────────────
     // Every operation that touches the local RTCPeerConnection's SDP
     // (createOffer / createAnswer / set{Local,Remote}Description) MUST
@@ -402,6 +409,12 @@
       // 500 ms so the "who's speaking" ring feels live. Silence check uses
       // a running window so 15 s silence still triggers a heal.
       this._statsT = setInterval(function () { self.checkTraffic(); }, 500);
+      // Reconciliation sweep — every 10s, retry subscribes for any peer whose
+      // tracks we know about but haven't confirmed subscribed. Cheap: the
+      // fast-path (all subscribed) is a couple of Object.keys walks and
+      // returns immediately. Only fires network work when there's a gap.
+      clearInterval(this._reconT);
+      this._reconT = setInterval(function () { self.reconcileSubscriptions(); }, 10000);
     },
     // Nuke everything and re-activate. If we had a mic open, re-publish.
     async heal(reason) {
@@ -452,6 +465,7 @@
 
     async deactivate() {
       clearInterval(this._statsT); this._statsT = null;
+      clearInterval(this._reconT); this._reconT = null;
       clearTimeout(this._healT); this._healT = null;
       try { socket.off('v-peer'); } catch (e) {}
       try { socket.off('v-roster'); } catch (e) {}
@@ -462,6 +476,7 @@
       this.sessionId = null;
       this.localTrackNames = [];
       this.subscribed = {};
+      this._knownPeers = {};
       // Reset the negotiation mutex so a fresh activate() doesn't chain
       // behind the old session's queued operations (which now target a
       // closed pc and will throw).
@@ -557,25 +572,90 @@
 
     onPeer: function (m) {
       if (!m || m.id === myId) return;
-      if (!m.on) { emit('peer-drop', { id: m.id }); return; }
+      if (!m.on) {
+        // Peer left / went off voice — forget them so the reconciliation
+        // sweep stops trying to resubscribe.
+        if (m.cfSession) delete this._knownPeers[m.cfSession];
+        emit('peer-drop', { id: m.id });
+        return;
+      }
+      // Remember every peer we've seen on voice so the reconciliation sweep
+      // can retry silent failures. Track LIST is authoritative: an empty
+      // list = they haven't published (or unpublished); a non-empty list
+      // is what we must be subscribed to.
+      if (m.cfSession) {
+        this._knownPeers[m.cfSession] = {
+          cfSession: m.cfSession,
+          tracks: Array.isArray(m.tracks) ? m.tracks.slice() : []
+        };
+      }
       // If they've published tracks and we can, subscribe. Errors from
       // subscribeTo are swallowed here — they're already logged and will
-      // retry on the next v-peer/v-roster/v-tracks event.
+      // retry on the next v-peer/v-roster/v-tracks event OR on the next
+      // reconciliation sweep (every 10s).
       if (m.cfSession && m.tracks && m.tracks.length) {
         this.subscribeTo(m).catch(function () {});
       }
     },
 
+    // Reconciliation sweep — every 10s, walk _knownPeers and re-issue a
+    // subscribeTo for anyone whose tracks we haven't confirmed subscribed to.
+    // subscribeTo is idempotent (dedups on this.subscribed[key]) so this is
+    // safe to call repeatedly. Fixes the silent-failure class where a
+    // transient CF 500 or an InvalidStateError during renegotiation left the
+    // listener permanently unable to hear a speaker with no retry path.
+    reconcileSubscriptions: function () {
+      if (!this.pc || !this.sessionId) return;
+      var self = this;
+      var peers = this._knownPeers || {};
+      Object.keys(peers).forEach(function (cfSession) {
+        var p = peers[cfSession];
+        if (!p || !p.tracks || !p.tracks.length) return;
+        var missing = p.tracks.some(function (name) {
+          return !self.subscribed[cfSession + ':' + name];
+        });
+        if (!missing) return;
+        try { console && console.warn && console.warn('[voice] reconcile: retry subscribe to', cfSession, p.tracks); } catch (e) {}
+        self.subscribeTo(p).catch(function () {});
+      });
+    },
+
+    // Manual recovery — force re-subscribe to every known peer, ignoring the
+    // dedup cache. Used by the "Reconnect audio" button in the party UI so
+    // users have a one-tap escape hatch when audio is stuck.
+    resubscribeAll: function () {
+      if (!this.pc || !this.sessionId) return Promise.resolve();
+      // Wipe dedup so subscribeTo re-runs even for already-subscribed tracks.
+      this.subscribed = {};
+      var self = this;
+      var peers = this._knownPeers || {};
+      var work = Object.keys(peers).map(function (cfSession) {
+        return self.subscribeTo(peers[cfSession]).catch(function () {});
+      });
+      return Promise.all(work);
+    },
+
     async publishLocal() {
       if (!localStream) return;
       var tracks = localStream.getAudioTracks();
+      var anyFailed = false;
       for (var i = 0; i < tracks.length; i++) {
         try {
           await this.publishTrack(tracks[i]);
           // Coax the newly-added sender to 96 kbps Opus for HD voice.
           var senders = this.pc.getSenders().filter(function (s) { return s.track === tracks[i]; });
           for (var j = 0; j < senders.length; j++) await boostSender(senders[j]);
-        } catch (e) { console.warn('sfu publish', e); }
+        } catch (e) {
+          console.warn('sfu publish', e);
+          anyFailed = true;
+        }
+      }
+      // Loud fail path — the mic UI flips to "on" the moment the user taps,
+      // but if Cloudflare's /tracks/new fails silently the room hears silence.
+      // Fire a 'publish-fail' event so the party UI can toast + hint at the
+      // Reconnect button. Owner bug 15 Aug 2026: "she can't hear me or anything."
+      if (anyFailed) {
+        try { emit('publish-fail', { reason: 'sfu' }); } catch (e) {}
       }
     },
     async unpublishLocal() {
@@ -643,7 +723,32 @@
          // stuck showing us as muted. Owner bug 2026-08-14: 'I speak, mic
          // is on for me but others can't see my mic is on'.
          try { socket.emit('v-mic', { on: true }); } catch (e) {}
-         if (activePath.publishLocal) { try { await activePath.publishLocal(); } catch (e) { console.warn(e); } }
+         // If the CF publish path throws, we CANNOT leave the mic chip
+         // green — listeners will see us as unmuted but hear nothing (there
+         // are no CF track names for them to subscribe to). Roll back:
+         // close the mic, flip micOn=false, emit v-mic{on:false}, and
+         // surface an error so the UI can toast the speaker.
+         // Owner bug 2026-08-15: "I'm speaking, mic shows on, but she
+         // can't hear me or anything." Root cause identified: publishLocal
+         // was silently swallowing failures.
+         if (activePath.publishLocal) {
+           try {
+             await activePath.publishLocal();
+             // Sanity check — did we actually end up with a track name
+             // registered on the SFU? If not, treat as failure.
+             if (activePath === sfu && !sfu.localTrackNames.length) {
+               throw new Error('Cloudflare accepted no tracks — publish silently failed.');
+             }
+           } catch (e) {
+             try { console && console.warn && console.warn('[voice] publish failed, rolling back mic:', e); } catch (e2) {}
+             try { socket.emit('v-mic', { on: false }); } catch (e2) {}
+             try { if (activePath && activePath.unpublishLocal) await activePath.unpublishLocal(); } catch (e2) {}
+             closeMic();
+             micOn = false;
+             emit('mic', { on: false, err: (e && e.message) || 'Voice publish failed — tap the mic again.' });
+             throw e;
+           }
+         }
        } else {
          // Announce mic-off up-front so peers' chips flip immediately, before
          // the unpublish round-trip. Same reasoning as the mic-on branch.
@@ -774,11 +879,175 @@
   function stopQualityPoll() {
     if (_qualTimer) { clearInterval(_qualTimer); _qualTimer = null; }
     _qualPrev = {};
+    stopOutboundQualityPoll();
+  }
+
+  // ── outbound connection-quality poll (MY OWN upload) ────────────────
+  // Owner ask 15 Aug 2026: if MY connection to the SFU is bad, show a
+  // red signal on my avatar so I know it's my end that's flaking (and
+  // broadcast it to the room so others see the same chip on my card).
+  //
+  // Different stats surface than the inbound poll above:
+  //   · remote-inbound-rtp — the SFU's view of MY outgoing stream:
+  //       roundTripTime (s), jitter (s), fractionLost (0..1), packetsLost.
+  //   · outbound-rtp — MY sender's own counters: packetsSent + totalPacketsSent.
+  //
+  // We derive per-window loss from Δ(packetsLost) / Δ(packetsSent) since the
+  // last poll — fractionLost is EWMA-smoothed by the browser and lags 3-4s.
+  //
+  // Buckets:
+  //   good  — everything else
+  //   weak  — loss > 3%  OR RTT > 250ms OR jitter > 30ms
+  //   bad   — loss > 8%  OR RTT > 500ms OR jitter > 50ms
+  //
+  // Hysteresis: bucket must persist 2 consecutive polls before we EMIT a
+  // transition — stops the chip from flickering on a single lossy sample.
+  // First 5s after activate are skipped: fresh WebRTC stats are noisy
+  // (initial ICE + DTLS setup shows loss/RTT spikes that self-heal).
+  var _outQTimer = null;
+  var _outQPrev = null;         // { packetsSent, packetsLost }
+  var _outQEmittedBucket = 'good';
+  var _outQCandidate = null;    // { bucket, count }
+  var _outQStartedAt = 0;
+  var GRACE_MS = 5000;
+
+  function bucketFrom(lossPct, rttMs, jitterMs) {
+    if (lossPct > 8 || rttMs > 500 || jitterMs > 50) return 'bad';
+    if (lossPct > 3 || rttMs > 250 || jitterMs > 30) return 'weak';
+    return 'good';
+  }
+  async function pollOutboundQuality() {
+    // Only poll while publishing + tab visible.
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+    if (!activePath || !activePath.pc) return;
+    // Only speakers publish audio — listeners have no outbound stream to score.
+    if (!micOn || !localStream) return;
+    if (Date.now() - _outQStartedAt < GRACE_MS) return;
+    try {
+      var stats = await activePath.pc.getStats();
+      var packetsSent = 0, packetsLostRemote = 0, rttSec = 0, jitterSec = 0;
+      var haveOutbound = false, haveRemoteInbound = false;
+      stats.forEach(function (r) {
+        if (r.type === 'outbound-rtp' && r.kind === 'audio') {
+          haveOutbound = true;
+          packetsSent += (r.packetsSent || 0);
+        } else if (r.type === 'remote-inbound-rtp' && r.kind === 'audio') {
+          haveRemoteInbound = true;
+          packetsLostRemote += (r.packetsLost || 0);
+          // Some browsers report one remote-inbound per sender. Keep the
+          // worst RTT / jitter across senders (usually only 1).
+          if (typeof r.roundTripTime === 'number' && r.roundTripTime > rttSec) rttSec = r.roundTripTime;
+          if (typeof r.jitter === 'number' && r.jitter > jitterSec) jitterSec = r.jitter;
+        }
+      });
+      // Unsupported browser (no remote-inbound stats at all) — degrade silently.
+      if (!haveOutbound || !haveRemoteInbound) return;
+      var lossPct = 0;
+      if (_outQPrev) {
+        var dS = packetsSent - _outQPrev.packetsSent;
+        var dL = packetsLostRemote - _outQPrev.packetsLost;
+        if (dS + dL > 0 && dS >= 0 && dL >= 0) lossPct = (dL / (dS + dL)) * 100;
+      }
+      _outQPrev = { packetsSent: packetsSent, packetsLost: packetsLostRemote };
+      var rttMs = rttSec * 1000;
+      var jitterMs = jitterSec * 1000;
+      var bucket = bucketFrom(lossPct, rttMs, jitterMs);
+      // Hysteresis — require 2 consecutive same-bucket polls before emitting.
+      if (bucket === _outQEmittedBucket) { _outQCandidate = null; return; }
+      if (!_outQCandidate || _outQCandidate.bucket !== bucket) {
+        _outQCandidate = { bucket: bucket, count: 1 };
+        return;
+      }
+      _outQCandidate.count++;
+      if (_outQCandidate.count >= 2) {
+        _outQEmittedBucket = bucket;
+        _outQCandidate = null;
+        emit('outbound-quality', { bucket: bucket, lossPct: lossPct, rttMs: rttMs, jitterMs: jitterMs });
+      }
+    } catch (e) { /* getStats can throw during renegotiation — ignore */ }
+  }
+  function startOutboundQualityPoll() {
+    if (_outQTimer) return;
+    _outQStartedAt = Date.now();
+    _outQPrev = null;
+    _outQCandidate = null;
+    _outQEmittedBucket = 'good';
+    _outQTimer = setInterval(pollOutboundQuality, 3000);
+  }
+  function stopOutboundQualityPoll() {
+    if (_outQTimer) { clearInterval(_outQTimer); _outQTimer = null; }
+    _outQPrev = null;
+    _outQCandidate = null;
+    // Emit a synthetic 'good' so the caller can clear the chip on stop.
+    if (_outQEmittedBucket !== 'good') {
+      _outQEmittedBucket = 'good';
+      emit('outbound-quality', { bucket: 'good', lossPct: 0, rttMs: 0, jitterMs: 0 });
+    }
+  }
+  // Pause outbound polling while the tab is hidden (background tabs
+  // throttle timers to ~1/min; stats sampled that sparsely are useless).
+  // Resume on show — reset baseline so the next poll's delta isn't a huge
+  // spike from the whole background window.
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) return;
+      if (!_outQTimer) return;
+      _outQStartedAt = Date.now();
+      _outQPrev = null;
+      _outQCandidate = null;
+    });
+  }
+
+  // Manual "reconnect audio" — the user-visible escape hatch when audio is
+  // stuck. Two-part recovery:
+  //   1. If we're a speaker with the mic open, re-publish our local track
+  //      (tear down + push a fresh offer to CF). Fixes the case where our
+  //      original publish silently died mid-session (CF closed our track,
+  //      ICE went to failed, renegotiation lost).
+  //   2. Ask the SFU path to re-subscribe to every known remote peer,
+  //      ignoring the dedup cache. Fixes the listener side of the same
+  //      failure — one bad renegotiation and we stopped hearing a speaker
+  //      with no retry.
+  // Both steps are idempotent + best-effort. Never throws.
+  async function reconnectAudio() {
+    try { console && console.warn && console.warn('[voice] reconnectAudio: user-triggered recovery'); } catch (e) {}
+    try {
+      // Step 1: republish if we're a speaker and mic is on.
+      if (micOn && localStream && activePath && activePath.publishLocal) {
+        // For the SFU path, clear our record of published tracks and
+        // re-run publish. Cloudflare will assign new track names; we
+        // rebroadcast v-tracks so listeners re-subscribe.
+        if (activePath === sfu) {
+          try { await sfu.unpublishLocal(); } catch (e) {}
+          sfu.localTrackNames = [];
+        }
+        try { await activePath.publishLocal(); } catch (e) {
+          try { console && console.warn && console.warn('[voice] reconnectAudio: republish failed', e); } catch (e2) {}
+        }
+      }
+      // Step 2: re-subscribe to every known peer.
+      if (activePath && activePath.resubscribeAll) {
+        try { await activePath.resubscribeAll(); } catch (e) {}
+      }
+      // Step 3: kick every remote <audio> — browsers occasionally leave
+      // them paused after a long stall even when the underlying stream
+      // is fine. Same trick as the visibilitychange handler.
+      try {
+        document.querySelectorAll('audio[data-peer]').forEach(function (au) {
+          try { var p = au.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+        });
+      } catch (e) {}
+    } catch (e) {
+      try { console && console.warn && console.warn('[voice] reconnectAudio failed:', e); } catch (e2) {}
+    }
   }
 
   window.wsVoice = {
     init: init, destroy: destroy, setMic: setMic, on: on,
     startQualityPoll: startQualityPoll, stopQualityPoll: stopQualityPoll,
+    startOutboundQualityPoll: startOutboundQualityPoll,
+    stopOutboundQualityPoll: stopOutboundQualityPoll,
+    reconnectAudio: reconnectAudio,
     get micOn() { return micOn; },
     get canPublish() { return canPublish; },
     get mode() { return VOICE_MODE; },

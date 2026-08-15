@@ -89,6 +89,13 @@ a{color:inherit;text-decoration:none}
 .pheadEnd{background:#fff5f5;color:var(--err);border:1px solid #f8d3d3;border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:background .12s,transform .1s}
 .pheadEnd:hover{background:#ffe4e4}
 .pheadEnd:active{transform:scale(.95)}
+/* Reconnect audio button — user escape hatch when they can't hear or be heard */
+.pheadRec{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:99px;padding:8px 14px;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:12.5px;cursor:pointer;transition:background .12s,transform .1s,border-color .12s;white-space:nowrap}
+.pheadRec:hover{background:#dbeafe;border-color:#93c5fd}
+.pheadRec:active{transform:scale(.95)}
+.pheadRec.spinning{opacity:.6;pointer-events:none}
+.pheadRec.spinning::before{display:inline-block;animation:spinRot 1s linear infinite}
+@keyframes spinRot{to{transform:rotate(360deg)}}
 
 /* Centred emoji picker — floats over everything, backdrop dims. */
 .emopop{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(20,22,28,.45);animation:emofade .15s ease-out}
@@ -177,15 +184,17 @@ a{color:inherit;text-decoration:none}
 .speakers{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:4px}
 .listeners{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:4px}
 
-/* Avatar tile — clean, borderless. Optional coloured ring for host / live. */
+/* Avatar tile — clean, borderless. Optional coloured ring for host / live.
+   Owner ask 15 Aug 2026: avatar is NEVER a mic toggle. Mic lives in the
+   dedicated bottom-center .micbtn control below. Avatar-tap is reserved
+   for the host-menu (when a host taps someone else) — nothing else. */
 .pav{position:relative;text-align:center;padding:8px 2px;border-radius:14px;transition:background .12s;cursor:default}
-.pav.tapMe{cursor:pointer}
-.pav.tapMe:active{background:var(--hover)}
 .pav .circ{width:60px;height:60px;border-radius:50%;margin:0 auto 8px;background:#5a7bff;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:600;font-size:24px;overflow:hidden;position:relative}
 .pav .circ img{width:100%;height:100%;object-fit:cover;display:block}
 /* Speakers all share the SAME green ring — owner asked: no more
-   gold vs blue distinction. Host is still marked by a small crown chip
-   below, but the ring is one colour everyone recognises as "speaker".*/
+   gold vs blue distinction. Host gets a darker green gradient so
+   they're still visually distinct without the crown chip (removed
+   15 Aug 2026 per owner: 'no crown in the party avatars anywhere'). */
 .pav.host .circ,.pav.speaker .circ{outline:3px solid var(--green);outline-offset:2px;background:linear-gradient(135deg,#5a7bff,#7c5cff)}
 .pav.host .circ{background:linear-gradient(135deg,#22c07a,#159f5d)}
 /* Live-mic pulse: still green, just a brighter outer glow */
@@ -200,15 +209,25 @@ a{color:inherit;text-decoration:none}
 .pav .micchip{position:absolute;bottom:34px;right:calc(50% - 34px);background:#6b7280;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:background .18s,transform .1s;padding:4px}
 .pav .micchip svg{width:100%;height:100%;display:block}
 .pav .micchip.on{background:linear-gradient(135deg,#22c07a,#159f5d)}
-.pav.tapMe .micchip{cursor:pointer}
-.pav.tapMe:active .micchip{transform:scale(.9)}
-/* Small crown chip so the host is still distinguishable from a speaker
-   without breaking the unified colour rule. */
-.pav.host::before{content:'👑';position:absolute;top:-2px;right:calc(50% - 32px);font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,.2)}
-/* Little tap-to-talk hint over my own avatar */
-.pav.tapMe .circ::before{content:'';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);background:transparent;color:transparent;font-size:9.5px;padding:2px 6px;border-radius:6px;opacity:0;pointer-events:none}
-.pav.tapMe:hover .circ::before{opacity:.9}
-.pav.tapMe.live .circ::before{content:'Tap to mute';background:var(--green)}
+/* Mic chip is a status indicator only — never a tap target. The
+   dedicated .micbtn owns the mic toggle. */
+.pav .micchip{pointer-events:none}
+/* Quality chip: bottom-LEFT of the avatar circle (mirror of the mic
+   chip at bottom-right). Shown only when a speaker's outbound
+   connection to the SFU is 'weak' or 'bad' — good stays hidden so
+   healthy avatars stay clean. Owner ask 15 Aug 2026: 'if some
+   connection is bad or less as host or speaker, please show a red
+   signal on their profile so they know'. */
+.pav .qualchip{position:absolute;bottom:34px;left:calc(50% - 34px);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18);padding:4px}
+.pav .qualchip svg{width:100%;height:100%;display:block}
+.pav .qualchip.weak{background:linear-gradient(135deg,#f5a623,#d98a12)}
+.pav .qualchip.bad{background:linear-gradient(135deg,#ff4d4f,#c92027);animation:qualpulse 1.2s ease-in-out infinite}
+@keyframes qualpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.listeners .pav .qualchip{display:none}
+/* Crown chip removed 15 Aug 2026 (owner ask). Host is still visible
+   via the darker green gradient on .pav.host .circ above. */
+/* "Tap to mute" hint removed 15 Aug 2026 — the avatar is no longer
+   a mic control. The dedicated .micbtn at the bottom owns that job. */
 .pav .nm{font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
 /* Role sublabel retired — the crown chip already signals host and the
    avatar-column position tells you speaker vs listener. */
@@ -269,6 +288,36 @@ a{color:inherit;text-decoration:none}
   .micfab,.handfab{bottom:calc(150px + env(safe-area-inset-bottom));padding:10px 18px 10px 12px;font-size:14px}
   .micfab .mfico,.handfab .hfico{width:28px;height:28px;font-size:14px}
 }
+
+/* ══ Dedicated mic control (owner ask 15 Aug 2026) ══
+   Bottom-center floating pill, ~64px, ONE clear affordance for the
+   speaker/host to toggle their mic. Replaces the old avatar-tap
+   toggle (which caused accidental mutes when people just wanted to
+   see a profile). Grey when muted, green with a soft pulse when
+   speaking. Hidden entirely for listeners. Same handler as before
+   (toggleMyMic()) — no duplicate mic logic. */
+.micbtn{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:72px;height:72px;border-radius:50%;border:0;padding:0;background:#6b7280;color:#fff;cursor:pointer;font-family:'Fredoka','Nunito',system-ui,sans-serif;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,.22);transition:background .18s,box-shadow .18s,transform .1s}
+.micbtn.show{display:inline-flex}
+.micbtn:hover{transform:translateX(-50%) translateY(-2px)}
+.micbtn:active{transform:translateX(-50%) scale(.95)}
+.micbtn:focus-visible{outline:3px solid #7c5cff;outline-offset:3px}
+.micbtn .mbico{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center}
+.micbtn .mbico svg{width:100%;height:100%;display:block}
+.micbtn .mblbl{font-size:10.5px;font-weight:800;letter-spacing:.2px;line-height:1;margin-top:1px;text-transform:uppercase}
+.micbtn.on{background:linear-gradient(135deg,#22c07a,#159f5d);box-shadow:0 10px 28px rgba(34,192,122,.4),0 0 0 6px rgba(34,192,122,.14);animation:micbtnPulse 2.2s ease-in-out infinite}
+@keyframes micbtnPulse{0%,100%{box-shadow:0 10px 28px rgba(34,192,122,.4),0 0 0 6px rgba(34,192,122,.14)}50%{box-shadow:0 10px 28px rgba(34,192,122,.5),0 0 0 14px rgba(34,192,122,.06)}}
+/* Nudge above the raise-hand FAB / quickact stack on mobile so it
+   doesn't collide with them. On desktop the wrap uses a right-column
+   chat rail — recentre relative to the members column. */
+@media(min-width:1000px){
+  .micbtn{left:auto;right:calc(380px + 44px + 72px);transform:none;bottom:32px}
+  .micbtn:hover{transform:translateY(-2px)}
+  .micbtn:active{transform:scale(.95)}
+}
+/* When the party runs inside /social's mini-player iframe the parent
+   collapses the iframe to a tiny bar — the button never renders in a
+   visible viewport. When restored to fullscreen the iframe is at
+   full size again and the button re-appears. No extra guard needed. */
 
 /* Owner ask 10 Aug 2026 — 'remove the entire chat functionality from
    parties'. We keep the raise-hand button visible (it lives inside
@@ -370,6 +419,11 @@ a{color:inherit;text-decoration:none}
       <div class="phead-langs hidden" id="pLangs"></div>
     </div>
     <div class="phead-btns">
+      <!-- One-tap audio recovery: force re-publish (if speaker) + re-subscribe
+           to every peer's tracks. Silent-failure escape hatch for the
+           "she can't hear me" bug — publishLocal/subscribeTo errors are
+           swallowed by design, this lets the user recover without leaving. -->
+      <button class="pheadRec" id="pReconnectBtn" onclick="reconnectPartyAudio()" title="Reconnect audio if you can't hear or be heard">🔄 Reconnect</button>
       <button class="pheadEnd hidden" id="pEndBtn" onclick="endParty()" title="End party for everyone">End 🎉</button>
     </div>
   </header>
@@ -392,8 +446,12 @@ a{color:inherit;text-decoration:none}
 <!-- Compact quick actions: mute + reactions. Small round buttons for
      users who don't want the big FAB in their face. Owner asked for
      "two small icons mute and reaction button that opens many reactions". -->
+<!-- Corner quick actions — reactions + invite. Mute removed 15 Aug 2026
+     (owner ask): the dedicated bottom-center .micbtn is the ONE clear
+     mic control. Old #qMuteBtn kept as a hidden stub so any legacy JS
+     that touches it doesn't ReferenceError. -->
 <div class="quickact" id="pQuickAct">
-  <button class="qmute" id="qMuteBtn" onclick="toggleMyMic()" title="Mute / unmute (Speakers only)">🎤</button>
+  <button class="qmute" id="qMuteBtn" aria-hidden="true" tabindex="-1" style="display:none">🎤</button>
   <button class="qrx" id="qRxBtn" onclick="toggleReactionsMenu(event)" title="Send a reaction">🎉</button>
   <button class="qinv" id="pInviteBtn" onclick="copyInvite()" title="Copy invite link">🔗</button>
 </div>
@@ -429,12 +487,23 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
-<!-- Mic FAB removed 10 Aug 2026 — the mic control on the local avatar
-     covers the same action, so the FAB was duplicate. Kept the element
-     with style=display:none so toggleMyMic() and any code that still
-     writes to pMicFab / pMicFabLbl doesn't ReferenceError. -->
-<button class="micfab" id="pMicFab" onclick="toggleMyMic()" aria-label="Toggle mic" style="display:none !important">
-  <span class="mfico">🎤</span>
+<!-- Dedicated mic control (owner ask 15 Aug 2026 — the avatar is no
+     longer a mic toggle). Bottom-center round pill, big and obvious,
+     grey when muted / green with pulse when speaking. Visible only
+     to hosts + speakers; listeners never see it (they can't publish).
+     Calls the same toggleMyMic() — no duplicate mic logic. The old
+     .micfab id is kept as a hidden stub so any stray writer to
+     pMicFab / pMicFabLbl doesn't ReferenceError. -->
+<button class="micbtn" id="pMicBtn" type="button"
+        onclick="toggleMyMic()"
+        aria-label="Toggle microphone"
+        aria-pressed="false"
+        title="Tap to mute / unmute">
+  <span class="mbico" id="pMicBtnIco"></span>
+  <span class="mblbl" id="pMicBtnLbl">Muted</span>
+</button>
+<button class="micfab" id="pMicFab" aria-hidden="true" tabindex="-1" style="display:none !important">
+  <span class="mfico" aria-hidden="true"></span>
   <span id="pMicFabLbl" style="display:none"></span>
 </button>
 <button class="handfab" id="pHandFab" onclick="toggleHand()">
@@ -511,6 +580,8 @@ let socket = null, room = null, myId = null, myRole = 'listener', msgsLeft = 2, 
 let ME_UID = null;   // set from the 'joined' event; used by the host-reclaim fallback
 let SPEAKING = new Set();   // socket ids currently detected as talking
 let QUALITY = {};           // trackId → connection quality (0..3, higher = better)
+let MY_QUALITY = 'good';    // my own outbound bucket ('good' | 'weak' | 'bad')
+let _myQualToasted = false; // one-time toast when MY link first drops
 let _wakeLock = null;       // navigator.wakeLock handle so we can release it
 
 // Wake Lock: keep the phone screen awake while in a party so mobile
@@ -634,11 +705,52 @@ function conn(){
       wsVoice.setCanPublish(myRole === 'host' || myRole === 'speaker');
       wsVoice.init({ socket, myId, canPublish: (myRole === 'host' || myRole === 'speaker') });
       wsVoice.on('mic', () => paint());       // avatar ring reflects mic state
+      // Loud publish-failure feedback: if the Cloudflare push silently fails
+      // the user thinks they're speaking but the room hears nothing. Toast +
+      // nudge to the Reconnect button. (Owner bug 15 Aug 2026.)
+      wsVoice.on('publish-fail', () => {
+        toast('⚠️ Mic didn\'t publish — tap 🔄 Reconnect');
+      });
       // Keep the phone screen awake while the user is in the party.
       acquireWakeLock();
       // Poll connection stats every 3s + repaint avatars with dots.
       wsVoice.startQualityPoll();
       wsVoice.on('quality', (map) => { QUALITY = map || {}; paint(); });
+      // Outbound (my own upload) quality: start polling when the mic
+      // actually opens (listeners have no outbound stream to score),
+      // stop when it closes. Broadcast bucket transitions to the room
+      // so everyone's memberCard renders the signal chip on my avatar.
+      wsVoice.on('mic', (d) => {
+        if (!wsVoice.startOutboundQualityPoll) return;
+        if (d && d.on) {
+          wsVoice.startOutboundQualityPoll();
+        } else {
+          wsVoice.stopOutboundQualityPoll();
+          // stopOutboundQualityPoll emits a synthetic 'good' — but be
+          // defensive in case that changes: force local state + broadcast.
+          if (MY_QUALITY !== 'good') {
+            MY_QUALITY = 'good';
+            try { socket.emit('v-quality', { bucket: 'good' }); } catch (e) {}
+            paint();
+          }
+          _myQualToasted = false;
+        }
+      });
+      wsVoice.on('outbound-quality', (d) => {
+        const b = (d && d.bucket) || 'good';
+        MY_QUALITY = b;
+        try { socket.emit('v-quality', { bucket: b }); } catch (e) {}
+        // One-time toast the first time my link goes weak/bad in this session,
+        // so I know it's ME, not the other side. Reset flag on 'good' via
+        // the mic-off handler above; also reset when we clear back to good.
+        if (b === 'bad' && !_myQualToasted) {
+          _myQualToasted = true;
+          toast('Your connection is bad — audio quality may drop.');
+        } else if (b === 'good') {
+          _myQualToasted = false;
+        }
+        paint();
+      });
       // Remote-speaker detection — audioLevel per inbound track (0..1).
       // Above 0.02 counts as "speaking"; a member gets the pulsing green
       // ring for 1.5s after their last spike so mid-sentence gaps don't
@@ -1005,23 +1117,36 @@ function paint(){
   const iAmSpeaker = iAmHost || myRole === 'speaker';
   const micOn = window.wsVoice && wsVoice.micOn;
 
-  // Big always-visible mic pill: shown to hosts and speakers only, label
-  // + colour reflect whether the mic is live.
-  const fab = $('pMicFab'), fabLbl = $('pMicFabLbl');
-  if (fab && fabLbl) {
-    fab.classList.toggle('show', iAmSpeaker);
-    fab.classList.toggle('on', !!micOn);
-    fabLbl.textContent = micOn ? 'Live' : 'Tap to talk';
+  // Dedicated mic control — bottom-center round pill. Shown to hosts +
+  // speakers only. Grey/muted or green/speaking; label + aria-pressed
+  // stay in sync so screen readers announce the state change. Owner
+  // ask 15 Aug 2026: the ONLY mic toggle in the UI. Same handler as
+  // the old avatar tap — no duplicated mic logic.
+  const mbtn = $('pMicBtn');
+  const mbLbl = $('pMicBtnLbl');
+  const mbIco = $('pMicBtnIco');
+  if (mbtn && mbLbl && mbIco) {
+    mbtn.classList.toggle('show', iAmSpeaker);
+    mbtn.classList.toggle('on', !!micOn);
+    mbtn.setAttribute('aria-pressed', micOn ? 'true' : 'false');
+    mbLbl.textContent = micOn ? 'Speaking' : 'Muted';
+    // MIC_ON_SVG / MIC_OFF_SVG are defined inside memberCard() — mirror
+    // them here so the button reflects state without needing a member
+    // paint. Kept as string literals so we don't tightly couple to
+    // memberCard() being called first.
+    mbIco.innerHTML = micOn
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M4 4l16 16"/></svg>';
   }
-  // Compact quick actions: same visibility as the FAB (speakers only for
-  // mute), but everyone gets the reaction button.
+  // Compact quick actions — reactions + invite. Mute button removed
+  // 15 Aug 2026 (owner ask: 'be professional'): the dedicated
+  // .micbtn owns mic toggling now, so the tiny 🎤 in the corner was
+  // duplicative and unlabelled.
   const q = $('pQuickAct');
   if (q) {
     q.classList.add('show');
-    $('qMuteBtn').style.display = iAmSpeaker ? '' : 'none';
-    $('qMuteBtn').classList.toggle('on', !!micOn);
-    $('qMuteBtn').textContent = micOn ? '🎤' : '🔇';
-    $('qMuteBtn').title = micOn ? 'Mute' : 'Unmute (Speakers only)';
+    const qm = $('qMuteBtn');
+    if (qm) qm.style.display = 'none';
   }
 
   const speakers = room.members.filter(m => m.role === 'host' || m.role === 'speaker');
@@ -1103,7 +1228,9 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
   else if (m.role === 'speaker') cls.push('speaker');
   if (isMe) cls.push('me');
   if (isMe && myMicOn) cls.push('live');
-  if (isMe && (isHost || m.role === 'speaker')) cls.push('tapMe');
+  // Avatar is no longer a mic toggle (owner ask 15 Aug 2026) — mic
+  // lives on the dedicated .micbtn. Keep the .live pulse for visual
+  // reassurance but do NOT add a click affordance to my own avatar.
   if (iAmHost && !isMe && !(isHost && m.uid === room.hostUid)) cls.push('canManage');
   if (selectedMemberId === m.id && iAmHost) cls.push('selected');
   if (m.handRaised && !isSpeakerPanel) cls.push('hand');
@@ -1139,6 +1266,18 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
    const MIC_ON_SVG  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>';
    const MIC_OFF_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M4 4l16 16"/></svg>';
    const micChip = isSpeakerPanel ? `<span class="micchip ${micLive ? 'on' : ''}">${micLive ? MIC_ON_SVG : MIC_OFF_SVG}</span>` : '';
+   // Connection-quality chip (bottom-left of avatar). Only rendered when
+   // the speaker's outbound bucket is 'weak' or 'bad'. My own row uses
+   // MY_QUALITY as the source of truth (instant feedback, no server
+   // round-trip); everyone else reads m.quality from the last state.
+   // WhatsApp-style signal-bars glyph: 4 rising bars.
+   const SIGNAL_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="3"  y="14" width="3" height="7" rx="1"/><rect x="8.5" y="10" width="3" height="11" rx="1"/><rect x="14" y="6"  width="3" height="15" rx="1"/><rect x="19.5" y="2"  width="3" height="19" rx="1"/></svg>';
+   const qBucket = (isSpeakerPanel && (isHost || m.role === 'speaker'))
+     ? (isMe ? MY_QUALITY : (m.quality || 'good'))
+     : 'good';
+   const qualChip = (qBucket === 'weak' || qBucket === 'bad')
+     ? `<span class="qualchip ${qBucket}" title="${qBucket === 'bad' ? 'Bad connection — audio may cut out' : 'Weak connection'}">${SIGNAL_SVG}</span>`
+     : '';
   // Menu buttons MUST stopPropagation so they don't bubble to the .pav's
   // own onclick — which would re-toggle the selection and undo the action.
   // (Real bug that made "Approve" seem to do nothing sometimes.)
@@ -1150,15 +1289,19 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
       <button class="danger" onclick="event.stopPropagation();kickMember('${esc(m.id)}')">Remove from party</button>
     </div>` : '';
 
-  const onclick = isMe && (isHost || m.role === 'speaker')
-    ? 'onclick="toggleMyMic()"'
-    : (iAmHost && !isMe && !(isHost && m.uid === room.hostUid))
+  // Avatar-tap semantics (owner ask 15 Aug 2026):
+  //   • My own avatar → NO click handler (mic lives on .micbtn).
+  //   • Host viewing someone else's avatar → open the host menu
+  //     (promote / demote / kick) — unchanged.
+  //   • Everyone else → no click handler; the avatar is a display only.
+  const onclick = (iAmHost && !isMe && !(isHost && m.uid === room.hostUid))
     ? `onclick="event.stopPropagation();selectMember('${esc(m.id)}')"`
     : '';
 
   return `<div class="${cls.join(' ')}" data-id="${esc(m.id)}" ${onclick}>
     <div class="circ">${av}</div>
     ${micChip}
+    ${qualChip}
     <div class="nm">${esc(m.name)}</div>
     ${isSpeakerPanel ? `<div class="rl${roleCls}">${roleLbl}</div>` : ''}
     ${hostMenu}
@@ -1277,6 +1420,27 @@ function toast(msg){
   el.classList.add('show');
   clearTimeout(toastT);
   toastT = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// Manual audio recovery — wired to the header 🔄 Reconnect button.
+// Calls wsVoice.reconnectAudio() which force-republishes (if speaker)
+// and force-resubscribes to every peer's tracks. Safe to spam.
+async function reconnectPartyAudio(){
+  const btn = document.getElementById('pReconnectBtn');
+  if (btn) btn.classList.add('spinning');
+  toast('🔄 Reconnecting audio…');
+  try {
+    if (window.wsVoice && wsVoice.reconnectAudio) {
+      await wsVoice.reconnectAudio();
+      toast('✓ Audio reconnected — try speaking now');
+    } else {
+      toast("Audio's not ready yet — wait a sec and try again");
+    }
+  } catch (e) {
+    toast('Reconnect failed — leave and rejoin the party');
+  } finally {
+    if (btn) setTimeout(() => btn.classList.remove('spinning'), 400);
+  }
 }
 </script>
 <!-- No shared brand strip on the party page — owner: "remove the tab
