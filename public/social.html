@@ -1160,22 +1160,6 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
   box-shadow:0 1px 3px rgba(34,197,94,.15)}
 .wcard-refct-n{font-weight:800}
 .wcard-refct svg{width:12px;height:12px;fill:currentColor;flex-shrink:0}
-/* Language-match % badge — top-left corner (opposite the refs badge).
-   Green for ≥80, amber for 50-79, muted grey for <50. Only rendered
-   when both users have declared speaks + learns. RM-C01 from ROADMAP. */
-.wcard-match{position:absolute;top:8px;left:8px;z-index:2;display:inline-flex;align-items:center;gap:3px;
-  padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.2px;line-height:1.3;
-  box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.wcard-match.hi{color:#15803d;background:#dcfce7;border:1px solid #86efac}
-.wcard-match.mid{color:#92400e;background:#fef3c7;border:1px solid #fde68a}
-.wcard-match.lo{color:#64748b;background:#f1f5f9;border:1px solid #e2e8f0}
-/* Language-match line on the member view hero — subtle, sits below
-   the counts. Same colour bands as the card badge. */
-.mp-match{display:flex;align-items:center;gap:8px;padding:8px 0 0;font-size:13px;color:var(--sub);font-weight:500}
-.mp-match-pct{font-weight:800;padding:2px 8px;border-radius:999px}
-.mp-match.hi .mp-match-pct{color:#15803d;background:#dcfce7}
-.mp-match.mid .mp-match-pct{color:#92400e;background:#fef3c7}
-.mp-match.lo .mp-match-pct{color:#64748b;background:#f1f5f9}
 .wcard{position:relative}
 .mp-2col{display:grid;gap:16px}
 @media(min-width:769px){ .mp-2col{grid-template-columns:1fr 1fr} }
@@ -3180,10 +3164,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
             <button class="fchip on" data-f="all">All</button>
             <button class="fchip" data-f="online">🟢 Online</button>
             <button class="fchip" data-f="nearby">📍 Nearby</button>
-            <!-- RM-C01 companion: sort the wall by language match so
-                 discovery becomes recommendation. Uses the same
-                 langMatchPct helper the card badge does. -->
-            <button class="fchip" data-f="match" title="Sort by language match — best pairings first">🎯 Best match</button>
             <!-- Owner ask 1 Aug 2026: AI users hidden from All / Online
                  / Nearby / New / Kings. They only appear when this chip
                  is active. 'Chat Experts' framing keeps it approachable
@@ -3527,11 +3507,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
             <div><b id="mFollowers">0</b><span>Followers</span></div>
             <div><b id="mFollowing">0</b><span>Following</span></div>
             <div><b id="mRecCount">0</b><span>Recommendations</span></div>
-          </div>
-          <!-- Language-match line — populated by paintMember() -->
-          <div class="mp-match hidden" id="mMatch">
-            <span class="mp-match-pct" id="mMatchPct"></span>
-            <span id="mMatchTxt"></span>
           </div>
           <!-- Owner ask 4 Aug 2026: 'make the chat and follow two
                buttons in the top right after the image and also add
@@ -10633,9 +10608,6 @@ function renderWall(){
   if (wallFilter === 'online')      list = list.filter(m => m.online && !(ME && m.id === ME.id));
   else if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
   else if (wallFilter === 'ai')     list = list.filter(m => m.isAI);
-  // 'match' filter: same base list as 'all' (no AI) but sort re-orders
-  // by language-match desc. Only include people with a non-zero match.
-  else if (wallFilter === 'match')  list = list.filter(m => !m.isAI && ME && ME.id && ME.id !== m.id && langMatchPct(ME, m) > 0);
   // Secondary accent filter — only meaningful when the AI filter is on.
   // wallAccent === 'all' or unset means no accent narrowing.
   if (wallFilter === 'ai' && wallAccent && wallAccent !== 'all') {
@@ -10648,13 +10620,6 @@ function renderWall(){
   // 0 games — without the createdAt fallback the sort would collapse
   // to insertion order and never surface newer people (audit finding).
   list.sort((a, b) => {
-    // In match mode, language-match dominates the sort. Fall back to
-    // the standard win-rate / createdAt chain within the same score.
-    if (wallFilter === 'match') {
-      const am = langMatchPct(ME, a);
-      const bm = langMatchPct(ME, b);
-      if (am !== bm) return bm - am;
-    }
     const aRate = a.games ? (a.wins / a.games) : 0;
     const bRate = b.games ? (b.wins / b.games) : 0;
     if (aRate !== bRate) return bRate - aRate;
@@ -10747,21 +10712,8 @@ function renderWall(){
     const accentChip = (m.isAI && m.accent)
       ? `<div class="wcard-accent" title="Accent / dialect">✦ ${esc(m.accent)}</div>`
       : '';
-    // RM-C01: language-match % badge, top-left corner. Only render for
-    // real users (skip AI), only when ME has speaks/learns declared,
-    // and only when the score is > 0. Colour band = green ≥80, amber
-    // 50-79, grey <50.
-    let matchBadge = '';
-    if (!m.isAI && ME && ME.id && ME.id !== m.id) {
-      const pct = langMatchPct(ME, m);
-      if (pct > 0) {
-        const band = pct >= 80 ? 'hi' : pct >= 50 ? 'mid' : 'lo';
-        matchBadge = `<span class="wcard-match ${band}" title="${pct}% language match">${pct}%</span>`;
-      }
-    }
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
-      ${matchBadge}
       ${cornerBadge}
       <div class="wcard-photo">${photo}</div>
       <div class="wcard-body">
@@ -11028,20 +10980,6 @@ function openMemberObj(m){
   } else {
     mp.innerHTML = '';
     $('mPhotosCard').classList.add('hidden');
-  }
-  // RM-C01: language-match line. Skips guests, AI personas, and self.
-  const mMatchEl = document.getElementById('mMatch');
-  if (mMatchEl) {
-    const canScore = !m.isAI && ME && ME.id && ME.id !== m.id;
-    const pct = canScore ? langMatchPct(ME, m) : 0;
-    if (pct > 0) {
-      const band = pct >= 80 ? 'hi' : pct >= 50 ? 'mid' : 'lo';
-      mMatchEl.className = 'mp-match ' + band;
-      document.getElementById('mMatchPct').textContent = pct + '%';
-      document.getElementById('mMatchTxt').textContent = 'language match';
-    } else {
-      mMatchEl.classList.add('hidden');
-    }
   }
   // Follow button reset, then fill from API.
   $('followBtnLbl').textContent = 'Follow'; $('followBtn').dataset.f = ''; $('followBtn').classList.remove('on');
@@ -11517,30 +11455,6 @@ const langName = c => (langByCode(c) || {}).n || c;
 // accepted. Kept only the code-resolver — the LEVELS/level picker
 // was retired 2 Aug 2026 v7 ('remove the level, so boring').
 const langCode = v => typeof v === 'string' ? v : (v && v.c) || '';
-
-// RM-C01 from PRODUCT_ROADMAP: language-match %. Two-way overlap
-// weighted toward "they teach me". Returns 0-100. Missing data on
-// either side returns 0 so the badge just doesn't render.
-function langMatchPct(me, other) {
-  if (!me || !other) return 0;
-  const meSp = new Set((me.speaks || []).map(langCode).filter(Boolean));
-  const meLn = new Set((me.learns || []).map(langCode).filter(Boolean));
-  const otSp = new Set((other.speaks || []).map(langCode).filter(Boolean));
-  const otLn = new Set((other.learns || []).map(langCode).filter(Boolean));
-  if (!meSp.size && !meLn.size) return 0;
-  if (!otSp.size && !otLn.size) return 0;
-  // How much of what I want to learn they can teach.
-  let theyTeachMe = 0;
-  meLn.forEach(c => { if (otSp.has(c)) theyTeachMe++; });
-  const theyTeachPct = meLn.size ? theyTeachMe / meLn.size : 0;
-  // How much of what they want to learn I can teach.
-  let iTeachThem = 0;
-  otLn.forEach(c => { if (meSp.has(c)) iTeachThem++; });
-  const iTeachPct = otLn.size ? iTeachThem / otLn.size : 0;
-  // Weight 60/40 toward "they teach me". Cap 100.
-  const score = Math.round((theyTeachPct * 60 + iTeachPct * 40));
-  return Math.max(0, Math.min(100, score));
-}
 
 // Suggested interests + goals. Full Speaky-style set — user picks any.
 const INTERESTS = ['Art','Books','Business','Cooking','Culture','Economics','Fashion','Fitness',
