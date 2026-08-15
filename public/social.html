@@ -1746,7 +1746,10 @@ body.authmodal .fab-create{display:none !important}
 .pt-empty .big{font-size:44px;display:block;margin-bottom:12px}
 
 /* Create-party modal */
-.pt-modal{position:fixed;inset:0;background:rgba(15,17,25,.68);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+/* z-index 250 (was 200) so it stacks above .ob-wizard which shares
+   200 — fixes BUG-020 (party modal + wizard collide if signup is
+   somehow interrupted mid-flow). Still below .sesskick (400). */
+.pt-modal{position:fixed;inset:0;background:rgba(15,17,25,.68);z-index:250;display:flex;align-items:center;justify-content:center;padding:16px}
 .pt-msheet{position:relative;background:#fff;border-radius:22px;padding:26px 24px 22px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.32);animation:ptmodal .22s cubic-bezier(.2,1.1,.4,1)}
 /* Big variant used by the party-creation dialog (owner ask 10 Aug
    2026 — 'make it big popup'). Wider, taller, chip grid for flags. */
@@ -2084,6 +2087,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
   color:var(--sub);box-shadow:0 1px 3px rgba(20,30,60,.14);flex-shrink:0}
 .vsStripe .vsAv + .vsAv{margin-left:-12px}
 .vsStripe .vsAv img{width:100%;height:100%;object-fit:cover;filter:blur(4px);transform:scale(1.15)}
+.vsStripe .vsAv-init{display:flex;width:100%;height:100%;align-items:center;justify-content:center;filter:blur(3px);transform:scale(1.1);color:var(--sub);font-size:12px;font-weight:700}
 .vsStripe .vsMore{width:30px;height:30px;border-radius:50%;border:2px solid #fff;
   background:linear-gradient(135deg,#e8506b,#7c5cff);color:#fff;font-size:11px;font-weight:800;
   display:inline-flex;align-items:center;justify-content:center;margin-left:-12px;flex-shrink:0;
@@ -4463,6 +4467,9 @@ async function logout(){
   if (typeof stopAIVoice === 'function') stopAIVoice();
   if (window.__pingT) { clearInterval(window.__pingT); window.__pingT = null; }
   if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+  // BUG-014 fix: clear active-party / active-game hints so the next
+  // account doesn't see the previous user's "Rejoin PARTY-XYZ" pill.
+  try { localStorage.removeItem('wsActiveParty'); localStorage.removeItem('wsActiveGame'); } catch(e){}
   $('vApp').classList.add('hidden');
   $('vAuth').classList.remove('hidden');
   // Re-render the Google Sign-In button — Google's SDK doesn't
@@ -5701,10 +5708,10 @@ async function loadVisitorsStripe(force){
   const txt = document.getElementById('vsStripeTxt');
   if (!el || !txt) return;
   // Guests, logged-out, or brand-new users with no uid yet: never show.
+  // BUG-011 fix: dropped the photo-only guard — a user without a photo
+  // but with a bio still has a publicly-visitable profile, they deserve
+  // to see who visited.
   if (GUEST || !ME || !ME.id) { el.classList.add('hidden'); return; }
-  // Brand-new accounts that haven't finished onboarding won't have a
-  // publicly-visible profile yet, so nobody could have visited them.
-  if (!ME.photo) { el.classList.add('hidden'); return; }
   const now = Date.now();
   let list = __vsCache.list;
   if (force || !list || (now - __vsCache.at) > 60000) {
@@ -5719,11 +5726,15 @@ async function loadVisitorsStripe(force){
   // recorded) fall back to visits in the last 24h so the stripe has a
   // sensible starting number instead of showing every visit ever.
   const cutoff = dismissedAt || (now - 24 * 60 * 60 * 1000);
-  const fresh = list.filter(v => v && typeof v.t === 'number' && v.t > cutoff);
+  // BUG-015 fix: drop rows for deleted accounts (no user object or id).
+  const fresh = list.filter(v => v && typeof v.t === 'number' && v.t > cutoff
+    && v.user && v.user.id);
   if (!fresh.length) { el.classList.add('hidden'); return; }
   const n = fresh.length;
   txt.textContent = n + (n === 1 ? ' person visited your profile' : ' people visited your profile');
   // Blurred overlapping face stack — up to 3 faces + "+N" chip.
+  // BUG-013 fix: initials get the same blur treatment as photos so the
+  // tease pattern holds for photoless visitors.
   const avs = document.getElementById('vsStripeAvs');
   if (avs) {
     const show = fresh.slice(0, 3);
@@ -5734,7 +5745,7 @@ async function loadVisitorsStripe(force){
       const initial = String(u.name || '?').trim().charAt(0).toUpperCase() || '?';
       return photo
         ? '<span class="vsAv"><img src="' + esc(photo) + '" alt="" loading="lazy"></span>'
-        : '<span class="vsAv">' + esc(initial) + '</span>';
+        : '<span class="vsAv"><span class="vsAv-init">' + esc(initial) + '</span></span>';
     }).join('') + (more > 0 ? '<span class="vsMore">+' + more + '</span>' : '');
   }
   el.classList.remove('hidden');
@@ -6727,8 +6738,15 @@ function paintPtFlags(){
     b.className = 'fchip' + (_ptLangs.has(name) ? ' on' : '');
     b.innerHTML = `<span class="fl">${flag}</span> ${name}`;
     b.onclick = () => {
-      if (_ptLangs.has(name)) _ptLangs.delete(name); else _ptLangs.add(name);
-      b.classList.toggle('on');
+      // BUG-006 fix: cap at 6 (server-side cap is 6, no reason to let
+      // the client-side summary line overflow with a longer selection).
+      if (_ptLangs.has(name)) {
+        _ptLangs.delete(name);
+      } else {
+        if (_ptLangs.size >= 6) { toast('6 languages max — remove one first'); return; }
+        _ptLangs.add(name);
+      }
+      b.classList.toggle('on', _ptLangs.has(name));
       updatePtFlagsSummary();
     };
     host.appendChild(b);
@@ -7566,10 +7584,16 @@ async function registerSession() {
   } catch (e) {}
 }
 
+let _lastSessCheckAt = 0;
 async function checkSession() {
   if (GUEST || !SESS_SID || SESS_KICKED) return;
   if (document.hidden) return;                        // don't poll while hidden
   if (inActiveVoice()) return;                        // never disrupt live voice
+  // BUG-018 fix: debounce — fast tab-swap fires visibilitychange each time,
+  // no need to actually hit the endpoint if we just checked <2s ago.
+  const now = Date.now();
+  if (now - _lastSessCheckAt < 2000) return;
+  _lastSessCheckAt = now;
   try {
     const r = await fetch('/api/social/session/check?sid=' + encodeURIComponent(SESS_SID), { cache:'no-store' });
     if (!r.ok) return;
