@@ -1066,22 +1066,24 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 /* Chat + Follow are equal-width columns, "…" is a fixed square.
    Mobile: stack. Desktop: 1fr 1fr auto grid so the two main buttons
    are always the same width. */
-/* Icon+label action row on member profile (owner ask 14 Aug 2026 —
-   'simple icons with one text below, not full buttons'). Three columns,
-   subtle circles, tiny caption underneath. */
-.mp-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 0 4px;width:100%;position:relative}
+/* Icon+label action row on member profile. Owner ask 15 Aug 2026:
+   'same color, close to each other, left aligned'. Inline-flex left-
+   aligned (no full-width stretch), tight gap, one neutral colour for
+   all three so nothing shouts louder than the others. */
+.mp-actions{display:inline-flex;align-items:flex-start;gap:2px;padding:8px 0 4px;position:relative}
 .mp-iact{display:flex;flex-direction:column;align-items:center;gap:6px;background:transparent;border:0;
-  padding:8px 4px;cursor:pointer;border-radius:12px;transition:background .12s,transform .1s;
-  color:var(--ink);font-family:inherit}
+  padding:6px 6px;cursor:pointer;border-radius:12px;transition:background .12s,transform .1s;
+  color:var(--ink);font-family:inherit;min-width:56px}
 .mp-iact:hover{background:#f4f5f7}
 .mp-iact:active{transform:scale(.94)}
-.mp-iact-ic{width:44px;height:44px;border-radius:50%;background:#f2f4f7;display:inline-flex;
+.mp-iact-ic{width:42px;height:42px;border-radius:50%;background:#f2f4f7;display:inline-flex;
   align-items:center;justify-content:center;color:var(--ink);transition:background .14s,color .14s}
-.mp-iact-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;
+.mp-iact-ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;display:block}
 .mp-iact-lbl{font-size:11.5px;font-weight:600;color:var(--sub);line-height:1.2}
-.mp-iact.primary .mp-iact-ic{background:linear-gradient(135deg,#e8506b,#7c5cff);color:#fff}
-.mp-iact.on .mp-iact-ic{background:#22c55e;color:#fff}
+/* Followed state — subtle green tint, doesn't shout. Kept small so
+   the row still reads as three-of-a-kind. */
+.mp-iact.on .mp-iact-ic{background:#dcfce7;color:#15803d}
 .mp-iact.on .mp-iact-lbl{color:#15803d}
 /* Legacy classes kept as thin passthroughs so any older render paths still
    look OK if they surface a .mp-btn button somewhere. */
@@ -3505,7 +3507,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
                from this surface per owner ask; the same actions
                still live on the wall card kebab. -->
           <div class="mp-actions">
-            <button type="button" class="mp-iact primary" onclick="openChatWith(curMember)" aria-label="Chat">
+            <button type="button" class="mp-iact" onclick="openChatWith(curMember)" aria-label="Chat">
               <span class="mp-iact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5A8 8 0 1 1 21 12z"/></svg></span>
               <span class="mp-iact-lbl">Chat</span>
             </button>
