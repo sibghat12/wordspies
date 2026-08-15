@@ -7370,9 +7370,14 @@ async function submitExamPlan(){
     showLearnPlanDetail(newPlan.id);
     toast('✨ Your prep plan is ready!');
   } catch(e) {
-    console.error('[exam-plan]', e);
-    if (err) { err.textContent = 'Couldn\'t build the plan — try again.'; err.classList.remove('hidden'); }
-    toast('Couldn\'t build the plan — try again');
+    console.error('[exam-plan]', e && e.status, e && e.message, e && e.data);
+    // Show the SERVER's error verbatim so 'AI not configured' vs 'Daily
+    // limit reached' vs 'Plan came back malformed' are all diagnosable
+    // from the toast alone. Falls back to generic if server didn't
+    // send an error string.
+    const msg = (e && e.message && e.message !== 'Something went wrong.') ? e.message : 'Couldn\'t build the plan — try again.';
+    if (err) { err.textContent = msg; err.classList.remove('hidden'); }
+    toast(msg);
   } finally {
     if (btn) btn.disabled = false;
     if (lbl) lbl.textContent = '✨ Build my prep plan';
