@@ -990,6 +990,52 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .ln-plans-empty{padding:36px 20px;text-align:center;color:var(--sub)}
 .ln-empty-t{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:18px;color:var(--ink);margin-bottom:4px}
 .ln-empty-s{font-size:13.5px;color:var(--sub);line-height:1.5}
+/* Segmented Languages / Exam tabs (owner ask 15 Aug 2026). Rounded pill
+   container with two buttons; active one gets a white background + shadow.
+   Small, doesn't shout — matches the existing Learn design language. */
+.ln-segbar{display:flex;background:#eef1f5;border-radius:14px;padding:4px;gap:4px;margin:0 auto 20px;max-width:420px}
+.ln-seg{flex:1;background:transparent;border:0;font-family:inherit;font-weight:600;font-size:13.5px;color:var(--sub);padding:10px 14px;border-radius:11px;cursor:pointer;transition:.14s;letter-spacing:-.1px}
+.ln-seg:hover{color:var(--ink)}
+.ln-seg.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(20,30,60,.08)}
+/* Exam-prep surface — small header, chip pickers, resource cards. */
+.ln-exam-head{text-align:center;margin:0 0 18px}
+.ln-exam-head h3{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:22px;letter-spacing:-.3px;color:var(--ink);margin:0 0 4px}
+.ln-exam-head p{font-size:13px;color:var(--sub);margin:0;font-weight:500}
+.ln-exam-card{background:#fff;border:1.5px solid var(--line,#e6e8ec);border-radius:18px;padding:18px 16px;margin:0 0 16px}
+.ln-exam-q{margin:0 0 14px}
+.ln-exam-q:last-child{margin-bottom:0}
+.ln-exam-qlbl{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.ln-exam-qhint{font-size:11.5px;color:var(--faint);font-weight:500;margin-top:6px}
+.ln-exam-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ln-exam-chip{background:#fff;border:1.5px solid var(--line,#e6e8ec);color:var(--ink);padding:9px 14px;border-radius:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;transition:.14s;line-height:1.2}
+.ln-exam-chip:hover{background:#f7f8fa;border-color:#c8ced6}
+.ln-exam-chip.on{background:linear-gradient(135deg,rgba(232,80,107,.10),rgba(124,92,255,.10));border-color:var(--accent,#e8506b);color:var(--accent,#e8506b);box-shadow:0 2px 10px rgba(232,80,107,.14)}
+.ln-exam-date{background:#fff;border:1.5px solid var(--line,#e6e8ec);color:var(--ink);padding:10px 12px;border-radius:12px;font-family:inherit;font-size:13.5px;width:100%;box-sizing:border-box}
+.ln-exam-date:focus{outline:0;border-color:var(--accent,#e8506b)}
+.ln-exam-go{width:100%;background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);color:#fff;border:0;padding:14px 22px;border-radius:14px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:.16s;letter-spacing:-.1px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.ln-exam-go:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 24px rgba(232,80,107,.28)}
+.ln-exam-go:disabled{opacity:.6;cursor:default}
+.ln-exam-spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:lnexamspin .8s linear infinite;display:inline-block}
+@keyframes lnexamspin{to{transform:rotate(360deg)}}
+.ln-exam-div{height:1px;background:var(--line,#e6e8ec);margin:22px 0}
+.ln-exam-sec-t{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:16px;color:var(--ink);margin:0 0 10px}
+.ln-exam-sec-s{font-size:12.5px;color:var(--sub);margin:0 0 12px;font-weight:500}
+.ln-exam-res{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.ln-exam-res{grid-template-columns:1fr}}
+.ln-exam-rescard{display:block;background:#fff;border:1.5px solid var(--line,#e6e8ec);border-radius:14px;padding:12px 14px;text-decoration:none;color:var(--ink);transition:.14s;font-family:inherit}
+.ln-exam-rescard:hover{transform:translateY(-1px);border-color:var(--accent,#e8506b);box-shadow:0 6px 16px rgba(20,30,60,.08)}
+.ln-exam-rest{font-weight:700;font-size:13.5px;color:var(--ink);margin:0 0 3px;line-height:1.3}
+.ln-exam-resd{font-size:11.5px;color:var(--sub);font-weight:500;line-height:1.4}
+.ln-exam-book{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.ln-exam-book{grid-template-columns:1fr}}
+.ln-exam-bookbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(180deg,#fafbff,#fff);border:1.5px solid var(--line,#e6e8ec);border-radius:16px;padding:16px 14px;text-decoration:none;color:var(--ink);font-family:inherit;transition:.14s;gap:4px}
+.ln-exam-bookbtn:hover{transform:translateY(-1px);border-color:var(--accent,#e8506b);box-shadow:0 8px 20px rgba(20,30,60,.10)}
+.ln-exam-bookttl{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:15px;background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.2px}
+.ln-exam-booksub{font-size:11.5px;color:var(--sub);font-weight:600}
+.ln-exam-bookhint{font-size:11.5px;color:var(--faint);text-align:center;margin-top:10px;font-weight:500}
+.ln-exam-err{color:#dc2626;font-size:12.5px;font-weight:600;margin-top:10px;text-align:center}
+/* Exam chip on the plan-grid card (replaces language name for exam plans). */
+.ln-planmini-lang.exam{background:linear-gradient(135deg,#7c5cff,#3f88ff);-webkit-background-clip:text;background-clip:text;color:transparent}
 /* Detail view inside the modal — same visual language as before,
    just wrapped without the outer page chrome. */
 .ln-plans-detail .ln-planhead{background:transparent;border:0;padding:0 0 12px;box-shadow:none;margin-bottom:12px;border-bottom:1px solid var(--line,#e6e8ec)}
@@ -3216,22 +3262,122 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        opens as a modal (form flow benefits from focus trap). -->
   <div id="tabLearn" class="hidden">
     <div class="ln-wrap">
-      <div id="lnPlansGridView">
-        <!-- Gradient hero-CTA. Full size when there are no plans yet;
-             .compact once plans exist so the grid gets the real estate. -->
-        <div class="ln-heroCta" id="lnHeroCta">
-          <div class="ln-heroCta-emoji">✨</div>
-          <h2 id="lnHeroCtaTitle">Create your customized learning plan</h2>
-          <p id="lnHeroCtaSub">Personalized AI-built lessons in seconds. Free forever.</p>
-          <button class="ln-heroCta-btn" type="button" id="lnNewPlanBtn" onclick="openLearnSetup()">＋ Start your plan</button>
-        </div>
-        <div class="ln-plans-grid" id="lnPlansGrid"></div>
-        <div class="ln-plans-empty hidden" id="lnPlansEmpty"></div>
+      <!-- Segmented Languages / Exam tabs (owner ask 15 Aug 2026).
+           Languages = existing hero + plans grid + detail view.
+           IELTS / TOEFL = new exam-prep surface. -->
+      <div class="ln-segbar" role="tablist" aria-label="Learn mode">
+        <button type="button" class="ln-seg on" id="lnSegLanguages" role="tab" aria-selected="true" onclick="showLearnMode('languages')">Languages</button>
+        <button type="button" class="ln-seg" id="lnSegExam" role="tab" aria-selected="false" onclick="showLearnMode('exam')">IELTS / TOEFL</button>
       </div>
 
-      <div id="lnPlansDetailView" class="hidden">
-        <button class="ln-plans-back" type="button" onclick="showLearnPlansGrid()">← My plans</button>
-        <div id="lnPlansDetailBody"></div>
+      <div id="lnLanguagesView">
+        <div id="lnPlansGridView">
+          <!-- Gradient hero-CTA. Full size when there are no plans yet;
+               .compact once plans exist so the grid gets the real estate. -->
+          <div class="ln-heroCta" id="lnHeroCta">
+            <div class="ln-heroCta-emoji">✨</div>
+            <h2 id="lnHeroCtaTitle">Create your customized learning plan</h2>
+            <p id="lnHeroCtaSub">Personalized AI-built lessons in seconds. Free forever.</p>
+            <button class="ln-heroCta-btn" type="button" id="lnNewPlanBtn" onclick="openLearnSetup()">＋ Start your plan</button>
+          </div>
+          <div class="ln-plans-grid" id="lnPlansGrid"></div>
+          <div class="ln-plans-empty hidden" id="lnPlansEmpty"></div>
+        </div>
+
+        <div id="lnPlansDetailView" class="hidden">
+          <button class="ln-plans-back" type="button" onclick="showLearnPlansGrid()">← My plans</button>
+          <div id="lnPlansDetailBody"></div>
+        </div>
+      </div>
+
+      <!-- Exam-prep view. Chips + native date + resources + booking links.
+           Renders static resource links (no fetch). Build-plan button POSTs
+           to /api/social/learn/exam-plan; on success the plan is pushed
+           into LN_PLANS and its detail is opened under the Languages tab
+           (which is where the shared detail view lives). -->
+      <div id="lnExamView" class="hidden">
+        <div class="ln-exam-head">
+          <h3>Prepare for your English exam</h3>
+          <p>IELTS &amp; TOEFL — build a personalised prep plan in seconds.</p>
+        </div>
+        <div class="ln-exam-card">
+          <div class="ln-exam-q">
+            <div class="ln-exam-qlbl">Which exam?</div>
+            <div class="ln-exam-chips" data-lnex-q="exam">
+              <button type="button" class="ln-exam-chip on" data-v="IELTS-Academic">IELTS Academic</button>
+              <button type="button" class="ln-exam-chip" data-v="IELTS-General">IELTS General</button>
+              <button type="button" class="ln-exam-chip" data-v="TOEFL">TOEFL iBT</button>
+            </div>
+          </div>
+          <div class="ln-exam-q">
+            <div class="ln-exam-qlbl">Target band / score</div>
+            <div class="ln-exam-chips" id="lnExamBandChips" data-lnex-q="band"></div>
+          </div>
+          <div class="ln-exam-q">
+            <div class="ln-exam-qlbl">Target test date</div>
+            <input type="date" class="ln-exam-date" id="lnExamDate" />
+            <div class="ln-exam-qhint">Leave blank if unsure.</div>
+          </div>
+          <div class="ln-exam-q">
+            <div class="ln-exam-qlbl">Study time per day</div>
+            <div class="ln-exam-chips" data-lnex-q="mpd">
+              <button type="button" class="ln-exam-chip" data-v="15">15 min</button>
+              <button type="button" class="ln-exam-chip on" data-v="30">30 min</button>
+              <button type="button" class="ln-exam-chip" data-v="60">1 hour</button>
+            </div>
+          </div>
+          <button type="button" class="ln-exam-go" id="lnExamGo" onclick="submitExamPlan()">
+            <span id="lnExamGoLbl">✨ Build my prep plan</span>
+          </button>
+          <div class="ln-exam-err hidden" id="lnExamErr"></div>
+        </div>
+
+        <div class="ln-exam-div"></div>
+
+        <div>
+          <div class="ln-exam-sec-t">Curated free resources</div>
+          <div class="ln-exam-sec-s">Hand-picked from the exam boards themselves and the best test-prep publishers.</div>
+          <div class="ln-exam-res">
+            <a class="ln-exam-rescard" href="https://learnenglish.britishcouncil.org/" target="_blank" rel="noopener">
+              <div class="ln-exam-rest">British Council LearnEnglish</div>
+              <div class="ln-exam-resd">All four skills — reading, writing, listening, speaking.</div>
+            </a>
+            <a class="ln-exam-rescard" href="https://takeielts.britishcouncil.org/prepare-test/free-ielts-practice-tests" target="_blank" rel="noopener">
+              <div class="ln-exam-rest">British Council IELTS Prep</div>
+              <div class="ln-exam-resd">Free IELTS practice tests from the test makers.</div>
+            </a>
+            <a class="ln-exam-rescard" href="https://www.cambridgeenglish.org/exams-and-tests/ielts/practice-tests/" target="_blank" rel="noopener">
+              <div class="ln-exam-rest">Cambridge Free Test Practice</div>
+              <div class="ln-exam-resd">Sample papers and interactive tasks from Cambridge.</div>
+            </a>
+            <a class="ln-exam-rescard" href="https://www.kaptest.com/toefl/free/free-toefl-practice-questions" target="_blank" rel="noopener">
+              <div class="ln-exam-rest">Kaplan TOEFL Free Practice</div>
+              <div class="ln-exam-resd">Free TOEFL practice questions by section.</div>
+            </a>
+            <a class="ln-exam-rescard" href="https://magoosh.com/toefl/free-toefl-practice-test/" target="_blank" rel="noopener">
+              <div class="ln-exam-rest">Magoosh Free TOEFL Videos</div>
+              <div class="ln-exam-resd">Free TOEFL video lessons + practice test.</div>
+            </a>
+          </div>
+        </div>
+
+        <div class="ln-exam-div"></div>
+
+        <div>
+          <div class="ln-exam-sec-t">Test dates &amp; booking</div>
+          <div class="ln-exam-sec-s">Find test centres and dates near you.</div>
+          <div class="ln-exam-book">
+            <a class="ln-exam-bookbtn" href="https://www.britishcouncil.org/exam/ielts/take/dates-fees" target="_blank" rel="noopener">
+              <div class="ln-exam-bookttl">IELTS test dates</div>
+              <div class="ln-exam-booksub">British Council · book online</div>
+            </a>
+            <a class="ln-exam-bookbtn" href="https://www.ets.org/toefl/test-takers/ibt/register.html" target="_blank" rel="noopener">
+              <div class="ln-exam-bookttl">TOEFL test dates</div>
+              <div class="ln-exam-booksub">ETS · book online</div>
+            </a>
+          </div>
+          <div class="ln-exam-bookhint">Real dates + booking on the official sites. Confirm at your test centre.</div>
+        </div>
       </div>
 
       <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -6953,9 +7099,17 @@ function planMiniHtml(plan){
   const pct = total ? Math.round((done / total) * 100) : 0;
   const dash = 106.8;
   const offset = dash * (1 - (total ? done / total : 0));
+  // Exam plans (kind === 'exam') show IELTS or TOEFL chip instead of
+  // the language name. Owner ask 15 Aug 2026.
+  const isExam = plan && plan.kind === 'exam';
+  const examLbl = isExam
+    ? (String(plan.exam || '').toUpperCase().indexOf('TOEFL') >= 0 ? 'TOEFL' : 'IELTS')
+    : '';
+  const topLabel = isExam ? examLbl : (plan.language || '—');
+  const topCls = isExam ? 'ln-planmini-lang exam' : 'ln-planmini-lang';
   return '<button type="button" class="ln-planmini" onclick="showLearnPlanDetail(\'' + esc(plan.id) + '\')">' +
     '<div class="ln-planmini-top">' +
-      '<div class="ln-planmini-lang">' + esc(plan.language || '—') + '</div>' +
+      '<div class="' + topCls + '">' + esc(topLabel) + '</div>' +
       '<div class="ln-planmini-ring">' +
         '<svg viewBox="0 0 40 40" width="44" height="44">' +
           '<circle cx="20" cy="20" r="17" fill="none" stroke="#e6e8ec" stroke-width="4"/>' +
@@ -7122,6 +7276,106 @@ async function submitLearnSetup(){
     if (err) { err.textContent = e.message || 'Could not build the plan — try again.'; err.classList.remove('hidden'); }
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '✨ Build my plan'; }
+  }
+}
+// ── Exam-prep surface (owner ask 15 Aug 2026) ────────────────────
+// Segmented Languages / IELTS-TOEFL tabs at the top of #tabLearn.
+// The "IELTS / TOEFL" tab is gated behind requireLogin — guest users
+// see the auth modal instead of the exam form.
+const LN_EXAM = { exam:'IELTS-Academic', band:'6.5', mpd:30 };
+// Server accepts exactly these three exam ids (see /learn/exam-plan in social.js).
+const LN_EXAM_BANDS = {
+  'IELTS-Academic': ['5.5','6.0','6.5','7.0','7.5','8.0'],
+  'IELTS-General':  ['5.5','6.0','6.5','7.0','7.5','8.0'],
+  'TOEFL':          ['80','90','100','110']
+};
+function showLearnMode(mode){
+  const langBtn = document.getElementById('lnSegLanguages');
+  const examBtn = document.getElementById('lnSegExam');
+  const langView = document.getElementById('lnLanguagesView');
+  const examView = document.getElementById('lnExamView');
+  if (mode === 'exam') {
+    if (GUEST) { requireLogin('👋 Log in to build your exam-prep plan'); return; }
+    if (langBtn) { langBtn.classList.remove('on'); langBtn.setAttribute('aria-selected','false'); }
+    if (examBtn) { examBtn.classList.add('on'); examBtn.setAttribute('aria-selected','true'); }
+    if (langView) langView.classList.add('hidden');
+    if (examView) examView.classList.remove('hidden');
+    paintExamBands();
+    wireExamChips();
+  } else {
+    if (examBtn) { examBtn.classList.remove('on'); examBtn.setAttribute('aria-selected','false'); }
+    if (langBtn) { langBtn.classList.add('on'); langBtn.setAttribute('aria-selected','true'); }
+    if (examView) examView.classList.add('hidden');
+    if (langView) langView.classList.remove('hidden');
+  }
+}
+function paintExamBands(){
+  const wrap = document.getElementById('lnExamBandChips');
+  if (!wrap) return;
+  const bands = LN_EXAM_BANDS[LN_EXAM.exam] || [];
+  // Keep the current pick if it's still valid, otherwise default to the
+  // middle option (a friendly, realistic target).
+  if (bands.indexOf(String(LN_EXAM.band)) < 0) {
+    LN_EXAM.band = bands[Math.floor(bands.length / 2)] || bands[0] || '';
+  }
+  wrap.innerHTML = bands.map(b =>
+    '<button type="button" class="ln-exam-chip' + (String(LN_EXAM.band) === b ? ' on' : '') + '" data-v="' + esc(b) + '">' + esc(b) + '</button>'
+  ).join('');
+  wireExamChips();
+}
+function wireExamChips(){
+  document.querySelectorAll('#lnExamView .ln-exam-chips').forEach(row => {
+    const key = row.dataset.lnexQ;
+    row.querySelectorAll('.ln-exam-chip').forEach(btn => {
+      btn.onclick = ev => {
+        ev.stopPropagation();
+        row.querySelectorAll('.ln-exam-chip').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        const v = btn.dataset.v;
+        if (key === 'mpd') LN_EXAM.mpd = Number(v) || 30;
+        else if (key === 'exam') { LN_EXAM.exam = v; paintExamBands(); }
+        else if (key === 'band') LN_EXAM.band = v;
+      };
+    });
+  });
+}
+async function submitExamPlan(){
+  if (GUEST) { requireLogin('👋 Log in to build your exam-prep plan'); return; }
+  const btn = document.getElementById('lnExamGo');
+  const lbl = document.getElementById('lnExamGoLbl');
+  const err = document.getElementById('lnExamErr');
+  if (err) err.classList.add('hidden');
+  if (btn) btn.disabled = true;
+  if (lbl) lbl.innerHTML = '<span class="ln-exam-spin" aria-hidden="true"></span> Building your plan…';
+  const dateEl = document.getElementById('lnExamDate');
+  const targetDate = dateEl && dateEl.value ? dateEl.value : '';
+  try {
+    const j = await api('/learn/exam-plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        exam: LN_EXAM.exam,
+        targetBand: LN_EXAM.band,
+        targetDate: targetDate,
+        minutesPerDay: LN_EXAM.mpd
+      })
+    });
+    const newPlan = j && j.plan;
+    if (!newPlan) throw new Error('No plan returned.');
+    LN_PLANS.push(newPlan);
+    updateAiMethodSubtitle();
+    // Bounce back to the Languages tab (that's where the shared detail
+    // view lives) and open the freshly built plan.
+    showLearnMode('languages');
+    showLearnPlanDetail(newPlan.id);
+    toast('✨ Your prep plan is ready!');
+  } catch(e) {
+    console.error('[exam-plan]', e);
+    if (err) { err.textContent = 'Couldn\'t build the plan — try again.'; err.classList.remove('hidden'); }
+    toast('Couldn\'t build the plan — try again');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = '✨ Build my prep plan';
   }
 }
 async function deleteLearnPlan(planId){
