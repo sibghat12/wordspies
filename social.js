@@ -1256,7 +1256,13 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const u = await userFromReq(req);
       if (!u) return res.json({ current: true, loggedOut: true });
       const mine = String(req.query.sid || '');
-      if (!/^[a-f0-9]{32}$/.test(mine)) return res.json({ current: true });   // no sid → don't kick
+      if (!/^[a-f0-9]{32}$/.test(mine)) {
+        // BUG-019 fix: log malformed sid so a "client stuck" report can be
+        // traced back to a broken sid rather than a silent 200. Truncate uid
+        // in the log so we don't leak full ids at info level.
+        if (mine) console.warn('[session/check] malformed sid from uid=' + String(u.id).slice(0,8));
+        return res.json({ current: true });   // no sid → don't kick
+      }
       const stored = await db.get(ACTIVE_SID_KEY(u.id));
       // If Redis has forgotten (TTL expired, restart on in-memory), consider
       // the caller current rather than kicking them out on our own housekeeping.
@@ -3202,6 +3208,14 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       try {
         const cached = await fs.promises.readFile(cachePath);
         try { const t = new Date(); fs.promises.utimes(cachePath, t, t).catch(()=>{}); } catch(_){}
+        // BUG-016 fix: log cache hits (no cost) so daily rollup can
+        // report hit-rate — the whole cost story depends on it.
+        try {
+          const day = new Date().toISOString().slice(0, 10);
+          const entry = { kind: 'tts-hit', u: me.id, chars: text.length, t: Date.now() };
+          db.rpush('soc:ai-usage:' + day, JSON.stringify(entry)).catch(()=>{});
+          db.ltrim('soc:ai-usage:' + day, -2000, -1).catch(()=>{});
+        } catch (e) {}
         return sendCached(cached, true);
       } catch (e) { /* miss, fall through */ }
 

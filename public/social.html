@@ -7133,7 +7133,9 @@ async function deleteLearnPlan(planId){
 }
 function openLearnLesson(planId, idx){
   const plan = LN_PLANS.find(p => p && p.id === planId);
-  if (!plan || !plan.lessons[idx]) return;
+  // BUG-024 fix: guard plan.lessons array too — old data or an unlucky
+  // Haiku response could leave a plan with lessons: undefined.
+  if (!plan || !Array.isArray(plan.lessons) || !plan.lessons[idx]) return;
   LN_PLAN = plan;              // remember which plan owns this lesson
   LN_ACTIVE_PLAN_ID = planId;
   LN_LESSON_IDX = idx;
