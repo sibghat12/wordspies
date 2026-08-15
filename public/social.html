@@ -1041,6 +1041,34 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .ln-plans-detail .ln-planhead{background:transparent;border:0;padding:0 0 12px;box-shadow:none;margin-bottom:12px;border-bottom:1px solid var(--line,#e6e8ec)}
 .ln-plans-detail .ln-plandel{background:transparent;border:0;color:var(--faint);font-family:inherit;font-weight:500;font-size:12.5px;cursor:pointer;padding:10px 8px;margin-top:14px;transition:.14s;display:block;margin-left:auto}
 .ln-plans-detail .ln-plandel:hover{color:#dc2626}
+/* --- Beautiful plan detail (owner ask 15 Aug 2026: 'amazing design,
+   view only in the site/app, no download') ------------------------- */
+.ln-detail-hero{position:relative;overflow:hidden;border-radius:22px;padding:26px 24px 22px;margin:0 0 22px;
+  background:radial-gradient(circle at 15% 15%, rgba(255,255,255,.20), transparent 55%),
+             linear-gradient(135deg,#e8506b 0%,#a04ee0 55%,#5a7bff 100%);
+  color:#fff;box-shadow:0 18px 40px -18px rgba(126,71,232,.5)}
+.ln-detail-hero::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 90% 110%, rgba(255,255,255,.18), transparent 45%)}
+.ln-detail-hero-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:26px;letter-spacing:-.4px;line-height:1.1;color:#fff;margin:0 0 6px;position:relative;z-index:1}
+.ln-detail-hero-title span{color:#fff;background:none;-webkit-background-clip:initial;background-clip:initial;font-weight:800}
+.ln-detail-hero-meta{font-size:13px;font-weight:500;color:rgba(255,255,255,.85);position:relative;z-index:1}
+.ln-detail-hero-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;position:relative;z-index:1}
+.ln-detail-hero-chip{background:rgba(255,255,255,.18);color:#fff;padding:4px 10px;border-radius:99px;font-size:11.5px;font-weight:700;letter-spacing:.2px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ln-detail-progress{display:flex;align-items:center;gap:16px;margin-top:18px;background:rgba(255,255,255,.14);border-radius:14px;padding:12px 14px;position:relative;z-index:1}
+.ln-detail-progress-ring{position:relative;width:56px;height:56px;flex-shrink:0}
+.ln-detail-progress-ring svg{transform:rotate(-90deg)}
+.ln-detail-progress-ring .ring-bg{stroke:rgba(255,255,255,.25)}
+.ln-detail-progress-ring .ring-fg{stroke:#fff;transition:stroke-dashoffset .5s ease}
+.ln-detail-progress-ring .ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Inter',sans-serif;font-weight:800;font-size:14px;color:#fff}
+.ln-detail-progress-txt{min-width:0;flex:1}
+.ln-detail-progress-txt b{display:block;font-size:16px;font-weight:800;color:#fff;font-family:'Fredoka','Inter',sans-serif}
+.ln-detail-progress-txt span{display:block;font-size:12px;color:rgba(255,255,255,.85);font-weight:500;margin-top:2px}
+/* Lesson list gets a subtle section label + "Next up" pill on the
+   first undone lesson so the reader always knows where to click next. */
+.ln-lessons-label{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--faint);margin:0 0 10px 6px}
+.ln-lcard.next{border-left-color:#7c5cff;box-shadow:0 4px 14px rgba(124,92,255,.14)}
+.ln-lcard-next{background:linear-gradient(135deg,#7c5cff,#5a7bff);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:3px 8px;border-radius:99px;text-transform:uppercase;flex-shrink:0}
+.ln-lcard.done .ln-lcard-next{display:none}
 /* Hero band: extend to full viewport width on desktop even though
    tabMember lives inside .wrap (max-width 1400px). The negative-margin
    trick breaks the child out to the viewport edges — Speaky's exact
@@ -7127,35 +7155,59 @@ function planMiniHtml(plan){
 function planDetailHtml(plan){
   const total = (plan.lessons || []).length;
   const done = (plan.lessons || []).filter(l => l.done).length;
-  const pct = total ? (done / total) : 0;
-  const dash = 106.8;
-  const offset = dash * (1 - pct);
-  const lessonsHtml = (plan.lessons || []).map((l, i) =>
-    '<button type="button" class="ln-lcard' + (l.done ? ' done' : '') + '" onclick="openLearnLesson(\'' + esc(plan.id) + '\',' + i + ')">' +
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const circumference = 2 * Math.PI * 22; // r=22 for the bigger ring
+  const offset = circumference * (1 - (total ? done / total : 0));
+  const nextIdx = (plan.lessons || []).findIndex(l => !l.done);
+  const lessonsHtml = (plan.lessons || []).map((l, i) => {
+    const isNext = i === nextIdx;
+    return '<button type="button" class="ln-lcard' + (l.done ? ' done' : '') + (isNext ? ' next' : '') + '" onclick="openLearnLesson(\'' + esc(plan.id) + '\',' + i + ')">' +
       '<div class="ln-lcard-n">' + (l.done ? '✓' : String(i + 1)) + '</div>' +
       '<div class="ln-lcard-tt">' +
         '<div class="ln-lcard-title">' + esc(l.title || ('Lesson ' + (i + 1))) + '</div>' +
         '<div class="ln-lcard-focus">' + esc(l.focus || '') + '</div>' +
       '</div>' +
+      (isNext ? '<span class="ln-lcard-next">Next up</span>' : '') +
       '<svg class="ln-lcard-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' +
-    '</button>'
-  ).join('');
+    '</button>';
+  }).join('');
+  // Chips row on the hero — different set for exam plans vs language plans.
+  let chips = '';
+  if (plan.kind === 'exam') {
+    chips = '<span class="ln-detail-hero-chip">' + esc(plan.exam ? plan.exam.replace('-', ' ') : 'Exam') + '</span>' +
+            '<span class="ln-detail-hero-chip">' + esc(plan.level || '—') + '</span>' +
+            (plan.weeksUntil ? '<span class="ln-detail-hero-chip">' + esc(String(plan.weeksUntil)) + ' weeks left</span>' : '') +
+            (plan.targetDate ? '<span class="ln-detail-hero-chip">Test: ' + esc(plan.targetDate) + '</span>' : '') +
+            '<span class="ln-detail-hero-chip">' + esc(String(plan.minutesPerDay || 30)) + ' min/day</span>';
+  } else {
+    chips = '<span class="ln-detail-hero-chip">' + esc(plan.level || '—') + '</span>' +
+            '<span class="ln-detail-hero-chip">' + esc(plan.goal || '—') + '</span>' +
+            '<span class="ln-detail-hero-chip">' + esc(String(plan.minutesPerDay || 10)) + ' min/day</span>';
+  }
+  const heroTitle = plan.kind === 'exam'
+    ? 'Preparing <span>' + esc(plan.exam ? plan.exam.replace('-', ' ') : 'exam') + '</span>'
+    : 'Learning <span>' + esc(plan.language || '—') + '</span>';
+  const progressWord = plan.kind === 'exam' ? 'drills' : 'lessons';
   return '<div class="ln-plans-detail">' +
-    '<div class="ln-planhead">' +
-      '<div class="ln-planhead-l">' +
-        '<div class="ln-planhead-title">Learning <span>' + esc(plan.language || '—') + '</span></div>' +
-        '<div class="ln-planhead-meta">' + esc(plan.level || '—') + ' · ' + esc(plan.goal || '—') + ' · ' + esc(String(plan.minutesPerDay || 10)) + ' min/day</div>' +
-      '</div>' +
-      '<div class="ln-planhead-r">' +
-        '<div class="ln-progress-ring">' +
-          '<svg viewBox="0 0 40 40" width="52" height="52">' +
-            '<circle cx="20" cy="20" r="17" fill="none" stroke="#e6e8ec" stroke-width="4"/>' +
-            '<circle cx="20" cy="20" r="17" fill="none" stroke="url(#lnGrad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="' + offset + '" transform="rotate(-90 20 20)"/>' +
+    '<div class="ln-detail-hero">' +
+      '<div class="ln-detail-hero-title">' + heroTitle + '</div>' +
+      '<div class="ln-detail-hero-meta">Your personalised plan · tap a lesson to open</div>' +
+      '<div class="ln-detail-hero-chips">' + chips + '</div>' +
+      '<div class="ln-detail-progress">' +
+        '<div class="ln-detail-progress-ring">' +
+          '<svg viewBox="0 0 50 50" width="56" height="56">' +
+            '<circle class="ring-bg" cx="25" cy="25" r="22" fill="none" stroke-width="5"/>' +
+            '<circle class="ring-fg" cx="25" cy="25" r="22" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + circumference.toFixed(2) + '" stroke-dashoffset="' + offset.toFixed(2) + '"/>' +
           '</svg>' +
-          '<span class="ln-progress-txt">' + done + '/' + total + '</span>' +
+          '<span class="ring-pct">' + pct + '%</span>' +
+        '</div>' +
+        '<div class="ln-detail-progress-txt">' +
+          '<b>' + done + ' of ' + total + ' ' + progressWord + ' done</b>' +
+          '<span>' + (done === total ? 'You finished this plan 🎉' : (nextIdx >= 0 ? 'Up next: ' + esc((plan.lessons[nextIdx] || {}).title || 'Lesson ' + (nextIdx + 1)) : 'Ready to start')) + '</span>' +
         '</div>' +
       '</div>' +
     '</div>' +
+    '<div class="ln-lessons-label">Lessons</div>' +
     '<div class="ln-lessons">' + lessonsHtml + '</div>' +
     '<button type="button" class="ln-plandel" onclick="deleteLearnPlan(\'' + esc(plan.id) + '\')">🗑 Delete this plan</button>' +
   '</div>';
