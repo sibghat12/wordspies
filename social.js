@@ -220,7 +220,39 @@ function mount(app, redis) {
     // pass. See /refer/* endpoints and creditReferral() below.
     refCode: u.refCode || null,
     founderUntil: u.founderUntil || null,
+    // RM-A03 streak (in-app only, no push job yet). See bumpStreak() below.
+    streak: (u.streak && typeof u.streak === 'object') ? {
+      count: u.streak.count || 0,
+      best: u.streak.best || 0,
+      lastDay: u.streak.lastDay || null
+    } : { count: 0, best: 0, lastDay: null },
     ...marks(u) });
+
+  // ---- streak counter (RM-A03) ------------------------------------
+  // Fire-and-forget: bumpStreak(uid) on any qualifying action (wall
+  // post, DM send, lesson-done, AI reply, party join). Counts a max
+  // of one bump per day per user. No push job overnight — that needs
+  // owner review of cadence + copy. In-app celebration only.
+  async function bumpStreak(uid) {
+    if (!uid) return null;
+    try {
+      const raw = await db.get('soc:user:' + uid);
+      if (!raw) return null;
+      let u; try { u = JSON.parse(raw); } catch (e) { return null; }
+      const today = new Date().toISOString().slice(0, 10); // UTC day
+      const s = (u.streak && typeof u.streak === 'object') ? u.streak : { count: 0, best: 0, lastDay: null };
+      if (s.lastDay === today) return { ...s, bumped: false };
+      // Gap detection: yesterday means +1; anything else means reset.
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const nextCount = (s.lastDay === yesterday) ? (s.count + 1) : 1;
+      const nextBest = Math.max(s.best || 0, nextCount);
+      u.streak = { count: nextCount, best: nextBest, lastDay: today };
+      await db.set('soc:user:' + uid, JSON.stringify(u));
+      return { ...u.streak, bumped: true, wasReset: s.lastDay && s.lastDay !== yesterday };
+    } catch (e) { console.warn('[streak] bump failed:', e.message); return null; }
+  }
+  // Exposed so party.js can fire it too (via options.bumpStreak).
+  api.__bumpStreak = bumpStreak;
 
   // ---- simple rate limit (per ip per route bucket) ----
   // WORDSPIES_TEST_MODE bypasses this so /tmp/*.js suites can create
@@ -1811,6 +1843,8 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
           : kind === 'voice' ? '🎤 Sent a voice message'
           : 'Sent you something',
         '/social#chat=' + me.id);
+      // Fire-and-forget streak bump on any sent DM (text/gif/voice/image).
+      bumpStreak(me.id).catch(() => {});
       res.json({ ok: true, msg });
     } catch (e) { console.error('social message:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
   });
@@ -3494,6 +3528,8 @@ Reply as ${bot.name}. No preamble, just the reply.`;
       // Bump counters (25h expiry to survive UTC-day rollover).
       await db.incr(userKey); try { await db.expire(userKey, 90000); } catch (e) {}
       await db.incr(globalKey); try { await db.expire(globalKey, 90000); } catch (e) {}
+      // Streak bump — talking to an AI expert counts as engagement.
+      bumpStreak(me.id).catch(() => {});
 
       // Cost log. Haiku 4.5: $0.80/M input, $4.00/M output.
       const cost = ((usage.input_tokens || 0) * 0.80 + (usage.output_tokens || 0) * 4.00) / 1_000_000;
@@ -3814,6 +3850,8 @@ Do NOT add quotes, preambles, or explanations.`,
       plan.lessons[idx].done = true;
       plan.lessons[idx].doneAt = Date.now();
       await saveUserPlans(me.id, plans);
+      // Streak bump — a completed lesson is a strong signal.
+      bumpStreak(me.id).catch(() => {});
       res.json({ plan });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });

@@ -2749,6 +2749,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    row entry, not a shout). Small, gold, sits with the pin/clock/handle. */
 .rf-founder-chip{display:inline-flex;align-items:center;gap:5px;background:#fff8e2;border:1px solid #f0d685;
   color:#7a5300;border-radius:99px;padding:3px 9px;font-size:11.5px;font-weight:700;line-height:1.3;margin-left:2px}
+/* RM-A03 streak chip — subtle orange, sits alongside dev/founder chip.
+   Only shown when count ≥ 2. Best-streak subtitle added ≥ 7. */
+.rf-streak-chip{display:inline-flex;align-items:center;gap:5px;background:#fff4e5;border:1px solid #fed7aa;
+  color:#9a3412;border-radius:99px;padding:3px 9px;font-size:11.5px;font-weight:700;line-height:1.3;margin-left:2px}
 /* Developer chip (owner-only override) — blue, sits in the same slot. */
 .rf-dev-chip{display:inline-flex;align-items:center;gap:5px;background:#e0f2fe;border:1px solid #7dd3fc;
   color:#0c4a6e;border-radius:99px;padding:3px 9px;font-size:11.5px;font-weight:700;line-height:1.3;margin-left:2px}
@@ -5920,9 +5924,12 @@ function paintMe(){
   }
   const myHandleEl = document.getElementById('myHandle');
   if (myHandleEl) {
+    // Streak chip prepends the handle line (owner + streak reads
+    // together as a "who + what they're doing" strip).
+    const sChip = (typeof streakChipHtml === 'function') ? streakChipHtml(ME) : '';
     const h = handleFor(ME);
     const fchip = (typeof refFounderChipHtml === 'function') ? refFounderChipHtml(ME) : '';
-    myHandleEl.innerHTML = esc(h) + (fchip ? ' ' + fchip : '');
+    myHandleEl.innerHTML = esc(h) + (fchip ? ' ' + fchip : '') + (sChip ? ' ' + sChip : '');
     myHandleEl.parentElement.style.display = h.length > 1 || fchip ? '' : 'none';
   }
   // "+ Add a bio" chip — visible only when the user has no bio yet.
@@ -10932,7 +10939,8 @@ function openMemberObj(m){
   // in the meta row, only if this user has earned the crown).
   const _handleTxt = handleFor(m);
   const _fchip = (typeof refFounderChipHtml === 'function') ? refFounderChipHtml(m) : '';
-  $('mHandle').innerHTML = esc(_handleTxt) + (_fchip ? ' ' + _fchip : '');
+  const _sChip = (typeof streakChipHtml === 'function') ? streakChipHtml(m) : '';
+  $('mHandle').innerHTML = esc(_handleTxt) + (_fchip ? ' ' + _fchip : '') + (_sChip ? ' ' + _sChip : '');
   // Counts default while we fetch the real numbers.
   $('mFollowers').textContent = '—'; $('mFollowing').textContent = '—'; $('mRecCount').textContent = '0';
   // Content cards — each block self-hides when empty.
@@ -11370,6 +11378,16 @@ async function refCreditSignup(){
 const DEV_NAMES = new Set(['sibi', 'sibghat']);
 function isDeveloper(u){
   return !!(u && DEV_NAMES.has(String(u.name || '').trim().toLowerCase()));
+}
+// RM-A03 streak chip. Shown at count ≥ 2 (no flex on a 1-day streak).
+// Best-streak subtitle at count ≥ 7. Returns HTML or ''.
+function streakChipHtml(u) {
+  if (!u || !u.streak || typeof u.streak !== 'object') return '';
+  const c = u.streak.count || 0;
+  const b = u.streak.best || 0;
+  if (c < 2) return '';
+  const tail = (c >= 7 && b > c) ? ` · best ${b}` : '';
+  return `<span class="rf-streak-chip" title="${c}-day streak">🔥 ${c}-day streak${tail}</span>`;
 }
 // Founder chip renderer — small "Founder 👑 · joined N ago" on hero
 // meta rows. Returns HTML or ''. relTime is defined elsewhere in the app.
