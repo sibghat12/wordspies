@@ -3894,6 +3894,182 @@ Do NOT add quotes, preambles, or explanations.`,
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });
 
+  // ═══ Exam prep — IELTS / TOEFL plan generator (owner ask 15 Aug 2026) ══
+  // Stores the exam plan in the SAME soc:learns:<uid> list so the client's
+  // plan-detail renderer works unchanged; the only difference is `kind:'exam'`
+  // plus the exam metadata. Rate-limit 10 generations/day per user (shared
+  // counter with any future paid-cost endpoints we add later — a single
+  // Redis INCR + 24h TTL, cheap and self-healing).
+  const EXAM_KINDS = new Set(['IELTS-Academic','IELTS-General','TOEFL']);
+  const PLAN_GEN_DAILY_MAX = 10;
+  async function planGenBumpAndCheck(uid) {
+    // Returns { ok:true } or { ok:false, remaining:0 } — mirrors the fire-
+    // and-forget pattern used elsewhere so a Redis blip doesn't lock users
+    // out of the feature.
+    try {
+      const day = new Date().toISOString().slice(0, 10);
+      const key = 'soc:plan-gen:' + day + ':' + uid;
+      const n = await db.incr(key);
+      if (n === 1) { try { await db.expire(key, 60 * 60 * 26); } catch (e) {} }
+      if (n > PLAN_GEN_DAILY_MAX) return { ok: false, remaining: 0 };
+      return { ok: true, remaining: PLAN_GEN_DAILY_MAX - n };
+    } catch (e) { return { ok: true, remaining: PLAN_GEN_DAILY_MAX }; }
+  }
+
+  api.post('/learn/exam-plan', async (req, res) => {
+    try {
+      const me = await userFromReq(req);
+      if (!me) return res.status(401).json({ error: 'Please log in.' });
+      const body = req.body || {};
+      const exam = String(body.exam || '').trim();
+      if (!EXAM_KINDS.has(exam)) return res.status(400).json({ error: 'Pick IELTS-Academic, IELTS-General or TOEFL.' });
+      const targetBand = String(body.targetBand || '').trim().slice(0, 8);
+      if (!targetBand) return res.status(400).json({ error: 'Pick a target band/score.' });
+      const targetDate = body.targetDate ? String(body.targetDate).trim().slice(0, 10) : null;
+      const isoDate = targetDate && /^\d{4}-\d{2}-\d{2}$/.test(targetDate) ? targetDate : null;
+      let weeksUntil;
+      if (isoDate) {
+        const ms = new Date(isoDate + 'T00:00:00Z').getTime() - Date.now();
+        weeksUntil = Math.max(1, Math.min(52, Math.round(ms / (7 * 24 * 3600 * 1000))));
+      } else {
+        weeksUntil = Math.max(1, Math.min(52, Number(body.weeksUntil) || 8));
+      }
+      const mpd = Math.max(5, Math.min(180, Number(body.minutesPerDay) || 30));
+      // Cap total plans (shared with language plans — the list is the list).
+      const existingPre = await loadUserPlans(me.id);
+      if (existingPre.length >= LEARN_MAX_PLANS) {
+        return res.status(400).json({ error: 'You have ' + LEARN_MAX_PLANS + ' plans already. Delete an old one first.' });
+      }
+      // Daily generation cap.
+      const gate = await planGenBumpAndCheck(me.id);
+      if (!gate.ok) return res.status(429).json({ error: 'Daily plan-generation limit reached — try again tomorrow.' });
+      const client = getAnthropic();
+      if (!client) return res.status(503).json({ error: 'AI not configured yet.' });
+      const isIELTS = exam.startsWith('IELTS');
+      const skills = isIELTS
+        ? 'Listening, Reading, Writing Task 1, Writing Task 2, Speaking'
+        : 'Listening, Reading, Writing, Speaking, plus one integrated Review lesson';
+      const scoreLabel = isIELTS ? 'band ' + targetBand : 'score ' + targetBand;
+      const system = 'You are an expert IELTS/TOEFL exam-prep tutor. Output ONLY valid JSON, no prose, no markdown fences. Design a 5-lesson focused prep sequence calibrated to the target ' + scoreLabel + '. Each lesson targets ONE exam skill and contains 5 timed practice-drill items appropriate for that skill.';
+      const userMsg = 'Exam: ' + exam.replace('-', ' ') + '\n' +
+        'Target: ' + scoreLabel + '\n' +
+        'Weeks until test: ' + weeksUntil + '\n' +
+        'Study time per day: ' + mpd + ' minutes\n\n' +
+        'Return JSON in EXACTLY this shape:\n' +
+        '{"lessons":[{"title":"2-5 word title","focus":"one sentence: which skill + which sub-skill this drills","phrases":[{"src":"the practice prompt / task instruction the learner reads","dst":"a model / exemplar answer or expected response at the target ' + scoreLabel + '"}]}]}\n\n' +
+        'Rules:\n' +
+        '- Exactly 5 lessons, in this order: ' + skills + '.\n' +
+        '- Exactly 5 practice items per lesson.\n' +
+        '- "src" = the drill prompt (e.g. "Paraphrase this sentence using a passive construction:" or "Describe the chart in one sentence:"). Include the source text/question IN the src when the drill needs it.\n' +
+        '- "dst" = a model/exemplar answer or the marking-criteria hit-points, written at the target ' + scoreLabel + ' level (band-appropriate vocabulary, grammar range, task-response depth).\n' +
+        '- Calibrate difficulty to ' + scoreLabel + ' and pace so a learner with ' + weeksUntil + ' weeks and ' + mpd + ' min/day can realistically finish.\n' +
+        '- Titles under 5 words. No emoji in JSON.';
+      let plan;
+      const startTime = Date.now();
+      let usage = { input_tokens: 0, output_tokens: 0 };
+      try {
+        const result = await client.messages.create({
+          model: process.env.BOT_MODEL || 'claude-haiku-4-5',
+          max_tokens: 2200,
+          temperature: 0.5,
+          system,
+          messages: [{ role:'user', content: userMsg }]
+        });
+        const raw = ((result.content && result.content[0] && result.content[0].text) || '').trim();
+        usage = result.usage || usage;
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        plan = JSON.parse(cleaned);
+      } catch (e) {
+        console.error('[learn] exam-plan generate:', e.message);
+        return res.status(502).json({ error: 'Could not generate the plan — try again in a moment.' });
+      }
+      if (!plan || !Array.isArray(plan.lessons) || plan.lessons.length < 3) {
+        return res.status(502).json({ error: 'The plan came back malformed — try again.' });
+      }
+      const cleanedLessons = plan.lessons.slice(0, 5).map(l => ({
+        title: String((l && l.title) || 'Lesson').slice(0, 60),
+        focus: String((l && l.focus) || '').slice(0, 200),
+        phrases: (Array.isArray(l && l.phrases) ? l.phrases : []).slice(0, 5)
+          .map(p => ({ src: String((p && p.src) || '').slice(0, 400), dst: String((p && p.dst) || '').slice(0, 400) }))
+          .filter(p => p.src && p.dst),
+        done: false, doneAt: null
+      })).filter(l => l.phrases.length > 0);
+      if (cleanedLessons.length < 3) return res.status(502).json({ error: 'Plan too thin — try again.' });
+      const stored = {
+        id: crypto.randomBytes(6).toString('base64url'),
+        kind: 'exam',
+        exam,
+        targetBand,
+        targetDate: isoDate,
+        weeksUntil,
+        minutesPerDay: mpd,
+        language: exam.replace('-', ' ') + ' ' + targetBand,
+        level: (isIELTS ? 'Target band ' : 'Target score ') + targetBand,
+        goal: exam.replace('-', ' '),
+        createdAt: Date.now(),
+        lessons: cleanedLessons
+      };
+      // Re-read to avoid a lost-update race with a parallel /learn/plan post.
+      const existing = await loadUserPlans(me.id);
+      if (existing.length >= LEARN_MAX_PLANS) {
+        return res.status(400).json({ error: 'You have ' + LEARN_MAX_PLANS + ' plans already. Delete an old one first.' });
+      }
+      existing.push(stored);
+      await saveUserPlans(me.id, existing);
+      const cost = ((usage.input_tokens || 0) * 0.80 + (usage.output_tokens || 0) * 4.00) / 1_000_000;
+      const day = new Date().toISOString().slice(0, 10);
+      const logEntry = { u: me.id, kind:'exam-plan', exam, tIn: usage.input_tokens || 0, tOut: usage.output_tokens || 0, $: cost.toFixed(6), ms: Date.now() - startTime, t: Date.now() };
+      try { await db.rpush('soc:ai-usage:' + day, JSON.stringify(logEntry)); await db.ltrim('soc:ai-usage:' + day, -1000, -1); } catch (e) {}
+      res.json({ plan: stored });
+    } catch (e) { console.error('[learn] exam-plan:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
+  // Approximate upcoming IELTS test dates — there's no free public API, so
+  // we hand-compute the 1st and 3rd Saturday of the next couple of months.
+  // The client shows these with a big "approx — confirm on official site"
+  // disclaimer + a booking link. IDP dominates in AU/IN/PH, British Council
+  // everywhere else — a small allow-list is enough.
+  const IDP_COUNTRIES = new Set(['AU','IN','PH','ID','TH','VN','KH','LA','MM','LK','NP','BD','PK']);
+  function nthWeekdayOfMonth(year, monthIdx, weekday, n) {
+    // weekday: 0=Sun..6=Sat. n=1..5 (1st, 2nd, ...).
+    const first = new Date(Date.UTC(year, monthIdx, 1));
+    const offset = (weekday - first.getUTCDay() + 7) % 7;
+    const day = 1 + offset + (n - 1) * 7;
+    const d = new Date(Date.UTC(year, monthIdx, day));
+    if (d.getUTCMonth() !== monthIdx) return null;
+    return d.toISOString().slice(0, 10);
+  }
+  api.get('/learn/exam-dates', (req, res) => {
+    try {
+      const cc = String((req.query && req.query.cc) || '').toUpperCase().slice(0, 2);
+      const now = new Date();
+      const todayIso = now.toISOString().slice(0, 10);
+      const out = [];
+      // Walk forward month by month until we have 4 dates >= today.
+      let y = now.getUTCFullYear();
+      let m = now.getUTCMonth();
+      for (let i = 0; i < 8 && out.length < 4; i++) {
+        for (const nth of [1, 3]) {
+          const iso = nthWeekdayOfMonth(y, m, 6, nth); // Saturday
+          if (iso && iso >= todayIso && out.length < 4) {
+            out.push({ date: iso, kind: 'IELTS-Academic', approx: true });
+          }
+        }
+        m++;
+        if (m > 11) { m = 0; y++; }
+      }
+      const useIDP = IDP_COUNTRIES.has(cc);
+      const bookingUrl = useIDP
+        ? 'https://ielts.idp.com/book'
+        : 'https://www.britishcouncil.org/exam/ielts/take/dates-fees';
+      res.json({
+        dates: out,
+        bookingUrl,
+        disclaimer: 'Approximate — confirm on the official site.'
+      });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+
   // Called by the game server when a match ends: winners/losers are social
   // profile ids. Everyone gets +1 game played; winners also get +1 win.
   async function recordResult(winnerIds, loserIds) {
