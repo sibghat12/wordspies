@@ -134,6 +134,10 @@ function mount(app, io, options = {}) {
         count: r.members.size, cap: r.cap,
         speakerCount: speakers.length,
         listenerCount: listeners.length,
+        // hostUid is the stable, immutable id — clients MUST match on
+        // this for iAmHost, not on hostName (BUG-003 fix: two users
+        // named "Anna" collided under the name-based check).
+        hostUid: r.hostUid || null,
         hostName: (r.members.get(r.hostId) || {}).name || null,
         hostPhoto: (r.members.get(r.hostId) || {}).photo || null,
         speakers: speakers.slice(0, 5).map(s => ({ name: s.name, photo: s.photo || null })),

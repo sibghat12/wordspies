@@ -6128,7 +6128,14 @@ function paintParties(list){
     // becomes icons + counts (mic + headphones).
     const spk = (p.speakerCount != null) ? p.speakerCount : (p.speakers || []).length;
     const lst = (p.listenerCount != null) ? p.listenerCount : Math.max(0, (p.count || 0) - spk);
-    const iAmHost = !!(ME && p.hostName && ME.name && ME.name.toLowerCase() === String(p.hostName).toLowerCase());
+    // BUG-003 fix (15 Aug 2026): match by hostUid, not hostName. Two
+    // users called "Anna" both used to see iAmHost=true on either
+    // Anna's party. hostUid is the immutable server-side identifier.
+    // Fall back to the old name check ONLY when the server hasn't yet
+    // populated hostUid (old build).
+    const iAmHost = !!(ME && ME.id && p.hostUid
+      ? p.hostUid === ME.id
+      : (ME && p.hostName && ME.name && ME.name.toLowerCase() === String(p.hostName).toLowerCase()));
     const hostAv = p.hostPhoto ? `<img src="${esc(p.hostPhoto)}" alt="">` : esc((p.hostName || '?').charAt(0).toUpperCase());
     // Language flags on top (owner ask 11 Aug 2026 v2 — 'show flags
     // in the card, flag 1 flag 2, then title, then subtitle, host
