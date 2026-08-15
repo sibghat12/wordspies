@@ -4257,7 +4257,7 @@ document.addEventListener('visibilitychange', () => {
     if (!$('tabWall').classList.contains('hidden')) loadMembers();
   } catch(e){}
 });
-setInterval(paintLive, 20000);
+window.__paintLiveT = setInterval(paintLive, 20000);
 paintLive();
 
 let toastT = null;
@@ -6695,7 +6695,7 @@ async function pollNotifBadge(){
     _paintNotifBadge(j.unread || 0);
   } catch (e) {}
 }
-setInterval(pollNotifBadge, 45000);
+window.__notifT = setInterval(pollNotifBadge, 45000);
 
 function openCreateParty(){
   if (GUEST) { requireLogin('🎉 Log in to host a party'); return; }
@@ -7269,7 +7269,7 @@ async function closeMyRoom(game, code, btn){
   } catch(e){ toast(e.message); btn.disabled = false; btn.textContent = 'End'; }
 }
 // Background refresh so a room that expires shows up as closed.
-setInterval(() => { if (!document.hidden && ME && !GUEST) refreshMyRooms(); }, 30000);
+window.__myRoomsT = setInterval(() => { if (!document.hidden && ME && !GUEST) refreshMyRooms(); }, 30000);
 
 // Community-wall Live-parties strip. Called from paintLiveGames (which
 // already runs whenever /api/live refreshes — every 5s inside Live tab,
@@ -7464,7 +7464,7 @@ function openCallInApp(code, name){
   $('partyBar') && $('partyBar').classList.add('hidden');
 }
 // Poll for incoming calls every 3s (or piggyback on pingLoop if present).
-setInterval(() => { if (!document.hidden) pollIncomingCall(); }, 3000);
+window.__callPollT = setInterval(() => { if (!document.hidden) pollIncomingCall(); }, 3000);
 pollIncomingCall();
 
 // ---------- Party rejoin pill ----------
@@ -7512,7 +7512,7 @@ function rejoinParty(ev){
   // Let the anchor navigate naturally; nothing else needed.
 }
 refreshPartyBar();
-setInterval(refreshPartyBar, 15000);
+window.__ptBarT = setInterval(refreshPartyBar, 15000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshPartyBar(); });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -7576,16 +7576,27 @@ function showSessionKick() {
   SESS_KICKED = true;
   const el = document.getElementById('sessKick');
   if (el) el.classList.remove('hidden');
-  // Best-effort quiet: some background pollers keep touching the network,
-  // but stopping the session poller is enough to avoid busy loops.
+  // BUG-002 fix (15 Aug 2026): actually stop background pollers on the
+  // losing tab. Previously the overlay hid the UI but pingLoop, chatTimer,
+  // liveTimer, party/notif/call pollers all kept firing — network + battery
+  // drain + notifications kept arriving in background. WhatsApp-Web polite-
+  // kick should mean the tab is truly quiet, not just hidden.
+  const stops = ['__pingT','__ptTimer','__paintLiveT','__ptBarT','__myRoomsT','__notifT','__callPollT'];
+  stops.forEach(k => { try { if (window[k]) { clearInterval(window[k]); window[k] = null; } } catch(e){} });
+  try { if (window.chatTimer) { clearInterval(window.chatTimer); window.chatTimer = null; } } catch(e){}
+  try { if (window.liveTimer) { clearInterval(window.liveTimer); window.liveTimer = null; } } catch(e){}
+  // Disconnect the primary socket so no more push messages arrive on this
+  // tab. Safe: socket auto-reconnects on reclaim via location.reload().
+  try { if (window.socket && window.socket.disconnect) window.socket.disconnect(); } catch(e){}
 }
 
 async function reclaimSession() {
   // User tapped "Use WordSpies here" on the losing tab. Re-register makes
-  // THIS tab the current one; the other tab will notice on its next poll.
+  // THIS tab the current one, then a full reload guarantees every timer /
+  // socket / interval restarts cleanly (rather than trying to re-wire the
+  // dozen pollers by hand).
   await registerSession();
-  const el = document.getElementById('sessKick');
-  if (el) el.classList.add('hidden');
+  location.reload();
 }
 
 // Poll while visible. Also re-check the moment the tab becomes visible
