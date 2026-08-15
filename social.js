@@ -21,9 +21,13 @@ const VOICE_DIR = process.env.SOC_VOICE   || path.join(__dirname, 'social-voice'
 const IMAGE_DIR = process.env.SOC_IMAGES  || path.join(__dirname, 'social-images');
 // TTS cache — every unique {text, lang, voice} hits ElevenLabs at most
 // once site-wide. Files land under /opt/wordspies/tts-cache/<sha>.mp3
-// in prod. Phrases don't expire — cache lives forever until we manually
-// clean up. See /api/social/tts below.
+// in prod. LRU-evicted when total size exceeds TTS_CACHE_MAX_MB (500MB
+// default). Per-user daily unique-text cap gates the write path too.
+// See /api/social/tts below.
 const TTS_CACHE_DIR = process.env.SOC_TTS_CACHE || path.join(__dirname, 'tts-cache');
+const TTS_CACHE_MAX_MB = parseInt(process.env.TTS_CACHE_MAX_MB || '500', 10);
+const TTS_CACHE_MAX_BYTES = TTS_CACHE_MAX_MB * 1024 * 1024;
+const TTS_USER_DAILY_LIMIT = parseInt(process.env.TTS_USER_DAILY_LIMIT || '200', 10);
 // "Continue with Google": set SOC_GOOGLE_CLIENT_ID in the service environment
 // to switch the button on. Without it, email sign-up still works fine.
 const GOOGLE_CLIENT_ID = process.env.SOC_GOOGLE_CLIENT_ID || null;
@@ -3112,6 +3116,46 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   };
   const TTS_DEFAULT_VOICE = '21m00Tcm4TlvDq8ikWAM'; // Rachel
 
+  // Serialised LRU eviction — only one sweep runs at a time. When the
+  // cache dir exceeds TTS_CACHE_MAX_BYTES, deletes oldest-atime files
+  // until under the cap. Fire-and-forget after each write; the cap check
+  // is a cheap readdir on a happy day.
+  let _ttsEvictBusy = false;
+  async function ttsCacheEvict() {
+    if (_ttsEvictBusy) return;
+    _ttsEvictBusy = true;
+    try {
+      const names = await fs.promises.readdir(TTS_CACHE_DIR).catch(() => []);
+      if (!names.length) return;
+      const files = [];
+      let total = 0;
+      for (const name of names) {
+        if (!name.endsWith('.mp3')) continue;
+        try {
+          const st = await fs.promises.stat(path.join(TTS_CACHE_DIR, name));
+          if (!st.isFile()) continue;
+          total += st.size;
+          files.push({ name, size: st.size, atime: st.atimeMs || st.mtimeMs });
+        } catch (e) { /* file vanished mid-sweep, skip */ }
+      }
+      if (total <= TTS_CACHE_MAX_BYTES) return;
+      files.sort((a, b) => a.atime - b.atime);
+      let evicted = 0;
+      let bytesFreed = 0;
+      for (const f of files) {
+        if (total <= TTS_CACHE_MAX_BYTES * 0.9) break;
+        try {
+          await fs.promises.unlink(path.join(TTS_CACHE_DIR, f.name));
+          total -= f.size;
+          bytesFreed += f.size;
+          evicted++;
+        } catch (e) { /* file vanished; keep sweeping */ }
+      }
+      if (evicted) console.log('[tts] evicted', evicted, 'files (' + (bytesFreed >> 20) + ' MB) — cache back under ' + TTS_CACHE_MAX_MB + ' MB');
+    } catch (e) { console.warn('[tts] eviction sweep failed:', e.message); }
+    finally { _ttsEvictBusy = false; }
+  }
+
   api.post('/tts', async (req, res) => {
     try {
       const me = await userFromReq(req);
@@ -3153,11 +3197,25 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         res.send(buf);
       };
 
-      // Cache hit — no API call, no cost.
+      // Cache hit — no API call, no cost. Also bump atime so the LRU
+      // eviction sweep prefers to keep frequently-heard phrases.
       try {
         const cached = await fs.promises.readFile(cachePath);
+        try { const t = new Date(); fs.promises.utimes(cachePath, t, t).catch(()=>{}); } catch(_){}
         return sendCached(cached, true);
       } catch (e) { /* miss, fall through */ }
+
+      // Per-user daily unique-text cap — only counted on cache MISS so
+      // heavy re-listeners aren't penalised. Guards the cost + disk fill.
+      try {
+        const day = new Date().toISOString().slice(0, 10);
+        const uKey = 'soc:tts-user:' + me.id + ':' + day;
+        const uN = parseInt((await db.get(uKey)) || '0', 10);
+        if (uN >= TTS_USER_DAILY_LIMIT) {
+          return res.status(429).json({ error: 'Voice cap reached for today — back tomorrow.' });
+        }
+        await db.incr(uKey); try { await db.expire(uKey, 90000); } catch(e){}
+      } catch (e) { /* if the cap check fails we still serve — degrade open */ }
 
       // Cache miss — call ElevenLabs. Multilingual v2 handles 29
       // languages from one voice; the model auto-detects the language
@@ -3197,9 +3255,12 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
 
       // Persist to disk BEFORE responding so a slow write can't lose
       // the audio if the client bails. Best-effort — if disk is full
-      // we still serve the audio, just skip cache.
+      // we still serve the audio, just skip cache. Fire-and-forget
+      // LRU sweep after every write (cheap when under cap: a single
+      // readdir + stat batch; only pays sort+unlink when over).
       try { await fs.promises.writeFile(cachePath, buf); }
       catch (e) { console.error('[tts] cache write failed:', e.message); }
+      ttsCacheEvict().catch(() => {});
 
       // Cost log — same soc:ai-usage list the Learn plan generator
       // uses, so the daily spend rollup covers everything AI-touched
