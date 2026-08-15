@@ -309,32 +309,47 @@ function mount(app, api, db, opts) {
   // this map is just a fast lookup so we don't scan every request.
   let slugIndex = null;             // Map<slug, id>
   let slugIndexBuiltAt = 0;
+  let slugIndexRebuildLockedUntil = 0; // BUG-009: throttle miss-triggered rebuilds
+  const SLUG_REBUILD_MIN_MS = 60 * 1000; // one rebuild per minute max
+  let _slugBuilding = null;              // in-flight promise so concurrent misses coalesce
   async function buildSlugIndex() {
-    const map = new Map();
-    try {
-      const ids = await db.smembers('soc:clubs');
-      for (const id of ids) {
-        const raw = await db.get('soc:club:' + id);
-        if (!raw) continue;
-        let c = null; try { c = JSON.parse(raw); } catch (e) { continue; }
-        if (!c) continue;
-        const slug = slugForClub(c);
-        if (slug && !map.has(slug)) map.set(slug, c.id);
-        // Always allow the raw id as a lookup key too, so old links
-        // like /clubs/club_english_pronunciation keep resolving.
-        if (c.id && !map.has(c.id)) map.set(c.id, c.id);
-      }
-    } catch (e) { /* return empty map on failure */ }
-    slugIndex = map;
-    slugIndexBuiltAt = Date.now();
-    return map;
+    // Coalesce concurrent rebuilds (100 misses in the same tick shouldn't
+    // fire 100 SMEMBERS scans).
+    if (_slugBuilding) return _slugBuilding;
+    _slugBuilding = (async () => {
+      const map = new Map();
+      try {
+        const ids = await db.smembers('soc:clubs');
+        for (const id of ids) {
+          const raw = await db.get('soc:club:' + id);
+          if (!raw) continue;
+          let c = null; try { c = JSON.parse(raw); } catch (e) { continue; }
+          if (!c) continue;
+          const slug = slugForClub(c);
+          if (slug && !map.has(slug)) map.set(slug, c.id);
+          // Always allow the raw id as a lookup key too, so old links
+          // like /clubs/club_english_pronunciation keep resolving.
+          if (c.id && !map.has(c.id)) map.set(c.id, c.id);
+        }
+      } catch (e) { /* return empty map on failure */ }
+      slugIndex = map;
+      slugIndexBuiltAt = Date.now();
+      slugIndexRebuildLockedUntil = Date.now() + SLUG_REBUILD_MIN_MS;
+      return map;
+    })();
+    try { return await _slugBuilding; }
+    finally { _slugBuilding = null; }
   }
   async function resolveSlug(slugOrId) {
     if (!slugOrId) return null;
     if (!slugIndex) await buildSlugIndex();
     let id = slugIndex.get(slugOrId);
-    if (!id && Date.now() - slugIndexBuiltAt > 5000) {
-      // Miss on a stale index — rebuild once then re-check.
+    // BUG-009 fix: rebuild throttle. Old behaviour rebuilt after every
+    // miss where the index was >5s old — /clubs/<random> in a loop hit
+    // Redis with a full SMEMBERS + N GETs per request. Now we rebuild
+    // at most once per SLUG_REBUILD_MIN_MS (60s) regardless of miss
+    // frequency. Real new clubs still surface within a minute.
+    if (!id && Date.now() > slugIndexRebuildLockedUntil) {
       await buildSlugIndex();
       id = slugIndex.get(slugOrId);
     }
@@ -677,7 +692,28 @@ a{background:#0f7500;color:#fff;padding:12px 22px;border-radius:99px;text-decora
 <a href="/social">Browse all clubs</a>
 </body></html>`;
   }
+  // Per-IP rate limit on the SSR route (BUG-009): defence-in-depth
+  // alongside the rebuild-throttle in resolveSlug. 30 hits/IP/min is
+  // generous for humans but stops a random-slug flood attack.
+  const _clubsRLBuckets = new Map();
+  function clubsSSRLimited(req) {
+    try {
+      const ip = String((req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0]).trim() || 'unknown';
+      const now = Date.now();
+      const key = ip;
+      const b = _clubsRLBuckets.get(key) || { hits: 0, until: now + 60000 };
+      if (now > b.until) { b.hits = 0; b.until = now + 60000; }
+      b.hits++;
+      _clubsRLBuckets.set(key, b);
+      // Trim occasionally to keep the map bounded.
+      if (_clubsRLBuckets.size > 5000) {
+        for (const [k, v] of _clubsRLBuckets) { if (now > v.until) _clubsRLBuckets.delete(k); if (_clubsRLBuckets.size < 3000) break; }
+      }
+      return b.hits > 30;
+    } catch (e) { return false; }
+  }
   app.get('/clubs/:slug', async (req, res) => {
+    if (clubsSSRLimited(req)) { res.status(429).type('text/plain').send('Slow down'); return; }
     const slug = String(req.params.slug || '').toLowerCase().slice(0, 120);
     try {
       const id = await resolveSlug(slug);
