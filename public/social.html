@@ -3180,6 +3180,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
             <button class="fchip on" data-f="all">All</button>
             <button class="fchip" data-f="online">🟢 Online</button>
             <button class="fchip" data-f="nearby">📍 Nearby</button>
+            <!-- RM-C01 companion: sort the wall by language match so
+                 discovery becomes recommendation. Uses the same
+                 langMatchPct helper the card badge does. -->
+            <button class="fchip" data-f="match" title="Sort by language match — best pairings first">🎯 Best match</button>
             <!-- Owner ask 1 Aug 2026: AI users hidden from All / Online
                  / Nearby / New / Kings. They only appear when this chip
                  is active. 'Chat Experts' framing keeps it approachable
@@ -10629,6 +10633,9 @@ function renderWall(){
   if (wallFilter === 'online')      list = list.filter(m => m.online && !(ME && m.id === ME.id));
   else if (wallFilter === 'nearby') list = list.filter(m => ME && ME.cc && m.cc === ME.cc);
   else if (wallFilter === 'ai')     list = list.filter(m => m.isAI);
+  // 'match' filter: same base list as 'all' (no AI) but sort re-orders
+  // by language-match desc. Only include people with a non-zero match.
+  else if (wallFilter === 'match')  list = list.filter(m => !m.isAI && ME && ME.id && ME.id !== m.id && langMatchPct(ME, m) > 0);
   // Secondary accent filter — only meaningful when the AI filter is on.
   // wallAccent === 'all' or unset means no accent narrowing.
   if (wallFilter === 'ai' && wallAccent && wallAccent !== 'all') {
@@ -10641,6 +10648,13 @@ function renderWall(){
   // 0 games — without the createdAt fallback the sort would collapse
   // to insertion order and never surface newer people (audit finding).
   list.sort((a, b) => {
+    // In match mode, language-match dominates the sort. Fall back to
+    // the standard win-rate / createdAt chain within the same score.
+    if (wallFilter === 'match') {
+      const am = langMatchPct(ME, a);
+      const bm = langMatchPct(ME, b);
+      if (am !== bm) return bm - am;
+    }
     const aRate = a.games ? (a.wins / a.games) : 0;
     const bRate = b.games ? (b.wins / b.games) : 0;
     if (aRate !== bRate) return bRate - aRate;
