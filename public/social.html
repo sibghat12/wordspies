@@ -1018,6 +1018,25 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .ln-exam-spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:lnexamspin .8s linear infinite;display:inline-block}
 @keyframes lnexamspin{to{transform:rotate(360deg)}}
 .ln-exam-div{height:1px;background:var(--line,#e6e8ec);margin:22px 0}
+/* Exam-type picker row (IELTS / TOEFL toggle) + per-section cards. */
+.ln-exam-picker-row{display:flex;gap:6px;background:#f2f4f7;padding:5px;border-radius:14px;margin:0 auto 20px;max-width:340px}
+.ln-exam-pick{flex:1;background:transparent;border:0;padding:9px 14px;border-radius:10px;font-family:inherit;font-weight:700;font-size:13.5px;color:var(--sub);cursor:pointer;transition:.14s;letter-spacing:.2px}
+.ln-exam-pick.on{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(20,30,60,.08)}
+.ln-exam-sections{display:flex;flex-direction:column;gap:14px}
+.ln-exam-card2{background:#fff;border:1.5px solid var(--line,#e6e8ec);border-radius:18px;padding:18px 18px 16px;transition:.14s}
+.ln-exam-card2:hover{border-color:#d8dde5;box-shadow:0 4px 16px rgba(20,30,60,.06)}
+.ln-exam-card2-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.ln-exam-card2-icon{font-size:22px;line-height:1}
+.ln-exam-card2-name{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:18px;color:var(--ink);letter-spacing:-.2px}
+.ln-exam-card2-desc{font-size:12.5px;color:var(--sub);margin:0 0 12px;font-weight:500;line-height:1.45}
+.ln-exam-card2-tipsttl{font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--faint);margin:6px 0 6px}
+.ln-exam-card2-tips{margin:0 0 12px;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.ln-exam-card2-tips li{font-size:13px;color:var(--ink);line-height:1.5;font-weight:500;padding-left:18px;position:relative}
+.ln-exam-card2-tips li::before{content:'→';position:absolute;left:0;color:var(--accent,#e8506b);font-weight:800}
+.ln-exam-card2-links{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.ln-exam-card2-link{display:flex;align-items:center;gap:8px;background:#f7f8fa;color:var(--ink);padding:9px 12px;border-radius:10px;text-decoration:none;font-size:12.5px;font-weight:600;transition:.14s;border:1px solid transparent}
+.ln-exam-card2-link:hover{background:#eef1f5;border-color:#d8dde5}
+.ln-exam-card2-link::before{content:'↗';color:var(--sub);font-weight:800;font-size:12px}
 .ln-exam-sec-t{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:16px;color:var(--ink);margin:0 0 10px}
 .ln-exam-sec-s{font-size:12.5px;color:var(--sub);margin:0 0 12px;font-weight:500}
 .ln-exam-res{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -3318,82 +3337,28 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
       </div>
 
-      <!-- Exam-prep view. Chips + native date + resources + booking links.
-           Renders static resource links (no fetch). Build-plan button POSTs
-           to /api/social/learn/exam-plan; on success the plan is pushed
-           into LN_PLANS and its detail is opened under the Languages tab
-           (which is where the shared detail view lives). -->
+      <!-- Exam-prep view — curated section-by-section resource guide.
+           No AI generation (owner ask 15 Aug 2026: 'study IELTS Liz +
+           give resources per section, remove the generate button'). All
+           links point at real, proven free sites (IELTS Liz, British
+           Council, IELTS Simon, ETS, Magoosh). Content is rendered from
+           EXAM_SECTIONS in JS so adding a section is a one-line change. -->
       <div id="lnExamView" class="hidden">
         <div class="ln-exam-head">
-          <h3>Prepare for your English exam</h3>
-          <p>IELTS &amp; TOEFL — build a personalised prep plan in seconds.</p>
+          <h3>IELTS &amp; TOEFL prep</h3>
+          <p>Hand-picked tips + free resources for every exam section.</p>
         </div>
-        <div class="ln-exam-card">
-          <div class="ln-exam-q">
-            <div class="ln-exam-qlbl">Which exam?</div>
-            <div class="ln-exam-chips" data-lnex-q="exam">
-              <button type="button" class="ln-exam-chip on" data-v="IELTS-Academic">IELTS Academic</button>
-              <button type="button" class="ln-exam-chip" data-v="IELTS-General">IELTS General</button>
-              <button type="button" class="ln-exam-chip" data-v="TOEFL">TOEFL iBT</button>
-            </div>
-          </div>
-          <div class="ln-exam-q">
-            <div class="ln-exam-qlbl">Target band / score</div>
-            <div class="ln-exam-chips" id="lnExamBandChips" data-lnex-q="band"></div>
-          </div>
-          <div class="ln-exam-q">
-            <div class="ln-exam-qlbl">Target test date</div>
-            <input type="date" class="ln-exam-date" id="lnExamDate" />
-            <div class="ln-exam-qhint">Leave blank if unsure.</div>
-          </div>
-          <div class="ln-exam-q">
-            <div class="ln-exam-qlbl">Study time per day</div>
-            <div class="ln-exam-chips" data-lnex-q="mpd">
-              <button type="button" class="ln-exam-chip" data-v="15">15 min</button>
-              <button type="button" class="ln-exam-chip on" data-v="30">30 min</button>
-              <button type="button" class="ln-exam-chip" data-v="60">1 hour</button>
-            </div>
-          </div>
-          <button type="button" class="ln-exam-go" id="lnExamGo" onclick="submitExamPlan()">
-            <span id="lnExamGoLbl">✨ Build my prep plan</span>
-          </button>
-          <div class="ln-exam-err hidden" id="lnExamErr"></div>
+        <div class="ln-exam-picker-row" id="lnExamPickerRow">
+          <button type="button" class="ln-exam-pick on" data-lnex-pick="IELTS">IELTS</button>
+          <button type="button" class="ln-exam-pick" data-lnex-pick="TOEFL">TOEFL iBT</button>
         </div>
-
-        <div class="ln-exam-div"></div>
-
-        <div>
-          <div class="ln-exam-sec-t">Curated free resources</div>
-          <div class="ln-exam-sec-s">Hand-picked from the exam boards themselves and the best test-prep publishers.</div>
-          <div class="ln-exam-res">
-            <a class="ln-exam-rescard" href="https://learnenglish.britishcouncil.org/" target="_blank" rel="noopener">
-              <div class="ln-exam-rest">British Council LearnEnglish</div>
-              <div class="ln-exam-resd">All four skills — reading, writing, listening, speaking.</div>
-            </a>
-            <a class="ln-exam-rescard" href="https://takeielts.britishcouncil.org/prepare-test/free-ielts-practice-tests" target="_blank" rel="noopener">
-              <div class="ln-exam-rest">British Council IELTS Prep</div>
-              <div class="ln-exam-resd">Free IELTS practice tests from the test makers.</div>
-            </a>
-            <a class="ln-exam-rescard" href="https://www.cambridgeenglish.org/exams-and-tests/ielts/practice-tests/" target="_blank" rel="noopener">
-              <div class="ln-exam-rest">Cambridge Free Test Practice</div>
-              <div class="ln-exam-resd">Sample papers and interactive tasks from Cambridge.</div>
-            </a>
-            <a class="ln-exam-rescard" href="https://www.kaptest.com/toefl/free/free-toefl-practice-questions" target="_blank" rel="noopener">
-              <div class="ln-exam-rest">Kaplan TOEFL Free Practice</div>
-              <div class="ln-exam-resd">Free TOEFL practice questions by section.</div>
-            </a>
-            <a class="ln-exam-rescard" href="https://magoosh.com/toefl/free-toefl-practice-test/" target="_blank" rel="noopener">
-              <div class="ln-exam-rest">Magoosh Free TOEFL Videos</div>
-              <div class="ln-exam-resd">Free TOEFL video lessons + practice test.</div>
-            </a>
-          </div>
-        </div>
+        <div class="ln-exam-sections" id="lnExamSections"></div>
 
         <div class="ln-exam-div"></div>
 
         <div>
           <div class="ln-exam-sec-t">Test dates &amp; booking</div>
-          <div class="ln-exam-sec-s">Find test centres and dates near you.</div>
+          <div class="ln-exam-sec-s">Real dates + booking on the official sites.</div>
           <div class="ln-exam-book">
             <a class="ln-exam-bookbtn" href="https://www.britishcouncil.org/exam/ielts/take/dates-fees" target="_blank" rel="noopener">
               <div class="ln-exam-bookttl">IELTS test dates</div>
@@ -3404,7 +3369,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
               <div class="ln-exam-booksub">ETS · book online</div>
             </a>
           </div>
-          <div class="ln-exam-bookhint">Real dates + booking on the official sites. Confirm at your test centre.</div>
+          <div class="ln-exam-bookhint">External free sites — WordSpies isn't affiliated.</div>
         </div>
       </div>
 
@@ -7330,16 +7295,134 @@ async function submitLearnSetup(){
     if (btn) { btn.disabled = false; btn.textContent = '✨ Build my plan'; }
   }
 }
-// ── Exam-prep surface (owner ask 15 Aug 2026) ────────────────────
-// Segmented Languages / IELTS-TOEFL tabs at the top of #tabLearn.
-// The "IELTS / TOEFL" tab is gated behind requireLogin — guest users
-// see the auth modal instead of the exam form.
-const LN_EXAM = { exam:'IELTS-Academic', band:'6.5', mpd:30 };
-// Server accepts exactly these three exam ids (see /learn/exam-plan in social.js).
-const LN_EXAM_BANDS = {
-  'IELTS-Academic': ['5.5','6.0','6.5','7.0','7.5','8.0'],
-  'IELTS-General':  ['5.5','6.0','6.5','7.0','7.5','8.0'],
-  'TOEFL':          ['80','90','100','110']
+// ── Exam-prep surface — curated resource guide, no AI generation ─
+// Owner ask 15 Aug 2026 v2: "study IELTS Liz, give resources +
+// tips per section, remove the generate button". Content is a
+// static table of tips + free-resource links, rendered from the
+// EXAM_SECTIONS constant below. Adding a section = one entry.
+const LN_EXAM = { exam: 'IELTS' };
+const EXAM_SECTIONS = {
+  IELTS: [
+    { id:'listening', icon:'🎧', name:'Listening',
+      desc:'4 sections, ~30 min. Talks and conversations across a mix of English accents.',
+      tips:[
+        'Read the questions BEFORE the audio plays — know what to catch.',
+        'Answers come in the order you hear them. Missed one? Move on and catch it on the transfer.',
+        'Watch spelling — a mis-spelled answer is wrong even if you heard it correctly.',
+        'Use the given example at the start of each section to tune to the speaker’s accent.'
+      ],
+      links:[
+        {label:'IELTS Liz — Listening', url:'https://ieltsliz.com/ielts-listening/'},
+        {label:'British Council — Listening practice', url:'https://takeielts.britishcouncil.org/prepare-test/free-ielts-practice-tests'},
+        {label:'IELTS Simon — Listening tips', url:'https://www.ielts-simon.com/ielts-help-and-english-pr/listening/'}
+      ] },
+    { id:'reading', icon:'📖', name:'Reading',
+      desc:'3 long passages, 40 questions, 60 min. Academic or General depending on your exam.',
+      tips:[
+        'Skim the passage first — don’t read every word before you look at the questions.',
+        'Underline names, dates, and numbers — they’re often the answer.',
+        'True/False/Not Given tests the writer’s exact statement, not what you assume.',
+        'Do the questions in the order they’re asked, not the order the passage flows.'
+      ],
+      links:[
+        {label:'IELTS Liz — Reading', url:'https://ieltsliz.com/ielts-reading/'},
+        {label:'IELTS Liz — True/False/Not Given tips', url:'https://ieltsliz.com/ielts-reading-true-false-not-given/'},
+        {label:'IELTS Simon — Reading', url:'https://www.ielts-simon.com/ielts-help-and-english-pr/reading/'}
+      ] },
+    { id:'wt1', icon:'✍️', name:'Writing Task 1',
+      desc:'150+ words. Describe a chart, graph, table, or process in 20 min. No opinions.',
+      tips:[
+        'Never give an opinion — Task 1 is describe-only.',
+        '3 paragraphs: intro (paraphrase the question) → overview (2 big trends) → detail.',
+        'Your overview MUST include at least 2 compared things — this is a scored criterion.',
+        'Use synonyms for the chart’s title in your intro; don’t copy it word-for-word.'
+      ],
+      links:[
+        {label:'IELTS Liz — Writing Task 1', url:'https://ieltsliz.com/ielts-writing-task-1/'},
+        {label:'IELTS Liz — Task 1 band 9 model', url:'https://ieltsliz.com/model-answer-ielts-writing-task-1-line-graph/'},
+        {label:'IELTS Simon — Writing', url:'https://www.ielts-simon.com/ielts-help-and-english-pr/writing/'}
+      ] },
+    { id:'wt2', icon:'📝', name:'Writing Task 2',
+      desc:'250+ words essay in 40 min. Answer BOTH parts of the question.',
+      tips:[
+        '4 paragraphs: intro → main point 1 → main point 2 → conclusion.',
+        'Give your opinion clearly if the question asks — agree/disagree needs a stance.',
+        'Use real or hypothetical examples — general statements score lower.',
+        'Leave 3-4 min at the end to fix grammar and spelling.'
+      ],
+      links:[
+        {label:'IELTS Liz — Writing Task 2', url:'https://ieltsliz.com/ielts-writing-task-2/'},
+        {label:'IELTS Liz — Task 2 question types', url:'https://ieltsliz.com/ielts-writing-task-2-lessons-and-tips/'},
+        {label:'IELTS Simon — Writing', url:'https://www.ielts-simon.com/ielts-help-and-english-pr/writing/'}
+      ] },
+    { id:'speaking', icon:'🎤', name:'Speaking',
+      desc:'3 parts, 11-14 min face-to-face: introduction → 2-min talk → discussion.',
+      tips:[
+        'Speak at natural speed — don’t slow down for the examiner.',
+        'Extend every answer with "because", "for example", "such as" — never just yes or no.',
+        'Use a range of tenses — past, present, future. Examiners are listening for this.',
+        'Fillers like "well, that’s an interesting question" are fine but don’t overuse.'
+      ],
+      links:[
+        {label:'IELTS Liz — Speaking', url:'https://ieltsliz.com/ielts-speaking/'},
+        {label:'IELTS Liz — Part 2 cue cards', url:'https://ieltsliz.com/ielts-speaking-part-2/'},
+        {label:'IELTS Liz — YouTube channel', url:'https://www.youtube.com/@ieltsLizVideos'}
+      ] }
+  ],
+  TOEFL: [
+    { id:'reading', icon:'📖', name:'Reading',
+      desc:'2 passages, 20 questions, 35 min. Academic university-level texts.',
+      tips:[
+        'Skim the passage first, then answer questions in order.',
+        'Words-in-context: read the whole sentence, not just the word.',
+        'Summary questions: pick 3 main ideas, not details — details are a trap.',
+        'Watch the clock — 17 min per passage keeps you safe.'
+      ],
+      links:[
+        {label:'ETS — Official TOEFL prep', url:'https://www.ets.org/toefl/test-takers/ibt/prepare.html'},
+        {label:'Magoosh — TOEFL Reading', url:'https://magoosh.com/toefl/toefl-reading/'},
+        {label:'Kaplan — Free TOEFL practice', url:'https://www.kaptest.com/toefl/free/free-toefl-practice-questions'}
+      ] },
+    { id:'listening', icon:'🎧', name:'Listening',
+      desc:'Lectures + campus conversations. 36 min. Note-taking allowed.',
+      tips:[
+        'Take notes as you listen — you can review them while answering.',
+        'Listen for the speaker’s attitude and purpose, not just facts.',
+        'Pragmatic questions ("why does the speaker say…?") test tone — pay attention to inflection.',
+        'Practise with real academic lectures (TED Talks, university OpenCourseWare).'
+      ],
+      links:[
+        {label:'ETS — Official TOEFL prep', url:'https://www.ets.org/toefl/test-takers/ibt/prepare.html'},
+        {label:'Magoosh — TOEFL Listening', url:'https://magoosh.com/toefl/toefl-listening/'},
+        {label:'MIT OpenCourseWare (free lectures)', url:'https://ocw.mit.edu/'}
+      ] },
+    { id:'speaking', icon:'🎤', name:'Speaking',
+      desc:'4 tasks, 17 min. 1 independent, 3 integrated (read + listen + speak).',
+      tips:[
+        'Fill the full response time — long pauses lose points.',
+        'Independent task: pick a side and give 2 clear reasons + examples.',
+        'Integrated tasks: paraphrase what you read/heard — don’t quote.',
+        'Record yourself and play it back — the biggest speaking gains come from self-review.'
+      ],
+      links:[
+        {label:'ETS — Speaking scoring rubrics', url:'https://www.ets.org/pdfs/toefl/toefl-ibt-speaking-rubrics.pdf'},
+        {label:'Magoosh — TOEFL Speaking', url:'https://magoosh.com/toefl/toefl-speaking/'},
+        {label:'NoteFull — Free TOEFL guidance', url:'https://www.notefull.com/'}
+      ] },
+    { id:'writing', icon:'✍️', name:'Writing',
+      desc:'2 tasks, 50 min. One integrated (read + listen + write), one academic discussion.',
+      tips:[
+        'Integrated task: for each reading point, find the lecture’s counter — that’s your paragraph.',
+        'Academic discussion: 100+ words, clear position, respond to one classmate directly.',
+        'Grammar counts hard on automated scoring — sacrifice complexity for correctness if unsure.',
+        'Type practice essays under exam conditions — TOEFL scoring rewards structure over flourish.'
+      ],
+      links:[
+        {label:'ETS — Writing scoring rubrics', url:'https://www.ets.org/pdfs/toefl/toefl-ibt-writing-rubrics.pdf'},
+        {label:'Magoosh — TOEFL Writing', url:'https://magoosh.com/toefl/toefl-writing/'},
+        {label:'ETS — TOEFL prep hub', url:'https://www.ets.org/toefl/test-takers/ibt/prepare.html'}
+      ] }
+  ]
 };
 function showLearnMode(mode){
   const langBtn = document.getElementById('lnSegLanguages');
@@ -7347,13 +7430,13 @@ function showLearnMode(mode){
   const langView = document.getElementById('lnLanguagesView');
   const examView = document.getElementById('lnExamView');
   if (mode === 'exam') {
-    if (GUEST) { requireLogin('👋 Log in to build your exam-prep plan'); return; }
+    if (GUEST) { requireLogin('👋 Log in to see the exam-prep guide'); return; }
     if (langBtn) { langBtn.classList.remove('on'); langBtn.setAttribute('aria-selected','false'); }
     if (examBtn) { examBtn.classList.add('on'); examBtn.setAttribute('aria-selected','true'); }
     if (langView) langView.classList.add('hidden');
     if (examView) examView.classList.remove('hidden');
-    paintExamBands();
-    wireExamChips();
+    paintExamSections();
+    wireExamPicker();
   } else {
     if (examBtn) { examBtn.classList.remove('on'); examBtn.setAttribute('aria-selected','false'); }
     if (langBtn) { langBtn.classList.add('on'); langBtn.setAttribute('aria-selected','true'); }
@@ -7361,94 +7444,47 @@ function showLearnMode(mode){
     if (langView) langView.classList.remove('hidden');
   }
 }
-function paintExamBands(){
-  const wrap = document.getElementById('lnExamBandChips');
+function paintExamSections(){
+  const wrap = document.getElementById('lnExamSections');
   if (!wrap) return;
-  const bands = LN_EXAM_BANDS[LN_EXAM.exam] || [];
-  // Keep the current pick if it's still valid, otherwise default to the
-  // middle option (a friendly, realistic target).
-  if (bands.indexOf(String(LN_EXAM.band)) < 0) {
-    LN_EXAM.band = bands[Math.floor(bands.length / 2)] || bands[0] || '';
-  }
-  wrap.innerHTML = bands.map(b =>
-    '<button type="button" class="ln-exam-chip' + (String(LN_EXAM.band) === b ? ' on' : '') + '" data-v="' + esc(b) + '">' + esc(b) + '</button>'
+  const sections = EXAM_SECTIONS[LN_EXAM.exam] || [];
+  wrap.innerHTML = sections.map(s =>
+    '<div class="ln-exam-card2" id="lnexs-' + esc(s.id) + '">' +
+      '<div class="ln-exam-card2-head">' +
+        '<span class="ln-exam-card2-icon" aria-hidden="true">' + s.icon + '</span>' +
+        '<span class="ln-exam-card2-name">' + esc(s.name) + '</span>' +
+      '</div>' +
+      '<p class="ln-exam-card2-desc">' + esc(s.desc) + '</p>' +
+      '<div class="ln-exam-card2-tipsttl">Top tips</div>' +
+      '<ul class="ln-exam-card2-tips">' +
+        s.tips.map(t => '<li>' + esc(t) + '</li>').join('') +
+      '</ul>' +
+      '<div class="ln-exam-card2-tipsttl">Free resources</div>' +
+      '<div class="ln-exam-card2-links">' +
+        s.links.map(l =>
+          '<a class="ln-exam-card2-link" href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + '</a>'
+        ).join('') +
+      '</div>' +
+    '</div>'
   ).join('');
-  wireExamChips();
 }
-function wireExamChips(){
-  document.querySelectorAll('#lnExamView .ln-exam-chips').forEach(row => {
-    const key = row.dataset.lnexQ;
-    row.querySelectorAll('.ln-exam-chip').forEach(btn => {
-      btn.onclick = ev => {
-        ev.stopPropagation();
-        row.querySelectorAll('.ln-exam-chip').forEach(b => b.classList.remove('on'));
-        btn.classList.add('on');
-        const v = btn.dataset.v;
-        if (key === 'mpd') LN_EXAM.mpd = Number(v) || 30;
-        else if (key === 'exam') { LN_EXAM.exam = v; paintExamBands(); }
-        else if (key === 'band') LN_EXAM.band = v;
-      };
-    });
+function wireExamPicker(){
+  document.querySelectorAll('#lnExamPickerRow .ln-exam-pick').forEach(btn => {
+    btn.onclick = () => {
+      const v = btn.dataset.lnexPick;
+      if (!v || v === LN_EXAM.exam) return;
+      LN_EXAM.exam = v;
+      document.querySelectorAll('#lnExamPickerRow .ln-exam-pick').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      paintExamSections();
+    };
   });
 }
+// Stub kept in case anything still calls submitExamPlan from an old
+// cached page. The AI-generate flow was retired 15 Aug 2026 in favour
+// of a static, curated section-by-section guide (see EXAM_SECTIONS).
 async function submitExamPlan(){
-  if (GUEST) { requireLogin('👋 Log in to build your exam-prep plan'); return; }
-  const btn = document.getElementById('lnExamGo');
-  const lbl = document.getElementById('lnExamGoLbl');
-  const err = document.getElementById('lnExamErr');
-  if (err) err.classList.add('hidden');
-  if (btn) btn.disabled = true;
-  if (lbl) lbl.innerHTML = '<span class="ln-exam-spin" aria-hidden="true"></span> Building your plan…';
-  const dateEl = document.getElementById('lnExamDate');
-  const targetDate = dateEl && dateEl.value ? dateEl.value : '';
-  try {
-    const j = await api('/learn/exam-plan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        exam: LN_EXAM.exam,
-        targetBand: LN_EXAM.band,
-        targetDate: targetDate,
-        minutesPerDay: LN_EXAM.mpd
-      })
-    });
-    const newPlan = j && j.plan;
-    if (!newPlan) throw new Error('No plan returned.');
-    LN_PLANS.push(newPlan);
-    updateAiMethodSubtitle();
-    // Success celebration popup (owner ask 15 Aug 2026: 'maybe a popup
-    // and save in the learning section so he can read and see it').
-    // Plan is already saved server-side + pushed to LN_PLANS. The
-    // popup surfaces it prominently; tap 'Open plan' to read.
-    if (typeof swAlert === 'function') {
-      swAlert({
-        icon: 'success',
-        title: '✨ Your prep plan is ready',
-        html: '<b>' + esc(newPlan.language || 'Your plan') + '</b><br><span style="opacity:.7;font-size:13px">' + (newPlan.lessons || []).length + ' lessons · saved to your Learn tab</span>',
-        confirmButtonText: 'Open plan',
-        showCancelButton: true,
-        cancelButtonText: 'Later'
-      }).then(ok => {
-        if (ok) { showLearnMode('languages'); showLearnPlanDetail(newPlan.id); }
-      }).catch(() => {});
-    } else {
-      showLearnMode('languages');
-      showLearnPlanDetail(newPlan.id);
-    }
-    toast('✨ Your prep plan is ready!');
-  } catch(e) {
-    console.error('[exam-plan]', e && e.status, e && e.message, e && e.data);
-    // Show the SERVER's error verbatim so 'AI not configured' vs 'Daily
-    // limit reached' vs 'Plan came back malformed' are all diagnosable
-    // from the toast alone. Falls back to generic if server didn't
-    // send an error string.
-    const msg = (e && e.message && e.message !== 'Something went wrong.') ? e.message : 'Couldn\'t build the plan — try again.';
-    if (err) { err.textContent = msg; err.classList.remove('hidden'); }
-    toast(msg);
-  } finally {
-    if (btn) btn.disabled = false;
-    if (lbl) lbl.textContent = '✨ Build my prep plan';
-  }
+  if (typeof toast === 'function') toast('The prep guide is now section-by-section — no build needed.');
 }
 async function deleteLearnPlan(planId){
   if (typeof swConfirm === 'function') {
