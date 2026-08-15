@@ -4035,13 +4035,25 @@ Do NOT add quotes, preambles, or explanations.`,
         return res.status(400).json({ error: 'You have ' + LEARN_MAX_PLANS + ' plans already. Delete an old one first.' });
       }
       existing.push(stored);
-      await saveUserPlans(me.id, existing);
+      try {
+        await saveUserPlans(me.id, existing);
+      } catch (saveErr) {
+        console.error('[learn] exam-plan saveUserPlans failed:', saveErr.message, 'uid=', me.id, 'planCount=', existing.length);
+        return res.status(500).json({ error: 'Couldn\'t save the plan — the server hit a snag.' });
+      }
       const cost = ((usage.input_tokens || 0) * 0.80 + (usage.output_tokens || 0) * 4.00) / 1_000_000;
       const day = new Date().toISOString().slice(0, 10);
       const logEntry = { u: me.id, kind:'exam-plan', exam, tIn: usage.input_tokens || 0, tOut: usage.output_tokens || 0, $: cost.toFixed(6), ms: Date.now() - startTime, t: Date.now() };
       try { await db.rpush('soc:ai-usage:' + day, JSON.stringify(logEntry)); await db.ltrim('soc:ai-usage:' + day, -1000, -1); } catch (e) {}
+      console.log('[learn] exam-plan OK: uid=' + me.id + ' exam=' + exam + ' band=' + targetBand + ' lessons=' + cleanedLessons.length + ' ms=' + (Date.now() - startTime));
       res.json({ plan: stored });
-    } catch (e) { console.error('[learn] exam-plan:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
+    } catch (e) {
+      // Give the outer catch a REAL error string so the client toast shows
+      // WHERE it broke instead of the generic "Something went wrong.".
+      // stack is the diagnostic; the message the user sees is truncated.
+      console.error('[learn] exam-plan outer:', e && e.message, '\nstack:', e && e.stack);
+      res.status(500).json({ error: 'Server error: ' + String(e && e.message || 'unknown').slice(0, 120) });
+    }
   });
 
   // Approximate upcoming IELTS test dates — there's no free public API, so

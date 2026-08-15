@@ -7364,10 +7364,25 @@ async function submitExamPlan(){
     if (!newPlan) throw new Error('No plan returned.');
     LN_PLANS.push(newPlan);
     updateAiMethodSubtitle();
-    // Bounce back to the Languages tab (that's where the shared detail
-    // view lives) and open the freshly built plan.
-    showLearnMode('languages');
-    showLearnPlanDetail(newPlan.id);
+    // Success celebration popup (owner ask 15 Aug 2026: 'maybe a popup
+    // and save in the learning section so he can read and see it').
+    // Plan is already saved server-side + pushed to LN_PLANS. The
+    // popup surfaces it prominently; tap 'Open plan' to read.
+    if (typeof swAlert === 'function') {
+      swAlert({
+        icon: 'success',
+        title: '✨ Your prep plan is ready',
+        html: '<b>' + esc(newPlan.language || 'Your plan') + '</b><br><span style="opacity:.7;font-size:13px">' + (newPlan.lessons || []).length + ' lessons · saved to your Learn tab</span>',
+        confirmButtonText: 'Open plan',
+        showCancelButton: true,
+        cancelButtonText: 'Later'
+      }).then(ok => {
+        if (ok) { showLearnMode('languages'); showLearnPlanDetail(newPlan.id); }
+      }).catch(() => {});
+    } else {
+      showLearnMode('languages');
+      showLearnPlanDetail(newPlan.id);
+    }
     toast('✨ Your prep plan is ready!');
   } catch(e) {
     console.error('[exam-plan]', e && e.status, e && e.message, e && e.data);
