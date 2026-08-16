@@ -14,16 +14,16 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(compression());
-// Canonical domain: talksibi.com. Legacy hosts (onrender + www +
-// talksibi.com + talkfellow.com) 301 to it. Caddy on the droplet
-// also does this at the reverse-proxy edge, but this Node fallback
-// covers direct-to-app traffic (e.g. from onrender preview + any
-// missed Caddy path).
+// Canonical domain: talksibi.com. Node 301s the tiny set of legacy
+// hosts Caddy can't cover (onrender preview + bare www). Everything
+// else — bare talksibi.com, wordspies.co.uk, talkfellow.com — is
+// handled at the Caddy edge. CRITICAL: talksibi.com must NOT be in
+// this list or Node redirects it to itself (loop that broke the
+// site at 12:45 UTC on 16 Aug 2026 — root cause was a wide sed
+// replace turning 'wordspies.co.uk' into 'talksibi.com' HERE).
 app.use((req, res, next) => {
   const host = (req.headers.host || '').toLowerCase();
   const legacy = host === 'wordspies.onrender.com'
-              || host === 'www.talksibi.com' || host === 'talksibi.com'
-              || host === 'www.talkfellow.com'  || host === 'talkfellow.com'
               || host === 'www.talksibi.com';
   if (legacy && req.path !== '/healthz' && !req.path.startsWith('/socket.io')) {
     return res.redirect(301, 'https://talksibi.com' + req.originalUrl);
