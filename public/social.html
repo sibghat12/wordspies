@@ -3378,18 +3378,6 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    community wall — 20px mobile, 48px desktop — so nothing hugs the edge. */
 #tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats{padding:16px 20px;box-sizing:border-box;width:100%}
 @media(min-width:769px){#tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats{padding:20px 48px}}
-/* Owner ask: desktop only — inset the chat conversation view too. On
-   mobile the messages already run full-bleed and adding padding would
-   waste tap space. */
-@media(min-width:769px){#tabChat{padding:20px 48px}}
-/* Split-view: the padding is owned by the parent so the two columns sit
-   inside the same inset. Reset the inner #tabChat padding so the card
-   itself keeps its old flush layout. */
-@media(min-width:900px){
-  #vApp.splitview{padding:20px 48px;box-sizing:border-box}
-  #vApp.splitview #tabChat,
-  #vApp.splitview #tabChats{padding:0}
-}
 #tabWall .wcard:has(.ai-badge) .wcard-photo{
   border-radius:14px; background:linear-gradient(135deg,#5b6cff,#9b6cff);
 }
