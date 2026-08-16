@@ -72,33 +72,35 @@ module.exports.CONSENT_MODAL = CONSENT_MODAL;
 // further down (per README §41). Other pages still get this one.
 const SITE_FOOTER = `
 <style>
-footer.sitefoot{margin-top:56px;padding:44px 24px 24px;background:#1a1d23;color:#a4a8b1;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:0}
+/* Owner ask v28: footer white everywhere (community + blog + info
+   pages). Ink text on light bg, muted grey links, subtle border. */
+footer.sitefoot{margin-top:56px;padding:44px 24px 24px;background:#ffffff;color:#4a4d59;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:1px solid #e4e6ee}
 footer.sitefoot *{box-sizing:border-box}
 footer.sitefoot .fwrap{max-width:1200px;margin:0 auto}
 footer.sitefoot .fmenu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 32px;align-items:flex-start}
 @media(max-width:840px){footer.sitefoot .fmenu{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}}
 @media(max-width:520px){footer.sitefoot .fmenu{grid-template-columns:1fr;gap:28px}}
-footer.sitefoot .fcol h4{font-weight:600;font-size:15px;color:#fff;letter-spacing:-.1px;margin:0 0 14px}
-footer.sitefoot .fcol a{display:block;color:#c9ccd4;text-decoration:none;font-size:13.5px;font-weight:500;padding:6px 0;transition:color .12s}
-footer.sitefoot .fcol a:hover{color:#fff}
+footer.sitefoot .fcol h4{font-weight:700;font-size:14.5px;color:#14161f;letter-spacing:-.1px;margin:0 0 14px}
+footer.sitefoot .fcol a{display:block;color:#4a4d59;text-decoration:none;font-size:13.5px;font-weight:500;padding:6px 0;transition:color .12s}
+footer.sitefoot .fcol a:hover{color:#14161f}
 footer.sitefoot .fsocial-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px;max-width:220px}
-footer.sitefoot .fsocial-grid a{padding:0;width:36px;height:36px;border-radius:50%;background:#2b2e36;color:#fff;display:inline-flex;align-items:center;justify-content:center;transition:background .12s;flex:none}
-footer.sitefoot .fsocial-grid a:hover{background:#3b3f4a}
+footer.sitefoot .fsocial-grid a{padding:0;width:36px;height:36px;border-radius:50%;background:#f4f5f9;color:#4a4d59;border:1px solid #e4e6ee;display:inline-flex;align-items:center;justify-content:center;transition:background .12s,color .12s;flex:none}
+footer.sitefoot .fsocial-grid a:hover{background:#eef0f5;color:#14161f}
 footer.sitefoot .fsocial-grid svg{width:16px;height:16px;fill:currentColor;display:block}
 footer.sitefoot .fstores{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
-footer.sitefoot .stbadge{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;text-decoration:none;padding:9px 14px;border-radius:10px;font-weight:600;font-size:13px;border:1px solid #3b3f4a;transition:border-color .12s}
-footer.sitefoot .stbadge:hover{border-color:#5b6070}
+footer.sitefoot .stbadge{display:inline-flex;align-items:center;gap:10px;background:#14161f;color:#fff;text-decoration:none;padding:9px 14px;border-radius:10px;font-weight:600;font-size:13px;border:1px solid #14161f;transition:opacity .12s}
+footer.sitefoot .stbadge:hover{opacity:.86}
 footer.sitefoot .stbadge span{display:flex;flex-direction:column;line-height:1.1;text-align:left}
 footer.sitefoot .stbadge span small{font-size:9.5px;font-weight:500;letter-spacing:.02em;opacity:.75;text-transform:uppercase}
 footer.sitefoot .stbadge span b{font-size:14px;font-weight:700;letter-spacing:.01em}
 footer.sitefoot .stbadge svg{width:20px;height:20px;fill:#fff;flex:none}
-footer.sitefoot .flang{display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 0;font-weight:600;font-size:14px;color:#fff;cursor:default}
+footer.sitefoot .flang{display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:6px 0;font-weight:600;font-size:14px;color:#14161f;cursor:default}
 footer.sitefoot .flang .fflag{width:22px;height:22px;border-radius:50%;overflow:hidden;flex:none;font-size:16px;line-height:22px;text-align:center}
-footer.sitefoot .flang .fchev{color:#a4a8b1;font-weight:400;margin-left:2px}
-footer.sitefoot .fsub{margin-top:36px;padding-top:20px;border-top:1px solid #2b2e36;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-footer.sitefoot .fmeta{color:#7b8090;font-size:12px;letter-spacing:.02em;line-height:1.6}
-footer.sitefoot .fbrand{font-weight:600;font-size:16px;color:#fff;text-decoration:none;letter-spacing:-.2px}
-footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
+footer.sitefoot .flang .fchev{color:#8a8d99;font-weight:400;margin-left:2px}
+footer.sitefoot .fsub{margin-top:36px;padding-top:20px;border-top:1px solid #e4e6ee;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+footer.sitefoot .fmeta{color:#8a8d99;font-size:12px;letter-spacing:.02em;line-height:1.6}
+footer.sitefoot .fbrand{font-weight:600;font-size:16px;color:#14161f;text-decoration:none;letter-spacing:-.2px}
+footer.sitefoot .fbrand em{font-style:normal;color:#5b6cff}
 </style>
 <footer class="sitefoot"><div class="fwrap">
   <div class="fmenu">
@@ -160,9 +162,9 @@ footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
   </div>
   <div class="fsub">
     <div class="fmeta">© 2026 talksibi — Practise languages with real people.<br>Independent language-exchange community, based in the United Kingdom.</div>
-    <a class="fbrand ts-lockup" href="/" style="color:#fff">
+    <a class="fbrand ts-lockup" href="/" style="color:#14161f;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
       <img class="ts-mark" src="/mark.svg" alt="" style="width:24px;height:24px" onerror="this.style.display='none'">
-      <span class="ts-wordmark" style="font-size:18px;color:#fff">talksibi</span>
+      <span class="ts-wordmark" style="font-size:18px;color:#14161f">talksibi</span>
     </a>
   </div>
 </div></footer>`;

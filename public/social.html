@@ -3306,21 +3306,23 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 #tabWall .wcard-actions{
   display:flex; gap:8px; margin-top:auto; padding-top:2px;
 }
-/* Owner ask v28: two clean icon buttons instead of pills. Message
-   = periwinkle circle. Follow = neutral circle → mint circle when
-   active. Left-aligned in the actions row. Labels hidden. */
+/* Owner ask v29: back to text-pill buttons with icon + label
+   (icon-only circles clipped the 'Following' text on click).
+   Follow keeps the mint-active color change from v28. */
 #tabWall .wcard-actions{ display:flex; gap:8px; justify-content:flex-start; margin-top:auto; padding-top:6px }
 #tabWall .wcard-cta,
 #tabWall .wcard-actions .wcard-follow{
-  flex:0 0 auto; width:38px; height:38px; padding:0 !important;
-  border-radius:50% !important;
-  display:inline-flex; align-items:center; justify-content:center;
-  min-height:38px; font-size:15px; line-height:1; gap:0;
+  flex:0 0 auto;
+  padding:8px 14px; border-radius:99px;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  min-height:36px; font-size:12.5px; font-weight:600;
+  line-height:1; white-space:nowrap;
   transition:background .14s, color .14s, transform .1s;
+  font-family:var(--brand-font);
 }
 #tabWall .wcard-cta{ background:#5b6cff; color:#fff; border:0; box-shadow:0 3px 10px rgba(91,108,255,.28) }
 #tabWall .wcard-cta:hover{ background:#4353e8 }
-#tabWall .wcard-cta:active{ transform:scale(.94) }
+#tabWall .wcard-cta:active{ transform:scale(.97) }
 #tabWall .wcard-actions .wcard-follow{
   background:#f4f5f9; color:#4a4d59; border:1px solid #e4e6ee;
 }
@@ -3331,9 +3333,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 }
 #tabWall .wcard-actions .wcard-follow.on:hover{ background:#159f5d }
 #tabWall .wcard-cta .wcard-btn-lbl,
-#tabWall .wcard-follow .wcard-btn-lbl{ display:none }
+#tabWall .wcard-follow .wcard-btn-lbl{ display:inline }
 #tabWall .wcard-cta .wcard-btn-ic,
-#tabWall .wcard-follow .wcard-btn-ic{ font-size:15px; line-height:1 }
+#tabWall .wcard-follow .wcard-btn-ic{ font-size:14px; line-height:1 }
 #tabWall .wcard-cta:hover{ background:#4353e8 }
 #tabWall .wcard-cta:active{ transform:translateY(1px) }
 #tabWall .wcard-cta-ai{
