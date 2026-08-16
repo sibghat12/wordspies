@@ -1,96 +1,157 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- WordSpies social share card (Open Graph / Twitter card).
-     Owner ask 7 Aug 2026: 'when I share it should show an amazing
-     image, people laughing and play games'. Designed here as SVG
-     so it stays crisp on every scaler and doesn't need a raster
-     export step. 1200x630 is the OG standard. -->
+<!-- talksibi social share card (Open Graph / Twitter card).
+     1200×630 — OG standard. Owner ask 16 Aug 2026 v25:
+     'make the best OG image for the app'. Rebuilt for the
+     talksibi rebrand: ink background, periwinkle glow, 4-bubble
+     mark, lowercase wordmark, tagline with dot colors, floating
+     language greetings + a chat card mock. Kept in SVG for
+     crispness — most modern crawlers (FB 2024+, Slack, iMessage,
+     WhatsApp) accept it; Twitter needs a PNG counterpart. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ff7a9c"/>
-      <stop offset="55%" stop-color="#ff8b3d"/>
-      <stop offset="100%" stop-color="#7c5cff"/>
-    </linearGradient>
-    <linearGradient id="tileR" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ff5a72"/>
-      <stop offset="100%" stop-color="#e0384f"/>
-    </linearGradient>
-    <linearGradient id="tileB" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#5c8bff"/>
-      <stop offset="100%" stop-color="#3d5be0"/>
-    </linearGradient>
-    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.18"/>
+    <!-- Ink background with a periwinkle→coral glow bottom-left and
+         a soft jade glow top-right. Gives depth without stealing the
+         wordmark. -->
+    <radialGradient id="glowA" cx="15%" cy="85%" r="70%">
+      <stop offset="0%" stop-color="#5b6cff" stop-opacity="0.45"/>
+      <stop offset="55%" stop-color="#5b6cff" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#5b6cff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="88%" cy="8%" r="60%">
+      <stop offset="0%" stop-color="#1fb28a" stop-opacity="0.32"/>
+      <stop offset="55%" stop-color="#1fb28a" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#1fb28a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowC" cx="90%" cy="88%" r="45%">
+      <stop offset="0%" stop-color="#ff7a59" stop-opacity="0.30"/>
+      <stop offset="70%" stop-color="#ff7a59" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softDrop" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-opacity="0.35"/>
     </filter>
-    <filter id="tileShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity="0.16"/>
+    <filter id="tinyDrop" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.25"/>
+    </filter>
+    <filter id="chipDrop" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.20"/>
     </filter>
   </defs>
 
-  <!-- Warm sunset gradient background -->
-  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Base ink surface + glows -->
+  <rect width="1200" height="630" fill="#14161f"/>
+  <rect width="1200" height="630" fill="url(#glowA)"/>
+  <rect width="1200" height="630" fill="url(#glowB)"/>
+  <rect width="1200" height="630" fill="url(#glowC)"/>
 
-  <!-- Soft blurred blobs for depth -->
-  <circle cx="150" cy="120" r="180" fill="#fff" opacity="0.09"/>
-  <circle cx="1050" cy="510" r="230" fill="#fff" opacity="0.08"/>
-  <circle cx="1120" cy="140" r="80" fill="#fff" opacity="0.12"/>
+  <!-- Subtle grid dots for texture — very faint -->
+  <g fill="#ffffff" fill-opacity="0.04">
+    <circle cx="150" cy="100" r="2"/><circle cx="250" cy="180" r="2"/><circle cx="360" cy="80" r="2"/>
+    <circle cx="480" cy="140" r="2"/><circle cx="600" cy="60" r="2"/><circle cx="720" cy="160" r="2"/>
+    <circle cx="880" cy="90" r="2"/><circle cx="1000" cy="180" r="2"/>
+    <circle cx="120" cy="520" r="2"/><circle cx="240" cy="580" r="2"/><circle cx="380" cy="540" r="2"/>
+    <circle cx="520" cy="600" r="2"/><circle cx="660" cy="520" r="2"/><circle cx="800" cy="590" r="2"/>
+  </g>
 
-  <!-- Big wordmark on the left, headline + tagline underneath -->
-  <g font-family="'Fredoka', 'Nunito', system-ui, sans-serif">
-    <text x="70" y="180" font-size="90" font-weight="600" fill="#fff" letter-spacing="-2">
-      Word<tspan fill="#fffbea">Spies</tspan>
+  <!-- ═════════ LEFT COLUMN: brand lockup + tagline + headline ═════════ -->
+  <g transform="translate(72,138)">
+    <!-- 4-bubble mark scaled to 96×96 -->
+    <g transform="scale(2.08)">
+      <path d="M6 6 h16 a2 2 0 0 1 2 2 v18 a2 2 0 0 1 -2 2 h-9 l-9 4 v-4 h-0 a0 0 0 0 1 0 0 v-20 a2 2 0 0 1 2 -2 z"
+            transform="translate(0,0)" fill="#5b6cff"/>
+      <path d="M28 6 h16 a2 2 0 0 1 2 2 v20 a2 2 0 0 1 -2 2 h-0 v4 l-9 -4 h-7 a2 2 0 0 1 -2 -2 v-18 a2 2 0 0 1 2 -2 z"
+            transform="translate(0,0)" fill="#ff7a59"/>
+      <path d="M28 28 h16 a2 2 0 0 1 2 2 v18 a2 2 0 0 1 -2 2 h-0 v4 l-9 -4 h-7 a2 2 0 0 1 -2 -2 v-18 a2 2 0 0 1 2 -2 z"
+            transform="translate(0,22)" fill="#1fb28a"/>
+      <path d="M6 28 h16 a2 2 0 0 1 2 2 v18 a2 2 0 0 1 -2 2 h-9 l-9 4 v-4 a2 2 0 0 1 0 0 v-18 a2 2 0 0 1 2 -2 z"
+            transform="translate(0,22)" fill="#ffc94d"/>
+    </g>
+
+    <!-- Wordmark: 'talksibi' — Hanken Grotesk-ish. SVG font stack
+         inherits system fonts on renderers. -->
+    <text x="118" y="72"
+          font-family="'Hanken Grotesk','Inter',system-ui,sans-serif"
+          font-size="88" font-weight="500" letter-spacing="-2" fill="#ffffff">
+      talksibi
     </text>
-    <text x="72" y="260" font-size="42" font-weight="500" fill="#fff" opacity="0.95">
-      Learn languages by playing
+  </g>
+
+  <!-- CONNECT · LEARN · PLAY tagline with colored dot separators -->
+  <g transform="translate(72,270)"
+     font-family="'Hanken Grotesk','Inter',system-ui,sans-serif"
+     font-size="20" font-weight="700" letter-spacing="4">
+    <text x="0" y="0" fill="#8a8d99">CONNECT</text>
+    <text x="128" y="0" fill="#5b6cff">·</text>
+    <text x="146" y="0" fill="#8a8d99">LEARN</text>
+    <text x="238" y="0" fill="#1fb28a">·</text>
+    <text x="256" y="0" fill="#8a8d99">PLAY</text>
+  </g>
+
+  <!-- Headline -->
+  <g transform="translate(72,325)"
+     font-family="'Hanken Grotesk','Inter',system-ui,sans-serif"
+     fill="#ffffff">
+    <text x="0" y="60" font-size="56" font-weight="700" letter-spacing="-1.5">Practise languages</text>
+    <text x="0" y="122" font-size="56" font-weight="700" letter-spacing="-1.5">with <tspan fill="#9aa3ff">real people.</tspan></text>
+  </g>
+
+  <!-- Sub / URL badge -->
+  <g transform="translate(72,510)"
+     font-family="'Hanken Grotesk','Inter',system-ui,sans-serif">
+    <rect x="0" y="0" width="336" height="56" rx="28" fill="#ffffff"/>
+    <text x="168" y="37" font-size="19" font-weight="700" fill="#14161f" text-anchor="middle" letter-spacing="0">
+      talksibi.com  ·  free forever
     </text>
-    <text x="72" y="308" font-size="42" font-weight="500" fill="#fff" opacity="0.95">
-      games with friends around the world.
-    </text>
-    <text x="72" y="400" font-size="26" font-weight="500" fill="#fff" opacity="0.85">
-      Word Race · WordSpies · Word Chain · Who is the Spy?
-    </text>
-    <text x="72" y="435" font-size="26" font-weight="500" fill="#fff" opacity="0.85">
-      Guess the Word · Ludo · 8-Ball Pool · Mind Meld
-    </text>
-    <!-- Small footer badge -->
-    <g transform="translate(72,510)">
-      <rect x="0" y="0" width="290" height="52" rx="26" fill="#16181f"/>
-      <text x="145" y="34" font-size="20" font-weight="600" fill="#fff" text-anchor="middle" letter-spacing="0.5">
-        wordspies.com · free, no signup
-      </text>
+  </g>
+
+  <!-- ═════════ RIGHT COLUMN: floating greeting bubbles + chat mock ═════════ -->
+
+  <!-- Greeting bubbles: Hola / こんにちは / Bonjour / مرحبا / Olá -->
+  <g font-family="'Hanken Grotesk','Inter',system-ui,sans-serif" filter="url(#chipDrop)">
+    <g transform="translate(820,80)">
+      <rect x="-52" y="-26" width="104" height="52" rx="26" fill="#ffffff"/>
+      <text x="0" y="7" font-size="22" font-weight="700" fill="#14161f" text-anchor="middle">Hola</text>
+    </g>
+    <g transform="translate(1010,140)">
+      <rect x="-88" y="-26" width="176" height="52" rx="26" fill="#5b6cff"/>
+      <text x="0" y="7" font-size="22" font-weight="700" fill="#ffffff" text-anchor="middle">こんにちは</text>
+    </g>
+    <g transform="translate(950,220)">
+      <rect x="-68" y="-24" width="136" height="48" rx="24" fill="#1fb28a"/>
+      <text x="0" y="7" font-size="20" font-weight="700" fill="#ffffff" text-anchor="middle">Bonjour</text>
+    </g>
+    <g transform="translate(780,220)">
+      <rect x="-56" y="-22" width="112" height="44" rx="22" fill="#ff7a59"/>
+      <text x="0" y="6" font-size="20" font-weight="700" fill="#ffffff" text-anchor="middle">مرحبا</text>
+    </g>
+    <g transform="translate(1075,300)">
+      <rect x="-42" y="-22" width="84" height="44" rx="22" fill="#ffc94d"/>
+      <text x="0" y="6" font-size="20" font-weight="700" fill="#14161f" text-anchor="middle">Olá</text>
     </g>
   </g>
 
-  <!-- Right half: playful cluster of laughing faces + game tiles.
-       Emoji are actual Unicode so they inherit the OS emoji font
-       on whichever platform renders the preview card. -->
-  <g font-family="'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif" text-anchor="middle">
-    <!-- Laughing faces trio -->
-    <g transform="translate(880,150)">
-      <circle cx="0" cy="0" r="78" fill="#fff" filter="url(#soft)"/>
-      <text x="0" y="30" font-size="118">😄</text>
-    </g>
-    <g transform="translate(1050,270)">
-      <circle cx="0" cy="0" r="66" fill="#fff" filter="url(#soft)"/>
-      <text x="0" y="26" font-size="100">🤣</text>
-    </g>
-    <g transform="translate(760,300)">
-      <circle cx="0" cy="0" r="58" fill="#fff" filter="url(#soft)"/>
-      <text x="0" y="22" font-size="88">😊</text>
-    </g>
+  <!-- Chat card mock: two bubbles + a "corrected by AI" line -->
+  <g transform="translate(720,360)" filter="url(#softDrop)">
+    <!-- Card -->
+    <rect x="0" y="0" width="420" height="220" rx="24" fill="#1d2130"/>
+    <!-- Header row: avatar + name + language chip -->
+    <circle cx="34" cy="34" r="18" fill="#9b6cff"/>
+    <text x="34" y="40" font-family="'Hanken Grotesk','Inter',sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">M</text>
+    <text x="64" y="30" font-family="'Hanken Grotesk','Inter',sans-serif" font-size="16" font-weight="700" fill="#ffffff">Mariana, 24</text>
+    <text x="64" y="50" font-family="'Hanken Grotesk','Inter',sans-serif" font-size="12" font-weight="500" fill="#8a8d99">🇲🇽 Mexico · Online</text>
 
-    <!-- Game tiles — a mini WordSpies board hint + chat bubble -->
-    <g transform="translate(900,420)" filter="url(#tileShadow)">
-      <rect x="-70" y="-32" width="60" height="60" rx="12" fill="url(#tileR)"/>
-      <text x="-40" y="8" font-family="'Fredoka','Nunito',sans-serif" font-size="14" font-weight="700" fill="#fff">MOON</text>
-      <rect x="0" y="-32" width="60" height="60" rx="12" fill="url(#tileB)"/>
-      <text x="30" y="8" font-family="'Fredoka','Nunito',sans-serif" font-size="14" font-weight="700" fill="#fff">BANK</text>
-      <rect x="70" y="-32" width="60" height="60" rx="12" fill="#fff"/>
-      <text x="100" y="8" font-family="'Fredoka','Nunito',sans-serif" font-size="14" font-weight="700" fill="#2b2e36">NUT</text>
+    <!-- Received bubble -->
+    <g transform="translate(20,78)">
+      <rect x="0" y="0" width="200" height="42" rx="14" fill="#2a2e42"/>
+      <rect x="0" y="0" width="4" height="42" rx="2" fill="#2a2e42"/>
+      <text x="16" y="26" font-family="'Hanken Grotesk','Inter',sans-serif" font-size="14" font-weight="500" fill="#ffffff">¡Hola! ¿Cómo estás?</text>
     </g>
-    <g transform="translate(760,470)" filter="url(#tileShadow)">
-      <rect x="-58" y="-24" width="116" height="48" rx="24" fill="#ffe28a"/>
-      <text x="0" y="12" font-size="30">🎮 💬 🕵️</text>
+    <text x="20" y="132" font-family="'Hanken Grotesk','Inter',sans-serif" font-size="11" font-weight="600" fill="#9aa3ff">↳ tap to translate</text>
+
+    <!-- Sent bubble -->
+    <g transform="translate(216,148)">
+      <rect x="0" y="0" width="184" height="42" rx="14" fill="#5b6cff"/>
+      <text x="16" y="26" font-family="'Hanken Grotesk','Inter',sans-serif" font-size="14" font-weight="500" fill="#ffffff">I am fine thanks!</text>
     </g>
+    <text x="216" y="204" font-family="'Hanken Grotesk','Inter',sans-serif" font-size="11" font-weight="600" fill="#1fb28a">✓ corrected: I'm good, thanks!</text>
   </g>
 </svg>

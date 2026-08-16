@@ -235,9 +235,16 @@ ${GA}
 <meta property="og:title" content="talksibi — Practise languages with real people">
 <meta property="og:description" content="Chat with native speakers, play games together, join live parties. Free forever. Connect · Learn · Play.">
 <meta property="og:url" content="${SITE}/">
+<!-- Owner ask v25: SVG-first for modern crawlers (FB/Slack/WhatsApp/
+     iMessage/LinkedIn all support SVG now). Kept .png as a second
+     og:image so older scrapers + Twitter fall back cleanly if they
+     don't accept SVG. Regenerate og-image.png from og-image.svg
+     when you can (any online SVG→PNG at 1200×630 works). -->
+<meta property="og:image" content="${SITE}/og-image.svg">
 <meta property="og:image" content="${SITE}/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="talksibi — connect, learn, play with real language partners">
 <meta property="og:locale" content="en_GB">
 
 <!-- Twitter -->
@@ -245,6 +252,7 @@ ${GA}
 <meta name="twitter:title" content="talksibi — Practise languages with real people">
 <meta name="twitter:description" content="Chat with native speakers, play games together, join live parties. Free forever.">
 <meta name="twitter:image" content="${SITE}/og-image.png">
+<meta name="twitter:image:alt" content="talksibi — connect, learn, play">
 
 <!-- Icons / PWA -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
