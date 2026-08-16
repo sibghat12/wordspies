@@ -3441,30 +3441,32 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     margin:0; white-space:normal; text-overflow:clip;
   }
   #tabWall .wcard-accent{ font-size:11px }
-  /* Mobile actions v28: same icon-only pattern as desktop. */
+  /* Mobile actions v31 — same shape as desktop (text pills with
+     icon + label). Slightly tighter to fit a phone card. */
   #tabWall .wcard-actions{
     grid-area:actions;
     display:flex; flex-direction:row; gap:8px; margin-top:6px; padding-top:8px;
     border-top:1px solid #f2f3f7; justify-content:flex-start;
   }
-  #tabWall .wcard-btn-lbl{ display:none }
+  #tabWall .wcard-btn-lbl{ display:inline }
   #tabWall .wcard-cta,
   #tabWall .wcard-actions .wcard-follow{
     flex:0 0 auto !important;
-    width:42px !important; height:42px !important; min-height:42px !important;
-    padding:0 !important; border-radius:50% !important;
+    width:auto !important; height:auto !important;
+    min-height:36px !important;
+    padding:8px 14px !important;
+    border-radius:99px !important;
     display:inline-flex !important; align-items:center; justify-content:center;
-    gap:0; font-size:16px !important;
+    gap:6px; font-size:12.5px !important; font-weight:600;
+    line-height:1; white-space:nowrap;
   }
   #tabWall .wcard-cta .wcard-btn-ic,
-  #tabWall .wcard-follow .wcard-btn-ic{ font-size:16px; line-height:1 }
-  /* AI 'Practise now' remains a pill (single button, needs a label). */
+  #tabWall .wcard-follow .wcard-btn-ic{ font-size:14px; line-height:1 }
+  /* AI 'Practise now' — single pill, full width. */
   #tabWall .wcard-cta.wcard-cta-ai{
-    flex:1 1 auto !important; width:auto !important;
+    flex:1 1 auto !important;
     padding:11px 16px !important; font-size:13px !important;
-    border-radius:99px !important; height:auto;
   }
-  #tabWall .wcard-cta.wcard-cta-ai .wcard-btn-lbl{ display:inline; margin-left:6px }
   #tabWall .wcard-dice{ display:none }
 }
 
