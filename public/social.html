@@ -3025,6 +3025,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 #tabWall .rfpill:hover{ background:#fff; border-color:#c9cfe3; color:#16181f }
 
 /* ── Accent sub-row chips (only shown under 'Chat Experts') ── */
+/* Owner ask v24: kill the accent strip + accent chips on AI cards.
+   Applied to #tabWall so it removes them across the wall on any
+   filter (AI Experts view included). */
+#tabWall .acrow{display:none !important}
+#tabWall .wcard-accent{display:none !important}
 #tabWall .acrow .achip{
   font-family:var(--brand-font);
 }
