@@ -37,17 +37,38 @@ app.use((req, res, next) => {
   next();
 });
 const landing = require('./landing');
-// The community IS the site now: the social app answers the front door —
-// games, community, chats and live games all one tap away. The old marketing
-// landing still exists at /home for anyone who wants the tour. Old share
-// links (talksibi.com/?room=XXXX) still land at their game table.
+// Root routing — landing at / (16 Aug 2026 owner ask: 'we need to
+// make the landing page as the root and the other goes from the
+// landing page').
+//
+//   /            → landing.page()   (marketing, was at /home)
+//   /app         → the app          (was at /)
+//   /home        → /app (301)       (legacy — anyone linking /home still lands)
+//   /?room=XYZ   → /codenames?room=XYZ (untouched — every share link ever
+//                                       lived at this shape)
+//
+// Node handles all the redirects so old bookmarks and PWAs land somewhere
+// sensible instead of 404ing. Deep links to /social + game codes still work
+// because they aren't rooted at /.
 app.get('/', (req, res) => {
   if (req.query.room) return res.redirect('/codenames?room=' + encodeURIComponent(String(req.query.room).slice(0, 8)));
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('html').send(landing.page());
+});
+app.get('/app', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'social.html'));
+});
+app.get('/social', (req, res) => {
+  // Legacy — the SPA has always been reachable at /social via internal
+  // navigation. Keep serving the same app so nothing breaks; new canonical
+  // is /app.
   res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public', 'social.html'));
 });
 app.get('/home', (req, res) => {
-  res.type('html').send(landing.page());
+  // Landing used to live here; now it's at /. Redirect old links to root.
+  res.redirect(301, '/');
 });
 // The word game's canonical URL is /codenames — it's what people actually
 // search for. /play is kept forever as a 301 because it's baked into every

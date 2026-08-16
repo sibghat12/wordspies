@@ -438,10 +438,10 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
       <span class="ts-wordmark" style="font-size:22px">talksibi</span>
     </a>
     <div class="navlinks">
-      <a class="hideSm" href="/social">Community</a>
+      <a class="hideSm" href="/app">Community</a>
       <a href="/games">Games</a>
       <a class="hideSm" href="/blog">Blog</a>
-      <a class="btn small" href="/social">Sign in</a>
+      <a class="btn small" href="/app">Sign in</a>
     </div>
   </nav>
 </div></header>
@@ -452,7 +452,7 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
       <h1>Learn a language by <span class="accent">playing</span> with real people</h1>
       <p>Chat with speakers from every country, get instant AI corrections on your messages, drop into live voice parties, and play 8 free games together — no textbooks, no lessons, no sign-up.</p>
       <div class="cta-row">
-        <a class="btn" href="/social">${PAD}Start free — 30 seconds</a>
+        <a class="btn" href="/app">${PAD}Start free — 30 seconds</a>
         <a class="btn ghost" href="/games">Browse games</a>
       </div>
       <div class="herometa">
@@ -475,30 +475,30 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
   <h2 class="sec-h">Learn any of these 24 languages, free</h2>
   <p class="sec-sub">Tap a language to sign up and start chatting with real speakers in seconds. Every language, every level — beginner to fluent.</p>
   <div class="flaggrid">
-    <a href="/social" class="flagcard"><span class="fl">🇪🇸</span><b>Spanish</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇫🇷</span><b>French</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇩🇪</span><b>German</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇮🇹</span><b>Italian</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇵🇹</span><b>Portuguese</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇳🇱</span><b>Dutch</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇸🇪</span><b>Swedish</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇵🇱</span><b>Polish</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇬🇷</span><b>Greek</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇹🇷</span><b>Turkish</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇷🇺</span><b>Russian</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇺🇦</span><b>Ukrainian</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇸🇦</span><b>Arabic</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇮🇷</span><b>Persian</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇮🇱</span><b>Hebrew</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇮🇳</span><b>Hindi</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇧🇩</span><b>Bengali</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇵🇰</span><b>Urdu</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇯🇵</span><b>Japanese</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇰🇷</span><b>Korean</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇨🇳</span><b>Mandarin</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇻🇳</span><b>Vietnamese</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇹🇭</span><b>Thai</b></a>
-    <a href="/social" class="flagcard"><span class="fl">🇮🇩</span><b>Indonesian</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇪🇸</span><b>Spanish</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇫🇷</span><b>French</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇩🇪</span><b>German</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇮🇹</span><b>Italian</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇵🇹</span><b>Portuguese</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇳🇱</span><b>Dutch</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇸🇪</span><b>Swedish</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇵🇱</span><b>Polish</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇬🇷</span><b>Greek</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇹🇷</span><b>Turkish</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇷🇺</span><b>Russian</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇺🇦</span><b>Ukrainian</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇸🇦</span><b>Arabic</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇮🇷</span><b>Persian</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇮🇱</span><b>Hebrew</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇮🇳</span><b>Hindi</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇧🇩</span><b>Bengali</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇵🇰</span><b>Urdu</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇯🇵</span><b>Japanese</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇰🇷</span><b>Korean</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇨🇳</span><b>Mandarin</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇻🇳</span><b>Vietnamese</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇹🇭</span><b>Thai</b></a>
+    <a href="/app" class="flagcard"><span class="fl">🇮🇩</span><b>Indonesian</b></a>
   </div>
   <p class="flagfoot">Learning something else? Pick 'Other' at signup — every language works.</p>
 </div></div>
@@ -559,7 +559,7 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
 <div class="band greenb"><div class="wrap" style="text-align:center">
   <h2 class="sec-h">Your first conversation starts in 30 seconds</h2>
   <p style="font-weight:500;margin:8px 0 26px;font-size:17px">Free forever. No credit card. No app store. Just pick your language and go.</p>
-  <a class="btn" href="/social" style="background:#fff;color:var(--green)">${PAD}Start free</a>
+  <a class="btn" href="/app" style="background:#fff;color:var(--green)">${PAD}Start free</a>
 </div></div>
 
 <div class="band white"><div class="wrap">
