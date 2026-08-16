@@ -3078,9 +3078,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 /* ── Meta row (online + location chips) + tighter Follow pill ────
    (owner ask 16 Aug 2026 v4: 'I not see the location, the online,
    the status — Say hola button too big — add Follow button'). */
-#tabWall .wcard-meta{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px;font-family:var(--brand-font);align-items:center}
-#tabWall .wcard-mchip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;padding:0;border:0;background:transparent;color:#8a8d99;letter-spacing:0}
-#tabWall .wcard-mchip-on{color:#1fb28a;font-weight:600}
+/* Meta row: plain inline text — pin SVG + city · Online/Active.
+   No pills, no cards, no colored backgrounds. */
+#tabWall .wcard-meta{display:flex;flex-wrap:wrap;gap:4px 8px;margin:2px 0 6px;font-family:var(--brand-font);align-items:center;line-height:1.35}
+#tabWall .wcard-mchip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:0;border:0;background:transparent;color:#8a8d99;letter-spacing:0;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#tabWall .wcard-mchip-on{color:#14785e;font-weight:600}
 #tabWall .wcard-mdot{width:6px;height:6px;border-radius:50%;background:#1fb28a;display:inline-block;animation:mchipPulse 1.6s ease-in-out infinite}
 #tabWall .wcard-mchip-loc{color:#8a8d99}
 #tabWall .wcard-mchip + .wcard-mchip::before{content:'·';margin-right:2px;color:#c9cbd5}
@@ -11952,14 +11954,18 @@ function renderWall(){
     // 2026 v4: 'I not see the location, the online, the status'). Sits
     // between name and languages so it reads as who + where + status.
     const _cityTxt = m.location || m.country || '';
+    // Owner ask 16 Aug 2026 v5: 'make it location icon, no [chip/card]'.
+    // Meta row is plain text — small pin SVG + city, dot separator,
+    // then online/last-seen. No pills, no flag emoji on this line.
+    const _pinSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;flex-shrink:0;opacity:.75"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
+    const _locChip = _cityTxt
+      ? `<span class="wcard-mchip wcard-mchip-loc">${_pinSVG}${esc(String(_cityTxt).slice(0, 28))}</span>`
+      : '';
     const _onlineChip = m.online
       ? `<span class="wcard-mchip wcard-mchip-on"><span class="wcard-mdot"></span>Online</span>`
       : (m.lastSeenAt ? `<span class="wcard-mchip">Active ${esc(relTimeShort(m.lastSeenAt))}</span>` : '');
-    const _locChip = _cityTxt
-      ? `<span class="wcard-mchip wcard-mchip-loc">${m.cc ? flag(m.cc) : '📍'} ${esc(String(_cityTxt).slice(0, 22))}</span>`
-      : '';
     const metaChips = (_onlineChip || _locChip)
-      ? `<div class="wcard-meta">${_onlineChip}${_locChip}</div>`
+      ? `<div class="wcard-meta">${_locChip}${_onlineChip}</div>`
       : '';
     // DOM shape mirrors §1a of TalkSibi App Screens.dc.html:
     //   .wcard (col flex, gap:10)
