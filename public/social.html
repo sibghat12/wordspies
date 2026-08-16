@@ -740,7 +740,22 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    Left sidebar (photo + meta + actions), right cards (talk / interests /
    goals / speaks / learns / recommendations / photos). Two-column on
    desktop; stacked on mobile. */
-.mp-hero{display:none;height:120px;background:#e6ecf1;position:relative;border-radius:4px;overflow:hidden}
+/* Hero band with map — shown on mobile AND desktop now (owner ask
+   16 Aug 2026: 'show the map on top in the mobile as well'). Was
+   display:none by default which hid it on mobile entirely. */
+.mp-hero{display:block;height:150px;background:#e6ecf1;position:relative;overflow:hidden;margin:0 0 12px}
+@media(min-width:769px){ .mp-hero{border-radius:4px} }
+/* Save-profile floating bar at the bottom of /me (owner ask 16 Aug
+   2026 v2: 'remove the save button, put it at the bottom'). Only
+   painted inside #tabMe — hides itself elsewhere via the parent
+   scope. Log-out link stays tight in the header. */
+.mp-actions.mp-actions-tight{padding-top:2px;gap:6px}
+.mp-btn.small{padding:8px 14px;font-size:12.5px}
+.me-savebar{position:sticky;bottom:0;left:0;right:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(250,251,253,0),rgba(250,251,253,.96) 40%);display:flex;justify-content:center;pointer-events:none;z-index:30}
+.me-savebar-btn{pointer-events:auto;background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);color:#fff;border:0;padding:14px 28px;border-radius:999px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 8px 24px rgba(232,80,107,.32);transition:transform .12s,box-shadow .16s;min-width:220px;letter-spacing:-.1px}
+.me-savebar-btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(232,80,107,.42)}
+.me-savebar-btn:active{transform:translateY(0)}
+@media(min-width:769px){ .me-savebar{padding-bottom:18px} }
 /* Owner ask 12 Aug 2026: turn the flat gradient banner into a real
    map of the user's city. Leaflet + OSM tiles fill the hero; the
    Back button + a small "city name" pill float on top. */
@@ -1105,11 +1120,11 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
    look. Row height bumped to 150px to match. */
 @media(min-width:769px){
   .mp-hero{
-    display:block;
     width:100vw;
     margin-left:calc(50% - 50vw);
     margin-right:calc(50% - 50vw);
     height:150px;
+    border-radius:0;
   }
 }
 /* Grid centred with a Speaky-style max so the sidebar column sits
@@ -4021,9 +4036,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
                seeded 'Hey! I'm really into languages…' placeholder we
                used to fall back to). -->
           <button type="button" class="me-addbio hidden" id="myAddBioChip" onclick="focusBioEditor()">+ Add a bio</button>
-          <div class="mp-actions">
-            <button class="mp-btn primary" onclick="saveProfile()">💾 Save profile</button>
-            <button class="mp-btn line" onclick="logout()">Log out</button>
+          <!-- Save + Log out moved out of the top-of-profile slot (owner
+               ask 16 Aug 2026: 'remove the save button, put it at the
+               bottom'). Log out kept here as a small ghost link so it
+               isn't buried. Save lives in the floating bar below. -->
+          <div class="mp-actions mp-actions-tight">
+            <button class="mp-btn line small" onclick="logout()">Log out</button>
           </div>
           <!-- Legacy hidden shells so paintMe() writes don't error. -->
           <span id="myGames" class="hidden"></span><span id="myWins" class="hidden"></span>
@@ -4216,6 +4234,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <button class="btn btn-line" style="color:var(--err);border-color:var(--err)" onclick="confirmDelete()">Delete account</button>
       <div class="note" style="color:var(--err);margin-top:10px">This action cannot be undone. You'll lose all your profile data and game history.</div>
     </div>
+    </div>
+    <!-- Floating Save-profile bar (owner ask 16 Aug 2026 — Save moved
+         from the top slot to a persistent bottom bar so it's always
+         reachable but doesn't clutter the header). Visible only on /me. -->
+    <div class="me-savebar" id="meSaveBar">
+      <button type="button" class="me-savebar-btn" onclick="saveProfile()">💾 Save profile</button>
     </div>
   </div>
 
@@ -6025,7 +6049,11 @@ function paintMe(){
   if ($('meAvSmall')) $('meAvSmall').innerHTML = avatarHtml(ME, 34);
   if ($('meName')) $('meName').innerHTML = esc(ME.name) + tick;
   $('myAv').innerHTML = avatarHtml(ME, 104, 'big');
-  $('myName').innerHTML = esc(ME.name) + tick;
+  // Owner ask 16 Aug 2026: 'show name and age like Ali, 22'. Matches
+  // the paintMember() render on other people's profiles so /me looks
+  // exactly like /user/:id looks to a visitor.
+  const _myAge = (ME && ME.age) ? ` <span style="color:var(--faint);font-weight:500">, ${ME.age}</span>` : '';
+  $('myName').innerHTML = esc(ME.name) + tick + _myAge;
   $('myGames').textContent = ME.games; $('myWins').textContent = ME.wins;
   $('myRate').textContent = winRate(ME);
   $('mySince').textContent = new Date(ME.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
