@@ -535,9 +535,8 @@ a:hover{color:#4353e8}
 
 <!-- Sticky nav -->
 <nav class="ts-nav">
-  <a class="ts-lockup" href="/" aria-label="talksibi home">
-    ${tsLogoMark(34)}
-    <span class="ts-wordmark" style="font-size:24px">talksibi</span>
+  <a class="ts-lockup" href="/" aria-label="talksibi home" style="text-decoration:none">
+    <img src="/logo.svg" alt="talksibi" style="height:34px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:24px&quot;&gt;talksibi&lt;/span&gt;'">
   </a>
   <div class="ts-navlinks">
     <a class="ts-hide-sm" href="/app">Community</a>
@@ -827,9 +826,8 @@ a:hover{color:#4353e8}
   <div class="ts-foot-inner">
     <div class="ts-foot-cols">
       <div class="ts-foot-brand">
-        <a class="ts-lockup" href="/">
-          ${tsLogoMark(30)}
-          <span class="ts-wordmark" style="font-size:21px">talksibi</span>
+        <a class="ts-lockup" href="/" style="text-decoration:none">
+          <img src="/logo.svg" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px&quot;&gt;talksibi&lt;/span&gt;'">
         </a>
         <div class="ts-foot-blurb">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
         <div class="ts-foot-socials">

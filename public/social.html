@@ -3051,11 +3051,55 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   #tabWall .wall{ grid-template-columns:repeat(2,1fr); gap:16px }
 }
 @media(min-width:1024px){
-  #tabWall .wall{ grid-template-columns:repeat(3,1fr); gap:16px }
+  #tabWall .wall{ grid-template-columns:repeat(3,1fr); gap:14px }
 }
-@media(min-width:1500px){
-  #tabWall .wall{ grid-template-columns:repeat(3,1fr); gap:18px }
+/* Laptop / large desktop → 4 columns (owner ask 16 Aug 2026 v3). */
+@media(min-width:1280px){
+  #tabWall .wall{ grid-template-columns:repeat(4,1fr); gap:14px }
 }
+@media(min-width:1600px){
+  #tabWall .wall{ grid-template-columns:repeat(4,1fr); gap:18px }
+}
+
+/* ── Meta row (online + location chips) + tighter Follow pill ────
+   (owner ask 16 Aug 2026 v4: 'I not see the location, the online,
+   the status — Say hola button too big — add Follow button'). */
+#tabWall .wcard-meta{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px;font-family:var(--brand-font)}
+#tabWall .wcard-mchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:#f4f5f9;color:#4a4d59;border:1px solid #ecedf3;letter-spacing:.1px}
+#tabWall .wcard-mchip-on{background:#eefaf5;color:#14785e;border-color:#cbecdc}
+#tabWall .wcard-mdot{width:6px;height:6px;border-radius:50%;background:#1fb28a;display:inline-block;box-shadow:0 0 0 2px #eefaf5;animation:mchipPulse 1.6s ease-in-out infinite}
+#tabWall .wcard-mchip-loc{background:#fafafa;color:#6b6e7a;border-color:#e8e6e0}
+@keyframes mchipPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.85);opacity:.6}}
+
+/* Tighten primary + follow buttons — spec pill height, less shout. */
+#tabWall .wcard-cta{padding:8px 12px !important;font-size:12.5px !important;min-height:36px}
+#tabWall .wcard-follow{background:#fff;border:1.5px solid #e0e2eb;color:#4a4d59;padding:8px 12px;border-radius:99px;font-family:var(--brand-font);font-weight:600;font-size:12.5px;cursor:pointer;transition:.14s;min-height:36px;line-height:1;white-space:nowrap;flex-shrink:0}
+#tabWall .wcard-follow:hover{border-color:#5b6cff;color:#5b6cff}
+#tabWall .wcard-follow.on{background:#eefaf5;border-color:#cbecdc;color:#14785e}
+#tabWall .wcard-follow:disabled{opacity:.5}
+/* Old dice button retired — kill any remnant style */
+#tabWall .wcard-dice{display:none !important}
+/* Old seen line retired — replaced by the online chip in meta row */
+#tabWall .wcard-seen{display:none !important}
+
+/* ── Kill the wall invite banner (owner ask 16 Aug 2026 v4: 'remove
+      the banner invite 5 friends from the wall'). Left the HTML in
+      place; hidden here so a future re-add is trivial. */
+#tabWall .ts-invite-banner{display:none !important}
+
+/* ── Filter chip 'All' cut off — add breathing room on the left ── */
+#tabWall .filterrow{padding-left:2px}
+#tabWall .fchips{padding-left:2px}
+#tabWall .fchip:first-child{margin-left:0}
+@media(max-width:719px){
+  #tabWall .filterrow{padding-left:12px !important;padding-right:12px}
+  #tabWall .fchips{padding-left:0}
+}
+
+/* ── Top nav wordmark → talksibi lockup on the wall's nav too ─── */
+.topnav .tnlogo{gap:6px}
+.topnav .tnlogo img.ts-mark{width:28px;height:28px;display:inline-block;vertical-align:middle}
+.topnav .tnlogo .ts-wordmark{font-family:var(--brand-font);font-weight:600;text-transform:lowercase;letter-spacing:-0.3px;color:#000;font-size:21px;line-height:1;display:inline-block;vertical-align:middle}
 
 /* ── Card base: white, 16px radius, soft shadow per §1a. Grid overrides
      the legacy 130px/1fr split so the card lays out as flex column
@@ -3856,9 +3900,8 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
        profile chip (right). Persistent across every tab so the site header
        is no longer a per-tab afterthought. -->
   <nav class="topnav">
-    <a class="tnlogo ts-lockup" href="/" aria-label="talksibi home" style="text-decoration:none">
-      <img class="ts-mark" src="/mark.svg" alt="" style="width:32px;height:32px" onerror="this.style.display='none'">
-      <span class="ts-wordmark" style="font-size:22px">talksibi</span>
+    <a class="tnlogo" href="/" aria-label="talksibi home" style="text-decoration:none;display:inline-flex;align-items:center">
+      <img src="/logo.svg" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px;font-family:var(--brand-font);font-weight:600;letter-spacing:-.3px;color:#000&quot;&gt;talksibi&lt;/span&gt;'">
     </a>
     <div class="tntabs" role="tablist">
       <!-- Chats + Community use monochrome SVG line icons — clean,
@@ -11869,20 +11912,36 @@ function renderWall(){
     const nativeCode = (m.speaks && m.speaks.length) ? langCode(m.speaks[0]) : '';
     const greeting = HELLO[nativeCode] || 'hola';
     // AI Chat Experts get the black "Practise now" CTA per §1a AI variant.
+    // Owner ask 16 Aug 2026 v3: 'remove the game button, add Follow
+    // instead, Say hello button too big'. Compact pill pair — 💬 + Follow.
+    const _isFollowing = (typeof FOLLOWING === 'object' && FOLLOWING && FOLLOWING.has) ? FOLLOWING.has(m.id) : false;
     const ctaHtml = m.isAI
       ? `<button class="wcard-cta wcard-cta-ai" onclick="event.stopPropagation();openMember(${i})" type="button">✦ Practise now</button>`
-      : `<button class="wcard-cta" onclick="event.stopPropagation();wallMsg(event,'${esc(m.id)}')" type="button">💬 Say ${esc(greeting)}</button>` +
-        `<button class="wcard-dice" onclick="event.stopPropagation();openChallenge('codenames','Codenames')" type="button" title="Challenge to a game" aria-label="Challenge to a game">🎲</button>`;
+      : `<button class="wcard-cta" onclick="event.stopPropagation();wallMsg(event,'${esc(m.id)}')" type="button" aria-label="Say ${esc(greeting)}">💬 ${esc(greeting)}</button>` +
+        `<button class="wcard-follow${_isFollowing ? ' on' : ''}" data-uid="${esc(m.id)}" onclick="wallFollow(event,'${esc(m.id)}',this)" type="button" title="${_isFollowing ? 'Following' : 'Follow'}">${_isFollowing ? '✓ Following' : '＋ Follow'}</button>`;
+    // Prominent meta row: online dot + location chip (owner ask 16 Aug
+    // 2026 v4: 'I not see the location, the online, the status'). Sits
+    // between name and languages so it reads as who + where + status.
+    const _cityTxt = m.location || m.country || '';
+    const _onlineChip = m.online
+      ? `<span class="wcard-mchip wcard-mchip-on"><span class="wcard-mdot"></span>Online</span>`
+      : (m.lastSeenAt ? `<span class="wcard-mchip">Active ${esc(relTimeShort(m.lastSeenAt))}</span>` : '');
+    const _locChip = _cityTxt
+      ? `<span class="wcard-mchip wcard-mchip-loc">${m.cc ? flag(m.cc) : '📍'} ${esc(String(_cityTxt).slice(0, 22))}</span>`
+      : '';
+    const metaChips = (_onlineChip || _locChip)
+      ? `<div class="wcard-meta">${_onlineChip}${_locChip}</div>`
+      : '';
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
       ${cornerBadge}
       <div class="wcard-photo">${photo}${m.online ? '<span class="wcard-online-dot" aria-hidden="true"></span>' : ''}</div>
       <div class="wcard-body">
-        <div class="wcard-name">${esc(m.name)}${m.age ? `<span class="wcard-age">, ${m.age}</span>` : ''}${mark(m)}${m.online ? '<span class="wcard-dot" title="Online"></span>' : ''}</div>
+        <div class="wcard-name">${esc(m.name)}${m.age ? `<span class="wcard-age">, ${m.age}</span>` : ''}${mark(m)}</div>
+        ${metaChips}
         ${accentChip}
         ${langsRow}
         ${talkSnip ? `<p class="wcard-talk">${talkSnip}</p>` : `<p class="wcard-talk wcard-empty">Hello 👋</p>`}
-        ${seenTxt ? `<div class="wcard-seen ${m.online ? 'is-online' : ''}">${seenTxt}</div>` : ''}
         <div class="wcard-actions">${ctaHtml}</div>
       </div>
     </a>`;
