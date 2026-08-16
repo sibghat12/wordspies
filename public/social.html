@@ -2996,91 +2996,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   background:#5b6cff; border-color:#5b6cff;
 }
 
-/* ── Cards grid: 1 col mobile, 2 col tablet, 3 col desktop per §1a ── */
-#tabWall .wall{ display:grid; grid-template-columns:1fr; gap:12px; padding:6px 0 30px }
-@media(min-width:720px){ #tabWall .wall{ grid-template-columns:repeat(2,1fr); gap:14px } }
-@media(min-width:1024px){ #tabWall .wall{ grid-template-columns:repeat(3,1fr); gap:14px } }
-@media(min-width:1500px){ #tabWall .wall{ grid-template-columns:repeat(3,1fr) } }
-
-/* ── Member card: white, 16px radius, soft shadow, hover lift ── */
-#tabWall .wcard{
-  background:#fff; border:1px solid #eceef4; border-radius:16px;
-  padding:14px 14px 12px; gap:12px;
-  grid-template-columns:70px 1fr;
-  box-shadow:0 6px 20px rgba(22,24,31,0.05);
-  transition:transform .14s ease, box-shadow .18s ease, border-color .18s ease;
-  font-family:var(--brand-font);
-}
-#tabWall .wcard:hover{
-  transform:translateY(-2px);
-  box-shadow:0 18px 50px rgba(22,24,31,0.12);
-  border-color:#e0e3ee;
-}
-#tabWall .wcard-photo{
-  width:70px; height:70px; border-radius:50%;
-  background:linear-gradient(135deg,#5b6cff,#9b6cff);
-  position:relative;
-}
-#tabWall .wcard-photo .pcircph{ font-size:26px; font-weight:600; font-family:var(--brand-font) }
-/* Online dot bottom-right of the avatar per §1a. .wcard-dot markup lives
-   next to the name but we render a matching dot on the photo too via
-   the presence of the [data-i] card + .wcard-dot descendant. We keep
-   the inline dot; visual expectation is one green dot on the avatar. */
-#tabWall .wcard-body{ gap:6px }
-#tabWall .wcard-name{
-  color:#16181f !important; font-weight:600 !important; font-size:15px !important;
-  letter-spacing:-.1px !important; gap:6px;
-  font-family:var(--brand-font);
-}
-#tabWall .wcard-dot{
-  width:9px; height:9px; background:#1fb28a; border:2px solid #fff;
-  border-radius:50%; box-shadow:0 0 0 1px rgba(31,178,138,.25);
-}
-#tabWall .wcard-talk{
-  color:#6b6e7a; font-weight:500; font-size:13px; line-height:1.5;
-  -webkit-line-clamp:2;
-  font-family:var(--brand-font);
-}
-/* Language chips row: reads as native (green tint) + learning (periwinkle
-   tint) pill pair. The existing .wf-col markup gets restyled to look
-   like the §1a pills — no JS change. */
-#tabWall .wcard-langs{
-  display:flex; gap:6px; padding-top:2px; flex-wrap:wrap;
-  justify-content:flex-start;
-}
-#tabWall .wcard-langs .wf-col{
-  flex:0 1 auto; display:inline-flex; align-items:center; gap:6px;
-  background:#f2f8f5; color:#2d7a62; border-radius:99px;
-  padding:4px 10px 4px 6px; font-size:12px; font-weight:600;
-  text-align:left; align-items:center;
-}
-#tabWall .wcard-langs .wf-col:last-child{
-  background:#f3f4fb; color:#4a55c9;
-  align-items:center; text-align:left;
-}
-#tabWall .wcard-langs .wf-lbl{
-  font-size:11px; color:inherit; font-weight:600; letter-spacing:0;
-  text-transform:none;
-}
-#tabWall .wcard-langs .wf-row{ gap:4px }
-#tabWall .wcard-langs .wf-flag{ width:16px; height:16px }
-#tabWall .wcard-langs .wf-more{ color:inherit; opacity:.7 }
-
-/* AI expert card variant: gradient tint per §1a. Detected via child
-   .wcard-name .ai-badge. */
-#tabWall .wcard:has(.ai-badge){
-  background:linear-gradient(160deg,#f6f1ff,#f0f1ff);
-  border-color:#ddd6ff;
-}
-#tabWall .wcard:has(.ai-badge) .wcard-photo{
-  border-radius:14px; background:linear-gradient(135deg,#5b6cff,#9b6cff);
-}
-#tabWall .wcard:has(.ai-badge) .wcard-talk{ color:#55496b }
-
+/* ── Cards grid + card styles moved to the "1a wall cards v3" block
+   further down. The old v1/v2 rules were removed here on 2026-08-16;
+   see the new block for the current spec-matching version. ── */
 /* "New" corner + refct badge keep their existing look but move slightly
-   so they don't collide with the new smaller avatar. */
+   so they don't collide with the new avatar. */
 #tabWall .wcard-newref,
-#tabWall .wcard-refct{ top:8px; right:10px }
+#tabWall .wcard-refct{ top:8px; right:10px; z-index:3 }
 
 /* Wall layout — single column at every breakpoint (owner ask 16 Aug
    2026 v2: 'remove the right sidebar'). Right rail retired. */
@@ -3110,30 +3032,245 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   #tabWall .ts-invite-banner{padding:11px 14px}
 }
 
-/* Wall grid + card polish (owner ask 16 Aug 2026 v2: 'the wall not so
-   good looking'). Tighter grid, cleaner card, better hierarchy. */
-#tabWall .wall{ display:grid; gap:14px; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); margin-top:6px }
-@media(min-width:720px){ #tabWall .wall{ gap:16px } }
-@media(min-width:1200px){ #tabWall .wall{ grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px } }
-#tabWall .wcard{
-  background:#fff;border:1px solid #eef0f4;border-radius:18px;
-  padding:16px 16px 14px;font-family:var(--brand-font);
-  box-shadow:0 2px 10px rgba(22,24,31,.04);
-  transition:transform .14s ease,box-shadow .18s ease,border-color .14s ease;
-  position:relative;overflow:hidden;cursor:pointer
+/* ═══ 1a wall cards v3 (talksibi rebrand) ═══
+   Pixel-match §1a of app-screens-standalone.html.
+   Laptop ≥1024px: 3-col grid, tall cards, avatar + name/langs on top,
+   bio below, two action pills on the bottom row (💬 Say hola primary +
+   🎲 ghost).
+   Tablet 720-1023px: 2-col grid, same tall card layout.
+   Mobile <720px: single-column ROW — 52px photo left, name/lang/bio
+   middle, one primary CTA right. Chips scroll horizontally.
+   Preserves every DOM handler: .wcard onclick=openMember(i), the two
+   inner buttons stopPropagation before their own handlers fire.  */
+#tabWall .wall{
+  display:grid; gap:14px;
+  grid-template-columns:1fr;
+  margin-top:6px;
 }
-#tabWall .wcard:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(22,24,31,.08);border-color:#dfe3ee}
-#tabWall .wcard-photo{width:64px;height:64px;border-radius:50%;overflow:hidden;flex-shrink:0}
-#tabWall .wcard-photo img,#tabWall .wcard-photo .pcircph{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
-#tabWall .wcard-name{font-family:var(--brand-font);font-weight:700;font-size:16px;letter-spacing:-.1px;color:#16181f;line-height:1.15;display:flex;align-items:center;gap:5px}
-#tabWall .wcard-talk{font-size:13px;color:#4a4d59;line-height:1.5;font-weight:400;margin:8px 0 10px}
-#tabWall .wcard-empty{color:#9a9db8;font-style:italic}
-#tabWall .wf-col{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;color:#6b6e7a;background:#fafafa;border:1px solid #e8e6e0}
-#tabWall .wf-col:first-of-type{background:#f2f8f5;border-color:#c8e6d8;color:#2d7a62}
-#tabWall .wf-col:last-of-type{background:#f3f4fb;border-color:#dbdefb;color:#4353e8}
-#tabWall .wcard-seen{font-size:11px;color:#8a8d99;font-weight:500;margin-top:8px}
-#tabWall .wcard-seen.is-online{color:#1fb28a;font-weight:600}
-#tabWall .wcard-dot{width:8px;height:8px;border-radius:50%;background:#1fb28a;display:inline-block;margin-left:4px;box-shadow:0 0 0 2px #fff}
+@media(min-width:720px){
+  #tabWall .wall{ grid-template-columns:repeat(2,1fr); gap:16px }
+}
+@media(min-width:1024px){
+  #tabWall .wall{ grid-template-columns:repeat(3,1fr); gap:16px }
+}
+@media(min-width:1500px){
+  #tabWall .wall{ grid-template-columns:repeat(3,1fr); gap:18px }
+}
+
+/* ── Card base: white, 16px radius, soft shadow per §1a. Grid overrides
+     the legacy 130px/1fr split so the card lays out as flex column
+     (desktop) or as a horizontal row (mobile). ── */
+#tabWall .wcard{
+  display:flex; flex-direction:column; gap:10px;
+  background:#fff; border:1px solid #eceef4; border-radius:16px;
+  padding:18px; font-family:var(--brand-font);
+  box-shadow:0 6px 20px rgba(22,24,31,0.05);
+  transition:transform .14s ease, box-shadow .18s ease, border-color .18s ease;
+  position:relative; overflow:hidden; cursor:pointer;
+  grid-template-columns:none;
+  color:inherit; text-decoration:none;
+}
+#tabWall .wcard:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 50px rgba(22,24,31,0.12);
+  border-color:#e0e3ee;
+}
+
+/* ── Photo (top of card on desktop). 46px round per §1a. Online dot
+     bottom-right of the avatar. ── */
+#tabWall .wcard-photo{
+  width:46px; height:46px; border-radius:50%;
+  overflow:visible; flex-shrink:0; position:relative;
+  background:linear-gradient(135deg,#5b6cff,#9b6cff);
+}
+#tabWall .wcard-photo img,
+#tabWall .wcard-photo .pcircph{
+  width:46px; height:46px; border-radius:50%;
+  object-fit:cover; display:block;
+}
+#tabWall .wcard-photo .pcircph{
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:600; font-size:18px;
+  font-family:var(--brand-font);
+}
+/* Green online dot overlay on the photo per §1a spec. Rendered only when
+   the JS emits <span class="wcard-online-dot"> (online members). */
+#tabWall .wcard-online-dot{
+  position:absolute; bottom:0; right:0; width:12px; height:12px;
+  background:#1fb28a; border:2px solid #fff; border-radius:50%;
+  z-index:2;
+}
+
+/* Header row (photo + name column). Reproduces the "photo left / name
+   stack right" pattern from the standalone. Uses ::before pseudo-block
+   to build a flex row without changing DOM. */
+#tabWall .wcard-body{
+  display:flex; flex-direction:column; gap:8px;
+  min-width:0;
+}
+
+/* Name + age + tick + online dot. §1a: 15px / 500. */
+#tabWall .wcard-name{
+  color:#16181f !important; font-weight:500 !important; font-size:15px !important;
+  letter-spacing:-.1px !important; line-height:1.2;
+  display:flex; align-items:center; gap:4px;
+  font-family:var(--brand-font);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#tabWall .wcard-age{
+  font-weight:500; color:#16181f;
+}
+#tabWall .wcard-dot{
+  width:8px; height:8px; background:#1fb28a; border:2px solid #fff;
+  border-radius:50%; display:inline-block; box-shadow:0 0 0 1px rgba(31,178,138,.25);
+  margin-left:2px;
+}
+
+/* Bio — 2-line clamp, §1a muted grey. */
+#tabWall .wcard-talk{
+  font-size:13px; color:#6b6e7a; line-height:1.5;
+  font-weight:400; margin:0;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; word-break:break-word; font-style:normal;
+  font-family:var(--brand-font);
+}
+#tabWall .wcard-talk.wcard-empty{ color:#9a9db8; font-style:italic }
+
+/* Language chip pair. Native = green tint, Learns = periwinkle tint.
+   The pair sits on ONE row, never wraps on desktop; scrolls horizontally
+   on mobile. */
+#tabWall .wcard-langs{
+  display:flex; gap:6px; padding:0; margin:0;
+  flex-wrap:wrap; justify-content:flex-start;
+}
+#tabWall .wcard-langs .wf-col{
+  display:inline-flex; align-items:center; gap:5px;
+  background:#f2f8f5; color:#2d7a62; border-radius:99px;
+  border:1px solid transparent;
+  padding:4px 10px 4px 6px;
+  font-size:12px; font-weight:500;
+  font-family:var(--brand-font);
+  flex-direction:row; text-align:left;
+}
+#tabWall .wcard-langs .wf-col:last-of-type{
+  background:#f3f4fb; color:#4a55c9;
+  align-items:center;
+}
+#tabWall .wcard-langs .wf-lbl{
+  font-size:11px; color:inherit; font-weight:600;
+  letter-spacing:0; text-transform:none;
+}
+#tabWall .wcard-langs .wf-row{ display:inline-flex; align-items:center; gap:4px }
+#tabWall .wcard-langs .wf-flag{ width:16px; height:16px }
+#tabWall .wcard-langs .wf-flag .cflag,
+#tabWall .wcard-langs .wf-flag img{ border-radius:50% }
+#tabWall .wcard-langs .wf-more{ font-size:11px; color:inherit; opacity:.7; font-weight:600 }
+
+/* Actions row — 💬 Say hola (fills) + 🎲 (ghost) per §1a. */
+#tabWall .wcard-actions{
+  display:flex; gap:8px; margin-top:auto; padding-top:4px;
+}
+#tabWall .wcard-cta{
+  flex:1; background:#5b6cff; color:#fff;
+  font-family:var(--brand-font); font-size:13px; font-weight:600;
+  padding:10px 12px; border-radius:99px; border:0; cursor:pointer;
+  text-align:center; line-height:1.2;
+  box-shadow:0 4px 12px rgba(91,108,255,.22);
+  transition:background .12s, transform .08s, box-shadow .12s;
+  min-height:38px;
+}
+#tabWall .wcard-cta:hover{ background:#4353e8; box-shadow:0 6px 18px rgba(91,108,255,.3) }
+#tabWall .wcard-cta:active{ transform:translateY(1px) }
+#tabWall .wcard-cta-ai{
+  background:#16181f; color:#fff; box-shadow:0 4px 12px rgba(22,24,31,.22);
+}
+#tabWall .wcard-cta-ai:hover{ background:#000; box-shadow:0 6px 18px rgba(22,24,31,.3) }
+#tabWall .wcard-dice{
+  background:#fff; color:#16181f; border:1px solid #e4e6ee;
+  font-family:var(--brand-font); font-size:14px; font-weight:500;
+  padding:10px 14px; border-radius:99px; cursor:pointer;
+  min-width:44px; min-height:38px;
+  transition:background .12s, border-color .12s, transform .08s;
+}
+#tabWall .wcard-dice:hover{ background:#f6f7fb; border-color:#c9cfe3 }
+#tabWall .wcard-dice:active{ transform:translateY(1px) }
+
+/* AI expert card variant: purple gradient tint per §1a. Detected via
+   child .wcard-name .ai-badge. */
+#tabWall .wcard:has(.ai-badge){
+  background:linear-gradient(160deg,#f6f1ff,#f0f1ff);
+  border-color:#ddd6ff;
+}
+#tabWall .wcard:has(.ai-badge) .wcard-photo{
+  border-radius:14px; background:linear-gradient(135deg,#5b6cff,#9b6cff);
+}
+#tabWall .wcard:has(.ai-badge) .wcard-photo img,
+#tabWall .wcard:has(.ai-badge) .wcard-photo .pcircph{
+  border-radius:14px;
+}
+#tabWall .wcard:has(.ai-badge) .wcard-talk{ color:#55496b }
+
+/* Hide the redundant seen line — the online dot on the photo IS the
+   presence indicator (owner ask 1 Aug 2026 kept). */
+#tabWall .wcard-seen{ display:none !important }
+
+/* Legacy old-tab styles that leak in via base .wcard rules — force them
+   off so nothing looks stale. */
+#tabWall .wcard::before, #tabWall .wcard::after{ content:none !important }
+
+/* ── Mobile ROW layout per §2a: 52px photo left, name/lang/bio middle,
+     one CTA right. Chips must not wrap; the row scrolls horizontally.
+     Hit targets ≥ 44px. ── */
+@media(max-width:719px){
+  #tabWall .wcard{
+    flex-direction:row; align-items:center; gap:11px;
+    padding:14px;
+  }
+  #tabWall .wcard-photo{
+    width:52px; height:52px;
+  }
+  #tabWall .wcard-photo img,
+  #tabWall .wcard-photo .pcircph{
+    width:52px; height:52px;
+  }
+  #tabWall .wcard:has(.ai-badge) .wcard-photo{
+    border-radius:16px;
+  }
+  #tabWall .wcard:has(.ai-badge) .wcard-photo img,
+  #tabWall .wcard:has(.ai-badge) .wcard-photo .pcircph{
+    border-radius:16px;
+  }
+  #tabWall .wcard-body{
+    flex:1; min-width:0; gap:4px;
+  }
+  #tabWall .wcard-name{ font-size:14.5px !important; font-weight:600 !important }
+  #tabWall .wcard-talk{
+    font-size:12px; -webkit-line-clamp:1;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    display:block;
+  }
+  /* Chip row: single-line, horizontal scroll. */
+  #tabWall .wcard-langs{
+    flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden;
+    scrollbar-width:none; -ms-overflow-style:none;
+    max-width:100%;
+  }
+  #tabWall .wcard-langs::-webkit-scrollbar{ display:none }
+  #tabWall .wcard-langs .wf-col{ flex:0 0 auto; font-size:11.5px }
+  /* Actions collapse to just the primary CTA on mobile per §2a. Hide
+     the dice button — the profile drawer already has a challenge path. */
+  #tabWall .wcard-actions{
+    flex-direction:column; margin-top:0; padding-top:0;
+    flex-shrink:0; align-self:stretch; justify-content:center;
+  }
+  #tabWall .wcard-cta{
+    flex:0 0 auto; padding:9px 14px; font-size:12px; min-height:44px;
+    white-space:nowrap; min-width:82px;
+  }
+  #tabWall .wcard-dice{ display:none }
+  /* Accent chip under name gets a smaller tap-safe size. */
+  #tabWall .wcard-accent{ font-size:10.5px; padding:2px 7px }
+}
 
 /* ── Right rail card overrides (renderSide paints .sbcard/.sbme/etc.
       into #wallSide — we just restyle here). ── */
@@ -11520,16 +11657,34 @@ function renderWall(){
     const accentChip = (m.isAI && m.accent)
       ? `<div class="wcard-accent" title="Accent / dialect">✦ ${esc(m.accent)}</div>`
       : '';
+    // Localised greeting for the primary CTA (§1a shows the greeting
+    // in the member's native language: "Say hola" / "Say こんにちは" /
+    // "Say Bonjour"). Falls back to "Hola" when we don't have a
+    // native-language mapping. Owner spec: 💬 Say hola primary pill.
+    const HELLO = { es:'hola', en:'hi', ja:'こんにちは', fr:'bonjour', de:'hallo',
+      it:'ciao', pt:'olá', ru:'привет', ar:'مرحبا', tr:'merhaba', ko:'안녕',
+      zh:'你好', hi:'namaste', nl:'hallo', pl:'cześć', sv:'hej', no:'hei',
+      da:'hej', fi:'hei', cs:'ahoj', ro:'salut', el:'γεια', he:'שלום',
+      th:'สวัสดี', vi:'xin chào', id:'halo', uk:'привіт', fa:'سلام',
+      ur:'سلام', bn:'নমস্কার' };
+    const nativeCode = (m.speaks && m.speaks.length) ? langCode(m.speaks[0]) : '';
+    const greeting = HELLO[nativeCode] || 'hola';
+    // AI Chat Experts get the black "Practise now" CTA per §1a AI variant.
+    const ctaHtml = m.isAI
+      ? `<button class="wcard-cta wcard-cta-ai" onclick="event.stopPropagation();openMember(${i})" type="button">✦ Practise now</button>`
+      : `<button class="wcard-cta" onclick="event.stopPropagation();wallMsg(event,'${esc(m.id)}')" type="button">💬 Say ${esc(greeting)}</button>` +
+        `<button class="wcard-dice" onclick="event.stopPropagation();openChallenge('codenames','Codenames')" type="button" title="Challenge to a game" aria-label="Challenge to a game">🎲</button>`;
     return `
     <a class="wcard" onclick="openMember(${i})" data-i="${i}">
       ${cornerBadge}
-      <div class="wcard-photo">${photo}</div>
+      <div class="wcard-photo">${photo}${m.online ? '<span class="wcard-online-dot" aria-hidden="true"></span>' : ''}</div>
       <div class="wcard-body">
-        <div class="wcard-name">${esc(m.name)}${mark(m)}${m.online ? '<span class="wcard-dot" title="Online"></span>' : ''}</div>
+        <div class="wcard-name">${esc(m.name)}${m.age ? `<span class="wcard-age">, ${m.age}</span>` : ''}${mark(m)}${m.online ? '<span class="wcard-dot" title="Online"></span>' : ''}</div>
         ${accentChip}
-        ${talkSnip ? `<p class="wcard-talk">${talkSnip}</p>` : `<p class="wcard-talk wcard-empty">Hello 👋</p>`}
         ${langsRow}
+        ${talkSnip ? `<p class="wcard-talk">${talkSnip}</p>` : `<p class="wcard-talk wcard-empty">Hello 👋</p>`}
         ${seenTxt ? `<div class="wcard-seen ${m.online ? 'is-online' : ''}">${seenTxt}</div>` : ''}
+        <div class="wcard-actions">${ctaHtml}</div>
       </div>
     </a>`;
   };
