@@ -379,7 +379,7 @@ function mount(app, io, opts) {
     // localStorage from the 'session' event above. On refresh it
     // fires this event; we find the matching seat by token and swap
     // sockets in place — no duplicate seat, no name re-prompt, no
-    // need to have been signed in. Same UX the main WordSpies game
+    // need to have been signed in. Same UX the main TalkSibi game
     // has had since day one; retrofitted here 7 Aug 2026.
     socket.on('rejoin', async (data, ack) => {
       await socket.ready;

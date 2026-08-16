@@ -1,5 +1,5 @@
-// Blog articles for WordSpies — server-rendered for SEO.
-const SITE = 'https://wordspies.co.uk';
+// Blog articles for TalkSibi — server-rendered for SEO.
+const SITE = 'https://talksibi.com';
 // Consent-gated GA + cookie modal are single-sourced from landing.js.
 const { GA, CONSENT_MODAL, SITE_FOOTER } = require('./landing.js');
 const GA_ID = 'G-JTH809Z8NH';
@@ -12,8 +12,8 @@ const articles = {
     date: '2026-07-22',
     html: `
 <p>Codenames is a modern classic — but if you're looking to play something like it online, free, without buying the board game or making accounts, you've got great options. Here are six, starting with the one you can play in the next 30 seconds.</p>
-<h2>1. WordSpies (free, no sign-up)</h2>
-<p><a href="/">WordSpies</a> plays just like Codenames: two teams, a 5×5 word grid, spymasters giving one-word clues, and an assassin word that ends everything. Create a room, share a 4-letter code, and friends join on any phone. It adds a few nice touches of its own — cute avatars, sounds, turn timers, and boards drawn from 700+ words so games never repeat.</p>
+<h2>1. TalkSibi (free, no sign-up)</h2>
+<p><a href="/">TalkSibi</a> plays just like Codenames: two teams, a 5×5 word grid, spymasters giving one-word clues, and an assassin word that ends everything. Create a room, share a 4-letter code, and friends join on any phone. It adds a few nice touches of its own — cute avatars, sounds, turn timers, and boards drawn from 700+ words so games never repeat.</p>
 <h2>2. Decrypto-style code games</h2>
 <p>Instead of guessing your own team's words, you intercept the other team's coded clues. More brain-burny, brilliant with 6+ players who liked Codenames but want something harder.</p>
 <h2>3. Just One-style cooperative clue games</h2>
@@ -25,7 +25,7 @@ const articles = {
 <h2>6. Drawing party games</h2>
 <p>Skribbl-style draw-and-guess games swap word clues for terrible sketches. Different skill, same laughing-until-crying result.</p>
 <h2>The quickest one to start right now</h2>
-<p>If your group is 4+ and already on a call, a Codenames-style game is the easiest sell — everyone knows guessing games instinctively. <a href="/">Start a free WordSpies room</a>, share the code in your group chat, and you're playing before the pizza arrives.</p>`
+<p>If your group is 4+ and already on a call, a Codenames-style game is the easiest sell — everyone knows guessing games instinctively. <a href="/">Start a free TalkSibi room</a>, share the code in your group chat, and you're playing before the pizza arrives.</p>`
   },
   'codenames-rules-explained': {
     title: 'Codenames Rules Explained Simply (With Examples)',
@@ -45,7 +45,7 @@ const articles = {
 <p>First team to reveal all their words wins. The team that goes first has 9 words to the other's 8 — that's the balance for the first-move advantage.</p>
 <h2>The three rookie mistakes</h2>
 <p>One: spymasters giving clever clues nobody understands — clear beats clever. Two: guessers tapping fast without discussing — the debate IS the game. Three: forgetting the assassin exists — always ask "could this clue mean THAT word?" before tapping.</p>
-<p>Rules make sense once you've played a single round. <a href="/">Try a free game on WordSpies</a> — no sign-up, and the whole group can join from their phones in seconds.</p>`
+<p>Rules make sense once you've played a single round. <a href="/">Try a free game on TalkSibi</a> — no sign-up, and the whole group can join from their phones in seconds.</p>`
   },
   'word-games-for-zoom-calls': {
     title: 'Best Free Word Games to Play on Zoom or Google Meet (2026)',
@@ -53,8 +53,8 @@ const articles = {
     date: '2026-07-22',
     html: `
 <p>Remote game night lives or dies on one thing: how fast everyone can actually start playing. Downloads, accounts, and payment walls kill the mood before the first round. These word games run in a browser, work alongside your Zoom or Meet call, and start in under a minute.</p>
-<h2>1. WordSpies — the team game that fits calls perfectly</h2>
-<p><a href="/">WordSpies</a> is a free Codenames-style team game that was practically made for video calls: the spymaster thinks silently while the guessers argue out loud on the call — which is exactly the fun part. Everyone opens the link on their phone or a second tab, joins with a 4-letter code, and the board syncs live for the whole room. 4–10+ players, no accounts.</p>
+<h2>1. TalkSibi — the team game that fits calls perfectly</h2>
+<p><a href="/">TalkSibi</a> is a free Codenames-style team game that was practically made for video calls: the spymaster thinks silently while the guessers argue out loud on the call — which is exactly the fun part. Everyone opens the link on their phone or a second tab, joins with a 4-letter code, and the board syncs live for the whole room. 4–10+ players, no accounts.</p>
 <h2>2. Wordle races</h2>
 <p>Everyone solves the same puzzle in a screen-share race. Two minutes of fun per round, great as a warm-up.</p>
 <h2>3. Drawing games</h2>
@@ -64,7 +64,7 @@ const articles = {
 <h2>5. Trivia with a shared screen</h2>
 <p>Host shares the questions, everyone answers in the meeting chat. Zero setup if you have a question list.</p>
 <h2>Making it work smoothly on a call</h2>
-<p>Three tips from many remote game nights: keep the game on phones and the call on laptops so nobody alt-tabs away from faces; put the join link in the meeting chat so latecomers self-serve; and pick games with 10–15 minute rounds so people can drop in and out. A <a href="/">WordSpies</a> room stays open between rounds, so the room code you share at the start works all night.</p>`
+<p>Three tips from many remote game nights: keep the game on phones and the call on laptops so nobody alt-tabs away from faces; put the join link in the meeting chat so latecomers self-serve; and pick games with 10–15 minute rounds so people can drop in and out. A <a href="/">TalkSibi</a> room stays open between rounds, so the room code you share at the start works all night.</p>`
   },
   'codenames-with-4-players': {
     title: 'Can You Play Codenames-Style Games With 4 Players? (Best Setup)',
@@ -73,13 +73,13 @@ const articles = {
     html: `
 <p>Short answer: yes — four players is exactly the minimum for a Codenames-style game, and 2v2 is a genuinely great way to play. It just feels different from a big party game. Here's how to set it up and what changes.</p>
 <h2>The 4-player setup</h2>
-<p>Each team gets one <strong>spymaster</strong> and one <strong>guesser</strong>. In <a href="/">WordSpies</a> that means: create a room, two friends join red, two join blue, one on each team taps "Be spymaster," and the host starts the game. Total setup time: about 40 seconds.</p>
+<p>Each team gets one <strong>spymaster</strong> and one <strong>guesser</strong>. In <a href="/">TalkSibi</a> that means: create a room, two friends join red, two join blue, one on each team taps "Be spymaster," and the host starts the game. Total setup time: about 40 seconds.</p>
 <h2>How 2v2 changes the game</h2>
 <p>With one guesser per team there's no group debate — so the game becomes a pure mind-meld between two people. Couples and best friends are terrifying at this: the spymaster learns exactly how their partner thinks and clues get almost telepathic by game three. It's faster too — rounds take 8–10 minutes instead of 15.</p>
 <h2>Strategy tips for pairs</h2>
 <p>Spymasters: with no debate to save your guesser from a bad tap, clarity matters double — prefer 2-word clues you're certain about. Guessers: say your reasoning out loud anyway ("ORCHARD… APPLE, obviously, and TREE, and hmm is FRUIT one of ours?") — hearing yourself think catches mistakes, and the spymaster's poker face becomes a hilarious mini-game.</p>
 <h2>Rotate the spymaster seat</h2>
-<p>In 2v2, swap roles every game with the rematch button — being spymaster is a completely different skill, and rotating keeps both players sharp. The running score in <a href="/">WordSpies</a> tracks the session, so a best-of-five gets competitive fast.</p>
+<p>In 2v2, swap roles every game with the rematch button — being spymaster is a completely different skill, and rotating keeps both players sharp. The running score in <a href="/">TalkSibi</a> tracks the session, so a best-of-five gets competitive fast.</p>
 <h2>What about 5 or 6 players?</h2>
 <p>Five works as 2v3 (the team of 3 gets a debate advantage — give the pair the 9-word side by letting them start). Six as 3v3 is the sweet spot where table-talk really begins. Beyond that, every extra guesser adds chaos — the good kind.</p>
 <p><a href="/">Start a free 4-player game now</a> — no sign-up, works on any phone.</p>`
@@ -93,12 +93,12 @@ const articles = {
 <h2>The rules in one minute</h2>
 <p>Two teams — red and blue — see the same 5×5 grid of 25 words. Each team has one <strong>spymaster</strong> who secretly knows which words belong to their team, and <strong>guessers</strong> who don't. The spymaster gives a one-word clue plus a number, like <em>OCEAN · 2</em>, meaning "two of our words relate to OCEAN." Guessers tap words one at a time: a correct word lets them keep going, a wrong one ends the turn, and one hidden <strong>assassin word</strong> loses the game instantly. First team to find all their words wins.</p>
 <h2>How to play free online</h2>
-<p>On <a href="/">WordSpies</a> — a free Codenames-style game — the whole setup takes seconds: type your name, tap <strong>New game</strong>, and share the 4-letter room code (or the invite link) with friends. Everyone joins from their own phone or laptop, picks a team, and one player per team taps "Be spymaster." The host presses start, and you're playing. There's no download, no registration, and no cost.</p>
+<p>On <a href="/">TalkSibi</a> — a free Codenames-style game — the whole setup takes seconds: type your name, tap <strong>New game</strong>, and share the 4-letter room code (or the invite link) with friends. Everyone joins from their own phone or laptop, picks a team, and one player per team taps "Be spymaster." The host presses start, and you're playing. There's no download, no registration, and no cost.</p>
 <h2>How many players do you need?</h2>
 <p>Four is the minimum — a spymaster and a guesser on each team. The sweet spot is 6–10 players: guessers can debate the clues out loud (or in the built-in chat), which is where the game gets funny.</p>
 <h2>Tips for your first game</h2>
 <p>Spymasters: start with safe clues that link just two words rather than risky three-word stretches. Guessers: say your reasoning out loud before tapping — half the fun is the debate. And whatever you do, think twice before touching a word nobody's sure about: that's how teams find the assassin.</p>
-<p><strong>Ready to try it?</strong> Start a free game on WordSpies now — your friends can join in seconds.</p>`
+<p><strong>Ready to try it?</strong> Start a free game on TalkSibi now — your friends can join in seconds.</p>`
   },
   'best-online-word-party-games': {
     title: '7 Best Free Word Party Games to Play Online With Friends (2026)',
@@ -106,8 +106,8 @@ const articles = {
     date: '2026-07-22',
     html: `
 <p>Game night doesn't need everyone in the same room anymore. These free browser games work on any phone or laptop, need no downloads, and are perfect for groups — whether you're together on a call or sitting in the same living room.</p>
-<h2>1. WordSpies — Codenames-style team word game</h2>
-<p><a href="/">WordSpies</a> is a free Codenames-style game: two teams, secret words, one-word clues, and a deadly assassin word. Create a room, share a 4-letter code, and play with 4–10+ people. No sign-up, works on any phone, and every board draws from 700+ words so games stay fresh.</p>
+<h2>1. TalkSibi — Codenames-style team word game</h2>
+<p><a href="/">TalkSibi</a> is a free Codenames-style game: two teams, secret words, one-word clues, and a deadly assassin word. Create a room, share a 4-letter code, and play with 4–10+ people. No sign-up, works on any phone, and every board draws from 700+ words so games stay fresh.</p>
 <h2>2. Skribbl — drawing and guessing</h2>
 <p>One player draws a secret word while everyone else races to guess it in chat. Chaotic, hilarious, and needs zero artistic talent — bad drawings are the point.</p>
 <h2>3. Gartic Phone — telephone with drawings</h2>
@@ -121,14 +121,14 @@ const articles = {
 <h2>7. Twenty questions rooms</h2>
 <p>Simple, free, and surprisingly competitive with the right group.</p>
 <h2>Which one should you pick?</h2>
-<p>For groups of 4+ who like thinking games, a Codenames-style game like <a href="/">WordSpies</a> is the strongest pick — it's team-based, so nobody sits out, and rounds take 10–15 minutes. For maximum silliness, Gartic Phone wins. Either way: game night is free now.</p>`
+<p>For groups of 4+ who like thinking games, a Codenames-style game like <a href="/">TalkSibi</a> is the strongest pick — it's team-based, so nobody sits out, and rounds take 10–15 minutes. For maximum silliness, Gartic Phone wins. Either way: game night is free now.</p>`
   },
   'spymaster-clue-strategies': {
     title: 'How to Give Great Clues in Codenames-Style Games: Spymaster Guide',
     desc: 'Practical spymaster strategies for Codenames-style word games: how to link words safely, when to go for 3-word clues, and how to avoid the assassin.',
     date: '2026-07-22',
     html: `
-<p>Being spymaster in a Codenames-style game like <a href="/">WordSpies</a> is the best seat in the house — and the most pressure. Your team's fate depends on your one-word clues. Here's how good spymasters think.</p>
+<p>Being spymaster in a Codenames-style game like <a href="/">TalkSibi</a> is the best seat in the house — and the most pressure. Your team's fate depends on your one-word clues. Here's how good spymasters think.</p>
 <h2>Rule 1: The assassin comes first</h2>
 <p>Before you even look for connections between your own words, find the assassin word and ask: "could my clue accidentally point at it?" A clue that links three of your words but also fits the assassin is a losing clue. When in doubt, pick the safer, smaller clue.</p>
 <h2>Rule 2: Two safe beats three risky</h2>
@@ -140,7 +140,7 @@ const articles = {
 <h2>Rule 5: Watch the enemy board</h2>
 <p>If the other team is one word from winning, a safe 1-word clue that guarantees progress beats any gamble. Play the scoreboard, not just the board.</p>
 <h2>Practice makes the spymaster</h2>
-<p>The only way to get good is reps. Start a free game on <a href="/">WordSpies</a>, take the spymaster seat, and try the two-safe-words rule tonight — your win rate will jump.</p>`
+<p>The only way to get good is reps. Start a free game on <a href="/">TalkSibi</a>, take the spymaster seat, and try the two-safe-words rule tonight — your win rate will jump.</p>`
   },
   'virtual-team-building-word-games': {
     title: 'Virtual Team Building Games: Free Word Games for Remote Teams (2026)',
@@ -148,8 +148,8 @@ const articles = {
     date: '2026-07-22',
     html: `
 <p>Most "virtual team building games" are either awkward icebreakers or clunky paid platforms nobody opens twice. The ones that actually work share three traits: everyone can join in seconds, they spark real conversation, and they're genuinely fun. Here are free word games that hit all three.</p>
-<h2>1. WordSpies — the team game built for calls</h2>
-<p><a href="/">WordSpies</a> is a free Codenames-style game where two teams race to find their secret words from one-word clues. It's ideal for remote teams because the fun is in the debate: the guessers argue out loud on the call while the spymaster sweats silently. Everyone joins from their own screen with a 4-letter code — no accounts, no installs, no IT tickets. Split a team of 8 into two groups of 4 and you have an instant tournament.</p>
+<h2>1. TalkSibi — the team game built for calls</h2>
+<p><a href="/">TalkSibi</a> is a free Codenames-style game where two teams race to find their secret words from one-word clues. It's ideal for remote teams because the fun is in the debate: the guessers argue out loud on the call while the spymaster sweats silently. Everyone joins from their own screen with a 4-letter code — no accounts, no installs, no IT tickets. Split a team of 8 into two groups of 4 and you have an instant tournament.</p>
 <h2>2. Word association warm-ups</h2>
 <p>A 60-second round where each person adds a word linked to the last. Zero setup, works as a meeting opener, and quietly reveals how people think.</p>
 <h2>3. Two truths and a word</h2>
@@ -159,7 +159,7 @@ const articles = {
 <h2>Why word games beat trivia for teams</h2>
 <p>Trivia rewards the person who already knew the answer — everyone else just waits. Word games like Codenames reward discussion, so the quiet new hire and the loud director contribute equally. That's the actual point of team building.</p>
 <h2>Running it well</h2>
-<p>Keep rounds to 15 minutes, put the join link in the meeting chat so latecomers self-serve, and let people opt to spectate. <a href="/">Start a free WordSpies room</a>, drop the code in your team channel, and you'll get more talking in 15 minutes than in a month of "how was your weekend."</p>`
+<p>Keep rounds to 15 minutes, put the join link in the meeting chat so latecomers self-serve, and let people opt to spectate. <a href="/">Start a free TalkSibi room</a>, drop the code in your team channel, and you'll get more talking in 15 minutes than in a month of "how was your weekend."</p>`
   },
   'family-game-night-word-games': {
     title: 'Family Game Night Ideas: Free Word Games Everyone Can Play (2026)',
@@ -167,8 +167,8 @@ const articles = {
     date: '2026-07-22',
     html: `
 <p>The best family game night games work for an 8-year-old and a grandparent at the same time — or on the same video call. No tiny pieces to lose, no rules that take twenty minutes to explain, and nothing to buy. Here are word games that do exactly that.</p>
-<h2>1. WordSpies — teams keep everyone included</h2>
-<p><a href="/">WordSpies</a> splits the family into two teams, so a younger player sits with an adult and nobody's left out. It's a Codenames-style game: give one-word clues, guess your team's secret words, dodge the assassin. Because it plays on any phone with just a 4-letter code, the cousins on a video call join the same game as the people in the room. Boards are drawn from 700+ everyday words, so they're friendly for all ages.</p>
+<h2>1. TalkSibi — teams keep everyone included</h2>
+<p><a href="/">TalkSibi</a> splits the family into two teams, so a younger player sits with an adult and nobody's left out. It's a Codenames-style game: give one-word clues, guess your team's secret words, dodge the assassin. Because it plays on any phone with just a 4-letter code, the cousins on a video call join the same game as the people in the room. Boards are drawn from 700+ everyday words, so they're friendly for all ages.</p>
 <h2>2. Categories (Scattergories-style)</h2>
 <p>Pick a letter, race to name a food, animal and place that start with it. Endless, needs nothing but a timer, and levels the field between kids and adults.</p>
 <h2>3. Word chains</h2>
@@ -176,7 +176,7 @@ const articles = {
 <h2>4. Twenty questions</h2>
 <p>One person thinks of something; everyone else narrows it down with yes/no questions. Works with any number of players and any age.</p>
 <h2>Keeping it fair across ages</h2>
-<p>Pair a younger player with an older one on the same team, let kids be the guessers (the fun, low-pressure role), and keep rounds short. A team game like <a href="/">WordSpies</a> does the balancing for you — the team wins together, so there's no single loser. Set up a free room and the whole family, near and far, is playing in under a minute.</p>`
+<p>Pair a younger player with an older one on the same team, let kids be the guessers (the fun, low-pressure role), and keep rounds short. A team game like <a href="/">TalkSibi</a> does the balancing for you — the team wins together, so there's no single loser. Set up a free room and the whole family, near and far, is playing in under a minute.</p>`
   },
   'how-to-win-codenames': {
     title: 'How to Win at Codenames: 7 Winning Strategies & Tips (2026)',
@@ -199,7 +199,7 @@ const articles = {
 <h2>7. Play the scoreboard</h2>
 <p>If the other team is one word from winning, take the safe guaranteed clue and deny them the turn. Track how many words each team has left and let it dictate your risk.</p>
 <h2>Put it into practice</h2>
-<p>Strategy sticks through playing, not reading. <a href="/">Start a free WordSpies game</a>, try the "two safe words" and "stop while ahead" rules tonight, and watch how quickly your team starts winning.</p>`
+<p>Strategy sticks through playing, not reading. <a href="/">Start a free TalkSibi game</a>, try the "two safe words" and "stop while ahead" rules tonight, and watch how quickly your team starts winning.</p>`
   },
   'codenames-with-2-players': {
     title: 'How to Play Codenames With 2 Players (Co-op Rules That Work)',
@@ -214,7 +214,7 @@ const articles = {
 <h2>Why 2-player co-op is secretly great</h2>
 <p>Competitive Codenames hides half the fun — you never see the other spymaster's brain at work. In two-player co-op every clue is a shared "aha", and the assassin is a genuine group gasp. It's also the best way to learn the game: the guesser sees exactly how a good clue connects to the board.</p>
 <h2>Play it online, free</h2>
-<p>Set it up with the physical board, or just <a href="/">open a WordSpies room</a>, both join from your phones, and use the spymaster and guesser roles built in. Fresh boards every game keep the co-op challenge alive. <a href="/">Start a free game</a> and see how many words the two of you can clear.</p>`
+<p>Set it up with the physical board, or just <a href="/">open a TalkSibi room</a>, both join from your phones, and use the spymaster and guesser roles built in. Fresh boards every game keep the co-op challenge alive. <a href="/">Start a free game</a> and see how many words the two of you can clear.</p>`
   },
   'games-to-play-over-the-phone': {
     title: '12 Games to Play Over the Phone With Friends Far Away (2026)',
@@ -223,7 +223,7 @@ const articles = {
     html: `
 <p>Distance is boring, but a good game fixes a phone call fast. Whether you're on a voice call, FaceTime, or a group video chat, here are games that need nothing but your phones — and several that let the whole group join at once.</p>
 <h2>1. A Codenames-style word game</h2>
-<p><a href="/">WordSpies</a> is made for calls: two teams, secret words, one-word clues, and an assassin word that makes everyone groan. Each person opens the same room from their own phone and the board syncs live — perfect when you're not in the same place. No app and no sign-up.</p>
+<p><a href="/">TalkSibi</a> is made for calls: two teams, secret words, one-word clues, and an assassin word that makes everyone groan. Each person opens the same room from their own phone and the board syncs live — perfect when you're not in the same place. No app and no sign-up.</p>
 <h2>2. Twenty questions</h2>
 <p>One person thinks of something; everyone else gets twenty yes-or-no questions. Ancient, free, and works with any number of people on a call.</p>
 <h2>3. Would you rather</h2>
@@ -235,7 +235,7 @@ const articles = {
 <h2>6. Build-a-story</h2>
 <p>Each person adds one sentence to a shared story. Chaos guaranteed.</p>
 <h2>The easiest one to start now</h2>
-<p>With four or more of you, a word-guessing game gives the most laughs per minute and needs zero setup. <a href="/">Start a free WordSpies room</a>, drop the 4-letter code in your chat, and you're playing across any distance in seconds.</p>`
+<p>With four or more of you, a word-guessing game gives the most laughs per minute and needs zero setup. <a href="/">Start a free TalkSibi room</a>, drop the 4-letter code in your chat, and you're playing across any distance in seconds.</p>`
   },
   'icebreaker-games-virtual-meetings': {
     title: 'Free Icebreaker Games for Virtual Meetings (No Prep, 2026)',
@@ -244,7 +244,7 @@ const articles = {
     html: `
 <p>A good icebreaker turns a stiff video call into a team. The best ones need no prep, no downloads, and no awkward "share a fun fact about yourself." Here are icebreakers that actually work for remote meetings.</p>
 <h2>1. A quick word-guessing game</h2>
-<p>A Codenames-style game is a brilliant icebreaker because it makes people <em>collaborate</em> rather than perform. Split into two teams, give one-word clues, and watch quiet colleagues light up. <a href="/">WordSpies</a> runs in a browser — share a code and the whole meeting joins in under a minute.</p>
+<p>A Codenames-style game is a brilliant icebreaker because it makes people <em>collaborate</em> rather than perform. Split into two teams, give one-word clues, and watch quiet colleagues light up. <a href="/">TalkSibi</a> runs in a browser — share a code and the whole meeting joins in under a minute.</p>
 <h2>2. Two truths and a lie</h2>
 <p>Everyone shares three statements; the group guesses the lie. Keep it to one round so it doesn't drag.</p>
 <h2>3. One-word check-in</h2>
@@ -254,7 +254,7 @@ const articles = {
 <h2>5. Emoji mood</h2>
 <p>Everyone describes how they're feeling in three emojis. Light, quick, and surprisingly bonding.</p>
 <h2>Keeping it under five minutes</h2>
-<p>The goal is energy, not a full game — cap the icebreaker at five minutes and move on. If your team enjoys it, a full word game also makes a great end-of-week wind-down. <a href="/">Try a free round on WordSpies</a> at your next stand-up.</p>`
+<p>The goal is energy, not a full game — cap the icebreaker at five minutes and move on. If your team enjoys it, a full word game also makes a great end-of-week wind-down. <a href="/">Try a free round on TalkSibi</a> at your next stand-up.</p>`
   },
   'games-for-big-groups-video-call': {
     title: 'Best Games to Play on a Group Video Call With 10+ People (2026)',
@@ -263,7 +263,7 @@ const articles = {
     html: `
 <p>Small-group games fall apart with a big crowd — half the call ends up watching. The trick for 10 or more people is <strong>teams</strong>, so everyone stays involved even when it isn't their turn. Here are the games that scale.</p>
 <h2>1. Team word-guessing (Codenames-style)</h2>
-<p>This is the big-group winner. Two teams means five, eight, even ten people per side, all debating the same clue at once. <a href="/">WordSpies</a> supports big rooms — everyone joins from their phone, picks a team, and the spymasters give the clues while the rest of the team argues happily. Nobody sits out.</p>
+<p>This is the big-group winner. Two teams means five, eight, even ten people per side, all debating the same clue at once. <a href="/">TalkSibi</a> supports big rooms — everyone joins from their phone, picks a team, and the spymasters give the clues while the rest of the team argues happily. Nobody sits out.</p>
 <h2>2. Trivia in teams</h2>
 <p>Split the call into teams and keep score. Works at any size, though someone has to host the questions.</p>
 <h2>3. Draw-and-guess games</h2>
@@ -273,7 +273,7 @@ const articles = {
 <h2>5. Categories chain</h2>
 <p>Go around naming items in a category; you're out if you repeat or stall. Scales to any size.</p>
 <h2>Why teams beat a free-for-all</h2>
-<p>With big groups, the games that flop are the ones where you wait ages for your turn. Team games fix that — you contribute on every single turn. <a href="/">Start a free WordSpies room</a>, split into red and blue, and even a 15-person call stays loud and involved.</p>`
+<p>With big groups, the games that flop are the ones where you wait ages for your turn. Team games fix that — you contribute on every single turn. <a href="/">Start a free TalkSibi room</a>, split into red and blue, and even a 15-person call stays loud and involved.</p>`
   },
   'codenames-word-list': {
     title: 'The Codenames Word List: How Word Packs Keep Boards Fresh',
@@ -288,15 +288,15 @@ const articles = {
 <h2>Themed packs change the whole vibe</h2>
 <p>Letting a group pick categories tailors the game to them: film buffs love a movies pack, families lean on easy everyday words, football fans want a sports pack. Same rules, totally different feel.</p>
 <h2>How many words is enough?</h2>
-<p>For genuinely fresh boards you want hundreds of words at minimum. <a href="/">WordSpies</a> draws each 25-word board from a pool of 700+ across multiple categories, and lets the host choose which packs to include — so boards stay fresh and match your group's taste. <a href="/">Start a free game</a> and pick your categories.</p>`
+<p>For genuinely fresh boards you want hundreds of words at minimum. <a href="/">TalkSibi</a> draws each 25-word board from a pool of 700+ across multiple categories, and lets the host choose which packs to include — so boards stay fresh and match your group's taste. <a href="/">Start a free game</a> and pick your categories.</p>`
   },
 
   'the-app-a-tour': {
-    title: 'WordSpies: A Tour of the App',
-    desc: 'What is WordSpies? A quick tour of the community, chats, parties, learn tab, party games and AI conversation partners — everything in one place.',
+    title: 'TalkSibi: A Tour of the App',
+    desc: 'What is TalkSibi? A quick tour of the community, chats, parties, learn tab, party games and AI conversation partners — everything in one place.',
     date: '2026-08-01',
     html: `
-<p>WordSpies started as a browser word game and grew into a language-exchange community — one place where you can meet real people from around the world, message and voice-call them, drop into audio "parties," pick up phrases you actually need, and play a game together when you feel like it. Here's the guided tour.</p>
+<p>TalkSibi started as a browser word game and grew into a language-exchange community — one place where you can meet real people from around the world, message and voice-call them, drop into audio "parties," pick up phrases you actually need, and play a game together when you feel like it. Here's the guided tour.</p>
 <h2>The Community wall</h2>
 <p>The heart of it. A grid of profiles from members around the world — their native language, what they're learning, a short bio, and how recently they were active. Filter by online now, nearby, brand new, or the always-available Chat Experts. Every card takes one tap to open the full profile, and one tap from there to say hello.</p>
 <h2>Chats</h2>
@@ -316,10 +316,10 @@ const articles = {
 
   'meet-the-chat-experts': {
     title: 'Meet the Chat Experts: Amy, Matthew and Ashley',
-    desc: 'Three always-available AI conversation partners on WordSpies — British, American and Australian accents — for language practice when nobody\'s online.',
+    desc: 'Three always-available AI conversation partners on TalkSibi — British, American and Australian accents — for language practice when nobody\'s online.',
     date: '2026-08-01',
     html: `
-<p>Not every language-learning session lines up with someone else's schedule. That's why WordSpies has three "Chat Experts" — AI conversation partners who are always around, chat naturally, and adapt to whatever you want to talk about.</p>
+<p>Not every language-learning session lines up with someone else's schedule. That's why TalkSibi has three "Chat Experts" — AI conversation partners who are always around, chat naturally, and adapt to whatever you want to talk about.</p>
 <h2>Amy — British, from Bristol</h2>
 <p>Warm, curious, gentle sense of humour. Loves hearing about other cultures, books, and everyday life. If you want to practise British English or just a calm conversation about the small stuff, she's a great first chat.</p>
 <h2>Matthew — American, from Portland</h2>
@@ -346,8 +346,8 @@ const articles = {
 <p>The other advantage: correction happens in context. When you write "yo soy cansado" and your partner replies "estoy cansado también!" — with the correct verb baked into a normal reply — the pattern lands in a way no textbook grammar box ever will. That's how children learn languages, and it works for adults too as long as we're humble enough to be corrected.</p>
 
 <h2>Where to find real Spanish speakers online, free</h2>
-<p><a href="/social">WordSpies</a> has thousands of Spanish speakers looking for English practice — you pick your language pair once at signup and the community wall filters to people who match. Send a message, no accounts to trade, no phone numbers, no fee. No swiping either — it's a browsable feed of profiles with photos, bios, and language pairs, so you can tell in three seconds whether someone might be interesting to talk to.</p>
-<p>Alternatives: HelloTalk and Tandem still have the biggest user bases but paywall the most useful features. Discord Spanish-learning servers work if you're comfortable with the chatroom-plus-voice format. Reddit r/language_exchange is slow but sometimes turns up gems. For most learners the modern answer is one main platform (WordSpies for the free AI corrections + integrated voice) plus one backup pool for volume.</p>
+<p><a href="/social">TalkSibi</a> has thousands of Spanish speakers looking for English practice — you pick your language pair once at signup and the community wall filters to people who match. Send a message, no accounts to trade, no phone numbers, no fee. No swiping either — it's a browsable feed of profiles with photos, bios, and language pairs, so you can tell in three seconds whether someone might be interesting to talk to.</p>
+<p>Alternatives: HelloTalk and Tandem still have the biggest user bases but paywall the most useful features. Discord Spanish-learning servers work if you're comfortable with the chatroom-plus-voice format. Reddit r/language_exchange is slow but sometimes turns up gems. For most learners the modern answer is one main platform (TalkSibi for the free AI corrections + integrated voice) plus one backup pool for volume.</p>
 
 <h2>What to say in your first message</h2>
 <p>Keep it short and specific. This is the biggest mistake beginners make.</p>
@@ -356,17 +356,17 @@ const articles = {
 <p>Even better: reference something specific and personal. If their profile says they're from Bogotá, mention you've always wanted to visit Colombia and ask for their café recommendation. If they mention they love football, ask who they support. People love talking about themselves; give them permission.</p>
 
 <h2>Use AI corrections without breaking the flow</h2>
-<p>You'll make mistakes. Lots of them. That's the point. Every chat message on WordSpies has a "Correct" button — tap it and Claude AI shows the fixed version underneath yours with a short note ("past tense", "missing article"). Your original stays visible so you learn from the mistake instead of hiding it.</p>
+<p>You'll make mistakes. Lots of them. That's the point. Every chat message on TalkSibi has a "Correct" button — tap it and Claude AI shows the fixed version underneath yours with a short note ("past tense", "missing article"). Your original stays visible so you learn from the mistake instead of hiding it.</p>
 <p>Don't correct every message — that kills the conversation flow. Correct every fourth or fifth message, focusing on the ones where you feel unsure. The corrections you actually notice and read stick way better than the ones you skim.</p>
 <p>Once a week, scroll back through your corrections and write down the top three mistakes you're making repeatedly. Those are your personal weak spots. Look them up properly (a textbook, a YouTube grammar explainer, whatever) and you'll close them within a month.</p>
 
 <h2>Voice practice from day one</h2>
-<p>Text is safe, voice is where you actually learn to speak. Voice parties on WordSpies let you drop into a Spanish-speaking room and just listen at first — no pressure to talk. This is the most under-used feature of the whole space; almost every learner skips it for months because "I'm not ready yet". You're never ready. You get ready by doing it.</p>
+<p>Text is safe, voice is where you actually learn to speak. Voice parties on TalkSibi let you drop into a Spanish-speaking room and just listen at first — no pressure to talk. This is the most under-used feature of the whole space; almost every learner skips it for months because "I'm not ready yet". You're never ready. You get ready by doing it.</p>
 <p>Start as a pure listener. Three parties, thirty minutes each, just absorbing the rhythm of native Spanish spoken at real speed. Then raise your hand and say one sentence — anything, "Soy nueva aquí, estoy aprendiendo español" — and see the fear break. Doing this once a week for a month will do more for your Spanish than a year of flashcards.</p>
 
 <h2>The regional-Spanish question</h2>
 <p>Spanish varies more than English. A Mexican, a Spaniard, and an Argentine can all sound different enough that a beginner learner struggles to switch. Pick a region to focus on for the first three months — usually Mexican Spanish is easiest for English speakers because the pronunciation is clearer and the vocabulary matches what US Spanish media uses. Once you're comfortable, expose yourself to other varieties (Argentine "vos", Spanish "vosotros", Caribbean speed) so your ear becomes flexible.</p>
-<p>WordSpies lets you filter by country on the community wall — Mexico, Spain, Colombia, Argentina, Peru, Chile all have big rosters. Pick the flag that matches the media you want to consume (Mexican films? Spanish news? Argentine music?) and lean into that regional variant first.</p>
+<p>TalkSibi lets you filter by country on the community wall — Mexico, Spain, Colombia, Argentina, Peru, Chile all have big rosters. Pick the flag that matches the media you want to consume (Mexican films? Spanish news? Argentine music?) and lean into that regional variant first.</p>
 
 <h2>The realistic path</h2>
 <p>Two 15-minute chats a day, one voice party a week, and one game with your language partner (Word Race in Spanish is unfair fun). Do that for three months and you'll be conversational. Do it for six and you'll be fluent enough to travel confidently. Do it for twelve and you'll dream in Spanish occasionally, which is the moment every learner secretly waits for.</p>
@@ -376,12 +376,12 @@ const articles = {
 <p>Every learner plateaus around month four. Vocabulary breadth stops growing, corrections start coming back "OK" for the same patterns, conversations feel repetitive. Signs you've plateaued: you can chat about the weather, food, and weekends fluently but freeze on politics, movies, or your job.</p>
 <p>The fix: vary the topics deliberately. Pick a hard topic each week (cinema, work, environment, dating) and force the conversation there. Send your partner a Spanish YouTube video and discuss it. Read a Spanish news article and paraphrase it back in a message. Boring practice keeps you at plateau; deliberately hard practice moves you off it.</p>
 
-<p><a href="/social">Start free on WordSpies</a> — pick Spanish as your target language and you're talking to a real speaker within minutes. No credit card, no email required.</p>`
+<p><a href="/social">Start free on TalkSibi</a> — pick Spanish as your target language and you're talking to a real speaker within minutes. No credit card, no email required.</p>`
   },
 
   'best-free-language-exchange-apps': {
     title: 'Best Free Language Exchange Apps in 2026 (Honest Comparison)',
-    desc: 'Tandem, HelloTalk, Speaky, Bilingua and WordSpies compared — free features, hidden paywalls, AI corrections, voice, and which is best for your goal.',
+    desc: 'Tandem, HelloTalk, Speaky, Bilingua and TalkSibi compared — free features, hidden paywalls, AI corrections, voice, and which is best for your goal.',
     date: '2026-08-09',
     html: `
 <p>"Free" means different things depending on the app. Some limit how many messages you can send. Some hide voice behind a paywall. Some are ad-swamped. Here's the honest state of language-exchange apps in 2026 — what's actually free, what's not, and which fits which learner.</p>
@@ -393,11 +393,11 @@ const articles = {
 <p>Simpler, lighter than Tandem. Free tier is generous but the user base is smaller — you'll wait longer for replies in less-common language pairs. Web-first, which some people prefer.</p>
 <h2>Bilingua</h2>
 <p>Focused on matching you with compatible partners rather than a big browsable feed. Works well if you like a small number of deeper conversations. Free tier has hard limits on daily matches.</p>
-<h2>WordSpies</h2>
-<p><a href="/">WordSpies</a> is genuinely free — no paywall, no premium tier. AI corrections built into every message (tap Correct, get the fix + explanation). Voice parties for group practice. And 8 multiplayer language games you can play with the person you're chatting with — Word Race in Spanish beats a formal flashcard session every time. Downside: user base is smaller than Tandem or HelloTalk (we're newer).</p>
+<h2>TalkSibi</h2>
+<p><a href="/">TalkSibi</a> is genuinely free — no paywall, no premium tier. AI corrections built into every message (tap Correct, get the fix + explanation). Voice parties for group practice. And 8 multiplayer language games you can play with the person you're chatting with — Word Race in Spanish beats a formal flashcard session every time. Downside: user base is smaller than Tandem or HelloTalk (we're newer).</p>
 <h2>Which should you pick?</h2>
-<p>For sheer volume of potential partners, Tandem or HelloTalk. For a genuinely free experience with modern AI baked in, <a href="/">WordSpies</a>. For quality-over-quantity matching, Bilingua. Most serious learners end up using two — one big pool for practice partners, one specialised tool for something they use every day. WordSpies pairs well as the "actually free with AI" side of that pair.</p>
-<p><a href="/social">Try WordSpies free</a> — 30-second signup, no email required, all features open from day one.</p>`
+<p>For sheer volume of potential partners, Tandem or HelloTalk. For a genuinely free experience with modern AI baked in, <a href="/">TalkSibi</a>. For quality-over-quantity matching, Bilingua. Most serious learners end up using two — one big pool for practice partners, one specialised tool for something they use every day. TalkSibi pairs well as the "actually free with AI" side of that pair.</p>
+<p><a href="/social">Try TalkSibi free</a> — 30-second signup, no email required, all features open from day one.</p>`
   },
 
   'ai-corrections-for-language-learning': {
@@ -423,8 +423,8 @@ const articles = {
 <p>Both are valuable, and neither replaces the other. The right split: AI is the daily driver, catching 80% of the mistakes at 0% of the cost. A native speaker (paid or exchange partner) is the polish, catching the last 20% that requires human judgement.</p>
 
 <h2>Where to get free AI corrections</h2>
-<p>On <a href="/">WordSpies</a>, every message in every chat has a "Correct" button. Tap it, get the corrected version underneath yours, plus a one-line explanation of what changed. Your original stays visible so you're learning from your own mistake, not hiding it. It works in every language the underlying model supports — which is essentially every major language plus most minor ones.</p>
-<p>Alternatives: ChatGPT (paste your sentence + ask "please correct my Spanish"), DeepL Write (excellent for polishing already-decent writing), LanguageTool (grammar checker with an AI mode). All work but require copy-paste back and forth. WordSpies' advantage is that the Correct button is one tap inside the conversation you're already having, so friction is zero.</p>
+<p>On <a href="/">TalkSibi</a>, every message in every chat has a "Correct" button. Tap it, get the corrected version underneath yours, plus a one-line explanation of what changed. Your original stays visible so you're learning from your own mistake, not hiding it. It works in every language the underlying model supports — which is essentially every major language plus most minor ones.</p>
+<p>Alternatives: ChatGPT (paste your sentence + ask "please correct my Spanish"), DeepL Write (excellent for polishing already-decent writing), LanguageTool (grammar checker with an AI mode). All work but require copy-paste back and forth. TalkSibi' advantage is that the Correct button is one tap inside the conversation you're already having, so friction is zero.</p>
 
 <h2>Getting the most from AI corrections</h2>
 <p>Three habits that separate learners who compound from learners who plateau:</p>
@@ -447,7 +447,7 @@ const articles = {
 <p>Using AI corrections as a substitute for actually chatting. If you write ten sentences a day into a text field just to see them corrected, you're doing homework, not learning to communicate. Corrections work because they happen inside real conversations you actually cared about. If the conversation is real, the corrections stick. If the conversation is fake, they don't.</p>
 <p>The fix: always correct in the context of a chat with a real person you're actually trying to talk to. Fake practice doesn't build real fluency.</p>
 
-<p><a href="/social">Try free AI corrections on WordSpies</a> — send a message in any language, tap Correct, and see how it works. No signup fee, no per-message limit.</p>`
+<p><a href="/social">Try free AI corrections on TalkSibi</a> — send a message in any language, tap Correct, and see how it works. No signup fee, no per-message limit.</p>`
   },
 
   'practise-speaking-a-language-online': {
@@ -466,11 +466,11 @@ const articles = {
 <p>The way to make peace with bad speech: pick moments where the stakes are low. AI partners have zero stakes. Voice notes have low stakes (you can re-record). Voice parties with strangers you'll never meet have medium stakes. Video calls with a partner have higher stakes. Escalate slowly.</p>
 
 <h2>Start with AI, not people</h2>
-<p>An AI conversation partner doesn't judge, doesn't get bored, and doesn't watch you struggle. <a href="/social">WordSpies has three AI Chat Experts</a> — Amy (British), Matthew (American), Ashley (Australian) — who speak with real voices, remember what you said earlier in the conversation, and gently correct your writing when needed. Warm up with them before any real chat.</p>
+<p>An AI conversation partner doesn't judge, doesn't get bored, and doesn't watch you struggle. <a href="/social">TalkSibi has three AI Chat Experts</a> — Amy (British), Matthew (American), Ashley (Australian) — who speak with real voices, remember what you said earlier in the conversation, and gently correct your writing when needed. Warm up with them before any real chat.</p>
 <p>The magic of AI for early speaking practice: the same conversation, on repeat, until it's automatic. Do a "coffee shop" roleplay with Amy ten times. By the tenth, ordering a coffee in your target language will feel automatic. Now try it on a real person and it'll come out cleanly. This kind of rote-practice is embarrassing to do with humans but perfectly fine with AI.</p>
 
 <h2>Move to voice parties as a listener</h2>
-<p>Voice parties are group audio rooms where anyone can join. Here's the trick: on WordSpies you can join as a <em>listener</em> — you can hear everyone, but nobody hears you until you raise your hand. Spend your first three parties just listening. You'll pick up rhythm, slang, common phrases — and lose the fear of the accent.</p>
+<p>Voice parties are group audio rooms where anyone can join. Here's the trick: on TalkSibi you can join as a <em>listener</em> — you can hear everyone, but nobody hears you until you raise your hand. Spend your first three parties just listening. You'll pick up rhythm, slang, common phrases — and lose the fear of the accent.</p>
 <p>What to listen for: the fillers ("bueno", "pues", "vale" in Spanish; "ben", "alors" in French). The pauses (native speakers pause more than textbooks suggest). The intonation patterns. The way native speakers agree, disagree, interrupt gently. This is the invisible curriculum you'll never learn from apps because apps only teach the words, not the space between them.</p>
 
 <h2>Raise your hand for one sentence</h2>
@@ -479,7 +479,7 @@ const articles = {
 
 <h2>Send voice notes, not perfect speech</h2>
 <p>Voice notes are the bridge between text-only and live-voice practice. They're half-speech, half-writing — you can re-record, edit your delivery, listen back before sending. There's no live pressure. But the muscle of "producing target-language sound with your own mouth" is still being trained.</p>
-<p>Every chat on WordSpies supports voice notes. Send them badly. Send a 15-second one about what you had for breakfast. The other person will send one back. Now you're having a voice conversation, just asynchronous — which is much easier than a live call as a starter.</p>
+<p>Every chat on TalkSibi supports voice notes. Send them badly. Send a 15-second one about what you had for breakfast. The other person will send one back. Now you're having a voice conversation, just asynchronous — which is much easier than a live call as a starter.</p>
 <p>Ratio target: for every ten text messages you send, send one voice note. That's a manageable dose that keeps building the speaking muscle without ever feeling like a leap.</p>
 
 <h2>The big one: your first video call</h2>
@@ -499,7 +499,7 @@ const articles = {
 <p><b>Week 4+:</b> Once a week: 15-minute video call. Twice a week: voice party with active participation. Daily: voice notes to your partners.</p>
 <p>By the end of month 2 you'll be a person who speaks the language, not a person who studies the language.</p>
 
-<p><a href="/social">Start free on WordSpies</a> — AI voice partners and live voice parties are open from day one.</p>`
+<p><a href="/social">Start free on TalkSibi</a> — AI voice partners and live voice parties are open from day one.</p>`
   },
 
   'games-to-learn-a-language': {
@@ -514,14 +514,14 @@ const articles = {
 <p><a href="/wordchain">Word Chain</a> makes you produce vocabulary on demand. Someone plays "gato" (cat), you have to play a word starting with O. Deceptively hard, addictive, and it trains active recall — the hardest kind of vocabulary skill to develop.</p>
 <h2>3. Guess the Word — describe without saying</h2>
 <p><a href="/guessword">Guess the Word</a> is Taboo for language learners. One player knows the word, the rest ask questions to figure it out — in the target language. Being forced to describe "elephant" without using "elephant" builds paraphrasing skills faster than any textbook exercise.</p>
-<h2>4. WordSpies — team clue game</h2>
-<p><a href="/play">WordSpies</a> (Codenames-style) is brilliant for learners with intermediate vocabulary. Giving a one-word clue that links "APPLE" and "TREE" is a real vocabulary puzzle in any language. Play in your target language and every clue is a mini-lesson in association.</p>
+<h2>4. TalkSibi — team clue game</h2>
+<p><a href="/play">TalkSibi</a> (Codenames-style) is brilliant for learners with intermediate vocabulary. Giving a one-word clue that links "APPLE" and "TREE" is a real vocabulary puzzle in any language. Play in your target language and every clue is a mini-lesson in association.</p>
 <h2>5. Mind Meld — say the same word</h2>
 <p><a href="/meld">Mind Meld</a> is two players typing simultaneously, trying to say the same word. The lost rounds ("MOON" + "SKY" → what word links them?) teach you semantic clusters — words that feel related in a language, which is exactly what fluency feels like.</p>
 <h2>6. Spy — social deduction, in any language</h2>
 <p><a href="/spy">Spy</a> is a social deduction game where one player doesn't know the secret word. Playing it in your target language turns it into an oral-comprehension workout — you have to listen carefully to what everyone says to catch the fake.</p>
 <h2>How to actually learn from games</h2>
-<p>Two rules: play in your target language (not English with target-language decorations), and play with real people when possible — a game against a native speaker beats one against a bot for learning value every time. <a href="/social">Start free on WordSpies</a> and every game is one tap away.</p>`
+<p>Two rules: play in your target language (not English with target-language decorations), and play with real people when possible — a game against a native speaker beats one against a bot for learning value every time. <a href="/social">Start free on TalkSibi</a> and every game is one tap away.</p>`
   },
 
   'find-a-language-exchange-partner': {
@@ -532,8 +532,8 @@ const articles = {
 <p>The best language teacher is a native speaker who's learning your language too — a language exchange partner. You help each other, both languages get practised, nobody pays. The tricky part isn't the concept, it's finding one who actually replies. Most learners burn through fifty first messages and get five replies, then decide "nobody wants to practise with me". They're wrong — they're just doing the finding + messaging + follow-through in ways that guarantee no partner sticks. Here's the 2026 playbook that actually works.</p>
 
 <h2>Where to look</h2>
-<p>Language exchange lives on dedicated apps — <a href="/blog/best-free-language-exchange-apps">Tandem, HelloTalk, Speaky, WordSpies</a>. Each has its own quirks:</p>
-<p>The classic apps have the largest user bases but paywall most useful features and the free tier is heavily "featured" (translation: pay to appear). <a href="/">WordSpies</a> is smaller but genuinely free and has AI grammar corrections built into every chat, so your practice compounds even before you find a regular partner.</p>
+<p>Language exchange lives on dedicated apps — <a href="/blog/best-free-language-exchange-apps">Tandem, HelloTalk, Speaky, TalkSibi</a>. Each has its own quirks:</p>
+<p>The classic apps have the largest user bases but paywall most useful features and the free tier is heavily "featured" (translation: pay to appear). <a href="/">TalkSibi</a> is smaller but genuinely free and has AI grammar corrections built into every chat, so your practice compounds even before you find a regular partner.</p>
 <p>Sub-reddits work in a pinch (r/language_exchange). Discord servers for specific languages have voice channels but skew younger and less structured. If you're older or want something more like an old-school pen-pal, the platforms that have been running since the 2000s (ConversationExchange, MyLanguageExchange) surface partners with more staying power than app-generation platforms.</p>
 
 <h2>Build a profile that gets replies</h2>
@@ -571,7 +571,7 @@ const articles = {
 <h2>When to graduate to a tutor</h2>
 <p>Free language exchange is fantastic for building fluency, but it hits a ceiling. Around upper-intermediate (B2), you'll notice your partner corrects you less, either because you're better or because they're bored of correcting. That's the moment to add a paid tutor once a week (italki, Preply) alongside your free partners. The tutor pushes the ceiling; the partners keep the daily practice alive.</p>
 
-<p><a href="/social">Start free on WordSpies</a> — the community wall filters to people learning your language and speaking theirs. First real conversation possible within a few minutes of signup.</p>`
+<p><a href="/social">Start free on TalkSibi</a> — the community wall filters to people learning your language and speaking theirs. First real conversation possible within a few minutes of signup.</p>`
   },
 
   'best-free-language-exchange-sites-2026': {
@@ -584,8 +584,8 @@ const articles = {
 <h2>What "free" really means in 2026</h2>
 <p>Almost every platform advertises a free tier. The question is what they hold back. Common paywall tricks: translation limited to short messages, only one target language, voice call minutes capped, "moments" (social feed) capped per day, VIP filters (native speakers only, gender, verified) locked, group audio hidden. If you're serious about a language you'll bump into at least one of these within a week. Before signing up, search the app store reviews for the word "paywall" — it's usually the top complaint.</p>
 
-<h2>WordSpies</h2>
-<p><a href="/">WordSpies</a> is language exchange plus multiplayer games plus AI corrections in one browser tab. Message any member, tap "Correct" on any message bubble for a one-tap grammar fix with a short note about what changed, jump into a live voice party, or start a language game (Word Race, Word Chain, Guess the Word, Spy, WordSpies, Ludo, Pool, Connect 4, Hoop) together. No paywall, no premium tier, no ads that force a signup wall. Everything works from day one — including the AI corrections powered by Claude, which most competitors gate behind subscription. Downside: the community is newer, so if you're learning a rare language pair (like Finnish ↔ Filipino) the roster is thin — for those you'll want a fallback.</p>
+<h2>TalkSibi</h2>
+<p><a href="/">TalkSibi</a> is language exchange plus multiplayer games plus AI corrections in one browser tab. Message any member, tap "Correct" on any message bubble for a one-tap grammar fix with a short note about what changed, jump into a live voice party, or start a language game (Word Race, Word Chain, Guess the Word, Spy, TalkSibi, Ludo, Pool, Connect 4, Hoop) together. No paywall, no premium tier, no ads that force a signup wall. Everything works from day one — including the AI corrections powered by Claude, which most competitors gate behind subscription. Downside: the community is newer, so if you're learning a rare language pair (like Finnish ↔ Filipino) the roster is thin — for those you'll want a fallback.</p>
 
 <h2>Older exchange platforms (Tandem, HelloTalk, Speaky, Bilingua)</h2>
 <p>The classics still have the largest user bases, so if you're learning a rare or "small" language your best chance of finding an active partner is there. Downsides in 2026: most useful features (translations of long messages, VIP filters, group audio, cross-language moments feed) sit behind a subscription that's crept up to £10–15 per month. AI corrections either don't exist or arrived late and are gated behind Pro. Discovery is dominated by a "featured" row that many users complain feels pay-to-play. Verdict: keep an account for the volume, but don't lean on the free tier as your daily driver.</p>
@@ -603,15 +603,15 @@ const articles = {
 <p>The dinosaurs of the space. Both have been running since the early 2000s and still work, though the UI looks its age. Genuine value: their user bases skew older and more committed than the app crowd. If you're learning a language where "old-school pen-pal" energy suits you (French, German, Japanese), they surface partners with more staying power than the app-generation platforms.</p>
 
 <h2>What to combine</h2>
-<p>Most serious learners in 2026 run two platforms in parallel: one big pool for finding practice partners, one modern tool for the daily work of correcting your writing and speaking. <a href="/">WordSpies</a> covers the second slot particularly well because the AI corrections layer is genuinely free and instant. Pick whichever big pool has the most speakers of your target language, run WordSpies alongside it for daily writing practice, and you'll cover both "quantity of partners" and "quality of feedback" without paying anyone.</p>
+<p>Most serious learners in 2026 run two platforms in parallel: one big pool for finding practice partners, one modern tool for the daily work of correcting your writing and speaking. <a href="/">TalkSibi</a> covers the second slot particularly well because the AI corrections layer is genuinely free and instant. Pick whichever big pool has the most speakers of your target language, run TalkSibi alongside it for daily writing practice, and you'll cover both "quantity of partners" and "quality of feedback" without paying anyone.</p>
 
 <h2>Which fits you?</h2>
-<p>For most people the modern answer is <a href="/">WordSpies</a> — free AI corrections built in, real people to chat with, multiplayer games that break the awkward first-session ice, and live voice parties when you're ready to speak. Older platforms remain the fallback for rare languages. Discord and Reddit are for people who want to build friendships more than they want structured practice. italki is worth its money once you're intermediate and want to break through a plateau, but skip it as a beginner — real conversation matters more than lesson structure early on.</p>
+<p>For most people the modern answer is <a href="/">TalkSibi</a> — free AI corrections built in, real people to chat with, multiplayer games that break the awkward first-session ice, and live voice parties when you're ready to speak. Older platforms remain the fallback for rare languages. Discord and Reddit are for people who want to build friendships more than they want structured practice. italki is worth its money once you're intermediate and want to break through a plateau, but skip it as a beginner — real conversation matters more than lesson structure early on.</p>
 
 <h2>The 30-day starter plan</h2>
-<p>Week 1: sign up to <a href="/social">WordSpies</a> and one big pool platform. Focus on filling out both profiles properly (a good photo, an honest bio, target-language sentence). Week 2: send 5 first messages a day on the big pool, do daily AI-corrected practice on WordSpies. Week 3: schedule one voice call. Week 4: drop one platform, keep the one that gave you the most conversations. Do that and by day 30 you'll have a shortlist of 2–3 real partners plus a daily writing habit — the two ingredients that separate people who learn from people who just download apps.</p>
+<p>Week 1: sign up to <a href="/social">TalkSibi</a> and one big pool platform. Focus on filling out both profiles properly (a good photo, an honest bio, target-language sentence). Week 2: send 5 first messages a day on the big pool, do daily AI-corrected practice on TalkSibi. Week 3: schedule one voice call. Week 4: drop one platform, keep the one that gave you the most conversations. Do that and by day 30 you'll have a shortlist of 2–3 real partners plus a daily writing habit — the two ingredients that separate people who learn from people who just download apps.</p>
 
-<p><a href="/social">Start free on WordSpies</a> — 30 seconds, no email required, all features open from day one.</p>`
+<p><a href="/social">Start free on TalkSibi</a> — 30 seconds, no email required, all features open from day one.</p>`
   },
 
   'ai-grammar-correction-spanish': {
@@ -626,7 +626,7 @@ const articles = {
 <p>Cognitive science calls this the "spacing paradox". Corrections work when they're close in time to the mistake, but classroom cycles put weeks between the two. Every learner secretly knows this. What we didn't have was a way to shrink the gap without hiring a full-time tutor.</p>
 
 <h2>What one-tap correction actually feels like</h2>
-<p>On <a href="/">WordSpies</a>, every message I send has a "Correct" button. Tap it: the AI proposes the fixed sentence, underlined with the changes, plus a short line naming what changed ("past tense · missing article"). The original stays visible so I see the mistake next to the fix. It's ten seconds. I do it while I'm already chatting with a real Colombian friend.</p>
+<p>On <a href="/">TalkSibi</a>, every message I send has a "Correct" button. Tap it: the AI proposes the fixed sentence, underlined with the changes, plus a short line naming what changed ("past tense · missing article"). The original stays visible so I see the mistake next to the fix. It's ten seconds. I do it while I'm already chatting with a real Colombian friend.</p>
 <p>What surprises new users: the correction doesn't feel like a school test. It feels like a friend who reads over your shoulder and mumbles the right version. No score, no red pen, no leaderboard. Just — here's what you meant to say. That framing matters because the emotional cost of asking for correction was always what killed the practice loop.</p>
 
 <h2>The changes I noticed, month by month</h2>
@@ -652,7 +652,7 @@ const articles = {
 <p>Two 15-minute chat sessions a day, corrections turned on. That's it. You can layer voice notes on top when you're feeling brave, but the writing loop alone will move a stalled intermediate learner more than any app I've tried.</p>
 <p>The trap: treating corrections as a score. Some days you'll write six sentences and all six get corrected — that's fine. It doesn't mean your Spanish is worse, it means the AI caught more. On other days corrections come back "OK" and it feels like progress. Both days are good days. The point is the loop, not the number.</p>
 
-<p><a href="/social">Try WordSpies free</a> — Correct is on every message by default. Sign up in 30 seconds and start chatting with a real speaker today.</p>`
+<p><a href="/social">Try TalkSibi free</a> — Correct is on every message by default. Sign up in 30 seconds and start chatting with a real speaker today.</p>`
   },
 
   'learn-language-by-playing-games': {
@@ -670,7 +670,7 @@ const articles = {
 <p><b>Speed vocabulary sprints.</b> <a href="/wordrace">Word Race</a> gives you 60 seconds and a category ("Animals", "Foods", "Body parts", "Things in a kitchen"). Type as many words as you can that fit. Solo or against a friend. Builds vocabulary breadth fast — you'll cover more nouns in three rounds than in a week of flashcards, and you'll actually remember them because you retrieved them under time pressure.</p>
 <p><b>Constraint games.</b> <a href="/wordchain">Word Chain</a> gives you the last letter of the previous word and asks for a new one starting with it. Trains active recall — the hardest kind of vocabulary skill to build. This is closest to what your brain does in a real conversation when someone says a word and you have to respond immediately.</p>
 <p><b>Paraphrase games.</b> <a href="/guessword">Guess the Word</a> is Taboo for language learners. One player has a secret word, the others ask questions to figure it out — all in the target language. Being forced to describe "elephant" without using "elephant" builds paraphrasing skills faster than any textbook exercise. Paraphrasing IS fluency — fluent speakers just have more ways to say the same thing.</p>
-<p><b>Association games.</b> <a href="/play">WordSpies</a> (Codenames-style) asks you to give a one-word clue that links two or three secret words on a board. Trains word association — the mental map native speakers have that lets them navigate a conversation. Playing "APPLE, TREE, RIVER" as a clue links three concepts and forces your brain to build the same webs a native carries.</p>
+<p><b>Association games.</b> <a href="/play">TalkSibi</a> (Codenames-style) asks you to give a one-word clue that links two or three secret words on a board. Trains word association — the mental map native speakers have that lets them navigate a conversation. Playing "APPLE, TREE, RIVER" as a clue links three concepts and forces your brain to build the same webs a native carries.</p>
 
 <h2>What about non-language games?</h2>
 <p>Even games that aren't about words teach language when played with a partner in the target tongue. <a href="/hoop">Hoop</a> is a 60-second arcade round of free-throws — not a language game strictly, but the trash talk between shots is real conversation. Same for <a href="/pool">8-Ball Pool</a> and <a href="/four">Connect 4</a>. The low stakes let you chat in the target language without the pressure of "this is a lesson". Some of the best sessions I've had were losing at Ludo to a French partner while both of us made increasingly desperate excuses in French.</p>
@@ -688,7 +688,7 @@ const articles = {
 <p>The mistake most learners make is staying on apps too long. If you've done 500 lessons and you still can't hold a conversation, the problem isn't more lessons — it's that lessons stopped being the right tool 400 lessons ago.</p>
 
 <h2>Getting started</h2>
-<p>The lowest-friction way to test this is to sign up for <a href="/">WordSpies</a>, find one active partner learning your native language, and challenge them to a round of Word Race in their language. If they can't get through it, they're a beginner too — pair them with Word Chain instead. If they crush it, you're playing against someone above your level, which is exactly what accelerates learning.</p>
+<p>The lowest-friction way to test this is to sign up for <a href="/">TalkSibi</a>, find one active partner learning your native language, and challenge them to a round of Word Race in their language. If they can't get through it, they're a beginner too — pair them with Word Chain instead. If they crush it, you're playing against someone above your level, which is exactly what accelerates learning.</p>
 <p>Two rounds a day for two weeks. That's the minimum experiment. If your vocabulary hasn't obviously grown by day 14, drop the games and go back to apps. If it has (spoiler: it will), keep going.</p>
 
 <p><a href="/games">Browse the games shelf</a> — everything is free and works in a browser, no downloads or accounts required to start playing.</p>`
@@ -727,9 +727,9 @@ const articles = {
 
 <h2>The order that works</h2>
 <p>The evidence-based order is text first, then voice notes, then live voice. Each step builds the confidence for the next.</p>
-<p><b>Week 1–2: text-only</b> with a real speaker on <a href="/">WordSpies</a>. Use the Correct button on every message. Build confidence and vocabulary. No pressure to speak yet — the goal is to feel comfortable producing language at any speed.</p>
+<p><b>Week 1–2: text-only</b> with a real speaker on <a href="/">TalkSibi</a>. Use the Correct button on every message. Build confidence and vocabulary. No pressure to speak yet — the goal is to feel comfortable producing language at any speed.</p>
 <p><b>Week 3: send one voice note.</b> Then send another. Voice notes are the bridge — half-writing, half-speech, no live pressure. You can re-record five times. Nobody hears the drafts. But the muscle of turning thought into sound is being built.</p>
-<p><b>Week 4: join a live voice party as a listener.</b> On <a href="/social">WordSpies parties</a> you can hear everyone but nobody hears you until you raise a hand. Spend three parties just listening. You'll pick up the rhythm without any pressure to perform.</p>
+<p><b>Week 4: join a live voice party as a listener.</b> On <a href="/social">TalkSibi parties</a> you can hear everyone but nobody hears you until you raise a hand. Spend three parties just listening. You'll pick up the rhythm without any pressure to perform.</p>
 <p><b>Week 5: raise your hand and say one sentence.</b> Just one. "Hi, I'm learning Spanish from Manchester." That's the whole task. Do it and speaking will stop being scary — the fear breaks after the first sentence, always.</p>
 <p><b>Week 6 onwards: keep doing all three.</b> Text daily. Voice notes 2–3 times a week. Voice party weekly. This is the rhythm that produces fluency in months rather than years.</p>
 
@@ -737,19 +737,19 @@ const articles = {
 <p>Common mistake: waiting until you feel "ready". You will never feel ready — the discomfort of moving up a level is the point.</p>
 <p>Better signal: when the current step feels boring. If text chat is easy and your corrections are coming back "OK" most of the time, you're ready for voice notes. If voice notes feel repetitive, you're ready for a live party. Boredom is the honest signal that a skill is consolidated and it's time to raise the difficulty.</p>
 
-<h2>Why WordSpies has both in one place</h2>
+<h2>Why TalkSibi has both in one place</h2>
 <p>Text chats with AI corrections + voice parties + AI conversation partners for practice when nobody's online — all in one browser tab. That way you can flow between text and voice without switching platforms, keeping the same friends across both modes. The AI conversation partners are particularly useful for shy learners: you can practise voice with an AI that won't judge you, get comfortable with the sound of your own foreign-language voice, and then move to human voice parties once the fear has broken.</p>
 
 <p><a href="/social">Start free</a> — 30-second signup, no email required. Text a partner today, send a voice note this week, join a voice party next week.</p>`
   },
 
   'party-games-shelf': {
-    title: 'The WordSpies Games Shelf: One Place, Free, No Sign-Up',
+    title: 'The TalkSibi Games Shelf: One Place, Free, No Sign-Up',
     desc: 'Codenames-style word game, Ludo, 8-ball pool, Connect 4, Mind Meld and Who is the Spy — all free, in the browser, with friends or against the bot.',
     date: '2026-08-01',
     html: `
-<p>WordSpies is a language-exchange community first, but games are part of how we bring people together. Here's what's on the shelf — all free, all browser-based, all playable in seconds.</p>
-<h2>WordSpies (the original word game)</h2>
+<p>TalkSibi is a language-exchange community first, but games are part of how we bring people together. Here's what's on the shelf — all free, all browser-based, all playable in seconds.</p>
+<h2>TalkSibi (the original word game)</h2>
 <p>The Codenames-style spy game the whole site was named after. Two teams, a 5×5 grid, one-word clues, one assassin word that ends everything. 4-10+ players from any device. <a href="/blog/codenames-rules-explained">Full rules here</a>.</p>
 <h2>Who is the Spy?</h2>
 <p>A conversation game for 4+ players. Everyone gets a word except the spy, who has to blend in without knowing what everyone else is describing. Perfect for a party or a warm-up before a language-exchange session — the deception is the fun.</p>
@@ -779,7 +779,7 @@ ${GA}
 <meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${SITE}${path}">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<meta property="og:site_name" content="WordSpies"><meta property="og:locale" content="en_GB">
+<meta property="og:site_name" content="TalkSibi"><meta property="og:locale" content="en_GB">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
 <meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${ogimg}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${ogimg}">
@@ -856,15 +856,15 @@ function articlePage(slug) {
     .map(([s2, r]) => `<a class="rel" href="/blog/${s2}"><b>${r.title}</b><span>Read article &rarr;</span></a>`).join('');
   const img = '/blog-img/' + slug + '.jpg';
   // SEO meta: branded title tag (distinct from on-page H1) + unique description per post
-  const metaTitle = a.metaTitle || `${a.title} | WordSpies`;
+  const metaTitle = a.metaTitle || `${a.title} | TalkSibi`;
   const metaDesc = a.metaDesc || a.desc;
-  const body = `<article><h1>${a.title}</h1><div class="date">${a.date} · WordSpies Blog</div><img class="hero" src="${img}" alt="${esc(a.title)}" width="1200" height="630">${a.html}
-  <a class="cta" href="/">&#127918; Play WordSpies free — no sign-up</a></article>
+  const body = `<article><h1>${a.title}</h1><div class="date">${a.date} · TalkSibi Blog</div><img class="hero" src="${img}" alt="${esc(a.title)}" width="1200" height="630">${a.html}
+  <a class="cta" href="/">&#127918; Play TalkSibi free — no sign-up</a></article>
   <div class="relh">Related articles</div>
   <div class="relgrid">${related}</div>
   <div class="backrow"><a href="/blog">&larr; All articles</a></div>`;
   const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
-{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","image":"${SITE}${img}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}","dateModified":"${a.date}","inLanguage":"en","author":{"@type":"Organization","name":"WordSpies"},"publisher":{"@type":"Organization","name":"WordSpies","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"${SITE}/blog/${slug}"}},
+{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","image":"${SITE}${img}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}","dateModified":"${a.date}","inLanguage":"en","author":{"@type":"Organization","name":"TalkSibi"},"publisher":{"@type":"Organization","name":"TalkSibi","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"${SITE}/blog/${slug}"}},
 {"@type":"BreadcrumbList","itemListElement":[
 {"@type":"ListItem","position":1,"name":"Home","item":"${SITE}/"},
 {"@type":"ListItem","position":2,"name":"Blog","item":"${SITE}/blog"},
@@ -877,11 +877,11 @@ function indexPage() {
   const items = Object.entries(articles).map(([slug, a]) =>
     `<div class="post"><a class="postthumb" href="/blog/${slug}" aria-label="${esc(a.title)}"><img src="/blog-img/${slug}.jpg" alt="${esc(a.title)}" loading="lazy" width="1200" height="630"></a><div class="postbody"><h2><a href="/blog/${slug}">${a.title}</a></h2><p>${a.desc}</p><a class="more" href="/blog/${slug}">Read article &rarr;</a></div></div>`).join('');
   const body = items;
-  const banner = `<div class="bband"><div class="hwrap"><h1>WordSpies Blog</h1><p>Language-learning tips, game guides, and stories from a community of speakers practising together.</p></div></div>`;
+  const banner = `<div class="bband"><div class="hwrap"><h1>TalkSibi Blog</h1><p>Language-learning tips, game guides, and stories from a community of speakers practising together.</p></div></div>`;
   const blogItems = Object.entries(articles).map(([slug, a]) =>
     `{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}"}`).join(',');
-  const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"${SITE}/blog","name":"WordSpies Blog","description":"Language-learning tips, game guides, and stories from a global community practising languages through chat, voice, and games.","url":"${SITE}/blog","publisher":{"@type":"Organization","name":"WordSpies","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"blogPost":[${blogItems}]}</script>`;
-  return layout('WordSpies Blog — Language Learning, Games & Community Tips', 'Language-learning tips, game guides, and stories from a global community practising languages together — chat, voice parties, AI corrections, and free games.', body, '/blog', banner, schema);
+  const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"${SITE}/blog","name":"TalkSibi Blog","description":"Language-learning tips, game guides, and stories from a global community practising languages through chat, voice, and games.","url":"${SITE}/blog","publisher":{"@type":"Organization","name":"TalkSibi","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"blogPost":[${blogItems}]}</script>`;
+  return layout('TalkSibi Blog — Language Learning, Games & Community Tips', 'Language-learning tips, game guides, and stories from a global community practising languages together — chat, voice parties, AI corrections, and free games.', body, '/blog', banner, schema);
 }
 
 module.exports = { articles, articlePage, indexPage };

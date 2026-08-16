@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 90" width="260" height="90">
+  
+  <path d="M33,0 H41 A9,9 0 0 1 50,9 V24 A2,2 0 0 1 48,26 H33 A9,9 0 0 1 24,17 V9 A9,9 0 0 1 33,0 Z" fill="#5B6CFF"></path>
+  <path d="M61,2 H61 A9,9 0 0 1 70,11 V11 A9,9 0 0 1 61,20 H54 A2,2 0 0 1 52,18 V11 A9,9 0 0 1 61,2 Z" fill="#FF7A59"></path>
+  <path d="M54,24 H65 A2,2 0 0 1 67,26 V37 A9,9 0 0 1 58,46 H54 A9,9 0 0 1 45,37 V33 A9,9 0 0 1 54,24 Z" fill="#1FB28A"></path>
+  <path d="M27.67,29 H33.5 A7.5,7.5 0 0 1 41,36.5 V36.5 A7.5,7.5 0 0 1 33.5,44 H33.5 A7.5,7.5 0 0 1 26,36.5 V30.67 A1.67,1.67 0 0 1 27.67,29 Z" fill="#FFC94D"></path>
+  <text x="75" y="23" dominant-baseline="central" font-family="&#39;Hanken Grotesk&#39;,&#39;Helvetica Neue&#39;,Arial,sans-serif" font-size="38" font-weight="600" letter-spacing="-0.5" fill="#000000">talksibi</text>
+  <text x="130" y="72" text-anchor="middle" font-family="&#39;Hanken Grotesk&#39;,&#39;Helvetica Neue&#39;,Arial,sans-serif" font-size="12.5" font-weight="600" letter-spacing="3" fill="#6B7280">CONNECT <tspan fill="#5B6CFF">·</tspan> LEARN <tspan fill="#1FB28A">·</tspan> PLAY</text>
+</svg>

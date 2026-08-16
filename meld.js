@@ -13,7 +13,7 @@
 // either rule away and the game stops being a game.
 //
 // It is deliberately its own module with its own socket namespace and its own
-// room table. Nothing in here can reach into a WordSpies match, so a bug in the
+// room table. Nothing in here can reach into a TalkSibi match, so a bug in the
 // side game can never take the main game down with it. It also needs no word
 // list, no dictionary and no AI — any language works, because the only thing
 // ever compared is your two answers against each other.

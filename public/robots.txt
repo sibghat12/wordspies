@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://wordspies.co.uk/sitemap.xml
-Sitemap: https://wordspies.co.uk/sitemap-clubs.xml
+Sitemap: https://talksibi.com/sitemap.xml
+Sitemap: https://talksibi.com/sitemap-clubs.xml

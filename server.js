@@ -1,4 +1,4 @@
-// WordSpies — a Codenames-style online party game.
+// TalkSibi — a Codenames-style online party game.
 // Node.js + Express + Socket.IO. All game state lives in memory (no database).
 
 const path = require('path');
@@ -14,12 +14,19 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(compression());
-// Canonical domain: send onrender + www traffic to https://wordspies.co.uk
+// Canonical domain: talksibi.com. Legacy hosts (onrender + www +
+// talksibi.com + talkfellow.com) 301 to it. Caddy on the droplet
+// also does this at the reverse-proxy edge, but this Node fallback
+// covers direct-to-app traffic (e.g. from onrender preview + any
+// missed Caddy path).
 app.use((req, res, next) => {
   const host = (req.headers.host || '').toLowerCase();
-  if ((host === 'wordspies.onrender.com' || host === 'www.wordspies.co.uk') &&
-      req.path !== '/healthz' && !req.path.startsWith('/socket.io')) {
-    return res.redirect(301, 'https://wordspies.co.uk' + req.originalUrl);
+  const legacy = host === 'wordspies.onrender.com'
+              || host === 'www.talksibi.com' || host === 'talksibi.com'
+              || host === 'www.talkfellow.com'  || host === 'talkfellow.com'
+              || host === 'www.talksibi.com';
+  if (legacy && req.path !== '/healthz' && !req.path.startsWith('/socket.io')) {
+    return res.redirect(301, 'https://talksibi.com' + req.originalUrl);
   }
   next();
 });
@@ -33,7 +40,7 @@ const landing = require('./landing');
 // The community IS the site now: the social app answers the front door —
 // games, community, chats and live games all one tap away. The old marketing
 // landing still exists at /home for anyone who wants the tour. Old share
-// links (wordspies.co.uk/?room=XXXX) still land at their game table.
+// links (talksibi.com/?room=XXXX) still land at their game table.
 app.get('/', (req, res) => {
   if (req.query.room) return res.redirect('/codenames?room=' + encodeURIComponent(String(req.query.room).slice(0, 8)));
   res.setHeader('Cache-Control', 'no-cache');
@@ -180,7 +187,7 @@ app.get('/call', (req, res) => {
 // SETUP (owner does this once):
 //   1. dash.cloudflare.com → Realtime → SFU → Create App "wordspies-voice"
 //   2. Copy the App ID + App Token.
-//   3. On the droplet, add to the WordSpies env file:
+//   3. On the droplet, add to the TalkSibi env file:
 //        CF_REALTIME_APP_ID=...
 //        CF_REALTIME_APP_TOKEN=...
 //      Then: sudo systemctl restart wordspies
@@ -333,12 +340,12 @@ function scanMyRooms(uid) {
     players: 0, cap: null, href: null, watchers: 0
   }, extra));
 
-  // Main WordSpies (server.js's own `rooms` Map)
+  // Main TalkSibi (server.js's own `rooms` Map)
   for (const r of rooms.values()) {
     if (r.creatorUid !== uid) continue;
     const seated = [...r.players.values()].filter(p => !p.watcher);
     push('wordspies', r, {
-      icon: '🕵️', title: 'WordSpies',
+      icon: '🕵️', title: 'TalkSibi',
       players: seated.length,
       href: '/codenames?room=' + r.code,
       watchers: [...r.players.values()].filter(p => p.watcher && p.connected).length
@@ -546,7 +553,7 @@ app.post('/api/social/call/ring', express.json({ limit: '2kb' }), async (req, re
     // Check callee exists too.
     let target = null;
     try { target = social && social.profileByUid ? await social.profileByUid(to) : null; } catch (e) {}
-    if (!target) return res.status(404).json({ error: 'They\'re not on WordSpies yet.' });
+    if (!target) return res.status(404).json({ error: 'They\'re not on TalkSibi yet.' });
 
     // Create a 2-person private party for this call. Reuses the whole
     // WebRTC + presence machinery we already tested.
@@ -678,7 +685,7 @@ if (process.env.REDIS_URL) {
   } catch (e) { console.error('redis init failed:', e.message); redis = null; }
 }
 
-// WordSpies Social (community pages) — fully isolated module; if it ever
+// TalkSibi Social (community pages) — fully isolated module; if it ever
 // fails to load, the game itself keeps running untouched.
 let social = null;
 try { social = require('./social').mount(app, redis) || null; } catch (e) { console.error('social module failed to load (game unaffected):', e.message); }
@@ -689,7 +696,7 @@ try { social = require('./social').mount(app, redis) || null; } catch (e) { cons
 // The client shows a 'close current game or continue?' dialog when it
 // sees that response. Redis-backed with a Map fallback (see activegame.js).
 const activeGame = require('./activegame').make(redis);
-// Verifier for the WordSpies main game — lets getVerified drop the key
+// Verifier for the TalkSibi main game — lets getVerified drop the key
 // as soon as the referenced room dies (game ended, host disconnected,
 // TTL swept it). Every other module registers its own verifier inside
 // its mount() below.
@@ -809,7 +816,7 @@ function wordspiesLive() {
     if (!anyConnected && !activeIsh) continue;
     const rem = r.board ? { red: remaining(r, 'red'), blue: remaining(r, 'blue') } : null;
     out.push({
-      game: 'wordspies', icon: '🕵️', title: 'WordSpies',
+      game: 'wordspies', icon: '🕵️', title: 'TalkSibi',
       code: r.code, href: '/play?room=' + r.code, watchHref: '/play?watch=' + r.code,
       state: r.state, cap: null,
       players: players.map(p => ({
@@ -1097,7 +1104,7 @@ function endGame(room, winner, reason) {
   room.score[winner]++;
   clearTimer(room);
   addLog(room, { type: 'gameover', team: winner, reason });
-  // Credit the match to any players who are logged into WordSpies Social:
+  // Credit the match to any players who are logged into TalkSibi Social:
   // everyone seated gets +1 game, the winning team also gets +1 win.
   if (social && social.recordResult) {
     const seated = [...room.players.values()].filter(p => p.socUid && p.team && !p.watcher);
@@ -1127,7 +1134,7 @@ function startGame(room) {
 // ---------------------------------------------------------------------------
 // Socket handlers
 // ---------------------------------------------------------------------------
-// If the visitor is logged into WordSpies Social, their session cookie rides
+// If the visitor is logged into TalkSibi Social, their session cookie rides
 // along on the socket handshake — resolve it to a profile id so wins can be
 // credited to their profile. Server-side lookup, so it can't be spoofed.
 async function resolveSocialUid(socket) {
@@ -1186,7 +1193,7 @@ io.on('connection', (socket) => {
     entering = true;
     try {
       const idn = await socket.socReady;
-      // 'Already in a game' guard for WordSpies main — the other games
+      // 'Already in a game' guard for TalkSibi main — the other games
       // enforce this in their REST /new endpoint, but this one enters
       // via socket. Same UX: fire an event the client turns into the
       // 'close current game or continue?' dialog.
@@ -1585,5 +1592,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`WordSpies running → http://localhost:${PORT}`);
+  console.log(`TalkSibi running → http://localhost:${PORT}`);
 });

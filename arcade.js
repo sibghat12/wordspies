@@ -7,7 +7,7 @@
 // to explain and takes two minutes to play.
 //
 // Same house rules as the other side games: its own socket namespaces, its own
-// room tables, and it reaches into nothing that belongs to WordSpies. If this
+// room tables, and it reaches into nothing that belongs to TalkSibi. If this
 // file throws on load the main game does not notice.
 
 const path = require('path');

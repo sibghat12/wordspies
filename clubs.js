@@ -33,7 +33,7 @@ const MAX_MENTION_NOTIFS_PER_DAY = 30; // per author — additional throttle
 
 // Canonical site origin used inside the SSR club pages (og:url, JSON-LD,
 // sitemap). Kept as a constant so a future domain change is one edit.
-const SITE = 'https://wordspies.co.uk';
+const SITE = 'https://talksibi.com';
 
 function newId(prefix) {
   return prefix + '_' + crypto.randomBytes(6).toString('base64url');
@@ -558,9 +558,9 @@ function mount(app, api, db, opts) {
     const lang = club.lang || '';
     const mc = Number(club.memberCount) || 0;
     const pc = (posts && posts.length) || 0;
-    const title = name + (lang && lang !== 'Any' ? ' — ' + lang + ' language club' : '') + ' | WordSpies';
-    const bareDesc = (club.desc || 'A friendly WordSpies language club.').trim();
-    const desc = (bareDesc + ' Join ' + mc.toLocaleString() + ' ' + (mc === 1 ? 'member' : 'members') + ' practising together on WordSpies.').slice(0, 300);
+    const title = name + (lang && lang !== 'Any' ? ' — ' + lang + ' language club' : '') + ' | TalkSibi';
+    const bareDesc = (club.desc || 'A friendly TalkSibi language club.').trim();
+    const desc = (bareDesc + ' Join ' + mc.toLocaleString() + ' ' + (mc === 1 ? 'member' : 'members') + ' practising together on TalkSibi.').slice(0, 300);
     const cover = coverUrlFor(club);
     // JSON-LD: DiscussionForumPosting is the closest schema.org fit for
     // a topic-based community feed (each club is a forum, each post a
@@ -575,10 +575,10 @@ function mount(app, api, db, opts) {
       description: bareDesc.slice(0, 300),
       inLanguage: lang || 'en',
       image: cover,
-      author: { '@type': 'Organization', name: 'WordSpies' },
+      author: { '@type': 'Organization', name: 'TalkSibi' },
       publisher: {
         '@type': 'Organization',
-        name: 'WordSpies',
+        name: 'TalkSibi',
         logo: { '@type': 'ImageObject', url: SITE + '/icon-192.png' }
       },
       interactionStatistic: [
@@ -597,7 +597,7 @@ function mount(app, api, db, opts) {
 <meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${esc(url)}">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<meta property="og:site_name" content="WordSpies">
+<meta property="og:site_name" content="TalkSibi">
 <meta property="og:locale" content="en_GB">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${esc(name + ' ' + emoji)}">
@@ -647,7 +647,7 @@ h1{font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:28px;lette
   </div>
   <p class="desc">${esc(bareDesc)}</p>
   <a class="cta" href="${esc(spaHref)}">Open club →</a>
-  <p class="note">You're on the preview page. Tap the button above to open the live club feed inside WordSpies.</p>
+  <p class="note">You're on the preview page. Tap the button above to open the live club feed inside TalkSibi.</p>
   ${posts && posts.length ? `<div class="posts"><h2>Recent posts</h2>${
     posts.slice(0, 5).map(p => `<div class="post"><div class="who">${esc(p.name || 'Member')}</div><div class="body">${esc((p.text || '').slice(0, 500))}</div></div>`).join('')
   }</div>` : ''}
@@ -675,8 +675,8 @@ h1{font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:28px;lette
     return `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Club not found — WordSpies</title>
-<meta name="description" content="This WordSpies language club could not be found. Browse all clubs to find one that fits your language.">
+<title>Club not found — TalkSibi</title>
+<meta name="description" content="This TalkSibi language club could not be found. Browse all clubs to find one that fits your language.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="${esc(url)}">
 <link rel="icon" type="image/png" href="/icon-192.png">

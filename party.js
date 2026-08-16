@@ -1,4 +1,4 @@
-// WordSpies Parties — audio rooms with speakers, listeners, chat, reactions.
+// TalkSibi Parties — audio rooms with speakers, listeners, chat, reactions.
 //
 // Concept (owner-designed):
 //   · Someone starts a "party" — a persistent audio room.

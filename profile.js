@@ -1,4 +1,4 @@
-// WordSpies profile module.
+// TalkSibi profile module.
 //
 // Split out of social.js on 1 Aug 2026 as the SECOND slice of the
 // modularisation push (first slice = auth.js). Owner-goal (paraphrased):
@@ -128,7 +128,7 @@ function mount(api, ctx) {
           }
           if (age < ctx.MIN_AGE) {
             if (emailForCooldown && ctx.markAgeFail) await ctx.markAgeFail(emailForCooldown);
-            return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + ctx.MIN_AGE + ' and over.' });
+            return res.status(403).json({ error: 'Sorry, TalkSibi is for people aged ' + ctx.MIN_AGE + ' and over.' });
           }
         }
         u.birthdate = bd || null;

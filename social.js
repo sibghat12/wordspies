@@ -1,4 +1,4 @@
-// WordSpies Social — community module (accounts, profiles, photos).
+// TalkSibi Social — community module (accounts, profiles, photos).
 // Entirely separate from the game: own routes (/social, /api/social/*),
 // own data keys (soc:*), own page (public/social.html). The game never
 // depends on anything in this file; if it fails to load, the game runs on.
@@ -447,8 +447,8 @@ function mount(app, redis) {
   // ---- email via Brevo (BREVO_API_KEY env) with Resend as a fallback ----
   const BREVO_KEY = process.env.BREVO_API_KEY || null;
   const RESEND_KEY = process.env.SOC_RESEND_KEY || null;
-  const MAIL_FROM = process.env.SOC_MAIL_FROM || 'WordSpies <onboarding@resend.dev>';
-  const MAIL_NAME = process.env.SOC_MAIL_NAME || 'WordSpies';
+  const MAIL_FROM = process.env.SOC_MAIL_FROM || 'TalkSibi <onboarding@resend.dev>';
+  const MAIL_NAME = process.env.SOC_MAIL_NAME || 'TalkSibi';
   const MAIL_EMAIL = process.env.SOC_MAIL_EMAIL || 'sibghat726@gmail.com';
   async function sendMail(to, subject, text, html) {
     if (BREVO_KEY) {
@@ -478,7 +478,7 @@ function mount(app, redis) {
   // ---- 💌 the look of our email ---------------------------------------------
   // Tables and inline styles, because Gmail and Outlook throw away stylesheets.
   // One logo, one line, one button — nothing to read, just something to tap.
-  const SITE = 'https://wordspies.co.uk';
+  const SITE = 'https://talksibi.com';
   const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
   const esc = s => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -498,7 +498,7 @@ function mount(app, redis) {
 <tr><td align="center" style="padding:34px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:440px;background:#ffffff;border:1px solid #ececef;border-radius:20px">
 <tr><td align="center" style="padding:36px 32px 0">
-<img src="${SITE}/icon-192.png" width="58" height="58" alt="WordSpies" style="display:block;border:0;border-radius:15px"></td></tr>
+<img src="${SITE}/icon-192.png" width="58" height="58" alt="TalkSibi" style="display:block;border:0;border-radius:15px"></td></tr>
 <tr><td align="center" style="${cell}padding:22px 32px 0;font-size:22px;line-height:1.25;font-weight:700;color:#16181f;letter-spacing:-.2px">${heading}</td></tr>
 <tr><td align="center" style="${cell}padding:10px 32px 0;font-size:15px;line-height:1.55;color:#5c6270">${line}</td></tr>
 <tr><td align="center" style="padding:26px 32px 0">${action}</td></tr>
@@ -506,7 +506,7 @@ function mount(app, redis) {
 </table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:440px">
 <tr><td align="center" style="${cell}padding:18px 8px 0;font-size:12px;color:#9aa0ab">
-WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordspies.co.uk</a></td></tr>
+TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksibi.com</a></td></tr>
 </table>
 </td></tr></table></body></html>`;
   }
@@ -535,7 +535,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   // The wording never sits in a third party's queue, which is nicer anyway.
   const b64u = b => Buffer.from(b).toString('base64')
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const VAPID_SUB = 'mailto:' + (process.env.SOC_MAIL_FROM || 'contact@wordspies.co.uk').replace(/^.*<|>.*$/g, '');
+  const VAPID_SUB = 'mailto:' + (process.env.SOC_MAIL_FROM || 'contact@talksibi.com').replace(/^.*<|>.*$/g, '');
   let VAPID = null;
   async function vapidKeys() {
     if (VAPID) return VAPID;
@@ -828,7 +828,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
           await db.set('soc:pushq:' + referrerId, JSON.stringify({
             kind: 'founder',
             title: 'You unlocked the Founder crown 👑',
-            body: 'You brought 5 friends to WordSpies. 1 year of everything, on us.',
+            body: 'You brought 5 friends to TalkSibi. 1 year of everything, on us.',
             at: Date.now()
           }), 60 * 60 * 24 * 7);
         } catch (e) {}
@@ -923,8 +923,8 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         try {
           const who = entry.name ? entry.name : 'A visitor';
           const subject = `📚 New Learn request from ${who}`;
-          const text = `${who} wants to learn:\n\n${entry.idea}\n\n—\nWordSpies · ${new Date(entry.t).toISOString()}`;
-          const html = `<p><strong>${esc(who)}</strong> wants to learn:</p><blockquote style="border-left:3px solid #0f7500;padding:6px 12px;margin:12px 0;color:#333">${esc(entry.idea).replace(/\n/g, '<br>')}</blockquote><p style="color:#888;font-size:12px">WordSpies · ${new Date(entry.t).toISOString()}</p>`;
+          const text = `${who} wants to learn:\n\n${entry.idea}\n\n—\nTalkSibi · ${new Date(entry.t).toISOString()}`;
+          const html = `<p><strong>${esc(who)}</strong> wants to learn:</p><blockquote style="border-left:3px solid #0f7500;padding:6px 12px;margin:12px 0;color:#333">${esc(entry.idea).replace(/\n/g, '<br>')}</blockquote><p style="color:#888;font-size:12px">TalkSibi · ${new Date(entry.t).toISOString()}</p>`;
           await sendMail('sibikhan1234@gmail.com', subject, text, html);
         } catch (e) { console.error('learn-idea mail:', e.message); }
       })();
@@ -999,11 +999,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       // headline trust signal; a silent write was surprising.
       try {
         notifyUser(targetId, 'ref', me.name + ' left you a reference',
-          `${me.name} wrote a reference for you on WordSpies. See it on your profile.`,
+          `${me.name} wrote a reference for you on TalkSibi. See it on your profile.`,
           true, mailHtml({
             peek: 'One more voice for your wall.',
             heading: 'New reference',
-            line: '<b style="color:#16181f">' + esc(me.name) + '</b> left you a reference on WordSpies.',
+            line: '<b style="color:#16181f">' + esc(me.name) + '</b> left you a reference on TalkSibi.',
             btn: 'See it', btnUrl: SITE + '/social',
             note: 'We only send these when you\'re not already in the app.'
           }));
@@ -1246,9 +1246,9 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
   catch (e) { console.error('clubs module failed to load:', e.message); }
 
   // ─── WhatsApp-Web-style single active session (owner ask 14 Aug 2026) ──
-  // When the same account opens WordSpies in a NEW tab / browser / device,
+  // When the same account opens TalkSibi in a NEW tab / browser / device,
   // the new tab wins and the old tabs politely disable themselves with a
-  // "You opened WordSpies in another window — click here to resume" overlay.
+  // "You opened TalkSibi in another window — click here to resume" overlay.
   // Nothing destructive: the cookie stays valid, so the user can reclaim
   // the session with one tap (which then supersedes the new tab, and so on).
   //
@@ -1592,11 +1592,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       await db.sadd('soc:followers:' + id, me.id);
       if (!already) {
         notifyUser(id, 'follow', me.name + ' started following you',
-          `${me.name} started following you on WordSpies.\n\nSee who it is: ${SITE}/social\n\n— WordSpies`, true,
+          `${me.name} started following you on TalkSibi.\n\nSee who it is: ${SITE}/social\n\n— TalkSibi`, true,
           mailHtml({
             peek: 'Say hello, or follow them back.',
             heading: 'New follower',
-            line: '<b style="color:#16181f">' + esc(me.name) + '</b> started following you on WordSpies.',
+            line: '<b style="color:#16181f">' + esc(me.name) + '</b> started following you on TalkSibi.',
             btn: 'See who it is', btnUrl: SITE + '/social',
             note: 'We only send these when you\'re not already in the app.'
           }));
@@ -1709,10 +1709,10 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const ids = [...new Set((Array.isArray(body.ids) ? body.ids : []).map(String))].slice(0, 20);
       if (!ids.length) return res.status(400).json({ error: 'Pick someone first.' });
 
-      // Which game is being invited to. Default stays WordSpies for old callers.
-      // Anything unknown falls back to WordSpies so a typo can't 500.
+      // Which game is being invited to. Default stays TalkSibi for old callers.
+      // Anything unknown falls back to TalkSibi so a typo can't 500.
       const GAMES = {
-        wordspies: { path: '/codenames', icon: '🎮', label: 'WordSpies' },
+        wordspies: { path: '/codenames', icon: '🎮', label: 'TalkSibi' },
         spy:       { path: '/spy',       icon: '🕵️', label: 'Who is the Spy?' },
         wordchain: { path: '/wordchain', icon: '🔗', label: 'Word Chain' },
         guessword: { path: '/guessword', icon: '❓', label: 'Guess the Word' },
@@ -1729,7 +1729,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       // a way to message any member on the site, follow or no follow.
       const circle = await inviteCircle(me.id);
       const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https').split(',')[0].trim();
-      const host = String(req.headers['x-forwarded-host'] || req.headers.host || 'wordspies.co.uk').split(',')[0].trim();
+      const host = String(req.headers['x-forwarded-host'] || req.headers.host || 'talksibi.com').split(',')[0].trim();
       const link = proto + '://' + host + g.path + '?room=' + code;
       const sent = [];
 
@@ -1745,7 +1745,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
         await db.sadd('soc:convos:' + to, me.id);
         await db.incr('soc:unread:' + to + ':' + me.id);
         notifyUser(to, 'invite', me.name + ' invited you to a game',
-          `${me.name} invited you to a game of ${g.label}.\n\nJoin them: ${link}\n\n— WordSpies`, true,
+          `${me.name} invited you to a game of ${g.label}.\n\nJoin them: ${link}\n\n— TalkSibi`, true,
           mailHtml({
             peek: 'They\'re waiting for you — tap to join.',
             heading: 'Game invite',
@@ -1825,11 +1825,11 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       await db.sadd('soc:convos:' + to, me.id);
       await db.incr('soc:unread:' + to + ':' + me.id);
       notifyUser(to, 'msg', me.name + ' sent you a message',
-        `${me.name} sent you a message on WordSpies.\n\nRead and reply: ${SITE}/social#chat=${me.id}\n\n— WordSpies`, true,
+        `${me.name} sent you a message on TalkSibi.\n\nRead and reply: ${SITE}/social#chat=${me.id}\n\n— TalkSibi`, true,
         mailHtml({
-          peek: 'Tap to read and reply on WordSpies.',
+          peek: 'Tap to read and reply on TalkSibi.',
           heading: 'New message',
-          line: '<b style="color:#16181f">' + esc(me.name) + '</b> sent you a message on WordSpies.',
+          line: '<b style="color:#16181f">' + esc(me.name) + '</b> sent you a message on TalkSibi.',
           btn: 'Check message', btnUrl: SITE + '/social#chat=' + me.id,
           note: 'We only send these when you\'re not already in the app.'
         }));
@@ -3462,7 +3462,7 @@ WordSpies · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">wordsp
       const meLearn = (me.learns || []).join(', ') || 'unknown';
       const system = `${bot.persona}
 
-You are ${bot.name}, a friendly language-learning partner on WordSpies. Your job is to help ${me.name} practise + get better at the language they're learning.
+You are ${bot.name}, a friendly language-learning partner on TalkSibi. Your job is to help ${me.name} practise + get better at the language they're learning.
 
 HOW YOU CHAT:
 - Keep replies VERY SHORT — 1 or 2 sentences, ideally under 25 words. No paragraphs, ever.

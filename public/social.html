@@ -22,7 +22,7 @@
 <!-- maximum-scale=1 is what stops iOS zooming the whole layout every time a
      search box or message field gets focus; pinch-zoom still works. -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>WordSpies — Practise languages with real people</title>
+<title>TalkSibi — Practise languages with real people</title>
 <meta name="description" content="Meet real people to practise languages with. Create your profile, follow language partners, and chat any time — free and browser-based.">
 <meta name="theme-color" content="#fafafa">
 <link rel="icon" type="image/png" href="/icon-192.png">
@@ -30,7 +30,7 @@
 <link rel="apple-touch-icon" href="/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="WordSpies">
+<meta name="apple-mobile-web-app-title" content="TalkSibi">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <!-- Typography — owner ask 6 Aug 2026: 'fonts are not good'. Swapped
@@ -1542,7 +1542,7 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .playcard:hover .playcard-cta{transform:translateX(4px)}
 
 /* Per-card art panels — small illustration in each. */
-/* WordSpies: word-tile grid on red/blue backdrop */
+/* TalkSibi: word-tile grid on red/blue backdrop */
 .playcard-spies .playcard-art{background:linear-gradient(135deg,#ff6f8a,#d94a67);padding:18px 22px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:center}
 .pc-tile{background:#fff;color:#2b2e36;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:12px;text-align:center;padding:10px 6px;border-radius:8px;letter-spacing:.4px;box-shadow:0 3px 8px rgba(0,0,0,.14);text-transform:uppercase}
 .pc-tile.pc-r{background:#ff5a72;color:#fff}
@@ -1962,7 +1962,7 @@ body.authmodal .fab-create{display:none !important}
 .callring .cr-accept:hover{background:#000}
 
 /* WhatsApp-Web-style single-session overlay. Shown on the LOSING tab
-   when the same account opens WordSpies elsewhere. Nothing destructive:
+   when the same account opens TalkSibi elsewhere. Nothing destructive:
    the cookie stays valid, one tap reclaims the session. */
 .sesskick{position:fixed;inset:0;background:rgba(15,17,32,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:400;display:flex;align-items:center;justify-content:center;padding:22px;animation:crfade .18s}
 .sesskick .sk-inner{background:#fff;border-radius:22px;padding:34px 26px 28px;text-align:center;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.45)}
@@ -2091,9 +2091,9 @@ body.in-game .topnav{display:none !important}
 body.in-game .partybar{display:none !important}
 body.in-game .wsfoot,body.in-game .wshead{display:none !important}
 .ghost.fs .ghost-bar{padding:10px 14px;border-bottom:1px solid var(--line);flex:0 0 auto;display:flex;align-items:center;gap:10px;background:#fff}
-/* Hide the game-shell top bar for WordSpies specifically — owner ask
+/* Hide the game-shell top bar for TalkSibi specifically — owner ask
    9 Aug 2026: players kept tapping ✕ / ▲ mid-round and losing the
-   game. WordSpies has its own in-game leave button in the corner. */
+   game. TalkSibi has its own in-game leave button in the corner. */
 /* Owner ask 14 Aug 2026: 'remove the top bar cross from the game
    but make it like codenames please.'  Codenames had the top ghost
    bar hidden in fullscreen — was scoped to [data-game="wordspies"]
@@ -2361,7 +2361,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .chatfull .composer{position:static;left:auto;transform:none;width:auto;max-width:none;margin:0;border-top:1px solid var(--line)}
 .chatfull .picker{position:absolute;bottom:72px;left:12px;right:12px;width:auto;max-width:none;transform:none}
 /* Chat palette — cool blue-violet, iMessage-y. Kept scoped to chat components
-   so the rest of the app keeps its coral WordSpies accent. */
+   so the rest of the app keeps its coral TalkSibi accent. */
 :root{
   --cme-1:#5a7bff; --cme-2:#7c5cff;         /* your bubble gradient */
   --cme-shadow:0 6px 18px rgba(96,88,255,.22);
@@ -2887,7 +2887,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
 <!-- ============ AUTH ============ -->
 <div id="vAuth" class="auth hidden">
-  <div class="logo">WordSpies <em>Social</em></div>
+  <div class="logo"><img src="/logo.svg" alt="TalkSibi" style="height:44px;width:auto;display:block;margin:0 auto 8px" onerror="this.style.display='none'"><span style="display:block;text-align:center">TalkSibi <em>Social</em></span></div>
   <div class="tag">THE COMMUNITY BEHIND THE GAME</div>
   <h1 id="authTitle">Practise languages<br>with <em>real people</em></h1>
   <p class="sub" id="authSub">Create your profile, follow language partners,<br>and chat any time.</p>
@@ -2906,7 +2906,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="field"><input id="fEmail" type="email" maxlength="100" placeholder="Email"></div>
     <div id="suBirth" class="field">
       <input id="fSignupBirth" type="date" required aria-label="Date of birth" placeholder="Date of birth">
-      <div style="font-size:11.5px;color:var(--muted);padding:6px 4px 0;line-height:1.4">WordSpies is 18+. We need your date of birth to confirm.</div>
+      <div style="font-size:11.5px;color:var(--muted);padding:6px 4px 0;line-height:1.4">TalkSibi is 18+. We need your date of birth to confirm.</div>
     </div>
     <div class="field"><input id="fPass" type="password" maxlength="100" placeholder="Password (6+ characters)"></div>
     <div id="resetFields" class="hidden">
@@ -3118,7 +3118,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <p class="ob-sub" style="text-align:center">Your profile is live. Time to meet some people.</p>
       <p class="ob-sub" style="text-align:center;font-size:12.5px;color:var(--faint);margin-top:8px">We review every new profile — most get verified within a day.</p>
       <div class="ob-err hidden" id="obErr9" style="margin:12px auto;max-width:360px"></div>
-      <button class="ob-next primary-big" onclick="obFinish()">Enter WordSpies</button>
+      <button class="ob-next primary-big" onclick="obFinish()">Enter TalkSibi</button>
     </section>
   </div>
 
@@ -3153,7 +3153,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        profile chip (right). Persistent across every tab so the site header
        is no longer a per-tab afterthought. -->
   <nav class="topnav">
-    <a class="tnlogo" href="/" aria-label="WordSpies home">WordSpies <em>Social</em></a>
+    <a class="tnlogo" href="/" aria-label="TalkSibi home">TalkSibi <em>Social</em></a>
     <div class="tntabs" role="tablist">
       <!-- Chats + Community use monochrome SVG line icons — clean,
            consistent across OSes, and pick up the tab's active colour
@@ -3395,7 +3395,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
               <div class="ln-exam-booksub">ETS · book online</div>
             </a>
           </div>
-          <div class="ln-exam-bookhint">External free sites — WordSpies isn't affiliated.</div>
+          <div class="ln-exam-bookhint">External free sites — TalkSibi isn't affiliated.</div>
         </div>
       </div>
 
@@ -3498,7 +3498,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <h2>Play together</h2>
     </div>
     <div class="playgrid">
-      <!-- 1 · WordSpies (Codenames-style) -->
+      <!-- 1 · TalkSibi (Codenames-style) -->
       <a class="playcard playcard-spies" href="/codenames?from=social" onclick="return wsPlayStart(this,event)">
         <div class="playcard-art">
           <div class="pc-tile pc-r">RED</div>
@@ -3510,7 +3510,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         </div>
         <div class="playcard-body">
           <div class="playcard-badge">Team · 4–10 players</div>
-          <h3>WordSpies <button class="pc-info" type="button" data-pcinfo="wordspies" aria-label="About WordSpies">i</button></h3>
+          <h3>TalkSibi <button class="pc-info" type="button" data-pcinfo="wordspies" aria-label="About TalkSibi">i</button></h3>
           <p>Two teams, secret words, one wrong guess.</p>
           <span class="playcard-cta">Start a room →</span>
         </div>
@@ -4173,7 +4173,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
         <button class="sw" id="swSound" onclick="toggleSound()" aria-label="Sound alerts"></button>
       </div>
       <div class="setrow">
-        <div class="sc"><b>Push notifications</b><span id="pushWhy">Get told even when WordSpies is closed.</span></div>
+        <div class="sc"><b>Push notifications</b><span id="pushWhy">Get told even when TalkSibi is closed.</span></div>
         <button class="sw" id="swPush" onclick="togglePush()" aria-label="Push notifications"></button>
       </div>
     </div>
@@ -4196,7 +4196,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="setrow" style="align-items:center">
         <div class="sc" style="flex:1">
           <b>Report a bug or share feedback</b>
-          <span>Chat directly with the person building WordSpies. Every message is read.</span>
+          <span>Chat directly with the person building TalkSibi. Every message is read.</span>
         </div>
         <button class="btn btn-dark" id="devChatBtn" style="width:auto;padding:9px 16px;flex:none;font-size:13px" onclick="chatWithDeveloper()">💬 Chat</button>
       </div>
@@ -4211,8 +4211,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
       <div class="setrow" style="display:block">
         <div class="sc" style="width:100%">
           <b>Contact</b>
-          <span>General questions: <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a></span>
-          <span>Safety &amp; abuse reports: <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a></span>
+          <span>General questions: <a href="mailto:contact@talksibi.com">contact@talksibi.com</a></span>
+          <span>Safety &amp; abuse reports: <a href="mailto:safety@talksibi.com">safety@talksibi.com</a></span>
         </div>
       </div>
       <div class="setrow" style="display:block">
@@ -4274,16 +4274,16 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 </div>
 
 <!-- Single-session overlay (WhatsApp Web-style). Rendered when the same
-     account opens WordSpies in another tab / browser / device. Not
+     account opens TalkSibi in another tab / browser / device. Not
      destructive — clicking "Use here" simply re-registers this tab as
      the active one. Bypassed while the user is in a party or an active
      game so mid-conversation audio never gets kicked. -->
 <div class="sesskick hidden" id="sessKick" role="dialog" aria-modal="true" aria-labelledby="skTitle">
   <div class="sk-inner">
     <div class="sk-ic">🖥️</div>
-    <div class="sk-t" id="skTitle">WordSpies is open elsewhere</div>
-    <div class="sk-b">Only one window can be active at a time. Click below to use WordSpies here instead.</div>
-    <button class="sk-go" onclick="reclaimSession()">Use WordSpies here</button>
+    <div class="sk-t" id="skTitle">TalkSibi is open elsewhere</div>
+    <div class="sk-b">Only one window can be active at a time. Click below to use TalkSibi here instead.</div>
+    <button class="sk-go" onclick="reclaimSession()">Use TalkSibi here</button>
   </div>
 </div>
 
@@ -4447,7 +4447,7 @@ function toast(m){ const t = $('toastEl'); t.textContent = m; t.classList.add('s
 
 // ── Custom sweet-alert helpers (owner ask 10 Aug 2026 — 'make some
 //   custom sweet alerts'). Replaces the browser's beige alert()/confirm()
-//   with a WordSpies-styled modal. Returns a Promise so callers can
+//   with a TalkSibi-styled modal. Returns a Promise so callers can
 //   await it — window.confirm() is overridden too so existing code
 //   picks up the pretty version with zero migration.
 function _swInject(){
@@ -4617,7 +4617,7 @@ $('authGo').onclick = async () => {
           return;
         }
         if (clientAge < 18) {
-          $('authErr').textContent = 'Sorry, WordSpies is for people aged 18 and over.';
+          $('authErr').textContent = 'Sorry, TalkSibi is for people aged 18 and over.';
           $('authGo').disabled = false;
           return;
         }
@@ -4994,7 +4994,7 @@ function obPaintProgress(current){
 }
 let _obLastStep = 0;
 function obShow(step){
-  // Splash-transition: brief WordSpies logo flash between step
+  // Splash-transition: brief TalkSibi logo flash between step
   // changes (not on the very first paint). Owner ask 1 Aug 2026 —
   // 'nice animation from screen to other, the logo like cool'.
   const doSplash = _obLastStep && step !== _obLastStep;
@@ -5179,7 +5179,7 @@ async function obNext(step){
       if (!bd) return err('Please enter your date of birth.');
       const age = ageFromISOClient(bd);
       if (!Number.isFinite(age) || age < 0 || age > 120) return err('Please enter a valid date of birth.');
-      if (age < 18) return err('Sorry — WordSpies is for people aged 18 and over.');
+      if (age < 18) return err('Sorry — TalkSibi is for people aged 18 and over.');
       // Save name if changed.
       if (raw2 !== ME.name) {
         try {
@@ -5285,7 +5285,7 @@ async function obFinish(){
   // POST fire-and-forget then jumped to the app. If the server rejected
   // (wizardFieldsComplete false — talkAbout wiped, photo lost, etc.),
   // the client thought it was done, refresh sent them back to step 5,
-  // and every Enter WordSpies tap re-rejected → infinite loop with no
+  // and every Enter TalkSibi tap re-rejected → infinite loop with no
   // visible error. Now: await the write, only leave the wizard on 200.
   const btn = document.querySelector('.ob-step[data-step="' + OB_TOTAL + '"] .ob-next');
   if (btn) { btn.disabled = true; btn.dataset._label = btn.textContent; btn.textContent = 'Just a sec…'; }
@@ -5618,12 +5618,12 @@ function mark(u){
   // Owner-only DEV badge — shows before crown/king so if Sibi ever earns
   // both, DEV wins the slot. Case-insensitive display-name match, same
   // pattern as AI_UNLIMITED_NAMES server-side.
-  if (isDeveloper(u)) return '<span class="dev-badge" title="WordSpies developer">DEV</span>';
+  if (isDeveloper(u)) return '<span class="dev-badge" title="TalkSibi developer">DEV</span>';
   // Two paths to the crown: hand-picked kings + self-earned founders
   // (users who brought 5 friends via /refer). Same visual, different
   // provenance. Owner ask 14 Aug 2026 — 'invite 5 friends, get the
   // crown badge'. The tooltip lets curious taps see why it's there.
-  if (u.king) return KING_SVG.replace('aria-label="King"', 'aria-label="King" title="King — WordSpies founding member"');
+  if (u.king) return KING_SVG.replace('aria-label="King"', 'aria-label="King" title="King — TalkSibi founding member"');
   if (u.crown) return KING_SVG.replace('aria-label="King"', 'aria-label="Founder" title="Founder — invited 5+ friends"');
   // Blue 'Founding member' tick retired 1 Aug 2026 per owner ask
   // ('remove the blue tick'). Kept the .vtick CSS + the mark()
@@ -7973,7 +7973,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) refr
 
 // ═══════════════════════════════════════════════════════════════════
 // Single active session (owner ask 14 Aug 2026 — WhatsApp-Web-style).
-// When the same account opens WordSpies in a NEW tab / browser / device,
+// When the same account opens TalkSibi in a NEW tab / browser / device,
 // the new tab wins and the old tabs get a soft "Use here to resume"
 // overlay. Nothing destructive: cookie stays valid, one tap reclaims.
 //
@@ -8053,7 +8053,7 @@ function showSessionKick() {
 }
 
 async function reclaimSession() {
-  // User tapped "Use WordSpies here" on the losing tab. Re-register makes
+  // User tapped "Use TalkSibi here" on the losing tab. Re-register makes
   // THIS tab the current one, then a full reload guarantees every timer /
   // socket / interval restarts cleanly (rather than trying to re-wire the
   // dozen pollers by hand).
@@ -8069,7 +8069,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) chec
 // ═══════════════════════════════════════════════════════════════════
 // Persistent game-session pill. Owner ask 1 Aug 2026: 'if he left the
 // tab he can come back with the black stripe'.
-// Game pages (index.html for WordSpies, spy.html, pool.html) stamp
+// Game pages (index.html for TalkSibi, spy.html, pool.html) stamp
 // { game, path, code, title } into localStorage['wsActiveGame'] on
 // mount and clear it on end/leave. This pill reads that stamp and
 // resumes the game with one tap when the user returns to /social.
@@ -8169,7 +8169,7 @@ async function wsPlayStart(anchor, ev){
   // Owner ask 7 Aug 2026: 'Start a room' should actually create a
   // room, not dump the user on the game's home screen. Server has
   // /api/{game}/new for every side game — POST it to mint a code,
-  // then open the iframe pointed at that fresh room. WordSpies main
+  // then open the iframe pointed at that fresh room. TalkSibi main
   // creates via socket inside the game HTML, so skip the POST for it.
   if (!code && game !== 'wordspies') {
     try {
@@ -8189,7 +8189,7 @@ async function wsPlayStart(anchor, ev){
 // Playcard info-popup content. Full descriptions live here so the
 // card body itself can stay to one short line + an (i) icon.
 const PCINFO = {
-  wordspies: { name:'WordSpies', href:'/codenames?from=social',
+  wordspies: { name:'TalkSibi', href:'/codenames?from=social',
     body:'Two teams, one grid of secret words. Your spymaster gives a single clue and a number, and your team races to guess only your words — one wrong tap can hand the round to the other side. Best with 4–10 friends around a phone or on a call.',
     meta:'4–10+ players · shared link · bots fill seats' },
   spy: { name:'Who is the Spy?', href:'/spy',
@@ -8367,7 +8367,7 @@ function togglePartyExpand(){
 // ?embed=1 so it hides its own header/footer chrome, then keeps the
 // iframe mounted while the user browses other tabs. Owner ask 7 Aug
 // 2026: 'stay in the site, one-click end, mini-player at the bottom'.
-const GAME_LABEL = { wordspies:'WordSpies', wordrace:'Word Race', wordchain:'Word Chain',
+const GAME_LABEL = { wordspies:'TalkSibi', wordrace:'Word Race', wordchain:'Word Chain',
   guessword:'Guess the Word', spy:'Who is the Spy?', meld:'Mind Meld',
   ludo:'Ludo', four:'Connect 4', pool:'8-Ball Pool', hoop:'Hoop' };
 const GAME_ROUTE = { wordspies:'/play', wordrace:'/wordrace', wordchain:'/wordchain',
@@ -8409,7 +8409,7 @@ function openGameInApp(game, code, title){
   const t = $('ghostTitle');
   if (t) t.textContent = (title || GAME_LABEL[game] || 'Game').toUpperCase();
   // Tag the host with the game slug so CSS can hide the shell bar for
-  // specific games (owner ask 9 Aug 2026 — WordSpies players kept
+  // specific games (owner ask 9 Aug 2026 — TalkSibi players kept
   // accidentally tapping ✕ mid-round and losing the game).
   host.dataset.game = game;
   host.classList.remove('hidden');
@@ -8607,7 +8607,7 @@ function lvCard(g){
       '</span>';
   }).join('');
 
-  // A seat is offerable when the game says so. WordSpies reports null because
+  // A seat is offerable when the game says so. TalkSibi reports null because
   // it takes as many people as turn up; the arcade games count real chairs.
   const open = g.state !== 'over' && (g.seatsFree === null || g.seatsFree > 0);
   const seatLabel = g.seatsFree === null ? 'Join the game'
@@ -8803,10 +8803,10 @@ async function paintPush(){
   s.disabled = st === 'unsupported';
   why.textContent =
       st === 'unsupported' ? 'This browser can\'t show notifications.'
-    : st === 'blocked'     ? 'Notifications are blocked in your browser — allow them for wordspies.co.uk to turn back on.'
+    : st === 'blocked'     ? 'Notifications are blocked in your browser — allow them for talksibi.com to turn back on.'
     : st === 'on'          ? 'On — we\'ll tell you about messages and new followers.'
     : st === 'inpage-on'   ? 'On — we\'ll notify you about messages and new followers.'
-    :                        'Get told even when WordSpies is closed.';
+    :                        'Get told even when TalkSibi is closed.';
 }
 const b64ToU8 = s => {
   const p = (s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
@@ -8814,7 +8814,7 @@ const b64ToU8 = s => {
   for (let i = 0; i < raw.length; i++) u[i] = raw.charCodeAt(i);
   return u;
 };
-const BLOCKED_HINT = 'Notifications are off in your browser — allow them for wordspies.co.uk';
+const BLOCKED_HINT = 'Notifications are off in your browser — allow them for talksibi.com';
 async function togglePush(){
   const s = $('swPush');
   const hasPush = ('serviceWorker' in navigator) && ('PushManager' in window);
@@ -8827,7 +8827,7 @@ async function togglePush(){
     if (st === 'inpage-on') {
       s.classList.remove('on');
       try { localStorage.setItem('ws_inpage_off', '1'); } catch(e){}
-      toast('Notifications off (while WordSpies is open)');
+      toast('Notifications off (while TalkSibi is open)');
       return paintPush();
     }
     if (st === 'on') {                                   // flick off (real push)
@@ -8853,7 +8853,7 @@ async function togglePush(){
     // No PushManager → we can't subscribe, but pingLoop() already shows
     // in-page notifications when Notification.permission==='granted'.
     if (!hasPush) {
-      toast('Notifications on (while WordSpies is open)');
+      toast('Notifications on (while TalkSibi is open)');
       return paintPush();
     }
     const { key } = await api('/push/key');
@@ -8867,7 +8867,7 @@ async function togglePush(){
   } catch (e) { toast('Couldn\'t turn on push.'); }
   paintPush();
 }
-// Putting WordSpies on your home screen and wanting to hear from it are the same
+// Putting TalkSibi on your home screen and wanting to hear from it are the same
 // wish, so the Add button does both — no second question, no second switch to go
 // and find. Silent by design: if you say no to the browser, nothing is said back.
 async function enablePushQuietly(){
@@ -8926,14 +8926,14 @@ async function pingLoop(){
     const canInPageNotify = !inpageOff && !PUSH_EP && 'Notification' in window && Notification.permission === 'granted';
     if (j.unread > lastUnread && away) {
       soundMsg();
-      if (canInPageNotify) new Notification('WordSpies 💬', { body: 'You have a new message!', icon: '/icon-192.png' });
+      if (canInPageNotify) new Notification('TalkSibi 💬', { body: 'You have a new message!', icon: '/icon-192.png' });
     }
     lastUnread = j.unread;
     if (typeof j.followers === 'number') {
       if (lastFollowers !== null && j.followers > lastFollowers) {
         soundFollow();
         if (canInPageNotify && document.hidden)
-          new Notification('WordSpies 👋', { body: 'Someone new is following you!', icon: '/icon-192.png' });
+          new Notification('TalkSibi 👋', { body: 'Someone new is following you!', icon: '/icon-192.png' });
       }
       lastFollowers = j.followers;
     }
@@ -9156,7 +9156,7 @@ addEventListener('orientationchange', () => setTimeout(fitChat, 250));
 // Render a message: GIFs as images, game invite links as a big Join button,
 // other links clickable. Everything is escaped first.
 const GAME_TAGS = {
-  play: ['🕵️', 'WordSpies'], ludo: ['🎲', 'Ludo'], four: ['🔴', 'Connect 4'],
+  play: ['🕵️', 'TalkSibi'], ludo: ['🎲', 'Ludo'], four: ['🔴', 'Connect 4'],
   pool: ['🎱', '8-Ball Pool'], meld: ['🧠', 'Mind Meld'], party: ['🎉', 'party']
 };
 // Challenges you sent wait politely: the card sits in the chat saying
@@ -9176,7 +9176,7 @@ function msgBody(m){
   // loading + added decoding=async to stop the blink caused by the
   // chat's periodic re-render destroying and re-creating the <img>.
   if (m.k === 'image') return `<img class="chatimg" src="${esc(m.x)}" decoding="async" alt="photo" draggable="false">`;
-  // Any game invite — WordSpies or the arcade — becomes a big tappable Join
+  // Any game invite — TalkSibi or the arcade — becomes a big tappable Join
   // card, and a message can hold several of them. The regex runs on the
   // escaped text, so & in the URL appears as &amp; here.
   const mine = ME && m.f === ME.id;
@@ -10017,7 +10017,7 @@ function toggleGamePick(){ /* no-op — game picker retired */ }
 //     { action: 'continue' }    → user chose to keep playing existing;
 //                                  caller should navigate to active.url
 //     { action: 'cancel' }      → user cancelled; caller should do nothing
-const AG_LABEL = { wordspies:'WordSpies', spy:'Who is the Spy?', wordchain:'Word Chain',
+const AG_LABEL = { wordspies:'TalkSibi', spy:'Who is the Spy?', wordchain:'Word Chain',
   guessword:'Guess the Word', wordrace:'Word Race', meld:'Mind Meld', pool:'8-Ball Pool', ludo:'Ludo', four:'Connect 4' };
 async function wsHandleActiveGame(active){
   const nice = AG_LABEL[active.game] || active.game;
@@ -11445,8 +11445,8 @@ async function shareMyProfile(){
   if (!ME || !ME.id) { toast('Log in first, then share your profile.'); return; }
   const url = location.origin + '/social?u=' + encodeURIComponent(ME.id);
   const shareData = {
-    title: ME.name ? ME.name + ' on WordSpies' : 'WordSpies',
-    text: 'Come chat with me on WordSpies!',
+    title: ME.name ? ME.name + ' on TalkSibi' : 'TalkSibi',
+    text: 'Come chat with me on TalkSibi!',
     url
   };
   try {
@@ -11480,7 +11480,7 @@ function refShareUrl(code){
   return location.origin + '/?ref=' + encodeURIComponent(c);
 }
 function refShareMsg(code){
-  return 'Come join me on WordSpies — free language exchange with real people + AI experts. ' + refShareUrl(code);
+  return 'Come join me on TalkSibi — free language exchange with real people + AI experts. ' + refShareUrl(code);
 }
 async function refFetchState(){
   try {
@@ -11608,7 +11608,7 @@ function refPaintModal(){
     // Progress state — 0..4/5.
     body.innerHTML = `
       <h3 class="rftitle" id="rfTitle">Win 1 year free 👑</h3>
-      <p class="rfsub">WordSpies is new. Bring <b>5 friends</b> and unlock a <b>founder crown</b> + <b>1 year of everything free</b>. Share your link — no catch.</p>
+      <p class="rfsub">TalkSibi is new. Bring <b>5 friends</b> and unlock a <b>founder crown</b> + <b>1 year of everything free</b>. Share your link — no catch.</p>
       <div class="rfprog" aria-label="Referral progress">
         <div class="rfbar"><div class="rfbar-fill" style="width:${pct}%"></div></div>
         <div class="rfprog-txt"><b>${s.count}</b> / ${s.goal}</div>
@@ -11661,11 +11661,11 @@ async function refShareTo(kind, code){
     return;
   }
   if (kind === 'tg') {
-    window.open('https://t.me/share/url?url=' + enc(url) + '&text=' + enc('Come join me on WordSpies — free language exchange.'), '_blank', 'noopener');
+    window.open('https://t.me/share/url?url=' + enc(url) + '&text=' + enc('Come join me on TalkSibi — free language exchange.'), '_blank', 'noopener');
     return;
   }
   if (kind === 'x') {
-    window.open('https://x.com/intent/tweet?text=' + enc('Come join me on WordSpies — free language exchange with real people + AI experts.') + '&url=' + enc(url), '_blank', 'noopener');
+    window.open('https://x.com/intent/tweet?text=' + enc('Come join me on TalkSibi — free language exchange with real people + AI experts.') + '&url=' + enc(url), '_blank', 'noopener');
     return;
   }
   if (kind === 'ig') {
@@ -11682,7 +11682,7 @@ async function refShareTo(kind, code){
   }
   if (kind === 'nv') {
     try {
-      if (navigator.share) { await navigator.share({ title:'WordSpies', text:'Come join me on WordSpies!', url }); return; }
+      if (navigator.share) { await navigator.share({ title:'TalkSibi', text:'Come join me on TalkSibi!', url }); return; }
     } catch (e) { /* user cancelled */ }
     await refCopyToClipboard(url);
     toast('🔗 Link copied ✓');
@@ -11773,7 +11773,7 @@ function refFounderChipHtml(u){
     ? (typeof relTimeShort === 'function' ? relTimeShort(u.createdAt) : new Date(u.createdAt).toLocaleDateString('en-GB', { month:'short', year:'numeric' }))
     : '';
   if (isDeveloper(u)) {
-    return `<span class="rf-dev-chip" title="WordSpies developer">Developer 🛠️${since ? ' · joined ' + esc(since) : ''}</span>`;
+    return `<span class="rf-dev-chip" title="TalkSibi developer">Developer 🛠️${since ? ' · joined ' + esc(since) : ''}</span>`;
   }
   if (!u.crown) return '';
   return `<span class="rf-founder-chip" title="Founder — invited 5+ friends">Founder 👑${since ? ' · joined ' + esc(since) : ''}</span>`;
@@ -12185,7 +12185,7 @@ async function openClubFromDeepLinkParam() {
 })();
 </script>
 
-<!-- ---------- 📲 keep WordSpies on your home screen ----------
+<!-- ---------- 📲 keep TalkSibi on your home screen ----------
      Same offer as the game page, so whichever door someone comes through on a
      phone, they get one chance to keep the app. Dismissing it sticks. -->
 <style>
@@ -12204,10 +12204,10 @@ async function openClubFromDeepLinkParam() {
 </style>
 <div id="a2hsSteps" class="hidden">
   <div class="card">
-    <h3>📲 Install WordSpies</h3>
+    <h3>📲 Install TalkSibi</h3>
     <p id="a2hsS1"><b>1.</b> Tap the <b>Share</b> button at the bottom of Safari.</p>
     <p id="a2hsS2"><b>2.</b> Scroll down and tap <b>Add to Home Screen</b>.</p>
-    <p><b>3.</b> Tap <b>Add</b> — WordSpies opens full-screen, like a real app.</p>
+    <p><b>3.</b> Tap <b>Add</b> — TalkSibi opens full-screen, like a real app.</p>
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>

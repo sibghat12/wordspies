@@ -1,4 +1,4 @@
-// Word packs for WordSpies. 5 curated categories.
+// Word packs for TalkSibi. 5 curated categories.
 const PACKS = {
   easy: {
     name: 'Easy / Family',

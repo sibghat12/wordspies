@@ -1,7 +1,7 @@
-// Static info pages for WordSpies — About, Privacy Policy, Terms.
+// Static info pages for TalkSibi — About, Privacy Policy, Terms.
 // Required for ad-network (AdSense) approval and general trust/SEO.
 const { SITE_FOOTER } = require('./landing.js');
-const SITE = 'https://wordspies.co.uk';
+const SITE = 'https://talksibi.com';
 const GA_ID = 'G-JTH809Z8NH';
 // Consent-gated GA. GDPR / UK-GDPR compliant: no analytics or ad
 // cookies until the user taps 'Accept all' in the cookie modal.
@@ -51,7 +51,7 @@ const CONSENT_MODAL = `
 </style>
 <div class="ws-cc" id="wsCcBd" role="dialog" aria-modal="true" aria-labelledby="wsCcTitle">
   <div class="ws-cc-card">
-    <h3 id="wsCcTitle">🍪 Cookies on WordSpies</h3>
+    <h3 id="wsCcTitle">🍪 Cookies on TalkSibi</h3>
     <p>We use essential cookies to sign you in and keep the site working. With your permission we'd also like to use analytics + advertising cookies so we can understand traffic and (soon) show a few relevant ads on the home / blog pages. <a href="/privacy">Read the full policy</a>.</p>
     <div class="ws-cc-actions">
       <button class="ws-cc-accept" onclick="wsCcSet('accept')">Accept all</button>
@@ -88,7 +88,7 @@ ${GA}
 <meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${SITE}${path}">
 <link rel="icon" type="image/png" href="/icon-192.png">
-<meta property="og:site_name" content="WordSpies"><meta property="og:locale" content="en_GB">
+<meta property="og:site_name" content="TalkSibi"><meta property="og:locale" content="en_GB">
 <meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="website">
 <meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${SITE}/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -139,29 +139,29 @@ ${CONSENT_MODAL}
 
 function aboutPage() {
   const body = `
-<h1>About WordSpies</h1>
+<h1>About TalkSibi</h1>
 <div class="updated">Get to know the game and the people behind it.</div>
-<p>WordSpies is a free online word game for friends and families, inspired by the much-loved hidden-word party game format. Two teams race to identify their secret words from one-word clues given by their spymasters, while carefully avoiding the hidden assassin word. It plays in any web browser, on any phone or laptop, with no sign-up and no download.</p>
+<p>TalkSibi is a free online word game for friends and families, inspired by the much-loved hidden-word party game format. Two teams race to identify their secret words from one-word clues given by their spymasters, while carefully avoiding the hidden assassin word. It plays in any web browser, on any phone or laptop, with no sign-up and no download.</p>
 <h2>Why we built it</h2>
 <p>We wanted a version of the word-guessing party game that anyone could start in ten seconds and play with friends anywhere — around a table, or spread across a video call. No accounts, no app store, no cost. Just type a name, share a four-letter code, and play.</p>
 <h2>How it works</h2>
 <p>One player creates a room and shares the code or invite link. Friends join from their own devices and split into two teams. Each team's spymaster gives one-word clues with a number, and teammates discuss and tap the words they think match. The first team to find all of their words wins — unless someone taps the assassin, which ends the game instantly.</p>
-<h2>Who makes WordSpies</h2>
-<p>WordSpies is an independent project built and maintained by a small team. We play, test and improve it continuously, and we genuinely read the feedback players send in.</p>
+<h2>Who makes TalkSibi</h2>
+<p>TalkSibi is an independent project built and maintained by a small team. We play, test and improve it continuously, and we genuinely read the feedback players send in.</p>
 <h2>Get in touch</h2>
-<p>Ideas, bug reports and kind words are all welcome at <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>
+<p>Ideas, bug reports and kind words are all welcome at <a href="mailto:contact@talksibi.com">contact@talksibi.com</a>.</p>
 <h2>A note on trademarks</h2>
-<p>WordSpies is an independent game and is not affiliated with, endorsed by, or connected to Codenames or Czech Games Edition. Any references to Codenames on this site are for descriptive comparison only, to help players understand the style of game WordSpies is.</p>`;
-  return layout('About WordSpies — The Free Online Word Game', 'Learn about WordSpies, the free online Codenames-style word game for friends and families. How it works, who makes it, and how to get in touch.', '/about', body);
+<p>TalkSibi is an independent game and is not affiliated with, endorsed by, or connected to Codenames or Czech Games Edition. Any references to Codenames on this site are for descriptive comparison only, to help players understand the style of game TalkSibi is.</p>`;
+  return layout('About TalkSibi — The Free Online Word Game', 'Learn about TalkSibi, the free online Codenames-style word game for friends and families. How it works, who makes it, and how to get in touch.', '/about', body);
 }
 
 function privacyPage() {
   const body = `
 <h1>Privacy Policy</h1>
 <div class="updated">Last updated: 1 August 2026</div>
-<p>This Privacy Policy explains what WordSpies ("we", "us") collects, why, who processes it on our behalf, and the choices you have. We collect only what we need to run the service.</p>
+<p>This Privacy Policy explains what TalkSibi ("we", "us") collects, why, who processes it on our behalf, and the choices you have. We collect only what we need to run the service.</p>
 <h2>Who we are</h2>
-<p>WordSpies is an independent language-exchange community based in the United Kingdom. Contact: <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>
+<p>TalkSibi is an independent language-exchange community based in the United Kingdom. Contact: <a href="mailto:contact@talksibi.com">contact@talksibi.com</a>.</p>
 <h2>What we collect</h2>
 <ul>
 <li><strong>Account information</strong> — display name, email address, date of birth (used for the 18+ age check — required, we store the date you gave), and a bcrypt hash of your password. If you sign in with Google, we receive your Google name, email and profile photo, and you provide your date of birth to us the first time you sign in.</li>
@@ -200,22 +200,22 @@ function privacyPage() {
 <h2>Retention</h2>
 <p>Account data is kept while your account is active. When you delete your account (Me → Delete account) we remove your profile, photo, messages, follows, and session tokens immediately. Server logs are kept for up to 30 days for abuse investigation.</p>
 <h2>Your rights (UK/EU GDPR)</h2>
-<p>You may access, correct, export or delete personal data we hold about you. Most is available inside the app; for anything else email <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a> and we will respond within 30 days. You may also complain to the UK Information Commissioner's Office at <a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a>.</p>
+<p>You may access, correct, export or delete personal data we hold about you. Most is available inside the app; for anything else email <a href="mailto:contact@talksibi.com">contact@talksibi.com</a> and we will respond within 30 days. You may also complain to the UK Information Commissioner's Office at <a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a>.</p>
 <h2>Age</h2>
-<p>WordSpies is <strong>strictly for users aged 18 and over</strong>. We ask for your date of birth at sign-up and refuse to create an account if you are under 18. We do not knowingly collect personal information from anyone under 18. If you believe a person under 18 has an account, email <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a> and we will investigate and, where appropriate, remove the account.</p>
+<p>TalkSibi is <strong>strictly for users aged 18 and over</strong>. We ask for your date of birth at sign-up and refuse to create an account if you are under 18. We do not knowingly collect personal information from anyone under 18. If you believe a person under 18 has an account, email <a href="mailto:safety@talksibi.com">safety@talksibi.com</a> and we will investigate and, where appropriate, remove the account.</p>
 <p>To keep our community safe we may, in future, ask you to complete a one-time identity or age verification via a trusted third-party provider (for example a selfie-plus-ID-document check, or an email-verification step). We will not do this without notice, and we will not share any documents you provide with anyone other than the verification provider strictly to complete the check.</p>
 <h2>Changes</h2>
 <p>We may update this policy. Material changes will be reflected by the "Last updated" date above.</p>`;
-  return layout('Privacy Policy — WordSpies', 'How WordSpies handles data: accounts, messages, party audio, and the third parties who process data on our behalf.', '/privacy', body);
+  return layout('Privacy Policy — TalkSibi', 'How TalkSibi handles data: accounts, messages, party audio, and the third parties who process data on our behalf.', '/privacy', body);
 }
 
 function termsPage() {
   const body = `
 <h1>Terms of Use</h1>
 <div class="updated">Last updated: 1 August 2026</div>
-<p>By creating an account or otherwise using WordSpies ("we", "us", "the service") you agree to these Terms of Use. If you do not agree, do not use the service.</p>
-<h2>Who can use WordSpies</h2>
-<p>You must be <strong>at least 18 years old</strong> to create an account or use WordSpies. We ask for your date of birth at sign-up and refuse account creation if you are under 18. You agree to give accurate information about yourself, including your true date of birth, and to keep it accurate. Providing a false date of birth to circumvent the age gate is a breach of these Terms and will result in immediate account termination.</p>
+<p>By creating an account or otherwise using TalkSibi ("we", "us", "the service") you agree to these Terms of Use. If you do not agree, do not use the service.</p>
+<h2>Who can use TalkSibi</h2>
+<p>You must be <strong>at least 18 years old</strong> to create an account or use TalkSibi. We ask for your date of birth at sign-up and refuse account creation if you are under 18. You agree to give accurate information about yourself, including your true date of birth, and to keep it accurate. Providing a false date of birth to circumvent the age gate is a breach of these Terms and will result in immediate account termination.</p>
 <p>We may, at our discretion and to protect the community, ask you to complete a one-time identity or age verification via a trusted third-party provider (for example, verified email, or a selfie-plus-ID-document check). Refusing to complete such a check when we reasonably request it may result in your account being suspended.</p>
 <h2>Acceptable use</h2>
 <p>You agree not to:</p>
@@ -235,7 +235,7 @@ function termsPage() {
 <li>Non-consensual intimate imagery.</li>
 <li>Threats of violence, terrorism, or self-harm encouragement.</li>
 </ul>
-<p>To report such content immediately, email <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a>. We aim to respond within 24 hours.</p>
+<p>To report such content immediately, email <a href="mailto:safety@talksibi.com">safety@talksibi.com</a>. We aim to respond within 24 hours.</p>
 <h2>Reporting and moderation</h2>
 <p>Every user profile and every message includes Report and Block controls. Reports are reviewed by us; we may remove content, warn users, suspend or delete accounts. We may also act without a report where we become aware of a serious violation.</p>
 <h2>Your content</h2>
@@ -243,12 +243,12 @@ function termsPage() {
 <h2>Suspension and termination</h2>
 <p>We may suspend or terminate your account for breach of these Terms. Where possible we will explain the reason. You may delete your account at any time from inside the app (Me → Delete account).</p>
 <h2>The service is provided "as is"</h2>
-<p>WordSpies is a free service provided without warranties. We do not guarantee it will always be available or free from bugs. To the maximum extent permitted by law we are not liable for indirect losses arising from your use of the service. Nothing here limits liability that cannot be limited under UK law.</p>
+<p>TalkSibi is a free service provided without warranties. We do not guarantee it will always be available or free from bugs. To the maximum extent permitted by law we are not liable for indirect losses arising from your use of the service. Nothing here limits liability that cannot be limited under UK law.</p>
 <h2>Contact</h2>
-<p>General questions: <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a><br>Safety reports: <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a></p>
+<p>General questions: <a href="mailto:contact@talksibi.com">contact@talksibi.com</a><br>Safety reports: <a href="mailto:safety@talksibi.com">safety@talksibi.com</a></p>
 <h2>Changes</h2>
 <p>We may update these terms. Continued use after changes means you accept the updated terms.</p>`;
-  return layout('Terms of Use — WordSpies', 'The rules for using WordSpies: acceptable use, zero-tolerance content, reporting, and account termination.', '/terms', body);
+  return layout('Terms of Use — TalkSibi', 'The rules for using TalkSibi: acceptable use, zero-tolerance content, reporting, and account termination.', '/terms', body);
 }
 
 // Google Play requires a publicly reachable Child Safety Standards page
@@ -259,9 +259,9 @@ function childSafetyPage() {
   const body = `
 <h1>Child Safety Standards</h1>
 <div class="updated">Last updated: 1 August 2026</div>
-<p>WordSpies takes the safety of minors seriously. This page describes the standards we apply and how to reach us.</p>
+<p>TalkSibi takes the safety of minors seriously. This page describes the standards we apply and how to reach us.</p>
 <h2>Our position</h2>
-<p>WordSpies is <strong>strictly for users aged 18 and over</strong>. Creating an account requires you to enter your date of birth; if it shows you are under 18 we refuse to create the account, do not issue a session, and prevent re-attempts on that email for a period. We do not knowingly permit anyone under 18 to use the service, and we do not knowingly collect personal information from anyone under 18.</p>
+<p>TalkSibi is <strong>strictly for users aged 18 and over</strong>. Creating an account requires you to enter your date of birth; if it shows you are under 18 we refuse to create the account, do not issue a session, and prevent re-attempts on that email for a period. We do not knowingly permit anyone under 18 to use the service, and we do not knowingly collect personal information from anyone under 18.</p>
 <p>Any content depicting, sexualising, grooming or endangering a minor is <strong>strictly and permanently prohibited</strong> and will result in immediate account termination and reporting to the appropriate authorities.</p>
 <h2>What we do</h2>
 <ul>
@@ -275,17 +275,17 @@ function childSafetyPage() {
 <li>Reporting of any suspected child sexual abuse material to the National Center for Missing &amp; Exploited Children (NCMEC) in the United States and the Internet Watch Foundation (IWF) in the United Kingdom.</li>
 </ul>
 <h2>Reporting child safety concerns</h2>
-<p>If you believe a user is under 18, or you become aware of content that endangers a minor, email <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a> immediately. Include as much detail as you safely can: the username in question, a link or screenshot if possible, and any context.</p>
+<p>If you believe a user is under 18, or you become aware of content that endangers a minor, email <a href="mailto:safety@talksibi.com">safety@talksibi.com</a> immediately. Include as much detail as you safely can: the username in question, a link or screenshot if possible, and any context.</p>
 <p>Suspected child sexual abuse material can also be reported directly to:</p>
 <ul>
 <li>United Kingdom: <a href="https://iwf.org.uk" rel="noopener" target="_blank">Internet Watch Foundation</a></li>
 <li>United States: <a href="https://report.cybertip.org" rel="noopener" target="_blank">NCMEC CyberTipline</a></li>
 </ul>
 <h2>CSAM point of contact</h2>
-<p>The designated point of contact for child sexual abuse material at WordSpies is the WordSpies safety team, reachable at <a href="mailto:safety@wordspies.co.uk">safety@wordspies.co.uk</a>.</p>
+<p>The designated point of contact for child sexual abuse material at TalkSibi is the TalkSibi safety team, reachable at <a href="mailto:safety@talksibi.com">safety@talksibi.com</a>.</p>
 <h2>About us</h2>
-<p>WordSpies is an independent language-exchange community, based in the United Kingdom, reachable at <a href="mailto:contact@wordspies.co.uk">contact@wordspies.co.uk</a>.</p>`;
-  return layout('Child Safety Standards — WordSpies', 'Our standards for protecting minors: 13+ age gate, reporting, moderation, and the designated CSAM contact.', '/child-safety', body);
+<p>TalkSibi is an independent language-exchange community, based in the United Kingdom, reachable at <a href="mailto:contact@talksibi.com">contact@talksibi.com</a>.</p>`;
+  return layout('Child Safety Standards — TalkSibi', 'Our standards for protecting minors: 13+ age gate, reporting, moderation, and the designated CSAM contact.', '/child-safety', body);
 }
 
 // A canonical URL for "how to play". The old shared nav pointed at `/#how`,
@@ -294,9 +294,9 @@ function childSafetyPage() {
 // scroll that never happened. A real page also earns its own SEO.
 function howToPlayPage() {
   const body = `
-<h1>How to play WordSpies</h1>
+<h1>How to play TalkSibi</h1>
 <div class="updated">The free online Codenames-style word game — for 4 to 10+ friends, in about ten minutes.</div>
-<p>WordSpies is a free online word game inspired by the party classic Codenames. Two teams — <b style="color:#ff4d6b">Red</b> and <b style="color:#3d7bff">Blue</b> — race to find their secret words on a five-by-five grid, using one-word clues from their spymasters, while carefully avoiding the assassin. Everyone plays from their own phone or laptop, so it works around a table or over a video call.</p>
+<p>TalkSibi is a free online word game inspired by the party classic Codenames. Two teams — <b style="color:#ff4d6b">Red</b> and <b style="color:#3d7bff">Blue</b> — race to find their secret words on a five-by-five grid, using one-word clues from their spymasters, while carefully avoiding the assassin. Everyone plays from their own phone or laptop, so it works around a table or over a video call.</p>
 <h2>What you need</h2>
 <ul>
   <li>At least 4 players (2 per team). The sweet spot is 6–10.</li>
@@ -319,18 +319,18 @@ function howToPlayPage() {
   <li>Guessers should think out loud. Half the fun is the arguments before the tap.</li>
 </ul>
 <h2>Playing remotely on a video call</h2>
-<p>Keep your Zoom, Meet or FaceTime call running. Everyone opens WordSpies on their phone. Debates happen live on the call; the tapping happens on the phones. It's the same game — just louder.</p>
+<p>Keep your Zoom, Meet or FaceTime call running. Everyone opens TalkSibi on their phone. Debates happen live on the call; the tapping happens on the phones. It's the same game — just louder.</p>
 <h2>Frequently asked</h2>
-<p><b>Is WordSpies really free?</b> Yes. No sign-up, no download, no ads on the game screen.</p>
+<p><b>Is TalkSibi really free?</b> Yes. No sign-up, no download, no ads on the game screen.</p>
 <p><b>Can we play with 2 or 3?</b> Technically yes, but 4+ makes the game come alive. With just 2, our <a href="/meld">🧠 Mind Meld</a> or <a href="/four">🔴 Connect 4</a> are better fits.</p>
 <p><b>What happens if my phone drops the connection?</b> Rejoin from the same link — the game reseats you.</p>
-<p><b>Is this Codenames?</b> WordSpies is inspired by Codenames but is its own independent game, not affiliated with Codenames or Czech Games Edition.</p>
+<p><b>Is this Codenames?</b> TalkSibi is inspired by Codenames but is its own independent game, not affiliated with Codenames or Czech Games Edition.</p>
 <div style="margin-top:32px;text-align:center">
   <a class="play" href="/play" style="display:inline-block">${'▶'} Start a game — takes ten seconds</a>
 </div>`;
   return layout(
-    'How to play WordSpies — A quick guide to the free Codenames-style word game',
-    'A short, clear guide to playing WordSpies: teams, spymasters, clues, and how to win — plus tips for playing over video calls with friends.',
+    'How to play TalkSibi — A quick guide to the free Codenames-style word game',
+    'A short, clear guide to playing TalkSibi: teams, spymasters, clues, and how to win — plus tips for playing over video calls with friends.',
     '/how-to-play',
     body
   );
@@ -381,7 +381,7 @@ function becomeTeacherPage() {
 
 <div class="bt-hero">
   <div class="bt-hero-emoji">🎓</div>
-  <h1>Teach on WordSpies</h1>
+  <h1>Teach on TalkSibi</h1>
   <p>Fill out the form below to apply. We personally review every application. We'll get in touch by email once you're approved.</p>
 </div>
 
@@ -424,7 +424,7 @@ function becomeTeacherPage() {
   </div>
   <div class="bt-row">
     <label class="bt-lbl" for="btBio">About you <span class="req">*</span></label>
-    <textarea class="bt-area" id="btBio" name="bio" maxlength="1000" rows="4" required placeholder="Tell us about your teaching style, who you love working with, and why you'd be a great fit for WordSpies."></textarea>
+    <textarea class="bt-area" id="btBio" name="bio" maxlength="1000" rows="4" required placeholder="Tell us about your teaching style, who you love working with, and why you'd be a great fit for TalkSibi."></textarea>
     <div class="bt-hint">150–500 words works well. Write it the way you'd introduce yourself to a first student.</div>
   </div>
   <div class="bt-row two">
@@ -450,7 +450,7 @@ function becomeTeacherPage() {
 <div class="bt-thanks" id="btThanks">
   <div class="bt-thanks-emoji">🎉</div>
   <h2>Application received</h2>
-  <p>Thanks — we'll review it and get in touch by email. Meanwhile, join the community and see how WordSpies works.</p>
+  <p>Thanks — we'll review it and get in touch by email. Meanwhile, join the community and see how TalkSibi works.</p>
   <p style="margin-top:20px"><a href="/social" style="background:#0d6f3a;color:#fff;padding:12px 24px;border-radius:99px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">← Back to community</a></p>
 </div>
 
@@ -489,8 +489,8 @@ async function btSubmit(ev){
 }
 </script>`;
   return layout(
-    'Teach on WordSpies — become a language teacher',
-    'Apply to teach on WordSpies. Set your own rate, teach live from the browser, reach students worldwide.',
+    'Teach on TalkSibi — become a language teacher',
+    'Apply to teach on TalkSibi. Set your own rate, teach live from the browser, reach students worldwide.',
     '/become-a-teacher', body);
 }
 

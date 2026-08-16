@@ -1,5 +1,5 @@
-// WordSpies marketing landing page — server-rendered at "/"
-const SITE = 'https://wordspies.co.uk';
+// TalkSibi marketing landing page — server-rendered at "/"
+const SITE = 'https://talksibi.com';
 const GA_ID = 'G-JTH809Z8NH';
 // Consent-gated GA — mirrors pages.js. No analytics/ads cookies until
 // the user taps 'Accept all' in the cookie modal (localStorage.ws_cc_v1).
@@ -34,7 +34,7 @@ const CONSENT_MODAL = `
 .ws-cc-actions .ws-cc-reject{background:#f3f4f6;color:#111318}
 </style>
 <div class="ws-cc" id="wsCcBd" role="dialog" aria-modal="true"><div class="ws-cc-card">
-  <h3>🍪 Cookies on WordSpies</h3>
+  <h3>🍪 Cookies on TalkSibi</h3>
   <p>We use essential cookies to sign you in. With your permission we'd also use analytics + advertising cookies on the home / blog pages. <a href="/privacy">Read the full policy</a>.</p>
   <div class="ws-cc-actions">
     <button class="ws-cc-accept" onclick="wsCcSet('accept')">Accept all</button>
@@ -98,10 +98,10 @@ footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
     <div class="fcol">
       <h4>Useful Information</h4>
       <a href="/become-a-teacher" style="color:#ffd166;font-weight:700">🎓 Become a teacher</a>
-      <a href="mailto:contact@wordspies.co.uk?subject=WordSpies%20—%20Bug%20report">Report a bug</a>
-      <a href="mailto:contact@wordspies.co.uk?subject=WordSpies%20—%20Feature%20request">Request a feature</a>
+      <a href="mailto:contact@talksibi.com?subject=TalkSibi%20—%20Bug%20report">Report a bug</a>
+      <a href="mailto:contact@talksibi.com?subject=TalkSibi%20—%20Feature%20request">Request a feature</a>
       <a href="/how-to-play">FAQs</a>
-      <a href="mailto:contact@wordspies.co.uk">Contact us</a>
+      <a href="mailto:contact@talksibi.com">Contact us</a>
       <a href="/about">About us</a>
       <a href="/blog">Blog</a>
     </div>
@@ -129,7 +129,7 @@ footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
         <a href="https://youtube.com/@wordspies" target="_blank" rel="noopener" aria-label="YouTube">
           <svg viewBox="0 0 24 24"><path d="M23.5 6.5a3 3 0 0 0-2.1-2.1C19.6 4 12 4 12 4s-7.6 0-9.4.4A3 3 0 0 0 .5 6.5C0 8.4 0 12 0 12s0 3.6.5 5.5a3 3 0 0 0 2.1 2.1C4.4 20 12 20 12 20s7.6 0 9.4-.4a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.5.5-5.5s0-3.6-.5-5.5zM9.6 15.6V8.4l6.4 3.6z"/></svg>
         </a>
-        <a href="mailto:contact@wordspies.co.uk" aria-label="Email">
+        <a href="mailto:contact@talksibi.com" aria-label="Email">
           <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/></svg>
         </a>
       </div>
@@ -152,7 +152,7 @@ footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
     </div>
   </div>
   <div class="fsub">
-    <div class="fmeta">© 2026 WordSpies — Practise languages with real people.<br>Independent language-exchange community, based in the United Kingdom.</div>
+    <div class="fmeta">© 2026 TalkSibi — Practise languages with real people.<br>Independent language-exchange community, based in the United Kingdom.</div>
     <a class="fbrand" href="/">Word<em>Spies</em></a>
   </div>
 </div></footer>`;
@@ -240,7 +240,7 @@ const PAD = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"
 // Every game gets a shelf card. Order = frequency we want to surface. Each card
 // links straight to its game page.
 const GAMES = [
-  { href: '/play',      icon: '🕵', name: 'WordSpies',     line: 'Codenames-style · 4–10+ players' },
+  { href: '/play',      icon: '🕵', name: 'TalkSibi',     line: 'Codenames-style · 4–10+ players' },
   { href: '/wordrace',  icon: '⚡', name: 'Word Race',     line: '60-second vocab sprint · solo or party' },
   { href: '/wordchain', icon: '🔗', name: 'Word Chain',    line: 'Last letter starts the next · 2+ players' },
   { href: '/guessword', icon: '❓', name: 'Guess the Word', line: 'One player knows · the rest ask · 3+' },
@@ -263,37 +263,37 @@ function page() {
 <html lang="en"><head>
 ${GA}
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>WordSpies — Learn Any Language Free: Real People, Voice Chat & AI Corrections</title>
+<title>TalkSibi — Learn Any Language Free: Real People, Voice Chat & AI Corrections</title>
 <meta name="description" content="Free language exchange with real speakers, one-tap AI grammar correction on every message, live voice parties, and 9 multiplayer games — Spanish, French, Japanese, and 20+ more. No sign-up, no downloads, no paywall.">
 <meta name="keywords" content="learn language free, language exchange app, practice speaking language, chat with native speakers, language learning games, ai grammar correction, correct my writing, language partner online, free language app, voice chat language practice">
-<meta name="author" content="WordSpies">
+<meta name="author" content="TalkSibi">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${SITE}/">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta property="og:site_name" content="WordSpies">
+<meta property="og:site_name" content="TalkSibi">
 <meta property="og:locale" content="en_GB">
-<meta property="og:title" content="WordSpies — Learn Any Language Free: Real People, Voice & AI Corrections">
+<meta property="og:title" content="TalkSibi — Learn Any Language Free: Real People, Voice & AI Corrections">
 <meta property="og:description" content="Free language exchange with real speakers, AI grammar corrections on every message, live voice parties, and 9 free games. Spanish, French, Japanese, 20+ more.">
 <meta property="og:url" content="${SITE}/"><meta property="og:type" content="website">
-<meta property="og:image" content="${SITE}/og-image.png"><meta property="og:image:alt" content="WordSpies — chat, correct, play, speak with real people">
+<meta property="og:image" content="${SITE}/og-image.png"><meta property="og:image:alt" content="TalkSibi — chat, correct, play, speak with real people">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="WordSpies — Learn Any Language Free: Real People, Voice & AI Corrections">
+<meta name="twitter:title" content="TalkSibi — Learn Any Language Free: Real People, Voice & AI Corrections">
 <meta name="twitter:description" content="Free language exchange with real speakers, AI grammar corrections, voice parties, and 9 free games. 20+ languages.">
 <meta name="twitter:image" content="${SITE}/og-image.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
-{"@type":"WebApplication","@id":"${SITE}/#app","name":"WordSpies","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free language exchange platform with real speakers, AI-powered corrections, live voice parties, and 8 multiplayer language games. Practice any language for free — no sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
-{"@type":"Organization","@id":"${SITE}/#org","name":"WordSpies","url":"${SITE}/","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png","width":512,"height":512},"email":"contact@wordspies.co.uk","foundingDate":"2026","areaServed":"Worldwide","knowsLanguage":["en","es","fr","de","it","pt","ja","ko","zh","ar","ru","hi","nl","tr","pl","sv","vi","th","id"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"contact@wordspies.co.uk"}},
-{"@type":"WebSite","@id":"${SITE}/#website","url":"${SITE}/","name":"WordSpies","publisher":{"@id":"${SITE}/#org"}},
-{"@type":"HowTo","@id":"${SITE}/#howto","name":"How to learn a language on WordSpies","description":"Practise a new language with real speakers, AI corrections, and games in three steps.","totalTime":"PT2M","step":[
+{"@type":"WebApplication","@id":"${SITE}/#app","name":"TalkSibi","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free language exchange platform with real speakers, AI-powered corrections, live voice parties, and 8 multiplayer language games. Practice any language for free — no sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
+{"@type":"Organization","@id":"${SITE}/#org","name":"TalkSibi","url":"${SITE}/","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png","width":512,"height":512},"email":"contact@talksibi.com","foundingDate":"2026","areaServed":"Worldwide","knowsLanguage":["en","es","fr","de","it","pt","ja","ko","zh","ar","ru","hi","nl","tr","pl","sv","vi","th","id"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"contact@talksibi.com"}},
+{"@type":"WebSite","@id":"${SITE}/#website","url":"${SITE}/","name":"TalkSibi","publisher":{"@id":"${SITE}/#org"}},
+{"@type":"HowTo","@id":"${SITE}/#howto","name":"How to learn a language on TalkSibi","description":"Practise a new language with real speakers, AI corrections, and games in three steps.","totalTime":"PT2M","step":[
 {"@type":"HowToStep","position":1,"name":"Pick a language","text":"Sign up in 30 seconds — no email required. Tell us which language you speak and which you want to learn."},
 {"@type":"HowToStep","position":2,"name":"Chat, correct, play","text":"Message real speakers, tap Correct on any message for an instant AI fix, join a voice party, or start a game together."},
 {"@type":"HowToStep","position":3,"name":"Practise every day","text":"Follow the people you click with, get invited to game nights, and watch your fluency grow through actual conversation."}]},
 {"@type":"FAQPage","@id":"${SITE}/#faq","mainEntity":[
-{"@type":"Question","name":"Is WordSpies really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Chat, corrections, games, and voice parties are 100% free. No paywall, no premium tier, no ads that make you sign up."}},
-{"@type":"Question","name":"How is WordSpies different from other language apps?","acceptedAnswer":{"@type":"Answer","text":"WordSpies is language exchange plus multiplayer games plus AI corrections in one place — real conversations with real speakers, plus games you play together, plus one-tap grammar corrections powered by AI. Free forever."}},
+{"@type":"Question","name":"Is TalkSibi really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Chat, corrections, games, and voice parties are 100% free. No paywall, no premium tier, no ads that make you sign up."}},
+{"@type":"Question","name":"How is TalkSibi different from other language apps?","acceptedAnswer":{"@type":"Answer","text":"TalkSibi is language exchange plus multiplayer games plus AI corrections in one place — real conversations with real speakers, plus games you play together, plus one-tap grammar corrections powered by AI. Free forever."}},
 {"@type":"Question","name":"Do I need to sign up?","acceptedAnswer":{"@type":"Answer","text":"You can play any game as a guest with no account. For chat, corrections, and voice parties, a free 30-second sign-up unlocks everything."}},
 {"@type":"Question","name":"Which languages can I practise?","acceptedAnswer":{"@type":"Answer","text":"All of them. You choose which language you speak and which you're learning — Spanish, French, Japanese, Korean, Mandarin, Arabic, German, Italian, Portuguese, Russian, Hindi, and every other language have active speakers on the platform."}},
 {"@type":"Question","name":"How does the Correct feature work?","acceptedAnswer":{"@type":"Answer","text":"Tap any message and hit Correct. Our AI (powered by Claude) proposes the corrected version with a short explanation of what changed. It never overwrites the original — corrections appear underneath so you learn from your own mistakes."}}
@@ -505,7 +505,7 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
     <div class="strip-txt">
       <div class="strip-tag">🎮 9 games</div>
       <h3>Learn by playing — vocabulary that actually sticks.</h3>
-      <p>Word Race, Word Chain, WordSpies, Guess the Word, Spy, Ludo, 8-Ball Pool, Connect 4, Hoop. Play in your target language and every round builds real vocabulary in real context. Solo or with a friend — one shared link, no downloads.</p>
+      <p>Word Race, Word Chain, TalkSibi, Guess the Word, Spy, Ludo, 8-Ball Pool, Connect 4, Hoop. Play in your target language and every round builds real vocabulary in real context. Solo or with a friend — one shared link, no downloads.</p>
     </div>
   </div>
   <div class="strip">
@@ -527,7 +527,7 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
 </div></div>
 
 <div class="band gray" id="how"><div class="wrap">
-  <h2 class="sec-h">How WordSpies works</h2>
+  <h2 class="sec-h">How TalkSibi works</h2>
   <p class="sec-sub">Three steps, thirty seconds. No credit card, no email required.</p>
   <div class="steps">
     <div class="step"><div class="n">1</div><h3>Pick your languages</h3><p>Tell us what you speak and what you're learning. That's it — you're in.</p></div>
@@ -552,7 +552,7 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
   <h2 class="sec-h">What our community says</h2>
   <p class="sec-sub">Real quotes from real users learning real languages.</p>
   <div class="grid3">
-    <div class="rev"><p>"I've tried loads of language apps — WordSpies is the first one that mixes real people with proper AI corrections. The Correct button alone changed how I write in Spanish."</p>
+    <div class="rev"><p>"I've tried loads of language apps — TalkSibi is the first one that mixes real people with proper AI corrections. The Correct button alone changed how I write in Spanish."</p>
       <div class="who">${avatar('#2b3350', '#ffd9b3')}<div><b>Ayesha</b><span>Learning Spanish · London</span></div></div></div>
     <div class="rev"><p>"Voice parties on Sunday nights are the best. Full room of French speakers, I mostly listen, I've picked up more slang in a month than a year of Duolingo."</p>
       <div class="who">${avatar('#7c3aed', '#f3c39a')}<div><b>Hamza</b><span>Learning French · Karachi</span></div></div></div>
@@ -566,12 +566,12 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
   <h2 class="sec-h">Frequently asked questions</h2>
   <p class="sec-sub">Everything you need to know before you start.</p>
   <div class="faq">
-    <details><summary>Is WordSpies really free?</summary><p>Yes — 100% free. Chat, corrections, voice parties, all 8 games. No paywall, no premium tier, no credit card required.</p></details>
-    <details><summary>How is WordSpies different from other language apps?</summary><p>WordSpies is language exchange <em>plus</em> multiplayer games <em>plus</em> AI corrections in one place — real conversations with real speakers, games you play together, and one-tap grammar corrections powered by AI. Free forever.</p></details>
+    <details><summary>Is TalkSibi really free?</summary><p>Yes — 100% free. Chat, corrections, voice parties, all 8 games. No paywall, no premium tier, no credit card required.</p></details>
+    <details><summary>How is TalkSibi different from other language apps?</summary><p>TalkSibi is language exchange <em>plus</em> multiplayer games <em>plus</em> AI corrections in one place — real conversations with real speakers, games you play together, and one-tap grammar corrections powered by AI. Free forever.</p></details>
     <details><summary>Do I need to sign up?</summary><p>You can play any game as a guest with no account. For chat, corrections, and voice parties, a free 30-second sign-up (no email required) unlocks everything.</p></details>
     <details><summary>Which languages can I practise?</summary><p>Any language with speakers online — Spanish, French, Japanese, Korean, Mandarin, Arabic, German, Italian, Portuguese, Russian, Hindi, Dutch, Turkish, Polish, Swedish, Vietnamese, Thai, Indonesian, and more.</p></details>
     <details><summary>How does the Correct feature work?</summary><p>Tap any message and hit Correct. Our AI (powered by Claude) proposes the corrected version with a short explanation of what changed. It never overwrites the original — corrections appear underneath so you learn from your own mistakes.</p></details>
-    <details><summary>Can I still play Codenames-style word games?</summary><p>Yes — WordSpies (our Codenames-style game) is still the main word game on the site. It's now one of 8 games alongside chat, voice, and everything else.</p></details>
+    <details><summary>Can I still play Codenames-style word games?</summary><p>Yes — TalkSibi (our Codenames-style game) is still the main word game on the site. It's now one of 8 games alongside chat, voice, and everything else.</p></details>
     <details><summary>Do you store my data?</summary><p>Minimal data: your name, chosen languages, and messages. No selling, no ads, no tracking beyond basic analytics. Delete your account any time and everything goes with it.</p></details>
   </div>
 </div></div>

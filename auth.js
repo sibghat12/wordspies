@@ -1,4 +1,4 @@
-// WordSpies auth module.
+// TalkSibi auth module.
 //
 // Split out of social.js on 1 Aug 2026 as the FIRST slice of a broader
 // modularisation push (owner: 'lets make the code bit more maintianable
@@ -81,7 +81,7 @@ function mount(api, ctx) {
       const age = ageFromISO(birthdate);
       if (age < MIN_AGE) {
         await markAgeFail(email);
-        return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
+        return res.status(403).json({ error: 'Sorry, TalkSibi is for people aged ' + MIN_AGE + ' and over.' });
       }
       if (await db.get('soc:email:' + email)) return res.status(409).json({ error: 'That email is already registered — try logging in.' });
       if (await db.get('soc:uname:' + name.toLowerCase())) return res.status(409).json({ error: 'That name is taken.' });
@@ -188,7 +188,7 @@ function mount(api, ctx) {
           const age = ageFromISO(birthdate);
           if (age < MIN_AGE) {
             await markAgeFail(email);
-            return res.status(403).json({ error: 'Sorry, WordSpies is for people aged ' + MIN_AGE + ' and over.' });
+            return res.status(403).json({ error: 'Sorry, TalkSibi is for people aged ' + MIN_AGE + ' and over.' });
           }
         }
         let base = String(g.given_name || g.name || email.split('@')[0])
@@ -247,15 +247,15 @@ function mount(api, ctx) {
       const email = String((req.body || {}).email || '').trim().toLowerCase();
       const uid = await db.get('soc:email:' + email);
       if (!uid) return res.json({ ok: true });
-      if (!BREVO_KEY && !RESEND_KEY) return res.status(503).json({ error: 'Password reset email isn\'t set up yet — if you signed up with this email on Google, use "Sign in with Google", or contact contact@wordspies.co.uk.' });
+      if (!BREVO_KEY && !RESEND_KEY) return res.status(503).json({ error: 'Password reset email isn\'t set up yet — if you signed up with this email on Google, use "Sign in with Google", or contact contact@talksibi.com.' });
       const code = String(Math.floor(100000 + Math.random() * 900000));
       await db.set('soc:reset:' + email, bcrypt.hashSync(code, 8), 900);   // 15 min
-      const ok = await sendMail(email, code + ' is your WordSpies code',
-        `Your WordSpies password reset code is ${code}.\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— WordSpies`,
+      const ok = await sendMail(email, code + ' is your TalkSibi code',
+        `Your TalkSibi password reset code is ${code}.\n\nIt expires in 15 minutes. If you didn't ask for this, just ignore this email.\n\n— TalkSibi`,
         mailHtml({
           peek: 'Expires in 15 minutes.',
           heading: 'Your reset code',
-          line: 'Type this into WordSpies to set a new password.',
+          line: 'Type this into TalkSibi to set a new password.',
           code,
           note: 'Expires in 15 minutes. If you didn\'t ask for this, ignore this email — nothing has changed.'
         }));

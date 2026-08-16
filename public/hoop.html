@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#ff6b1a">
-<title>Hoop — WordSpies</title>
+<title>Hoop — TalkSibi</title>
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
@@ -656,7 +656,7 @@ body.embed{padding-top:0}
   let socket = null, MY_ID = null, HOST_ID = null, playersById = {};
 
   async function multiJoin(){
-    // Grab a friendly name — logged-in users get theirs from the WordSpies
+    // Grab a friendly name — logged-in users get theirs from the TalkSibi
     // profile API, everyone else falls back to a saved localStorage name,
     // and only if BOTH are missing do we prompt (guests, no cookie).
     let name = '';
@@ -792,7 +792,7 @@ body.embed{padding-top:0}
       list.innerHTML = '<div class="pick-empty">Loading…</div>';
       try {
         const r = await fetch('/api/social/graph', { credentials: 'include' });
-        if (r.status === 401) { list.innerHTML = '<div class="pick-empty">Log in on WordSpies first to invite friends.</div>'; return; }
+        if (r.status === 401) { list.innerHTML = '<div class="pick-empty">Log in on TalkSibi first to invite friends.</div>'; return; }
         if (!r.ok) throw new Error('graph ' + r.status);
         const j = await r.json();
         _graphCache = { me: j.me, cards: (j.cards || []) };
@@ -836,7 +836,7 @@ body.embed{padding-top:0}
     const btn = row.querySelector('.pick-send');
     btn.textContent = 'Sending…';
     const url = shareURL();
-    const msg = `🏀 Join my Hoop round on WordSpies — code ${ROOM}\n${url}`;
+    const msg = `🏀 Join my Hoop round on TalkSibi — code ${ROOM}\n${url}`;
     try {
       const r = await fetch('/api/social/message', {
         method: 'POST', credentials: 'include',

@@ -9,7 +9,7 @@
 // only two players are left. Best with 4–10 friends, ~5 minutes a game.
 //
 // Its own module with its own socket namespace and its own room table, matching
-// meld.js — a bug in this game can never take WordSpies or the arcade down.
+// meld.js — a bug in this game can never take TalkSibi or the arcade down.
 
 const path = require('path');
 const crypto = require('crypto');
