@@ -13242,14 +13242,17 @@ async function openClubFromDeepLinkParam() {
   .topnav{grid-template-areas:'logo right' !important}
   .topnav .tntabs{display:none !important}
 
-  /* Bottom nav shell */
+  /* Bottom nav shell — owner ask v23: give it a soft grey background
+     so it reads as its own surface, not a white line under the page. */
   .msnav{
     position:fixed;left:0;right:0;bottom:0;
     display:grid;grid-template-columns:repeat(4,1fr);
-    background:#fff;border-top:1px solid var(--line);
+    background:#f4f5f9;border-top:1px solid #e4e6ee;
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));
     z-index:80;
-    box-shadow:0 -6px 20px rgba(15,17,25,.05);
+    box-shadow:0 -8px 24px rgba(15,17,25,.08);
+    backdrop-filter:saturate(1.05);
+    -webkit-backdrop-filter:saturate(1.05);
   }
   .msnav-btn{
     -webkit-appearance:none;appearance:none;background:transparent;border:0;padding:6px 4px 4px;
