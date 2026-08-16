@@ -2420,7 +2420,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 /* Owner ask 2 Aug 2026: 'make the chat compact please'. Tighter
    vertical rhythm across the msgs list + inside each bubble. */
 .msgs{padding:6px 14px 150px;display:flex;flex-direction:column;gap:14px;min-height:55vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-.mb{max-width:78%;padding:9px 14px;border-radius:18px;font-size:14.5px;font-weight:500;line-height:1.42;word-break:break-word;overflow-wrap:anywhere;min-width:0}
+.mb{max-width:75%;padding:10px 14px;border-radius:14px;font-size:14px;font-weight:500;line-height:1.42;word-break:break-word;overflow-wrap:anywhere;min-width:0}
 .chatmode .gamelink{display:none}
 .chatfull .tabbar{display:none}
 .chatfull{padding-top:0 !important;padding-bottom:0}
@@ -2440,8 +2440,8 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
   --caccent-soft:#eef1ff;                   /* soft bg for reactions/actions */
 }
 .mb{position:relative}
-.mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:6px;box-shadow:none}
-.mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:1px solid #e6e8ee;border-bottom-left-radius:6px;margin-right:28px}
+.mb.me{align-self:flex-end;background:#5b6cff;color:#fff;border-radius:14px 4px 14px 14px;box-shadow:none}
+.mb.them{align-self:flex-start;background:#ffffff;color:#1a1d24;border:1px solid #eceef4;border-radius:4px 14px 14px 14px;margin-right:28px}
 /* Inline translate button — plain glyph sitting flush against the
    right edge of the peer bubble. Owner ask 9 Aug 2026 — no border,
    no circle, stick close to the bubble. */
@@ -2807,7 +2807,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
      the viewport. #chatList inside scrolls independently, chat header
      stays pinned at top. Owner ask: conversation on the right stays
      fixed while the chat list scrolls as the user browses many chats. */
-  .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;position:sticky;top:74px;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden}
+  .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid #e6e7ee;border-radius:20px;position:sticky;top:74px;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 32px rgba(22,24,31,.06)}
   /* Empty-state card for the right pane on desktop when no chat is
      picked. Owner ask 1 Aug 2026 v2: 'remove pick a conversation
      from the mobile — makes the chat look bad'. Hidden by default;
@@ -2826,13 +2826,13 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .splitview:not(.chatempty-mode) .chatempty{display:none}
   .splitview #tabChats #chatList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .splitview #tabChats .head{padding:18px 20px 10px}
-  .splitview #tabChat{margin:0;max-width:none;background:#fff;border:1px solid var(--line);border-radius:16px;position:relative;height:calc(100vh - 130px);display:flex;flex-direction:column}
-  .splitview #tabChat .chathead{position:static;border-radius:16px 16px 0 0}
+  .splitview #tabChat{margin:0;max-width:none;background:#fbfbfd;border:1px solid #e6e7ee;border-radius:20px;position:relative;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 32px rgba(22,24,31,.06)}
+  .splitview #tabChat .chathead{position:static;border-radius:20px 20px 0 0;border-bottom:1px solid #eef0f4;padding:12px 18px}
   .splitview #tabChat .back2{display:none}
-  .splitview .msgs{flex:1;overflow-y:auto;min-height:0;padding-bottom:16px;background:var(--bg)}
-  .splitview .composer{position:static;left:auto;transform:none;width:auto;max-width:none;margin:10px;border-top:none;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 8px}
+  .splitview .msgs{flex:1;overflow-y:auto;min-height:0;padding:18px 18px 16px;background:#fbfbfd;gap:10px}
+  .splitview .composer{position:static;left:auto;transform:none;width:auto;max-width:none;margin:0;border-top:1px solid #eef0f4;background:#ffffff;border-left:0;border-right:0;border-bottom:0;border-radius:0;padding:12px 18px}
   .splitview .picker{position:absolute;bottom:76px;left:12px;right:12px;width:auto;max-width:none;transform:none}
-  .citem.sel{background:#f4f5f7}
+  .citem.sel{background:#f0f1ff;box-shadow:inset 3px 0 0 #5b6cff}
 }
 
 /* ── the block kit ────────────────────────────────────────────────────────
@@ -3616,6 +3616,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    the list is used as a standalone column (mobile). Desktop split-view
    already carries its own head-row. */
 #tabChats::before{ content:''; display:none }
+/* Split-view: paint a compact "Chats" header row at the top of the list card
+   so the two-column desktop matches the design spec (1b). */
+.splitview #tabChats::before{ content:'Chats'; display:block; padding:16px 18px;
+  font-size:17px; font-weight:600; color:#16181f; border-bottom:1px solid #f2f3f7;
+  font-family:var(--brand-font); letter-spacing:-.2px }
 
 /* ── 1b Chats — conversation column ── */
 #tabChat{ background:#fbfbfd }
