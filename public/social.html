@@ -4068,6 +4068,17 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
     </div>
   </nav>
 
+  <!-- ═══ Mobile sub-tab bar (README §44) ═════════════════════════════
+       One shared segmented pill; updateMobileSubbar() flips its two
+       labels + handlers depending on the current main tab. Hidden on
+       Me / Member / full-screen chat via CSS. Only visible <721px. -->
+  <div class="msubbar" id="msubBar" role="tablist" aria-label="Section">
+    <div class="msubbar-inner">
+      <button type="button" class="msubbar-btn on" id="msubBtn1" role="tab" aria-selected="true"></button>
+      <button type="button" class="msubbar-btn" id="msubBtn2" role="tab" aria-selected="false"></button>
+    </div>
+  </div>
+
   <!-- 🟢 you walked over here mid-game and the room is still sitting there -->
   <a class="livebar hidden" id="liveBar" href="/codenames">
     <span class="lbd"></span>
@@ -5226,6 +5237,30 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
   </div>
   <div class="ghost-frame" id="ghostFrameWrap"><iframe id="ghostFrame" title="Game"></iframe></div>
 </div>
+
+<!-- ═══ Mobile bottom nav (README §42-43 / screen 2a) ═══════════════
+     4 main tabs — Community · Play · Talk · Learn. Only visible under
+     720px. Every click routes through selectMainTab() which delegates
+     to the existing showTab() + remembers the last sub-tab per main
+     in localStorage. Active state = periwinkle label + 16×3px dot. -->
+<nav class="msnav" id="msNav" role="navigation" aria-label="Primary">
+  <button type="button" class="msnav-btn" data-msnav="community" onclick="selectMainTab('community')">
+    <span class="msnav-ico" aria-hidden="true">🌍</span>
+    <span class="msnav-lbl">Community</span>
+  </button>
+  <button type="button" class="msnav-btn" data-msnav="play" onclick="selectMainTab('play')">
+    <span class="msnav-ico" aria-hidden="true">🎲</span>
+    <span class="msnav-lbl">Play</span>
+  </button>
+  <button type="button" class="msnav-btn" data-msnav="talk" onclick="selectMainTab('talk')">
+    <span class="msnav-ico" aria-hidden="true">💬</span>
+    <span class="msnav-lbl">Talk</span>
+  </button>
+  <button type="button" class="msnav-btn" data-msnav="learn" onclick="selectMainTab('learn')">
+    <span class="msnav-ico" aria-hidden="true">🎓</span>
+    <span class="msnav-lbl">Learn</span>
+  </button>
+</nav>
 
 <!-- ═══ Floating Action Button — "Create a party" ══════════════════
      Replaces the old inline .pt-create-btn (see removal note in
@@ -13151,6 +13186,105 @@ async function openClubFromDeepLinkParam() {
 #a2hsSteps h3{font-size:17px;font-weight:800;margin-bottom:14px}
 #a2hsSteps p{font-size:13.2px;color:var(--sub);line-height:1.65;margin-bottom:9px}
 #a2hsSteps .btn{margin-top:14px}
+
+/* ═══ Mobile IA (README §42-45 / screen 2a) ══════════════════════════
+   Under 720px the app switches to a bottom-nav shell:
+     • 4 main tabs (Community / Play / Talk / Learn) fixed at the foot
+     • Segmented sub-tab pill sits just under the top-bar per main
+     • FAB '+' floats above the nav on Community + Play + Talk
+   Every click routes to the existing showTab() + sub-tab handlers —
+   no new state, no server changes. Desktop layout is untouched. */
+.msnav,.msubbar{display:none}
+@media(max-width:720px){
+  /* Hide the horizontal tnt pill row on mobile — bottom nav owns
+     top-level navigation now. Everything else in the topnav (logo,
+     avatar, LIVE chip, notif bell) stays put. */
+  .topnav{grid-template-areas:'logo right' !important}
+  .topnav .tntabs{display:none !important}
+
+  /* Bottom nav shell */
+  .msnav{
+    position:fixed;left:0;right:0;bottom:0;
+    display:grid;grid-template-columns:repeat(4,1fr);
+    background:#fff;border-top:1px solid var(--line);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    z-index:80;
+    box-shadow:0 -6px 20px rgba(15,17,25,.05);
+  }
+  .msnav-btn{
+    -webkit-appearance:none;appearance:none;background:transparent;border:0;padding:6px 4px 4px;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-family:inherit;font-weight:600;font-size:11px;color:#6b6e7a;
+    cursor:pointer;position:relative;line-height:1.1;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .msnav-btn .msnav-ico{font-size:20px;line-height:1;display:block}
+  .msnav-btn .msnav-lbl{letter-spacing:-.1px}
+  .msnav-btn::after{
+    content:'';display:block;width:16px;height:3px;border-radius:99px;
+    background:transparent;margin-top:3px;transition:background .12s;
+  }
+  .msnav-btn.on{color:#5b6cff}
+  .msnav-btn.on::after{background:#5b6cff}
+
+  /* Sub-tab segmented pill — one shared bar toggles its two labels
+     per main. Sits under the topnav; sticky so it stays reachable. */
+  .msubbar{
+    display:flex;justify-content:center;
+    padding:8px 16px 6px;
+    background:var(--bg);
+  }
+  .msubbar-inner{
+    display:inline-flex;gap:4px;background:#eef0f5;border-radius:99px;padding:4px;
+  }
+  .msubbar-btn{
+    -webkit-appearance:none;appearance:none;border:0;background:transparent;
+    padding:7px 18px;border-radius:99px;font-family:inherit;font-weight:600;
+    font-size:13px;color:#4a4d5c;cursor:pointer;
+    transition:background .12s,color .12s;letter-spacing:-.1px;
+    min-height:36px;
+  }
+  .msubbar-btn.on{background:#fff;color:#16181f;box-shadow:0 1px 2px rgba(15,17,25,.06)}
+
+  /* FAB — clear the bottom nav on mobile per §43 (bottom:92px right:18px). */
+  .fab-create{
+    right:18px !important;
+    bottom:calc(92px + env(safe-area-inset-bottom)) !important;
+    box-shadow:0 10px 26px rgba(91,108,255,.45) !important;
+    background:linear-gradient(135deg,#5b6cff,#7c5cff) !important;
+  }
+  /* FAB is Create — visible on Community / Play / Talk, hidden on Learn/Me. */
+  body[data-tab="wall"] .fab-create,
+  body[data-tab="live"] .fab-create,
+  body[data-tab="games"] .fab-create,
+  body[data-tab="parties"] .fab-create,
+  body[data-tab="chats"] .fab-create{display:inline-flex}
+  body[data-tab="learn"] .fab-create,
+  body[data-tab="me"] .fab-create,
+  body[data-tab="chat"] .fab-create,
+  body[data-tab="member"] .fab-create{display:none !important}
+
+  /* Bottom nav hides in the same contexts the FAB does — game/party
+     overlays, full-screen chat, auth modal — so nothing floats on
+     top of a live game. */
+  body.in-game .msnav,
+  body.in-party .msnav,
+  body.chatlock .msnav,
+  body.ob-open .msnav,
+  body.authmodal .msnav{display:none !important}
+  body.in-game .msubbar,
+  body.in-party .msubbar,
+  body.chatlock .msubbar,
+  body.ob-open .msubbar,
+  body.authmodal .msubbar{display:none !important}
+  /* Sub-tab bar hides on Me / Member views (no sub-tabs there). */
+  body[data-tab="me"] .msubbar,
+  body[data-tab="member"] .msubbar,
+  body[data-tab="chat"] .msubbar{display:none}
+
+  /* Give scroll body enough breathing room to clear the fixed nav. */
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+}
 </style>
 <div id="a2hsSteps" class="hidden">
   <div class="card">
@@ -13301,6 +13435,176 @@ async function openClubFromDeepLinkParam() {
     <div id="rfBody"><div style="text-align:center;padding:30px 0;color:var(--faint)">Loading…</div></div>
   </div>
 </div>
+
+<!-- ═══ Mobile IA wiring (README §42-45 / screen 2a) ═════════════════
+     Maps the 4 bottom-nav mains to the existing showTab() targets,
+     drives the shared sub-tab pill, and remembers each main's last
+     sub-tab in localStorage. Zero server changes. Everything is
+     mobile-scoped by CSS (max-width:720px). -->
+<script>
+(function(){
+  // Sub-tab spec per main. Each entry: [key, label, apply()].
+  // apply() calls only pre-existing UI toggles — no new state.
+  var MAINS = {
+    community: {
+      target: 'wall',                // default view for the main
+      subs: [
+        { key:'people', label:'People', apply: function(){
+            try { showTab('wall'); } catch(e){}
+            // Reset wall filter to "All" for the People sub-tab.
+            var chip = document.querySelector('#tabWall .fchip[data-f="all"]');
+            if (chip) chip.click();
+          }},
+        { key:'live', label:'Live', apply: function(){ try { showTab('live'); } catch(e){} }}
+      ]
+    },
+    play: {
+      target: 'games',
+      subs: [
+        { key:'games',   label:'Games',   apply: function(){ try { showTab('games'); } catch(e){} }},
+        { key:'parties', label:'Parties', apply: function(){ try { showTab('parties'); } catch(e){} }}
+      ]
+    },
+    talk: {
+      target: 'chats',
+      subs: [
+        { key:'chats', label:'Chats', apply: function(){ try { showTab('chats'); } catch(e){} }},
+        { key:'ai',    label:'AI Experts', apply: function(){
+            // AI Experts is a wall filter — jump to Community wall and
+            // engage the existing 'ai' chip so nothing new needs to live
+            // in the DOM. Owner ask: keep every existing handler.
+            try { showTab('wall'); } catch(e){}
+            var chip = document.querySelector('#tabWall .fchip[data-f="ai"]');
+            if (chip) chip.click();
+          }}
+      ]
+    },
+    learn: {
+      target: 'learn',
+      subs: [
+        { key:'plan', label:'My plan', apply: function(){
+            try { showTab('learn'); } catch(e){}
+            if (typeof showLearnMode === 'function') { try { showLearnMode('languages'); } catch(e){} }
+          }},
+        { key:'exam', label:'IELTS & TOEFL', apply: function(){
+            try { showTab('learn'); } catch(e){}
+            if (typeof showLearnMode === 'function') { try { showLearnMode('exam'); } catch(e){} }
+          }}
+      ]
+    }
+  };
+
+  // Which main a low-level showTab() target belongs to. Used to keep
+  // the bottom nav lit correctly when navigation happens via a link
+  // (e.g. the "See all → parties" anchor inside the wall).
+  var TAB_TO_MAIN = {
+    wall:'community', live:'community',
+    games:'play', parties:'play', party:'play',
+    chats:'talk', chat:'talk',
+    learn:'learn',
+    me:null, member:null
+  };
+
+  function readSub(mainKey){
+    try { return localStorage.getItem('wsSubTab_' + mainKey) || null; } catch(e){ return null; }
+  }
+  function writeSub(mainKey, subKey){
+    try { localStorage.setItem('wsSubTab_' + mainKey, subKey); } catch(e){}
+  }
+
+  function paintNav(mainKey){
+    var btns = document.querySelectorAll('.msnav-btn');
+    for (var i=0;i<btns.length;i++){
+      btns[i].classList.toggle('on', btns[i].getAttribute('data-msnav') === mainKey);
+    }
+  }
+  function paintSubbar(mainKey, subKey){
+    var main = MAINS[mainKey];
+    var bar = document.getElementById('msubBar');
+    if (!main || !bar) { if (bar) bar.style.display = 'none'; return; }
+    // Rebuild the two labels + click handlers each time so the pill
+    // reflects the current main.
+    var b1 = document.getElementById('msubBtn1');
+    var b2 = document.getElementById('msubBtn2');
+    if (!b1 || !b2) return;
+    var s1 = main.subs[0], s2 = main.subs[1];
+    b1.textContent = s1.label; b2.textContent = s2.label;
+    b1.onclick = function(){ pickSub(mainKey, s1.key); };
+    b2.onclick = function(){ pickSub(mainKey, s2.key); };
+    var active = subKey || readSub(mainKey) || s1.key;
+    b1.classList.toggle('on', active === s1.key);
+    b2.classList.toggle('on', active === s2.key);
+    b1.setAttribute('aria-selected', active === s1.key ? 'true' : 'false');
+    b2.setAttribute('aria-selected', active === s2.key ? 'true' : 'false');
+  }
+
+  function pickSub(mainKey, subKey){
+    var main = MAINS[mainKey]; if (!main) return;
+    var sub = main.subs.find(function(s){ return s.key === subKey; }) || main.subs[0];
+    writeSub(mainKey, sub.key);
+    try { sub.apply(); } catch(e){}
+    paintNav(mainKey);
+    paintSubbar(mainKey, sub.key);
+  }
+
+  // Public entry point wired to the bottom nav buttons.
+  window.selectMainTab = function(mainKey){
+    var main = MAINS[mainKey]; if (!main) return;
+    var sub = readSub(mainKey);
+    var subOk = sub && main.subs.some(function(s){ return s.key === sub; });
+    pickSub(mainKey, subOk ? sub : main.subs[0].key);
+  };
+
+  // Keep the bottom nav in sync when other code paths call showTab()
+  // (e.g. "See all → parties" links, the visitors stripe, guest gates).
+  // We hook rather than replace so every existing behaviour is preserved.
+  var _showTab = window.showTab;
+  if (typeof _showTab === 'function') {
+    window.showTab = function(t){
+      var r = _showTab.apply(this, arguments);
+      try {
+        var mainKey = TAB_TO_MAIN[t];
+        if (mainKey) {
+          paintNav(mainKey);
+          // Sync the sub-tab pill highlight to the low-level tab if
+          // it matches one of the sub-tab keys (e.g. wall/live/games/
+          // parties/chats). Doesn't call apply() — this is a paint
+          // only, we're already on the target.
+          var mapKey = null;
+          if (t === 'wall')    mapKey = 'people';
+          else if (t === 'live')    mapKey = 'live';
+          else if (t === 'games')   mapKey = 'games';
+          else if (t === 'parties' || t === 'party') mapKey = 'parties';
+          else if (t === 'chats' || t === 'chat')    mapKey = 'chats';
+          else if (t === 'learn')   mapKey = readSub('learn') || 'plan';
+          if (mapKey) { writeSub(mainKey, mapKey); paintSubbar(mainKey, mapKey); }
+        } else {
+          // Me / Member — nav dims to no active main, subbar hides via CSS.
+          paintNav(null);
+        }
+      } catch(e){}
+      return r;
+    };
+  }
+
+  // Initial paint on first load — reflect whatever tab the app booted
+  // into (usually 'wall'). Runs after DOM ready so showTab exists.
+  function boot(){
+    var initialMain = 'community';
+    try {
+      var bodyTab = document.body && document.body.dataset && document.body.dataset.tab;
+      if (bodyTab && TAB_TO_MAIN[bodyTab]) initialMain = TAB_TO_MAIN[bodyTab];
+    } catch(e){}
+    paintNav(initialMain);
+    paintSubbar(initialMain, readSub(initialMain));
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
 
 <script src="/wsbrand.js" defer></script>
 </body>
