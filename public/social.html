@@ -568,6 +568,9 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    the search sits close under the tab strip. */
 .filterrow{display:flex;gap:10px;align-items:center;margin:6px 0 14px;padding-top:0;flex-wrap:wrap}
 .search{background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 16px;display:flex;gap:10px;align-items:center;flex:1;min-width:170px}
+/* Guest 'Log in' chip — periwinkle pill top-right (owner ask v22). */
+.ts-loginchip{background:#5b6cff;color:#fff !important;padding:8px 14px !important;border-radius:99px;font-family:var(--brand-font);font-weight:700;font-size:13px;box-shadow:0 4px 12px rgba(91,108,255,.28);letter-spacing:-.1px;line-height:1;display:inline-flex;align-items:center;gap:5px}
+.ts-loginchip:hover{background:#4353e8}
 /* Compact icon-only search trigger (owner ask v15) */
 .wall-search-btn{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e4e6ee;color:#16181f;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:.14s;padding:0}
 .wall-search-btn:hover{background:#f7f8fa;border-color:#c9cfe3}
@@ -5259,7 +5262,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
     <span class="msnav-lbl">Community</span>
   </button>
   <button type="button" class="msnav-btn" data-msnav="play" onclick="selectMainTab('play')">
-    <span class="msnav-ico" aria-hidden="true">🎲</span>
+    <span class="msnav-ico" aria-hidden="true">🎮</span>
     <span class="msnav-lbl">Play</span>
   </button>
   <button type="button" class="msnav-btn" data-msnav="talk" onclick="selectMainTab('talk')">
@@ -9869,9 +9872,16 @@ function fmtT(t){
     : d.toLocaleDateString([], {day:'numeric', month:'short'});
 }
 
+// Owner ask v22: split chats into "regular chats" vs "AI experts".
+// window.CHATS_FILTER = '' (all) | 'human' (real users only) |
+// 'ai' (AI experts only). Set by the Talk sub-tabs; refreshChats
+// filters the returned list before painting.
+if (typeof window.CHATS_FILTER === 'undefined') window.CHATS_FILTER = '';
 async function refreshChats(){
   try {
-    const L = (await api('/chats')).chats;
+    let L = (await api('/chats')).chats;
+    if (window.CHATS_FILTER === 'ai')    L = L.filter(c => c.isAI);
+    else if (window.CHATS_FILTER === 'human') L = L.filter(c => !c.isAI);
     $('chatsEmpty').classList.toggle('hidden', L.length > 0);
     // Chat-list preview line: strip the mic emoji, and turn game/party
     // invite URLs into friendly labels instead of raw links.
@@ -13175,7 +13185,10 @@ async function openClubFromDeepLinkParam() {
     if (chip) {
       guestChipHtml = chip.innerHTML;      // remember the real one — see enterApp
       chip.onclick = () => requireLogin('👋 Welcome! Log in or join in seconds');
-      chip.innerHTML = '<span class="mename" style="padding-right:8px">👋 Log in / Join</span>';
+      // Owner ask v22: give the guest chip a clear pill CTA — bright
+      // periwinkle 'Log in' button on the right so it reads as an
+      // action, not a passive label.
+      chip.innerHTML = '<span class="mename ts-loginchip">👋 Log in</span>';
     }
     loadMembers();
     // Watching costs nothing and asks for nothing, so a guest lands here fine.
@@ -13475,15 +13488,7 @@ async function openClubFromDeepLinkParam() {
   var MAINS = {
     community: {
       target: 'wall',                // default view for the main
-      subs: [
-        { key:'people', label:'People', apply: function(){
-            try { showTab('wall'); } catch(e){}
-            // Reset wall filter to "All" for the People sub-tab.
-            var chip = document.querySelector('#tabWall .fchip[data-f="all"]');
-            if (chip) chip.click();
-          }},
-        { key:'live', label:'Live', apply: function(){ try { showTab('live'); } catch(e){} }}
-      ]
+      subs: []                        // owner ask v22: no sub-tabs here
     },
     play: {
       target: 'games',
@@ -13495,14 +13500,17 @@ async function openClubFromDeepLinkParam() {
     talk: {
       target: 'chats',
       subs: [
-        { key:'chats', label:'Chats', apply: function(){ try { showTab('chats'); } catch(e){} }},
-        { key:'ai',    label:'AI Experts', apply: function(){
-            // AI Experts is a wall filter — jump to Community wall and
-            // engage the existing 'ai' chip so nothing new needs to live
-            // in the DOM. Owner ask: keep every existing handler.
-            try { showTab('wall'); } catch(e){}
-            var chip = document.querySelector('#tabWall .fchip[data-f="ai"]');
-            if (chip) chip.click();
+        { key:'chats', label:'Chats', apply: function(){
+            window.CHATS_FILTER = 'human';
+            try { showTab('chats'); } catch(e){}
+            try { refreshChats(); } catch(e){}
+          }},
+        { key:'ai', label:'AI Experts', apply: function(){
+            // Owner ask v22: AI Experts has its own chat list (was a
+            // wall filter). Sets a CHATS_FILTER and refreshes.
+            window.CHATS_FILTER = 'ai';
+            try { showTab('chats'); } catch(e){}
+            try { refreshChats(); } catch(e){}
           }}
       ]
     },
@@ -13549,6 +13557,10 @@ async function openClubFromDeepLinkParam() {
     var main = MAINS[mainKey];
     var bar = document.getElementById('msubBar');
     if (!main || !bar) { if (bar) bar.style.display = 'none'; return; }
+    // Owner ask v22: hide the sub-tab bar entirely when a main has
+    // no sub-tabs (Community is the wall — no split).
+    if (!Array.isArray(main.subs) || main.subs.length < 2) { bar.style.display = 'none'; return; }
+    bar.style.display = '';
     // Rebuild the two labels + click handlers each time so the pill
     // reflects the current main.
     var b1 = document.getElementById('msubBtn1');
@@ -13577,6 +13589,13 @@ async function openClubFromDeepLinkParam() {
   // Public entry point wired to the bottom nav buttons.
   window.selectMainTab = function(mainKey){
     var main = MAINS[mainKey]; if (!main) return;
+    // No-sub mains (Community v22) just jump to the target and paint nav.
+    if (!Array.isArray(main.subs) || !main.subs.length) {
+      try { showTab(main.target); } catch(e){}
+      paintNav(mainKey);
+      paintSubbar(mainKey);
+      return;
+    }
     var sub = readSub(mainKey);
     var subOk = sub && main.subs.some(function(s){ return s.key === sub; });
     pickSub(mainKey, subOk ? sub : main.subs[0].key);

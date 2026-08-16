@@ -133,7 +133,7 @@ a{color:#1c1e21}
 ${body}
 </div>
 ${SITE_FOOTER}
-${CONSENT_MODAL}
+<!-- Cookie consent modal removed 16 Aug 2026 (owner ask v22). -->
 </body></html>`;
 }
 

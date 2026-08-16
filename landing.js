@@ -887,7 +887,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 }
 </script>
 <script src="/a2hs.js" defer></script>
-${CONSENT_MODAL}
+<!-- Cookie consent modal removed 16 Aug 2026 (owner ask v22). -->
 </body></html>`;
 }
 
