@@ -1297,6 +1297,8 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
   padding:3px 9px 3px 8px;border-radius:999px;
   font-size:12px;font-weight:800;letter-spacing:.2px;line-height:1.3;
   box-shadow:0 1px 3px rgba(30,58,138,.15)}
+/* 1 reference = perfect circle, icon only (owner ask v12). */
+.wcard-refct.wcard-refct-solo{width:24px;height:24px;padding:0;justify-content:center;gap:0}
 .wcard-refct-n{font-weight:800}
 .wcard-refct svg{width:12px;height:12px;fill:currentColor;flex-shrink:0}
 .wcard{position:relative}
@@ -3181,12 +3183,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   min-width:0;
 }
 
-/* Name + age + tick + online dot. §1a: 15px / 500. */
+/* Name + age + tick + online dot. Owner ask v12: bigger name +
+   3px more bottom margin. */
 #tabWall .wcard-name{
-  color:#16181f !important; font-weight:500 !important; font-size:15px !important;
-  letter-spacing:-.1px !important; line-height:1.2;
+  color:#16181f !important; font-weight:600 !important; font-size:17px !important;
+  letter-spacing:-.2px !important; line-height:1.2;
   display:flex; align-items:center; gap:4px;
   font-family:var(--brand-font);
+  margin-bottom:5px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 #tabWall .wcard-age{
@@ -11935,9 +11939,13 @@ function renderWall(){
     const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg>';
     let cornerBadge = '';
     if (refCount > 0) {
-      // Owner ask v9: always show the count next to the quote icon
-      // (was: hidden when count === 1).
-      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}"><b class="wcard-refct-n">${refCount}</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg></span>`;
+      // Owner ask v12: 1 reference = circle with just the quote icon.
+      // 2+ = number + icon in a pill.
+      if (refCount === 1) {
+        cornerBadge = `<span class="wcard-refct wcard-refct-solo" title="1 reference"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg></span>`;
+      } else {
+        cornerBadge = `<span class="wcard-refct" title="${refCount} references"><b class="wcard-refct-n">${refCount}</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg></span>`;
+      }
     }
     // NEW badge for newly-joined members retired 16 Aug 2026 v7 —
     // owner: 'remove the new tag from the card'.
