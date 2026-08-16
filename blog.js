@@ -776,7 +776,7 @@ ${GA}
 <title>${title}</title>
 <meta name="description" content="${desc}">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="theme-color" content="#0f7500">
+<meta name="theme-color" content="#5b6cff">
 <link rel="canonical" href="${SITE}${path}">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta property="og:site_name" content="TalkSibi"><meta property="og:locale" content="en_GB">
@@ -790,24 +790,27 @@ ${schema || ''}
 *{box-sizing:border-box}
 body{font-family:'Inter',system-ui,sans-serif;background:#ffffff;color:#1c1e21;margin:0}
 .sitehead{background:#fff;border-bottom:1.5px solid #e6e8ef;position:sticky;top:0;z-index:50}
-.hwrap{max-width:1080px;margin:0 auto;padding:0 20px}
-.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.wrap{max-width:1080px;margin:0 auto;padding:34px 20px 70px}
+.hwrap{max-width:100%;margin:0;padding:0 20px}
+@media(min-width:769px){.hwrap{padding:0 48px}}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.wrap{max-width:100%;margin:0;padding:34px 20px 70px}
+@media(min-width:769px){.wrap{padding:34px 48px 70px}}
+.wrap-inner{max-width:1080px;margin:0 auto}
 article,.post{max-width:860px}
-.logo{font-family:'Fredoka',sans-serif;font-weight:600;font-size:23px;text-decoration:none}
-.logo .r{color:#ff4d6b}.logo .b{color:#3d7bff}
+.logo{display:inline-flex;align-items:center;text-decoration:none}
+.logo img{height:34px;display:block}
 .navlinks{display:flex;gap:34px;align-items:center;font-weight:500;font-size:14.5px;color:#5f6675}
 .navlinks a{color:#5f6675;text-decoration:none}.navlinks a:hover{color:#1c1e21}
-.play{background:#0f7500;color:#fff;text-decoration:none;font-weight:600;padding:10px 20px;border-radius:12px;font-size:14px;white-space:nowrap}
+.play{background:#5b6cff;color:#fff;text-decoration:none;font-weight:600;padding:10px 20px;border-radius:12px;font-size:14px;white-space:nowrap}
 @media(max-width:600px){.navlinks{gap:16px;font-size:14px}.navlinks .hideSm{display:none}.play{padding:9px 15px;font-size:13.5px}}
-.play:hover{background:#0b5a00}
+.play:hover{background:#4353e8}
 h1{font-size:30px;line-height:1.25;letter-spacing:-.5px;margin:0 0 10px;font-weight:800}
 .date{color:#6b7280;font-size:14px;margin-bottom:26px}
 article h2{font-size:21px;letter-spacing:-.3px;margin:30px 0 10px;font-weight:700}
 article p{font-family:Georgia,'Times New Roman',serif;font-size:17.5px;line-height:1.8;margin:0 0 16px;color:#242628}
-article a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline-offset:3px}
-.cta{display:block;text-align:center;background:#0f7500;color:#fff;text-decoration:none;font-weight:700;padding:15px;border-radius:12px;font-size:16px;margin-top:30px;font-family:'Inter',sans-serif}
-.cta:hover{background:#0b5a00}
+article a{color:#5b6cff;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.cta{display:block;text-align:center;background:#5b6cff;color:#fff;text-decoration:none;font-weight:700;padding:15px;border-radius:12px;font-size:16px;margin-top:30px;font-family:'Inter',sans-serif}
+.cta:hover{background:#4353e8}
 .backrow{margin-top:26px;font-size:15px}
 .backrow a{color:#374151;text-decoration:none;font-weight:600}
 /* blog footer overrides removed — SITE_FOOTER carries its own dark theme. */
@@ -819,9 +822,9 @@ article a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline
 @media(max-width:600px){.post{flex-direction:column;gap:12px}.postthumb{flex:none;width:100%}}
 .post h2{font-size:21px;margin:0 0 8px;letter-spacing:-.3px}
 .post h2 a{color:#1c1e21;text-decoration:none}
-.post h2 a:hover{color:#0f7500}
+.post h2 a:hover{color:#5b6cff}
 .post p{color:#4b5563;font-size:15.5px;line-height:1.65;margin:0 0 12px;font-family:Georgia,serif}
-.more{color:#0f7500;font-weight:700;font-size:14.5px;text-decoration:none}
+.more{color:#5b6cff;font-weight:700;font-size:14.5px;text-decoration:none}
 .more:hover{text-decoration:underline;text-underline-offset:3px}
 .pagetitle{font-size:28px;margin:0 0 4px}
 .pagesub{color:#6b7280;font-size:15.5px;margin:0 0 8px}
@@ -832,18 +835,18 @@ article a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline
 .relgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:560px){.relgrid{grid-template-columns:1fr}}
 .rel{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;text-decoration:none;display:block}
-.rel:hover{border-color:#0f7500}
+.rel:hover{border-color:#5b6cff}
 .rel b{color:#1c1e21;font-size:15.5px;line-height:1.4;display:block;margin-bottom:8px}
-.rel span{color:#0f7500;font-weight:700;font-size:13.5px}
+.rel span{color:#5b6cff;font-weight:700;font-size:13.5px}
 </style></head>
 <body>
 <header class="sitehead"><div class="hwrap">
-<div class="top"><a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a><div class="navlinks"><a class="hideSm" href="/home">Home</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/">Open app</a></div></div>
+<div class="top"><a class="logo" href="/" aria-label="talksibi"><img src="/logo.svg" alt="talksibi"></a><div class="navlinks"><a class="hideSm" href="/">Home</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/app">Open app</a></div></div>
 </div></header>
 ${banner || ''}
-<div class="wrap">
+<div class="wrap"><div class="wrap-inner">
 ${body}
-</div>
+</div></div>
 ${SITE_FOOTER}
 <!-- Cookie consent modal removed 16 Aug 2026 (owner ask v22). -->
 </body></html>`;
