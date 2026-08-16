@@ -3325,11 +3325,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 #tabWall .wcard-dice:hover{ background:#f6f7fb; border-color:#c9cfe3 }
 #tabWall .wcard-dice:active{ transform:translateY(1px) }
 
-/* AI expert card variant: purple gradient tint per §1a. Detected via
-   child .wcard-name .ai-badge. */
+/* AI expert card — same white bg as regular cards (owner ask v25:
+   'same background color please'). Purple gradient retired; only
+   the tiny .ai-badge next to the name still tells you it's an AI. */
 #tabWall .wcard:has(.ai-badge){
-  background:linear-gradient(160deg,#f6f1ff,#f0f1ff);
-  border-color:#ddd6ff;
+  background:#fff;
+  border-color:#eef0f4;
 }
 #tabWall .wcard:has(.ai-badge) .wcard-photo{
   border-radius:14px; background:linear-gradient(135deg,#5b6cff,#9b6cff);
