@@ -3369,9 +3369,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    backgrounds white, make the page background little grey'). Cards
    pop against the page instead of blending with the surrounding
    white. Applied only inside #tabWall so we don't touch other tabs. */
-#tabWall{background:#f4f5f9;padding:14px 10px 24px;margin:0;border-radius:0;width:100%;box-sizing:border-box}
-@media(min-width:769px){ #tabWall{padding:18px 32px 28px} }
-@media(min-width:1200px){ #tabWall{padding:22px 48px 32px} }
+/* Owner ask v32: unify wall sides with topnav (48px left/right at
+   every viewport, mobile included). Vertical rhythm 22 / 32 stays
+   consistent with topnav. */
+#tabWall{background:#f4f5f9;padding:22px 48px 32px;margin:0;border-radius:0;width:100%;box-sizing:border-box}
 #tabWall .wcard:has(.ai-badge) .wcard-photo{
   border-radius:14px; background:linear-gradient(135deg,#5b6cff,#9b6cff);
 }
