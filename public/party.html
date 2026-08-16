@@ -7,12 +7,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Party · TalkSibi</title>
 <meta name="description" content="Drop into a TalkSibi party — live audio with speakers, listeners, reactions and rationed chat.">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#16181f">
 <link rel="icon" href="/favicon.ico">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- 1c reskin: Hanken Grotesk per talksibi rebrand tokens (README §12). -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#202124; --sub:#5f6368; --faint:#80868b; --line:#e8eaed;
@@ -401,6 +403,302 @@ a{color:inherit;text-decoration:none}
 /* Toasts */
 .ptoast{position:fixed;left:50%;transform:translateX(-50%);top:14px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;z-index:200;pointer-events:none;opacity:0;transition:.2s}
 .ptoast.show{opacity:1;top:24px}
+
+/* ═══ 1c Party reskin (talksibi rebrand) ═══
+   Design handoff §1c + tokens §12. Placed at the END of <style> so it
+   wins the cascade cleanly without touching the historical rules above.
+   RESKIN ONLY — no IDs renamed, no JS handlers touched, no DOM added.
+   All Cloudflare Realtime SFU wiring, wsVoice.* calls, socket events
+   ('v-mic', 'v-tracks', 'v-quality', 'v-hand'), reconnect button and
+   the dedicated .micbtn logic are untouched.
+
+   Spec-vs-existing conflicts I resolved:
+   • Spec §1c calls for a LIVE pill + Topic card in the top strip.
+     The current DOM has neither slot (no #pTopic, no LIVE element).
+     Restyle-only forbids adding DOM, so both are skipped — the party
+     header keeps its existing title / subtitle / reconnect / end
+     shape, restyled to the dark palette.
+   • Spec avatars = 58px flat-tinted disks with a fixed green border.
+     Current code uses gradient fills + role-conditional outlines
+     driven by state. I keep the state-driven variants (host / speaker
+     / speaking / live) and only recolour rings + backgrounds to the
+     talksibi green/periwinkle palette.
+   • ts-pulse / ts-dot animations from the design are added below.
+*/
+:root{
+  --ts-ink:#16181f; --ts-card:#1d2130; --ts-border:#2a2e42;
+  --ts-text:#ffffff; --ts-mute:#9aa0b4; --ts-mute2:#cdd2e4;
+  --ts-peri:#5b6cff; --ts-peri-on-dark:#8f9bff;
+  --ts-green:#1fb28a; --ts-green-on-dark:#43cfa5;
+  --ts-live:#d9544d; --ts-gold-on-dark:#ffd575;
+}
+@keyframes ts-pulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes ts-dot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}
+
+/* Body + shell — dark ambient */
+body{background:var(--ts-ink);color:var(--ts-text);
+  font-family:'Hanken Grotesk','Nunito',system-ui,-apple-system,sans-serif}
+.wrap{color:var(--ts-text)}
+
+/* Header — dark card row with a subtle divider under it */
+.phead{border-bottom:1px solid var(--ts-border);padding-bottom:12px}
+.phead-txt h1{
+  color:var(--ts-text);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif;
+  font-weight:600;font-size:16px;letter-spacing:-.1px
+}
+.phead-txt p{color:var(--ts-mute);font-weight:500}
+/* Language chips restyled to sit on dark */
+.phead-langs .plchip{
+  background:rgba(139,148,180,0.14);color:var(--ts-mute2);
+  border:1px solid var(--ts-border);
+  font-family:'Hanken Grotesk','Nunito',system-ui,sans-serif;font-weight:600
+}
+/* Reconnect + End buttons — muted dark chips */
+.pheadRec{
+  background:rgba(91,108,255,0.14);color:var(--ts-peri-on-dark);
+  border:1px solid rgba(91,108,255,0.35);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif
+}
+.pheadRec:hover{background:rgba(91,108,255,0.22);border-color:rgba(91,108,255,0.5)}
+.pheadEnd{
+  background:rgba(217,84,77,0.14);color:#ff8a84;
+  border:1px solid rgba(217,84,77,0.35);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif
+}
+.pheadEnd:hover{background:rgba(217,84,77,0.22)}
+.pheadLeave{
+  background:#0f1119;color:var(--ts-text);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif
+}
+.pheadLeave:hover{background:#000}
+
+/* Section headers — UPPERCASE label per §12 tokens */
+.psect .ph h3{
+  color:var(--ts-mute);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif;
+  font-weight:600;font-size:13px;letter-spacing:2.5px;text-transform:uppercase
+}
+.psect .ph h3 b{color:var(--ts-mute)}
+.psect .ph .phelp{color:var(--ts-mute)}
+
+/* Speaker + listener grid tiles — 58px flat-tinted disks, green ring
+   for speakers, dashed periwinkle for the free-seat placeholder.
+   Existing state classes (.pav.host / .pav.speaker / .pav.speaking /
+   .pav.live / .pav.hand / .pav.selected) all still drive the look — I
+   just change the palette. */
+.pav .circ{
+  background:var(--ts-peri);color:var(--ts-text);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif
+}
+.speakers .pav .circ{width:58px;height:58px;font-size:21px}
+/* Speaker (non-host) ring = solid green */
+.pav.speaker .circ{
+  background:linear-gradient(135deg,#5b6cff,#7c5cff);
+  outline:none;border:3px solid var(--ts-green);
+  box-shadow:0 0 0 3px rgba(31,178,138,0.25)
+}
+/* Host = amber-ish tint disk, still with green ring (matches spec's
+   Mariana + Amira tiles). */
+.pav.host .circ{
+  background:linear-gradient(135deg,#22c07a,#159f5d);
+  outline:none;border:3px solid var(--ts-green);
+  box-shadow:0 0 0 3px rgba(31,178,138,0.25)
+}
+/* Live speaking pulse — spec: box-shadow 0 0 0 3px rgba(31,178,138,0.25)
+   plus a soft outer glow. Kept on the same .speaking / .live triggers. */
+.pav.speaking .circ,
+.pav.live .circ{
+  border-color:var(--ts-green);
+  box-shadow:0 0 0 3px rgba(31,178,138,0.35),0 0 0 8px rgba(31,178,138,0.18);
+  animation:ts-speak 1.4s ease-in-out infinite
+}
+@keyframes ts-speak{
+  0%,100%{box-shadow:0 0 0 3px rgba(31,178,138,0.35),0 0 0 8px rgba(31,178,138,0.18)}
+  50%{box-shadow:0 0 0 3px rgba(31,178,138,0.45),0 0 0 14px rgba(31,178,138,0.08)}
+}
+.pav .nm{color:var(--ts-text);font-weight:500;font-size:11.5px;
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif}
+.pav .rl{color:var(--ts-mute)}
+/* Listener tile tweaks — smaller circles, no ring, muted names */
+.listeners .pav .circ{
+  background:linear-gradient(135deg,#3a3f55,#2a2e42);
+  outline:none;border:2px solid rgba(255,255,255,0.06);box-shadow:none
+}
+.listeners .pav .nm{color:var(--ts-mute2)}
+
+/* Host contextual menu — dark card matching the palette */
+.pav.selected{background:rgba(91,108,255,0.10)}
+.pav-menu{
+  background:var(--ts-card);border-color:var(--ts-border);
+  box-shadow:0 12px 30px rgba(0,0,0,.55)
+}
+.pav-menu button{color:var(--ts-text)}
+.pav-menu button:hover{background:rgba(255,255,255,0.06)}
+
+/* Host raise-hand queue — dark card, gold accents on dark */
+.hostqueue{
+  background:rgba(255,201,77,0.10);border:1px solid rgba(255,201,77,0.32)
+}
+.hostqueue .hqhdr{color:var(--ts-gold-on-dark);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif}
+.hostqueue .hqrow{border-top-color:rgba(255,201,77,0.25)}
+.hostqueue .hqnm{color:var(--ts-text)}
+.hostqueue .hqbtn{
+  background:var(--ts-green);color:#fff;
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif
+}
+.hostqueue .hqbtn.deny{
+  background:transparent;color:var(--ts-mute2);
+  border:1px solid var(--ts-border)
+}
+
+/* Corner quick-actions — dark round chips */
+.quickact .qmute,
+.quickact .qrx,
+.quickact .qinv,
+.quickact .qend{
+  background:var(--ts-card);color:var(--ts-text);
+  border:1px solid var(--ts-border);
+  box-shadow:0 6px 18px rgba(0,0,0,.35)
+}
+.quickact .qend{background:rgba(217,84,77,0.18);color:#ff8a84;border-color:rgba(217,84,77,0.35)}
+.quickact .qinv.done{background:rgba(31,178,138,0.18);color:var(--ts-green-on-dark);border-color:rgba(31,178,138,0.35)}
+.quickact .qrxmenu{
+  background:var(--ts-card);border-color:var(--ts-border);
+  box-shadow:0 12px 30px rgba(0,0,0,.55)
+}
+.quickact .qrxmenu button{color:var(--ts-text)}
+.quickact .qrxmenu button:hover{background:rgba(255,255,255,0.08)}
+
+/* Raise-hand FAB — keep the coral/red intent but softened on dark */
+.handfab{background:var(--ts-live);box-shadow:0 6px 18px rgba(217,84,77,.35)}
+.handfab.up{background:#b3413a}
+.handfab{font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif}
+
+/* Dedicated mic control — spec green (#1fb28a) instead of the older
+   #22c07a. Owner just redesigned this button — I only recolour it,
+   keep its size / position / show/hide behavior wired to .show/.on. */
+.micbtn{
+  background:#2a2e42;color:var(--ts-text);
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif
+}
+.micbtn.on{
+  background:linear-gradient(135deg,#1fb28a,#159c74);
+  box-shadow:0 10px 28px rgba(31,178,138,.4),0 0 0 6px rgba(31,178,138,.14);
+  animation:tsMicPulse 2.2s ease-in-out infinite
+}
+@keyframes tsMicPulse{
+  0%,100%{box-shadow:0 10px 28px rgba(31,178,138,.4),0 0 0 6px rgba(31,178,138,.14)}
+  50%{box-shadow:0 10px 28px rgba(31,178,138,.5),0 0 0 14px rgba(31,178,138,.06)}
+}
+
+/* Chat panel — dark surface, compact bubbles per spec */
+.pchat{
+  background:var(--ts-ink);border-top:1px solid var(--ts-border);
+  color:var(--ts-text)
+}
+.pchat::before{background:linear-gradient(to top,rgba(22,24,31,.95),rgba(22,24,31,0))}
+.pmsg{
+  background:rgba(255,255,255,0.06);color:var(--ts-mute2);
+  font-size:12.5px;
+  font-family:'Hanken Grotesk','Nunito',system-ui,sans-serif
+}
+.pmsg .pmwho{color:var(--ts-peri-on-dark)}
+.pmsg .pmwho.host{color:var(--ts-gold-on-dark)}
+.pmsg.mine{
+  background:var(--ts-peri);color:#fff
+}
+.pmsg.mine .pmwho{color:rgba(255,255,255,.9)}
+/* Typing dots (spec §1c uses ts-dot). Not currently emitted by JS —
+   styling reserved for a future socket-driven .ts-typing element so
+   the animation is ready when it lands. */
+.ts-typing{display:inline-flex;gap:4px;padding:4px 0}
+.ts-typing span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--ts-mute);animation:ts-dot 1s infinite
+}
+.ts-typing span:nth-child(2){animation-delay:.15s}
+.ts-typing span:nth-child(3){animation-delay:.3s}
+
+.pquota{color:var(--ts-mute)}
+.pquota .pq-strong{color:var(--ts-text)}
+.pquota .pq-none{color:#ff8a84}
+
+.pcompose .pinput{
+  background:rgba(255,255,255,0.06);color:var(--ts-text);
+  border-color:transparent
+}
+.pcompose .pinput::placeholder{color:var(--ts-mute)}
+.pcompose .pinput:focus{
+  background:rgba(255,255,255,0.10);
+  border-color:var(--ts-peri);
+  box-shadow:0 0 0 3px rgba(91,108,255,.20)
+}
+.pcompose .pbtn{background:var(--ts-peri)}
+.pcompose .pbtn:hover{background:#4353e8}
+.pcompose .pemo{background:rgba(255,255,255,0.06);color:var(--ts-text)}
+.pcompose .pemo:hover{background:rgba(255,255,255,0.10)}
+.pemoji-pick{
+  background:var(--ts-card);border-color:var(--ts-border)
+}
+.pemoji-pick button{color:var(--ts-text)}
+.pemoji-pick button:hover{background:rgba(255,255,255,0.08)}
+
+/* Invite + emoji modals — dark cards */
+.emopop .emopop-card,
+.invpop .invcard{
+  background:var(--ts-card);color:var(--ts-text);
+  box-shadow:0 20px 60px rgba(0,0,0,.6)
+}
+.emopop .emopop-card button:hover{background:rgba(255,255,255,0.08)}
+.invstep h3{color:var(--ts-text);
+  font-family:'Hanken Grotesk','Fredoka','Nunito',system-ui,sans-serif}
+.invopt{
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--ts-border);color:var(--ts-text)
+}
+.invopt:hover{background:rgba(255,255,255,0.08)}
+.invopt .invopt-ic{background:var(--ts-ink);border-color:var(--ts-border)}
+.invopt b{color:var(--ts-text)}
+.invopt span{color:var(--ts-mute)}
+.invclose,.invback{color:var(--ts-mute)}
+.invback:hover{background:rgba(255,255,255,0.08);color:var(--ts-text)}
+.invrow{color:var(--ts-text)}
+.invrow:hover{background:rgba(255,255,255,0.06)}
+.invrow.on{background:rgba(91,108,255,0.18)}
+.invrow .invnm{color:var(--ts-text)}
+.invrow .invrl{color:var(--ts-mute)}
+.invrow .invchk{border-color:var(--ts-border)}
+.invrow.on .invchk{background:var(--ts-peri);border-color:var(--ts-peri)}
+.invsend{background:var(--ts-peri);
+  font-family:'Hanken Grotesk','Nunito',system-ui,sans-serif}
+.invsend:hover:not(:disabled){background:#4353e8}
+.invempty{color:var(--ts-mute)}
+
+/* Toast on dark background — flip to a light chip so it reads */
+.ptoast{background:#f4f5fb;color:var(--ts-ink)}
+
+/* Desktop-only: chat rail matches the dark card treatment */
+@media(min-width:1000px){
+  .pchat{
+    background:var(--ts-card);
+    border:1px solid var(--ts-border);border-radius:16px
+  }
+  .kbdhint{
+    background:var(--ts-card);border-color:var(--ts-border);color:var(--ts-mute)
+  }
+  .kbdhint kbd{background:var(--ts-ink);border-color:var(--ts-border);color:var(--ts-text)}
+}
+
+/* Mobile hit-targets per README §42-45 — bump the small icon-only
+   quickact buttons to ≥44px (they were already 44 — keep + assert). */
+@media(max-width:640px){
+  .quickact .qmute,.quickact .qrx,.quickact .qinv,.quickact .qend{
+    width:44px;height:44px;min-width:44px
+  }
+}
 </style>
 </head>
 <body>

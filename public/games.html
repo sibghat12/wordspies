@@ -6,56 +6,202 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>Games — TalkSibi</title>
-<meta name="description" content="Play language-learning games with friends. TalkSibi for teams, Word Race for a 60-second vocabulary sprint. Free, browser-based, no signup needed.">
-<meta name="theme-color" content="#fafafa">
+<title>Games · talksibi</title>
+<meta name="description" content="Play language-learning games with real people. Codenames, Word Chain, Word Race, Guess the Word, Mind Meld & Who is the Spy — free, browser-based.">
+<meta name="theme-color" content="#5b6cff">
 <link rel="icon" href="/favicon.ico">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta property="og:title" content="TalkSibi Games — play + learn with friends">
-<meta property="og:description" content="Two ways to play: TalkSibi for teams, Word Race for a 60-second vocab sprint. Free and browser-based.">
+<meta property="og:title" content="talksibi Games — play + learn with real people">
+<meta property="og:description" content="Six language-learning games. Free, browser-based, no signup needed.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ═══ 1d Games hub reskin (talksibi rebrand) ═══
+   Spec of record: design_handoff_talksibi_rebrand 2/README.md §1d + §12.
+   White page, hero-tinted header band, 3-col game grid with 4px coloured
+   top borders per game, LIVE TABLES strip, "+ Start a table" dark pill. */
 :root{
-  --edge:#e6e6ef; --accent-d:#c33d55;
-  --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
-  --accent:#e8506b; --bg:#fafafa; --green:#22c07a;
+  --ink:#16181f; --sub:#4a4d59; --muted:#8a8d99; --faint:#9a9db8;
+  --line:#ececef; --edge:#e8e6e0;
+  --peri:#5b6cff; --peri-hover:#4353e8; --peri-tint:#f3f4fb;
+  --green:#1fb28a; --coral:#ff7a59; --gold:#ffc94d; --purple:#9b6cff; --red:#d9544d;
+  --neutral-bg:#fafafa; --neutral-text:#6b6e7a;
+  --page:#ffffff; --app:#fbfbfd;
+  --shadow-card:0 18px 50px rgba(22,24,31,0.12);
+  --shadow-cta:0 6px 18px rgba(91,108,255,0.3);
 }
 *{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--page)}
 body{
-  font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
-  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;
-  padding:0 16px calc(30px + env(safe-area-inset-bottom));
+  font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
+  color:var(--ink); -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  padding:0 0 calc(40px + env(safe-area-inset-bottom));
 }
-.wrap{width:100%;max-width:560px}
-header{display:flex;align-items:center;gap:10px;padding:16px 0 6px}
-header .logo{font-size:15.5px;font-weight:800;letter-spacing:-.4px}
-header .sp{flex:1}
-.tinylink{font-size:12.5px;color:var(--sub);text-decoration:none;font-weight:500;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;white-space:nowrap}
-.tinylink:active{background:#f3f3f5}
-h1{font-size:26px;font-weight:800;letter-spacing:-.9px;line-height:1.16;margin:18px 0 6px}
-p.lede{font-size:13.8px;color:var(--sub);line-height:1.6;margin-bottom:18px}
+a{color:inherit;text-decoration:none}
 
-/* One card per game. The chips answer the only question that matters when
-   you're choosing — how many of you there are right now. */
-.game{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:20px;
-  padding:16px;text-decoration:none;color:var(--ink);transition:transform .15s,border-color .15s,box-shadow .15s}
-.game+.game{margin-top:12px}
-.game:hover{transform:translateY(-2px);border-color:#ddd9fb}
-.game .gi{flex:none;width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1}
-.game .gt{flex:1;min-width:0}
-.game .gt b{display:block;font-size:15.5px;font-weight:500;letter-spacing:-.3px}
-.game .gt span{display:block;font-size:12.3px;color:var(--sub);margin-top:3px;line-height:1.5}
-/* Small circular (i) info button that opens the game's popup — added
-   4 Aug 2026 so the card can stay short + tidy while still explaining
-   the game in full when someone taps for details. */
-.gt-line{display:flex;align-items:center;gap:6px}
-.gi-info{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#eef1f7;color:var(--sub);border:0;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:12px;font-style:italic;cursor:pointer;padding:0;line-height:1;flex-shrink:0;transition:background .12s,color .12s}
-.gi-info:hover{background:#dfe4ee;color:var(--ink)}
-.gi-info:focus{outline:2px solid rgba(90,123,255,.35);outline-offset:1px}
-/* Info modal — plain centred dialog, dismisses on backdrop tap or ✕. */
+/* ── Header band (hero tint) ─────────────────────────────────── */
+.hero{
+  background:linear-gradient(180deg,#f5f6ff,#ffffff);
+  padding:28px 0 24px;
+}
+.wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 24px}
+.topbar{display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:500;font-size:19px;letter-spacing:-.3px;color:var(--ink)}
+.brand-mark{
+  width:26px;height:26px;position:relative;flex:none;display:inline-block;
+}
+.brand-mark i{position:absolute;width:12px;height:12px;display:block}
+.brand-mark .b1{top:0;left:0;background:var(--peri);border-radius:5px 5px 1px 5px}
+.brand-mark .b2{top:0;right:0;background:var(--coral);border-radius:5px 5px 5px 1px}
+.brand-mark .b3{bottom:0;right:0;background:var(--green);border-radius:5px 1px 5px 5px}
+.brand-mark .b4{bottom:0;left:0;background:var(--gold);border-radius:1px 5px 5px 5px}
+.top-nav{margin-left:auto;display:flex;align-items:center;gap:10px}
+.top-link{
+  font-size:14px;font-weight:600;color:var(--sub);
+  padding:9px 14px;border-radius:999px;
+  background:#fff;border:1px solid var(--line);white-space:nowrap;
+  transition:background .12s,color .12s,border-color .12s;
+}
+.top-link:hover{background:#f7f8fc;color:var(--ink)}
+
+.page-title{
+  margin:22px 0 4px;
+  font-size:34px;font-weight:700;letter-spacing:-.9px;line-height:1.12;
+}
+.page-sub{
+  font-size:15px;color:var(--sub);font-weight:500;line-height:1.55;
+  max-width:640px;
+}
+.title-row{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:20px}
+.title-col{flex:1;min-width:220px}
+.start-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--ink);color:#fff;
+  padding:12px 20px;border-radius:999px;
+  font-size:14.5px;font-weight:600;letter-spacing:.1px;
+  border:0;cursor:pointer;
+  transition:background .12s,transform .09s;
+  white-space:nowrap;
+}
+.start-pill:hover{background:#000}
+.start-pill:active{transform:translateY(1px)}
+.start-pill .plus{font-size:17px;line-height:1;font-weight:600}
+
+/* ── Section label (UPPERCASE) ───────────────────────────────── */
+.sect-label{
+  font-size:13px;font-weight:600;letter-spacing:2.5px;
+  text-transform:uppercase;color:var(--muted);
+  margin:34px 0 14px;
+  display:flex;align-items:center;gap:10px;
+}
+.sect-label .live-dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--red);animation:ts-pulse 1.6s ease-in-out infinite;
+}
+@keyframes ts-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── LIVE TABLES strip (horizontal scroll) ───────────────────── */
+.live-strip-wrap{margin-top:8px}
+.live-strip{
+  display:flex;gap:12px;overflow-x:auto;
+  padding:4px 4px 12px;
+  scroll-snap-type:x proximity;
+  scrollbar-width:none;
+}
+.live-strip::-webkit-scrollbar{display:none}
+.live-empty{
+  font-size:14px;color:var(--muted);font-weight:500;
+  padding:14px 16px;background:var(--peri-tint);
+  border-radius:14px;border:1px dashed #d7dbf0;
+}
+/* Reference shape for a live-table row (in case JS ever populates one). */
+.live-card{
+  flex:0 0 auto;scroll-snap-align:start;
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:12px 16px;min-width:220px;
+  display:flex;flex-direction:column;gap:4px;
+  transition:transform .12s,box-shadow .12s;
+}
+.live-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card)}
+.live-card .lc-top{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14.5px}
+.live-card .lc-sub{font-size:12.5px;color:var(--muted);font-weight:500}
+
+/* ── 3-col game cards ────────────────────────────────────────── */
+.game-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:20px;margin-top:6px;
+}
+.game{
+  position:relative;background:#fff;border-radius:20px;
+  padding:22px 20px 20px;
+  display:flex;flex-direction:column;gap:12px;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow-card);
+  transition:transform .15s ease, box-shadow .15s ease;
+  overflow:hidden;color:var(--ink);
+}
+.game::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:4px;
+  background:var(--top,var(--peri));
+}
+.game:hover{transform:translateY(-4px);box-shadow:0 22px 60px rgba(22,24,31,0.16)}
+.game .gi{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;line-height:1;
+  background:var(--tint,var(--peri-tint));
+  flex:none;
+}
+.game .gt-line{display:flex;align-items:center;gap:8px;min-width:0}
+.game .gt-line b{
+  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-size:19px;font-weight:600;letter-spacing:-.3px;color:var(--ink);
+  display:block;
+}
+.game .gi-info{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;
+  background:#eef1f7;color:var(--sub);border:0;
+  font-weight:700;font-size:11px;font-style:italic;cursor:pointer;
+  padding:0;line-height:1;flex-shrink:0;
+  transition:background .12s,color .12s;
+}
+.game .gi-info:hover{background:#dfe4ee;color:var(--ink)}
+.game .gi-info:focus{outline:2px solid rgba(91,108,255,.35);outline-offset:1px}
+.game .desc{
+  font-size:13.5px;color:var(--sub);font-weight:500;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;text-overflow:ellipsis;
+  min-height:calc(13.5px * 1.5 * 2);
+}
+.game .chips{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:12px;font-weight:600;
+  padding:5px 10px;border-radius:999px;white-space:nowrap;
+  background:var(--neutral-bg);border:1px solid var(--edge);color:var(--neutral-text);
+}
+.chip.live{background:#f2f8f5;border-color:#cfe9dd;color:#2d7a62}
+.chip.live .ldot{
+  width:7px;height:7px;border-radius:50%;background:var(--green);
+  display:inline-block;
+}
+.chip.quiet{background:#fafafa;border-color:var(--edge);color:var(--muted)}
+
+/* Colour top-borders + icon tints per game (spec §1d) */
+.g-codenames{--top:var(--peri);--tint:#eef0ff}
+.g-spy{--top:var(--coral);--tint:#ffece5}
+.g-wordchain{--top:var(--green);--tint:#e6f6ef}
+.g-wordrace{--top:var(--gold);--tint:#fff4d6}
+.g-guessword{--top:var(--purple);--tint:#f2ecff}
+.g-meld{--top:var(--red);--tint:#fdeceb}
+
+/* ── Info modal (unchanged behaviour, restyled) ──────────────── */
 .ginfo-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;animation:ginfoFade .16s ease}
 .ginfo-bd.on{display:flex}
 @keyframes ginfoFade{from{opacity:0}to{opacity:1}}
@@ -65,141 +211,157 @@ p.lede{font-size:13.8px;color:var(--sub);line-height:1.6;margin-bottom:18px}
 .ginfo-close:hover{background:#f2f3f5;color:var(--ink)}
 .ginfo-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .ginfo-head .gi{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
-.ginfo-head h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0}
+.ginfo-head h3{font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:600;font-size:20px;letter-spacing:-.3px;color:var(--ink);margin:0}
 .ginfo-body{font-size:14.2px;line-height:1.6;color:var(--ink);margin:6px 0 14px;font-weight:500}
 .ginfo-meta{font-size:12.5px;color:var(--sub);font-weight:600;margin-bottom:14px}
-.ginfo-play{display:block;text-align:center;background:var(--ink);color:#fff;border-radius:16px;padding:12px 18px;text-decoration:none;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:15.5px;letter-spacing:.1px}
+.ginfo-play{display:block;text-align:center;background:var(--ink);color:#fff;border-radius:16px;padding:12px 18px;text-decoration:none;font-weight:600;font-size:15.5px;letter-spacing:.1px}
 .ginfo-play:hover{background:#000}
-.game .chips{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex:none}
-.chip{font-size:10.6px;font-weight:600;padding:4px 9px;border-radius:999px;white-space:nowrap}
-.chip.bot{background:#eef7ef;color:#1c7c33}
-.chip.ppl{background:#f1effd;color:#5b4fd4}
-.game .ga{display:none}
-.sect{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin:22px 0 10px}
-.foot{margin-top:26px;text-align:center;font-size:12.3px;color:var(--faint);line-height:1.7}
-.foot a{color:var(--sub)}
 
-/* ── the block kit ────────────────────────────────────────────────────────
-   One toy-brick look across the whole arcade. Cards and buttons sit on a
-   solid edge rather than a soft shadow, so they read as objects you can
-   press down, and the type is one pair everywhere: Fredoka for anything you
-   take in at a glance, Nunito for everything you actually read. */
-h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:-.3px}
-h1{font-size:28px;line-height:1.13}
-header{gap:8px;flex-wrap:nowrap}
-header .logo{font-family:'Fredoka',system-ui,sans-serif;font-size:17px;font-weight:600;
-  letter-spacing:-.2px;white-space:nowrap;flex:none}
-/* two side-links plus a wordmark is a squeeze on a small phone — let the
-   links give up the width rather than the name of the game */
-@media (max-width:430px){
-  header .logo{font-size:15.5px}
-  .tinylink{font-size:11.8px;padding:7px 10px}
+.foot{
+  margin-top:36px;padding-top:22px;border-top:1px solid var(--line);
+  text-align:center;font-size:13px;color:var(--muted);line-height:1.7;
 }
-p.lede{font-size:14.5px;font-weight:500;line-height:1.6}
+.foot a{color:var(--sub);text-decoration:underline;text-underline-offset:2px}
 
-.card{border:2px solid var(--edge);border-radius:24px;
-  box-shadow:none}
-
-.btn{border-radius:18px;font-family:'Fredoka',system-ui,sans-serif;font-weight:500;font-size:16.5px;
-  letter-spacing:.1px;
-  transition:transform .09s ease,box-shadow .09s ease,filter .12s}
-.btn:active:not(:disabled){filter:brightness(.96)}
-.btn-line{border:2px solid var(--edge)}
-
-input[type=text]{border:2px solid var(--edge);border-radius:16px;font-size:16px;font-weight:600}
-input[type=text]::placeholder{font-weight:500}
-
-.tinylink{border:2px solid var(--edge);font-weight:700;
-  transition:transform .09s ease,box-shadow .09s ease}
-.tinylink:active{filter:brightness(.96)}
-
-.seat,.lseat{border-width:2px;border-radius:16px}
-.codebox{border:2.5px dashed #dcdce8;border-radius:20px}
-.codebox .code{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spacing:7px}
-label.fl{font-weight:800}
-
-.game{border:2px solid var(--edge);border-radius:24px;
-  box-shadow:none}
-.game:hover{transform:translateY(-3px)}
-.game .gt b{font-family:'Fredoka',system-ui,sans-serif;font-size:16.5px;font-weight:500;letter-spacing:-.2px}
-.game .gi{border-radius:18px}
-.chip{font-weight:700}
+/* ── Mobile ──────────────────────────────────────────────────── */
+@media (max-width:960px){
+  .game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+}
+@media (max-width:720px){
+  .wrap{padding:0 20px}
+  .page-title{font-size:26px;letter-spacing:-.7px}
+  .page-sub{font-size:14px}
+  .title-row{align-items:flex-start}
+  .start-pill{padding:11px 16px;font-size:14px}
+  .top-link{font-size:13px;padding:8px 12px}
+  .game{padding:20px 16px 16px}
+  .game .gt-line b{font-size:17.5px}
+  .game .desc{font-size:13px}
+  .sect-label{font-size:12px;letter-spacing:2px}
+}
+@media (max-width:520px){
+  .game-grid{grid-template-columns:1fr;gap:12px}
+  .brand{font-size:17px}
+  .brand-mark{width:22px;height:22px}
+  .brand-mark i{width:10px;height:10px}
+}
 </style>
 </head>
 <body>
+<div class="hero">
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i></span>
+        talksibi
+      </a>
+      <div class="top-nav">
+        <a class="top-link" href="/app">👥 Community</a>
+      </div>
+    </div>
+
+    <div class="title-row">
+      <div class="title-col">
+        <h1 class="page-title">Games</h1>
+        <p class="page-sub">Pick a table, share the link. Play with friends, practise your language. Everything runs in the browser — no signup needed.</p>
+      </div>
+      <a class="start-pill" href="/play" id="startTable"><span class="plus">+</span> Start a table</a>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
-  <header>
-    <div class="logo">🕵️ TalkSibi</div>
-    <div class="sp"></div>
-    <a class="tinylink" href="/social">👥 Community</a>
-  </header>
+  <div class="sect-label"><span class="live-dot"></span> Live tables</div>
+  <div class="live-strip-wrap">
+    <div class="live-strip" id="liveTables" role="list" aria-label="Live game tables">
+      <div class="live-empty" id="liveEmpty">No live tables right now — start one and invite a friend.</div>
+    </div>
+  </div>
 
-  <h1>Pick a game.</h1>
-  <p class="lede">Play with friends, practise your language. Two ways in: the classic team game, and a 60-second vocabulary sprint. Both work with a shared link.</p>
+  <div class="sect-label">Language games</div>
+  <div class="game-grid">
+    <a class="game g-codenames" href="/play" data-game="wordspies">
+      <span class="gi">🕵️</span>
+      <div class="gt-line">
+        <b>Codenames</b>
+        <button class="gi-info" type="button" data-info="wordspies" aria-label="About Codenames">i</button>
+      </div>
+      <div class="desc">Two teams, one grid of secret words. Give a single clue and race to guess yours.</div>
+      <div class="chips">
+        <span class="chip">👥 4–10+ players</span>
+        <span class="chip quiet">quiet</span>
+      </div>
+    </a>
 
-  <div class="sect">The big one</div>
-  <a class="game" href="/play" data-game="wordspies">
-    <span class="gi" style="background:#fdeef1">🕵️</span>
-    <span class="gt"><b>TalkSibi</b><span class="gt-line">Team word game <button class="gi-info" type="button" data-info="wordspies" aria-label="About TalkSibi">i</button></span></span>
-    <span class="chips"><span class="chip ppl">4–10+ friends</span></span>
-  </a>
+    <a class="game g-spy" href="/spy" data-game="spy">
+      <span class="gi">🎭</span>
+      <div class="gt-line">
+        <b>Who is the Spy?</b>
+        <button class="gi-info" type="button" data-info="spy" aria-label="About Who is the Spy?">i</button>
+      </div>
+      <div class="desc">Everyone gets a secret word — except the spy. Drop hints, vote out the imposter.</div>
+      <div class="chips">
+        <span class="chip">👥 4–10 players</span>
+        <span class="chip quiet">quiet</span>
+      </div>
+    </a>
 
-  <div class="sect">Language games</div>
-  <a class="game" href="/wordrace" data-game="wordrace">
-    <span class="gi" style="background:#fff2e5">🏁</span>
-    <span class="gt"><b>Word Race</b><span class="gt-line">60-second vocab sprint <button class="gi-info" type="button" data-info="wordrace" aria-label="About Word Race">i</button></span></span>
-    <span class="chips"><span class="chip ppl">2–8 friends</span></span>
-  </a>
-  <a class="game" href="/wordchain" data-game="wordchain">
-    <span class="gi" style="background:#e6f6ef">🔗</span>
-    <span class="gt"><b>Word Chain</b><span class="gt-line">Last letter starts the next <button class="gi-info" type="button" data-info="wordchain" aria-label="About Word Chain">i</button></span></span>
-    <span class="chips"><span class="chip ppl">2–8 friends</span></span>
-  </a>
-  <a class="game" href="/guessword" data-game="guessword">
-    <span class="gi" style="background:#fff2d9">❓</span>
-    <span class="gt"><b>Guess the Word</b><span class="gt-line">Describe. Race to guess. <button class="gi-info" type="button" data-info="guessword" aria-label="About Guess the Word">i</button></span></span>
-    <span class="chips"><span class="chip ppl">3–10 friends</span></span>
-  </a>
-  <a class="game" href="/spy" data-game="spy">
-    <span class="gi" style="background:#f0edff">🎭</span>
-    <span class="gt"><b>Who is the Spy?</b><span class="gt-line">Find the imposter <button class="gi-info" type="button" data-info="spy" aria-label="About Who is the Spy?">i</button></span></span>
-    <span class="chips"><span class="chip ppl">4–10 friends</span></span>
-  </a>
+    <a class="game g-wordchain" href="/wordchain" data-game="wordchain">
+      <span class="gi">🔗</span>
+      <div class="gt-line">
+        <b>Word Chain</b>
+        <button class="gi-info" type="button" data-info="wordchain" aria-label="About Word Chain">i</button>
+      </div>
+      <div class="desc">Each new word starts with the last letter of the previous — GARDEN → NURSE → ECHO.</div>
+      <div class="chips">
+        <span class="chip">👥 2–8 players</span>
+        <span class="chip quiet">quiet</span>
+      </div>
+    </a>
 
-  <div class="sect">Quick 2-player</div>
-  <a class="game" href="/meld" data-game="meld">
-    <span class="gi" style="background:#f3f1fe">🧠</span>
-    <span class="gt"><b>Mind Meld</b><span class="gt-line">Type the same word together <button class="gi-info" type="button" data-info="meld" aria-label="About Mind Meld">i</button></span></span>
-    <span class="chips"><span class="chip ppl">exactly 2</span></span>
-  </a>
-  <a class="game" href="/four" data-game="four">
-    <span class="gi" style="background:#eef2fd">🔴</span>
-    <span class="gt"><b>Connect 4</b><span class="gt-line">Four in a row wins <button class="gi-info" type="button" data-info="four" aria-label="About Connect 4">i</button></span></span>
-    <span class="chips"><span class="chip ppl">2 friends</span><span class="chip bot">or vs the bot</span></span>
-  </a>
-  <a class="game" href="/pool" data-game="pool">
-    <span class="gi" style="background:#e8f6ee">🎱</span>
-    <span class="gt"><b>8-Ball Pool</b><span class="gt-line">Sink your balls first <button class="gi-info" type="button" data-info="pool" aria-label="About 8-Ball Pool">i</button></span></span>
-    <span class="chips"><span class="chip ppl">2 friends</span><span class="chip bot">or vs the bot</span></span>
-  </a>
+    <a class="game g-wordrace" href="/wordrace" data-game="wordrace">
+      <span class="gi">⏱</span>
+      <div class="gt-line">
+        <b>Word Race</b>
+        <button class="gi-info" type="button" data-info="wordrace" aria-label="About Word Race">i</button>
+      </div>
+      <div class="desc">A category shows up and you have 60 seconds to type as many matching words as you can.</div>
+      <div class="chips">
+        <span class="chip">👥 2–8 players</span>
+        <span class="chip quiet">quiet</span>
+      </div>
+    </a>
 
-  <div class="sect">Board classic</div>
-  <a class="game" href="/ludo" data-game="ludo">
-    <span class="gi" style="background:#fff4e5">🎲</span>
-    <span class="gt"><b>Ludo</b><span class="gt-line">Classic board race <button class="gi-info" type="button" data-info="ludo" aria-label="About Ludo">i</button></span></span>
-    <span class="chips"><span class="chip ppl">2–4 friends</span><span class="chip bot">or vs bots</span></span>
-  </a>
+    <a class="game g-guessword" href="/guessword" data-game="guessword">
+      <span class="gi">🍋</span>
+      <div class="gt-line">
+        <b>Guess the Word</b>
+        <button class="gi-info" type="button" data-info="guessword" aria-label="About Guess the Word">i</button>
+      </div>
+      <div class="desc">One player describes a secret word in chat. Everyone else races to guess it first.</div>
+      <div class="chips">
+        <span class="chip">👥 3–10 players</span>
+        <span class="chip quiet">quiet</span>
+      </div>
+    </a>
 
-  <div class="sect">Arcade</div>
-  <a class="game" href="/hoop" data-game="hoop">
-    <span class="gi" style="background:#fff2d9">🏀</span>
-    <span class="gt"><b>Hoop</b><span class="gt-line">60-second free-throw arcade <button class="gi-info" type="button" data-info="hoop" aria-label="About Hoop">i</button></span></span>
-    <span class="chips"><span class="chip bot">solo · beat your best</span></span>
-  </a>
+    <a class="game g-meld" href="/meld" data-game="meld">
+      <span class="gi">🧠</span>
+      <div class="gt-line">
+        <b>Mind Meld</b>
+        <button class="gi-info" type="button" data-info="meld" aria-label="About Mind Meld">i</button>
+      </div>
+      <div class="desc">You both type a word at the same time and try to match. Silly, fast, weirdly bonding.</div>
+      <div class="chips">
+        <span class="chip">👥 exactly 2</span>
+        <span class="chip quiet">quiet</span>
+      </div>
+    </a>
+  </div>
 
   <div class="foot">
     Signed in? You’re seated under your own name and photo automatically.<br>
-    <a href="/social">Meet people to play with in the Community →</a>
+    <a href="/app">Meet people to play with in the Community →</a>
   </div>
 </div>
 
@@ -219,37 +381,27 @@ label.fl{font-weight:800}
 
 <script>
 // Info-popup content lives here so the card markup stays lean.
+// Kept identical shape/keys to preserve behaviour; only "wordspies" copy
+// updated to reference Codenames (the hub label per rebrand spec).
 const GAME_INFO = {
-  wordspies: { name:'TalkSibi', icon:'🕵️', bg:'#fdeef1', href:'/play',
+  wordspies: { name:'Codenames', icon:'🕵️', bg:'#eef0ff', href:'/play',
     body:'Two teams, one grid of secret words. Your spymaster gives a single clue and a number, and your team has to guess only your words — one wrong tap can hand the round to the other side. Best with 4–10 friends around a phone or on a call. Bots can fill any empty seat.',
     meta:'4–10+ players · shared link · bots fill seats' },
-  ludo: { name:'Ludo', icon:'🎲', bg:'#fff4e5', href:'/ludo',
-    body:'The classic board race. Roll the die, move your four pieces around the board, land on a friend to send them home. First to get all four home wins. Runs in the browser — share the link, take turns.',
-    meta:'2–4 players · vs friends or bots' },
-  pool: { name:'8-Ball Pool', icon:'🎱', bg:'#e8f6ee', href:'/pool',
-    body:'Real physics 8-ball. Break, call your set, pot them all, then the 8 — but don\'t sink the cue on the way. Aim by dragging, tap to shoot. Play a friend by link or take on the bot.',
-    meta:'2 players · vs a friend or the bot' },
-  four: { name:'Connect 4', icon:'🔴', bg:'#eef2fd', href:'/four',
-    body:'Drop pieces into columns, get four in a row (up, down, sideways, or diagonal) before your opponent does. Rounds last about thirty seconds. Perfect for a quick match while you chat.',
-    meta:'2 players · vs a friend or the bot' },
-  meld: { name:'Mind Meld', icon:'🧠', bg:'#f3f1fe', href:'/meld',
+  meld: { name:'Mind Meld', icon:'🧠', bg:'#fdeceb', href:'/meld',
     body:'You both type a word at the same time, then try to match. If you both say "cat" you win. If not, use both your words as a hint and try again. Silly, fast, weirdly bonding — great for two friends learning each other.',
     meta:'2 players only · no bot' },
-  wordrace: { name:'Word Race', icon:'🏁', bg:'#fff2e5', href:'/wordrace',
+  wordrace: { name:'Word Race', icon:'⏱', bg:'#fff4d6', href:'/wordrace',
     body:'A category shows up — Animals, Foods, Verbs, Colours — and you have 60 seconds to type as many words as you can that fit. Most words wins the round. Best of 3 wins the match. Works in any language you\'re learning.',
     meta:'2–8 players · 60-second rounds · any language' },
   wordchain: { name:'Word Chain', icon:'🔗', bg:'#e6f6ef', href:'/wordchain',
     body:'Take turns typing a word. Each new word must start with the last letter of the previous one — GARDEN → NURSE → ECHO. No repeats. Three lives each. Last one standing wins. Great warm-up for a language exchange.',
     meta:'2–8 players · three lives · any language' },
-  guessword: { name:'Guess the Word', icon:'❓', bg:'#fff2d9', href:'/guessword',
+  guessword: { name:'Guess the Word', icon:'🍋', bg:'#f2ecff', href:'/guessword',
     body:'One player is the describer — they get a secret word and drop hints in the chat. Everyone else races to guess. First correct guess gets 2 points, the describer gets 1. Rounds rotate. Highest score at the end wins.',
     meta:'3–10 players · describe & guess' },
-  spy: { name:'Who is the Spy?', icon:'🎭', bg:'#f0edff', href:'/spy',
+  spy: { name:'Who is the Spy?', icon:'🎭', bg:'#ffece5', href:'/spy',
     body:'Everyone gets a secret word — except the spy, who gets a similar-but-different one. Take turns dropping a one-word hint. Vote out who you think is the imposter. Civilians win if the spy is caught; the spy wins if only two players remain.',
     meta:'4–10 players · social deduction' },
-  hoop: { name:'Hoop', icon:'🏀', bg:'#fff2d9', href:'/hoop',
-    body:'Arcade free-throw. You have 60 seconds to sink as many baskets as possible. Drag the ball back to aim, release to shoot — real physics arc, rim bounces, streak bonuses. Beat your personal best.',
-    meta:'solo · 60-second round · beat your best' },
 };
 function openGameInfo(id){
   const g = GAME_INFO[id]; if (!g) return;
