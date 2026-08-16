@@ -568,6 +568,21 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
    the search sits close under the tab strip. */
 .filterrow{display:flex;gap:10px;align-items:center;margin:6px 0 14px;padding-top:0;flex-wrap:wrap}
 .search{background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 16px;display:flex;gap:10px;align-items:center;flex:1;min-width:170px}
+/* Compact icon-only search trigger (owner ask v15) */
+.wall-search-btn{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e4e6ee;color:#16181f;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:.14s;padding:0}
+.wall-search-btn:hover{background:#f7f8fa;border-color:#c9cfe3}
+.wall-search-btn svg{width:16px;height:16px}
+/* Full-screen search overlay */
+.wall-search-ov{position:fixed;inset:0;background:rgba(20,22,31,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:9999;display:none;align-items:flex-start;justify-content:center;padding:14vh 20px 20px}
+.wall-search-ov.show{display:flex}
+.wall-search-sheet{background:#fff;border-radius:20px;max-width:620px;width:100%;padding:22px 20px 18px;box-shadow:0 24px 60px rgba(0,0,0,.28);position:relative;font-family:var(--brand-font)}
+.wall-search-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border:0;background:#f3f4f7;color:#16181f;border-radius:50%;cursor:pointer;font-size:16px;font-weight:700}
+.wall-search-x:hover{background:#eaebef}
+.wall-search-inputwrap{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#f6f7fb;border:1px solid #e4e6ee;border-radius:14px;margin-top:14px}
+.wall-search-inputic{width:18px;height:18px;color:#6b6e7a;flex-shrink:0}
+.wall-search-inputwrap input{flex:1;border:0;background:transparent;outline:0;font:600 16px/1.3 var(--brand-font);color:#16181f}
+.wall-search-inputwrap input::placeholder{color:#9a9db8;font-weight:500}
+.wall-search-hint{font-size:11.5px;color:#8a8d99;margin-top:10px;text-align:center}
 .search input{border:none;background:none;flex:1;padding:12px 0;font-size:13.5px;font-weight:500;min-width:0}
 .fchips{display:flex;gap:7px;flex-wrap:wrap}
 .fchip{display:inline-flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:99px;padding:9px 14px;font-size:12.5px;font-weight:700;color:var(--sub)}
@@ -1292,13 +1307,16 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
    15 Aug 2026 v4: 'add an icon, not the word'). Uses a filled star
    glyph — reads as "endorsement / vouch" more universally than curly
    quotes, no chat-bubble confusion. */
-.wcard-refct{position:absolute;top:8px;right:8px;z-index:2;display:inline-flex;align-items:center;gap:4px;
-  color:#1e3a8a;background:#dbeafe;border:1px solid #93c5fd;
-  padding:3px 9px 3px 8px;border-radius:999px;
-  font-size:12px;font-weight:800;letter-spacing:.2px;line-height:1.3;
-  box-shadow:0 1px 3px rgba(30,58,138,.15)}
-/* 1 reference = perfect circle, icon only (owner ask v12). */
-.wcard-refct.wcard-refct-solo{width:24px;height:24px;padding:0;justify-content:center;gap:0}
+/* Refs badge v16 (owner ask): number as bare text OUTSIDE, icon
+   inside a small blue circle NEXT to it. Not one pill. */
+.wcard-refct{position:absolute;top:8px;right:8px;z-index:2;display:inline-flex;align-items:center;gap:5px;
+  background:transparent;border:0;padding:0;box-shadow:none;
+  font-size:13px;font-weight:800;letter-spacing:.2px;line-height:1;color:#1e3a8a}
+.wcard-refct-n{color:#1e3a8a;font-weight:800;font-size:13px}
+.wcard-refct-i{width:24px;height:24px;border-radius:50%;background:#1e3a8a;color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 2px 6px rgba(30,58,138,.28)}
+.wcard-refct svg,.wcard-refct-i svg{width:14px;height:14px;fill:currentColor}
 .wcard-refct-n{font-weight:800}
 .wcard-refct svg{width:12px;height:12px;fill:currentColor;flex-shrink:0}
 .wcard{position:relative}
@@ -3185,10 +3203,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   min-width:0;
 }
 
-/* Name + age + tick + online dot. Owner ask v14: bigger again. */
+/* Name + age + tick + online dot. Owner ask v15: dial back down. */
 #tabWall .wcard-name{
-  color:#16181f !important; font-weight:700 !important; font-size:21px !important;
-  letter-spacing:-.4px !important; line-height:1.15;
+  color:#16181f !important; font-weight:600 !important; font-size:16px !important;
+  letter-spacing:-.2px !important; line-height:1.15;
   display:flex; align-items:center; gap:5px;
   font-family:var(--brand-font);
   margin-bottom:6px;
@@ -3203,10 +3221,11 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   margin-left:2px;
 }
 
-/* Bio — 2-line clamp. Owner ask v14: black, a bit bigger. */
+/* Bio — 2-line clamp. Owner ask v15: 'not so black, looked over'.
+   Softer grey (was #16181f) — reads as supporting text again. */
 #tabWall .wcard-talk{
-  font-size:14px; color:#16181f; line-height:1.5;
-  font-weight:500; margin:0;
+  font-size:14px; color:#4a4d59; line-height:1.5;
+  font-weight:400; margin:0;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
   overflow:hidden; word-break:break-word; font-style:normal;
   font-family:var(--brand-font);
@@ -3354,29 +3373,31 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     margin:0; white-space:normal; text-overflow:clip;
   }
   #tabWall .wcard-accent{ font-size:11px }
-  /* Mobile actions v13: icon-only round buttons on the right, not
-     full-width pills. Compact + tappable. Label hidden via CSS. */
+  /* Mobile actions v15: bring back Message + Follow as compact text
+     pills. Label visible, icon + text aligned centre, both pills
+     equal width. Smaller than desktop but readable. */
   #tabWall .wcard-actions{
     grid-area:actions;
     display:flex; flex-direction:row; gap:8px; margin-top:6px; padding-top:8px;
-    border-top:1px solid #f2f3f7; justify-content:flex-end;
+    border-top:1px solid #f2f3f7;
   }
-  #tabWall .wcard-btn-lbl{ display:none }
+  #tabWall .wcard-btn-lbl{ display:inline }
   #tabWall .wcard-cta,
   #tabWall .wcard-actions .wcard-follow{
-    flex:0 0 auto !important;
-    width:40px; height:40px; min-height:40px;
-    padding:0 !important; border-radius:50%;
-    display:inline-flex; align-items:center; justify-content:center;
-    font-size:16px !important;
+    flex:1 1 0 !important;
+    padding:8px 10px !important;
+    min-height:32px !important;
+    border-radius:99px !important;
+    display:inline-flex !important; align-items:center; justify-content:center;
+    gap:5px;
+    font-size:11.5px !important; font-weight:600;
+    line-height:1; width:auto !important;
   }
   #tabWall .wcard-cta .wcard-btn-ic,
-  #tabWall .wcard-follow .wcard-btn-ic{ font-size:16px; line-height:1 }
-  /* AI 'Practise now' card only has one CTA on mobile — let it stay
-     as a pill since there's nothing else in the row. */
+  #tabWall .wcard-follow .wcard-btn-ic{ font-size:13px; line-height:1 }
   #tabWall .wcard-cta.wcard-cta-ai{
-    flex:1 1 auto !important; width:auto; border-radius:99px;
-    padding:10px 14px !important; font-size:12.5px !important;
+    flex:1 1 auto !important; width:auto;
+    padding:9px 14px !important; font-size:12.5px !important;
   }
   #tabWall .wcard-cta.wcard-cta-ai .wcard-btn-lbl{ display:inline; margin-left:4px }
   #tabWall .wcard-dice{ display:none }
@@ -4107,7 +4128,13 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
       <aside class="wallside" id="wallSide" hidden></aside>
       <div class="wallmain">
         <div class="filterrow">
-          <div class="search">🔎<input id="q" placeholder="Search spies…" oninput="resetWallPage();renderWall()"></div>
+          <!-- Compact search icon (owner ask v15) — tap to open the
+               full-screen overlay. The old #q input moved into the
+               overlay so renderWall's filter logic keeps working
+               unchanged (it just reads $('q').value). -->
+          <button type="button" class="wall-search-btn" id="wallSearchBtn" onclick="openWallSearch()" aria-label="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          </button>
           <div class="fchips">
             <button class="fchip on" data-f="all">All</button>
             <button class="fchip" data-f="online">🟢 Online</button>
@@ -5074,6 +5101,19 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
 
 </div>
 
+<!-- Wall search overlay (owner ask v15). Full-screen sheet with a
+     big input that mirrors #q so renderWall() keeps filtering. Enter
+     or ✕ closes. Type-as-you-go filters live. -->
+<div class="wall-search-ov" id="wallSearchOv" onclick="if(event.target===this)closeWallSearch()">
+  <div class="wall-search-sheet" role="dialog" aria-modal="true" aria-label="Search members">
+    <button type="button" class="wall-search-x" onclick="closeWallSearch()" aria-label="Close">✕</button>
+    <div class="wall-search-inputwrap">
+      <svg class="wall-search-inputic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input id="q" placeholder="Search" oninput="resetWallPage();renderWall()" onkeydown="if(event.key==='Enter')closeWallSearch()" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="wall-search-hint">Type a name, city, or language · Enter to close</div>
+  </div>
+</div>
 <div class="toast" id="toastEl"></div>
 
 <!-- Playcard info popup — one dialog, contents swapped in from
@@ -11951,8 +11991,9 @@ function renderWall(){
     const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg>';
     let cornerBadge = '';
     if (refCount > 0) {
-      // Owner ask v13: number on the LEFT of the quote icon, always.
-      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}"><b class="wcard-refct-n">${refCount}</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg></span>`;
+      // Owner ask v16: bare number OUTSIDE, quote-icon inside a
+      // small blue circle to its right. Two separate pieces.
+      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}"><b class="wcard-refct-n">${refCount}</b><span class="wcard-refct-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg></span></span>`;
     }
     // NEW badge for newly-joined members retired 16 Aug 2026 v7 —
     // owner: 'remove the new tag from the card'.
@@ -12118,6 +12159,26 @@ async function wallFollow(e, id, btn){
   } catch(err){ toast(err.message); }
   btn.disabled = false;
 }
+// Wall search overlay (owner ask v15) — icon → full-screen sheet.
+function openWallSearch(){
+  const ov = document.getElementById('wallSearchOv');
+  if (!ov) return;
+  ov.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => { const inp = document.getElementById('q'); if (inp) inp.focus(); }, 40);
+}
+function closeWallSearch(){
+  const ov = document.getElementById('wallSearchOv');
+  if (!ov) return;
+  ov.classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape') {
+    const ov = document.getElementById('wallSearchOv');
+    if (ov && ov.classList.contains('show')) { ev.preventDefault(); closeWallSearch(); }
+  }
+});
 document.querySelectorAll('.fchip').forEach(b => b.onclick = () => {
   wallFilter = b.dataset.f;
   document.querySelectorAll('.fchip').forEach(x => x.classList.toggle('on', x === b));
