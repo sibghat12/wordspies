@@ -3088,7 +3088,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 /* Pin + city text inside meta = black ink (owner ask v6-v7). */
 #tabWall .wcard-mchip-loc{color:#000 !important;font-weight:600}
 #tabWall .wcard-mchip-loc svg{color:#000 !important;opacity:1 !important}
-#tabWall .wcard-mdot{width:6px;height:6px;border-radius:50%;background:#1fb28a;display:inline-block;animation:mchipPulse 1.6s ease-in-out infinite}
+#tabWall .wcard-mdot{width:8px;height:8px;border-radius:50%;background:#1fb28a;display:inline-block;animation:mchipPulse 1.6s ease-in-out infinite;flex-shrink:0}
+/* Offline dot: hollow ring, no pulse. Owner ask v13. */
+#tabWall .wcard-mdot.wcard-mdot-off{background:transparent;border:1.5px solid #9a9db8;animation:none}
 #tabWall .wcard-mchip-loc{color:#8a8d99}
 #tabWall .wcard-mchip + .wcard-mchip::before{content:'·';margin-right:2px;color:#c9cbd5}
 @keyframes mchipPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.85);opacity:.6}}
@@ -3183,14 +3185,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   min-width:0;
 }
 
-/* Name + age + tick + online dot. Owner ask v12: bigger name +
-   3px more bottom margin. */
+/* Name + age + tick + online dot. Owner ask v14: bigger again. */
 #tabWall .wcard-name{
-  color:#16181f !important; font-weight:600 !important; font-size:17px !important;
-  letter-spacing:-.2px !important; line-height:1.2;
-  display:flex; align-items:center; gap:4px;
+  color:#16181f !important; font-weight:700 !important; font-size:21px !important;
+  letter-spacing:-.4px !important; line-height:1.15;
+  display:flex; align-items:center; gap:5px;
   font-family:var(--brand-font);
-  margin-bottom:5px;
+  margin-bottom:6px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 #tabWall .wcard-age{
@@ -3202,15 +3203,15 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   margin-left:2px;
 }
 
-/* Bio — 2-line clamp, §1a muted grey. */
+/* Bio — 2-line clamp. Owner ask v14: black, a bit bigger. */
 #tabWall .wcard-talk{
-  font-size:13px; color:#6b6e7a; line-height:1.5;
-  font-weight:400; margin:0;
+  font-size:14px; color:#16181f; line-height:1.5;
+  font-weight:500; margin:0;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
   overflow:hidden; word-break:break-word; font-style:normal;
   font-family:var(--brand-font);
 }
-#tabWall .wcard-talk.wcard-empty{ color:#9a9db8; font-style:italic }
+#tabWall .wcard-talk.wcard-empty{ color:#9a9db8; font-style:italic; font-weight:400 }
 
 /* Language chip pair. Native = green tint, Learns = periwinkle tint.
    The pair sits on ONE row, never wraps on desktop; scrolls horizontally
@@ -3353,20 +3354,31 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     margin:0; white-space:normal; text-overflow:clip;
   }
   #tabWall .wcard-accent{ font-size:11px }
-  /* Actions row: full-width pill pair on its own row. */
+  /* Mobile actions v13: icon-only round buttons on the right, not
+     full-width pills. Compact + tappable. Label hidden via CSS. */
   #tabWall .wcard-actions{
     grid-area:actions;
     display:flex; flex-direction:row; gap:8px; margin-top:6px; padding-top:8px;
-    border-top:1px solid #f2f3f7;
+    border-top:1px solid #f2f3f7; justify-content:flex-end;
   }
-  #tabWall .wcard-cta{
-    flex:1 1 auto; padding:10px 14px !important; font-size:13px !important;
-    min-height:40px; white-space:nowrap;
+  #tabWall .wcard-btn-lbl{ display:none }
+  #tabWall .wcard-cta,
+  #tabWall .wcard-actions .wcard-follow{
+    flex:0 0 auto !important;
+    width:40px; height:40px; min-height:40px;
+    padding:0 !important; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:16px !important;
   }
-  #tabWall .wcard-follow{
-    display:inline-flex; flex:0 0 auto; padding:10px 14px;
-    font-size:12.5px; min-height:40px;
+  #tabWall .wcard-cta .wcard-btn-ic,
+  #tabWall .wcard-follow .wcard-btn-ic{ font-size:16px; line-height:1 }
+  /* AI 'Practise now' card only has one CTA on mobile — let it stay
+     as a pill since there's nothing else in the row. */
+  #tabWall .wcard-cta.wcard-cta-ai{
+    flex:1 1 auto !important; width:auto; border-radius:99px;
+    padding:10px 14px !important; font-size:12.5px !important;
   }
+  #tabWall .wcard-cta.wcard-cta-ai .wcard-btn-lbl{ display:inline; margin-left:4px }
   #tabWall .wcard-dice{ display:none }
 }
 
@@ -11939,13 +11951,8 @@ function renderWall(){
     const REF_QUOTE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg>';
     let cornerBadge = '';
     if (refCount > 0) {
-      // Owner ask v12: 1 reference = circle with just the quote icon.
-      // 2+ = number + icon in a pill.
-      if (refCount === 1) {
-        cornerBadge = `<span class="wcard-refct wcard-refct-solo" title="1 reference"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg></span>`;
-      } else {
-        cornerBadge = `<span class="wcard-refct" title="${refCount} references"><b class="wcard-refct-n">${refCount}</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg></span>`;
-      }
+      // Owner ask v13: number on the LEFT of the quote icon, always.
+      cornerBadge = `<span class="wcard-refct" title="${refCount} reference${refCount === 1 ? '' : 's'}"><b class="wcard-refct-n">${refCount}</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 6C4.9 6 3 8.1 3 10.7v6.8h6.8v-6.8H6.2c0-1.7 1.3-3 3.3-3zm10 0c-2.6 0-4.5 2.1-4.5 4.7v6.8H20v-6.8h-3.7c0-1.7 1.3-3 3.3-3z"/></svg></span>`;
     }
     // NEW badge for newly-joined members retired 16 Aug 2026 v7 —
     // owner: 'remove the new tag from the card'.
@@ -11971,10 +11978,12 @@ function renderWall(){
     // Owner ask 16 Aug 2026 v3: 'remove the game button, add Follow
     // instead, Say hello button too big'. Compact pill pair — 💬 + Follow.
     const _isFollowing = (typeof FOLLOWING === 'object' && FOLLOWING && FOLLOWING.has) ? FOLLOWING.has(m.id) : false;
+    // Icon + label; mobile CSS hides .wcard-btn-lbl so buttons shrink
+    // to circular icons (owner ask v13: 'mobile buttons too big').
     const ctaHtml = m.isAI
-      ? `<button class="wcard-cta wcard-cta-ai" onclick="event.stopPropagation();openChatWith('${esc(m.id)}')" type="button">✦ Practise now</button>`
-      : `<button class="wcard-cta" onclick="event.stopPropagation();wallMsg(event,'${esc(m.id)}')" type="button" aria-label="Message">💬 Message</button>` +
-        `<button class="wcard-follow${_isFollowing ? ' on' : ''}" data-uid="${esc(m.id)}" onclick="wallFollow(event,'${esc(m.id)}',this)" type="button" title="${_isFollowing ? 'Following' : 'Follow'}">${_isFollowing ? '✓ Following' : '＋ Follow'}</button>`;
+      ? `<button class="wcard-cta wcard-cta-ai" onclick="event.stopPropagation();openChatWith('${esc(m.id)}')" type="button"><span class="wcard-btn-ic">✦</span><span class="wcard-btn-lbl">Practise now</span></button>`
+      : `<button class="wcard-cta" onclick="event.stopPropagation();wallMsg(event,'${esc(m.id)}')" type="button" aria-label="Message"><span class="wcard-btn-ic">💬</span><span class="wcard-btn-lbl">Message</span></button>` +
+        `<button class="wcard-follow${_isFollowing ? ' on' : ''}" data-uid="${esc(m.id)}" onclick="wallFollow(event,'${esc(m.id)}',this)" type="button" title="${_isFollowing ? 'Following' : 'Follow'}" aria-label="${_isFollowing ? 'Following' : 'Follow'}"><span class="wcard-btn-ic">${_isFollowing ? '✓' : '＋'}</span><span class="wcard-btn-lbl">${_isFollowing ? 'Following' : 'Follow'}</span></button>`;
     // Prominent meta row: online dot + location chip (owner ask 16 Aug
     // 2026 v4: 'I not see the location, the online, the status'). Sits
     // between name and languages so it reads as who + where + status.
@@ -11987,9 +11996,10 @@ function renderWall(){
     const _locChip = _cityTxt
       ? `<span class="wcard-mchip wcard-mchip-loc">${_pinSVG}${esc(String(_cityTxt).slice(0, 28))}</span>`
       : '';
+    // Owner ask v13: filled green circle = online, empty circle = offline.
     const _onlineChip = m.online
       ? `<span class="wcard-mchip wcard-mchip-on"><span class="wcard-mdot"></span>Online</span>`
-      : (m.lastSeenAt ? `<span class="wcard-mchip">Active ${esc(relTimeShort(m.lastSeenAt))}</span>` : '');
+      : `<span class="wcard-mchip"><span class="wcard-mdot wcard-mdot-off"></span>${m.lastSeenAt ? 'Active ' + esc(relTimeShort(m.lastSeenAt)) : 'Offline'}</span>`;
     const metaChips = (_onlineChip || _locChip)
       ? `<div class="wcard-meta">${_locChip}${_onlineChip}</div>`
       : '';
