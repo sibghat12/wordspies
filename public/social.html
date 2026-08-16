@@ -3078,9 +3078,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 /* ── Meta row (online + location chips) + tighter Follow pill ────
    (owner ask 16 Aug 2026 v4: 'I not see the location, the online,
    the status — Say hola button too big — add Follow button'). */
-/* Meta row: plain inline text — pin SVG + city · Online/Active.
-   Owner ask v6: smaller font, black icon. */
-#tabWall .wcard-meta{display:flex;flex-wrap:wrap;gap:4px 8px;margin:2px 0 6px;font-family:var(--brand-font);align-items:center;line-height:1.35}
+/* Meta row: plain inline text — pin SVG + country · Online/Active.
+   Owner ask v8: one line, no wrap, country only (was city). */
+#tabWall .wcard-meta{display:flex;flex-wrap:nowrap;gap:8px;margin:2px 0 6px;font-family:var(--brand-font);align-items:center;line-height:1.35;overflow:hidden}
 #tabWall .wcard-mchip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:0;border:0;background:transparent;color:#6b6e7a;letter-spacing:0;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 #tabWall .wcard-mchip-on{color:#14785e;font-weight:600}
 /* Pin + city text inside meta = black ink (owner ask v6-v7). */
@@ -11965,7 +11965,8 @@ function renderWall(){
     // Prominent meta row: online dot + location chip (owner ask 16 Aug
     // 2026 v4: 'I not see the location, the online, the status'). Sits
     // between name and languages so it reads as who + where + status.
-    const _cityTxt = m.location || m.country || '';
+    // Owner ask v8: show country only, not city.
+    const _cityTxt = m.country || '';
     // Owner ask 16 Aug 2026 v5: 'make it location icon, no [chip/card]'.
     // Meta row is plain text — small pin SVG + city, dot separator,
     // then online/last-seen. No pills, no flag emoji on this line.
