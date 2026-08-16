@@ -3714,7 +3714,10 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
    map reads as a bg photo behind a gradient banner.
    No DOM change — we use pseudo-elements + a small chrome node added
    below via CSS content. */
-#tabMe .mp-hero{ background:linear-gradient(135deg,#5b6cff,#9b6cff) }
+#tabMe .mp-hero{ background:linear-gradient(135deg,#5b6cff,#9b6cff); min-height:172px }
+/* Hide the leaflet map on the Me hero — the purple gradient IS the hero
+   now. On the Member view the map still paints as before. */
+#tabMe .mp-hero .mp-map{ display:none !important }
 #tabMe .mp-hero::before{
   content:''; position:absolute; inset:0 0 auto 0; height:72px;
   background:linear-gradient(180deg, rgba(91,108,255,.72), rgba(155,108,255,0));
