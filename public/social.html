@@ -2367,7 +2367,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
    of breathing room. Owner ask 1 Aug 2026. */
 .ktick{display:inline-block;width:15px;height:13px;margin-left:2px;vertical-align:-1px;fill:url(#kgold);flex:none}
 .prof h2 .ktick{width:19px;height:16.5px;vertical-align:-1.5px;margin-left:7px}
-.citem{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--line);background:#fff}
+.citem{display:flex;align-items:center;gap:12px;padding:12px 0;cursor:pointer;border-bottom:1px solid var(--line);background:#fff}
 .citem:hover{background:#fbfbfc}
 .cav{position:relative;display:inline-block}
 .cdot{position:absolute;bottom:1px;right:1px;margin:0;box-shadow:0 0 0 2px #fff}
@@ -3593,7 +3593,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   box-shadow:0 18px 50px rgba(22,24,31,0.12); overflow:hidden }
 .splitview #tabChats #chatList{ background:#ffffff }
 #tabChats #chatList{ background:#ffffff; padding-top:2px }
-.citem{ display:flex; align-items:center; gap:10px; padding:14px 18px; cursor:pointer;
+.citem{ display:flex; align-items:center; gap:12px; padding:14px 0; cursor:pointer;
   border-bottom:0; background:#ffffff; transition:background .1s }
 .citem + .citem{ box-shadow:inset 0 1px 0 #f2f3f7 }
 .citem:hover{ background:#fafbff }
@@ -3601,9 +3601,9 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 .citem .cav > *{ width:40px !important; height:40px !important; border-radius:50% !important; font-size:15px !important }
 .citem .cav .cdot{ width:11px; height:11px; background:#1fb28a; border-radius:50%;
   box-shadow:0 0 0 2px #ffffff; bottom:0; right:0 }
-.citem .cname{ font-family:var(--brand-font); font-weight:500; font-size:14px;
+.citem .cname{ font-family:var(--brand-font); font-weight:600; font-size:15.5px;
   color:#16181f; letter-spacing:-.1px }
-.citem .cprev{ color:#8a8d99; font-size:12.5px; font-weight:400; margin-top:2px }
+.citem .cprev{ color:#8a8d99; font-size:13.5px; font-weight:400; margin-top:3px }
 .citem .cright{ display:flex; flex-direction:column; align-items:flex-end; gap:4px }
 .citem .ctime{ color:#9a9db8; font-size:11px; font-weight:500 }
 .citem .cunread{ background:#5b6cff; color:#ffffff; font-size:10.5px; font-weight:600;
@@ -3770,7 +3770,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
   .composer .cbtn,
   .composer .cbtn.send,
   .composer .micrec{ min-width:44px; width:44px; height:44px }
-  .citem{ padding:14px 16px }
+  .citem{ padding:14px 0 }
   #tabMe .mp-hero{ min-height:150px }
 }
 
