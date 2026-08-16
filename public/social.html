@@ -3244,14 +3244,20 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 #tabWall .wcard-actions{
   display:flex; gap:8px; margin-top:auto; padding-top:2px;
 }
+/* Owner ask v10: Message + Follow same size. Both get flex:1 so
+   they split the row 50/50 with identical padding/height. */
 #tabWall .wcard-cta{
-  flex:1; background:#5b6cff; color:#fff;
+  flex:1 1 0; background:#5b6cff; color:#fff;
   font-family:var(--brand-font); font-size:13px; font-weight:600;
-  padding:9px 0; border-radius:99px; border:0; cursor:pointer;
+  padding:9px 12px; border-radius:99px; border:0; cursor:pointer;
   text-align:center; line-height:1.2;
   box-shadow:none;
   transition:background .12s, transform .08s;
   min-height:36px;
+}
+#tabWall .wcard-actions .wcard-follow{
+  flex:1 1 0; min-height:36px; padding:9px 12px; font-size:13px;
+  text-align:center;
 }
 #tabWall .wcard-cta:hover{ background:#4353e8 }
 #tabWall .wcard-cta:active{ transform:translateY(1px) }
