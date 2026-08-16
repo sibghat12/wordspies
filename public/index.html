@@ -33,6 +33,7 @@
 <meta name="twitter:title" content="Codenames Online — Free with Friends">
 <meta name="twitter:description" content="Play Codenames online free. No sign-up — create a room and play with friends on any phone.">
 <meta name="twitter:image" content="https://talksibi.com/og-image.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="canonical" href="https://talksibi.com/codenames">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -45,9 +46,14 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is TalkSibi really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. TalkSibi is completely free, with no ads, no sign-up, and no download. Just create a room and share the 4-letter code with friends."}},{"@type":"Question","name":"Do I need an account to play Codenames online?","acceptedAnswer":{"@type":"Answer","text":"No account is needed to play. Type a name, create or join a room with a 4-letter code, and play instantly on any phone, tablet or laptop browser."}},{"@type":"Question","name":"How many players can play?","acceptedAnswer":{"@type":"Answer","text":"TalkSibi works with 4 to 12+ players split across two teams, each with a spymaster giving one-word clues. It also works great over a video call."}},{"@type":"Question","name":"How is TalkSibi different from Codenames?","acceptedAnswer":{"@type":"Answer","text":"TalkSibi is an independent Codenames-style game — same familiar spymasters, one-word clues, and hidden assassin format, but browser-based, free, and playable with anyone anywhere. It is not affiliated with Codenames or Czech Games Edition."}},{"@type":"Question","name":"Can I play Codenames online with friends on their phones?","acceptedAnswer":{"@type":"Answer","text":"Yes. Everyone joins from their own phone or laptop by entering the same 4-letter room code. Perfect for game night, remote play, or classrooms."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://talksibi.com/"},{"@type":"ListItem","position":2,"name":"Codenames Online","item":"https://talksibi.com/codenames"}]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Hanken+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
+  /* TalkSibi brand tokens (16 Aug 2026 handoff). Additive — don't
+     collide with existing --ink/--red/etc that game components use. */
+  --brand-periwinkle:#5B6CFF; --brand-coral:#FF7A59; --brand-jade:#1FB28A;
+  --brand-sun:#FFC94D; --brand-ink:#14161F; --brand-gray:#6B7280;
+  --brand-border:#E8E6E0; --brand-font:'Hanken Grotesk','Inter',system-ui,sans-serif;
   --bg:#f7f8fb; --card:#ffffff; --ink:#111318; --muted:#5f6675; --faint:#aab0c0; --line:#e6e8ef;
   --red:#ef0f35; --red-deep:#c60c2b; --red-soft:#ffe3e8; --red-ink:#c60c2b;
   --blue:#0b57ff; --blue-deep:#0741cc; --blue-soft:#e3ecff; --blue-ink:#0741cc;
@@ -58,6 +64,14 @@
   --sh-lg:0 6px 16px rgba(35,41,70,.1), 0 24px 60px rgba(35,41,70,.16);
   --spring:cubic-bezier(.2,.7,.4,1);
 }
+/* Brand lockup helpers (shared shape with social.html so the wordmark
+   looks identical wherever it appears). */
+.ts-wordmark{font-family:var(--brand-font);font-weight:600;text-transform:lowercase;letter-spacing:-0.5px;color:#000;line-height:1}
+.ts-lockup{display:inline-flex;align-items:center;gap:5px}
+.ts-lockup .ts-mark{display:block;flex-shrink:0}
+.ts-tagline{font-family:var(--brand-font);font-weight:600;text-transform:uppercase;font-size:12.5px;letter-spacing:3px;color:var(--brand-gray)}
+.ts-tagline .d1{color:var(--brand-periwinkle);margin:0 6px}
+.ts-tagline .d2{color:var(--brand-jade);margin:0 6px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:auto}
 body{
@@ -624,7 +638,10 @@ b,strong{font-weight:600}
 <div id="home">
   <div class="wrap">
     <div class="home">
-      <h1 class="logo" style="margin:0;cursor:pointer;display:flex;align-items:center;gap:10px" onclick="location.href='/'" title="TalkSibi home"><img src="/logo.svg" alt="" style="height:34px;width:auto" onerror="this.style.display='none'"><span>talksibi</span></h1>
+      <h1 class="logo ts-lockup" style="margin:0;cursor:pointer" onclick="location.href='/'" title="talksibi home">
+        <img class="ts-mark" src="/mark.svg" alt="" style="width:34px;height:34px" onerror="this.style.display='none'">
+        <span class="ts-wordmark" style="font-size:26px">talksibi</span>
+      </h1>
       <p style="margin:6px 0 0;font-size:13.1px;font-weight:400;color:var(--muted)">The free online Codenames-style word game</p>
       <div class="card homecard">
         <div id="asMe" class="hidden"></div>

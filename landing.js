@@ -153,7 +153,10 @@ footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
   </div>
   <div class="fsub">
     <div class="fmeta">© 2026 TalkSibi — Practise languages with real people.<br>Independent language-exchange community, based in the United Kingdom.</div>
-    <a class="fbrand" href="/">Word<em>Spies</em></a>
+    <a class="fbrand ts-lockup" href="/" style="color:#fff">
+      <img class="ts-mark" src="/mark.svg" alt="" style="width:24px;height:24px" onerror="this.style.display='none'">
+      <span class="ts-wordmark" style="font-size:18px;color:#fff">talksibi</span>
+    </a>
   </div>
 </div></footer>`;
 module.exports.SITE_FOOTER = SITE_FOOTER;
@@ -270,6 +273,7 @@ ${GA}
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${SITE}/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -300,10 +304,17 @@ ${GA}
 ]}
 ]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Hanken+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#111318;--muted:#5f6675;--line:#e6e8ef;--red:#ff4d6b;--blue:#3d7bff;--green:#0f7500;--bg:#f7f8fb;
---sh:0 2px 4px rgba(35,41,70,.06),0 10px 28px rgba(35,41,70,.09);--spring:cubic-bezier(.34,1.56,.64,1)}
+--sh:0 2px 4px rgba(35,41,70,.06),0 10px 28px rgba(35,41,70,.09);--spring:cubic-bezier(.34,1.56,.64,1);
+--brand-periwinkle:#5B6CFF;--brand-coral:#FF7A59;--brand-jade:#1FB28A;--brand-sun:#FFC94D;--brand-ink:#14161F;--brand-gray:#6B7280;--brand-border:#E8E6E0;--brand-font:'Hanken Grotesk','Inter',system-ui,sans-serif}
+.ts-wordmark{font-family:var(--brand-font);font-weight:600;text-transform:lowercase;letter-spacing:-0.5px;color:#000;line-height:1}
+.ts-lockup{display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+.ts-lockup .ts-mark{display:block;flex-shrink:0}
+.ts-tagline{font-family:var(--brand-font);font-weight:600;text-transform:uppercase;font-size:12.5px;letter-spacing:3px;color:var(--brand-gray)}
+.ts-tagline .d1{color:var(--brand-periwinkle);margin:0 6px}
+.ts-tagline .d2{color:var(--brand-jade);margin:0 6px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);
 background:
@@ -422,7 +433,10 @@ details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;lin
 <body>
 <header class="sitehead"><div class="wrap">
   <nav class="nav">
-    <a class="logo" href="/"><span class="r">Word</span><span class="b">Spies</span></a>
+    <a class="logo ts-lockup" href="/" aria-label="talksibi home">
+      <img class="ts-mark" src="/mark.svg" alt="" style="width:32px;height:32px" onerror="this.style.display='none'">
+      <span class="ts-wordmark" style="font-size:22px">talksibi</span>
+    </a>
     <div class="navlinks">
       <a class="hideSm" href="/social">Community</a>
       <a href="/games">Games</a>

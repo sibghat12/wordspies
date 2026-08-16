@@ -25,9 +25,11 @@
 <title>TalkSibi — Practise languages with real people</title>
 <meta name="description" content="Meet real people to practise languages with. Create your profile, follow language partners, and chat any time — free and browser-based.">
 <meta name="theme-color" content="#fafafa">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TalkSibi">
@@ -60,8 +62,24 @@
 :root{
   --edge:#e6e6ef; --accent-d:#c33d55;
   --ink:#16181f; --sub:#5c6270; --faint:#9aa0ab; --line:#ececef;
-  --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33
+  --accent:#e8506b; --bg:#fafafa; --green:#22c07a; --err:#d33;
+  /* TalkSibi brand tokens (16 Aug 2026 handoff) — additive, don't
+     collide with existing --ink / --accent that many components use. */
+  --brand-periwinkle:#5B6CFF; --brand-coral:#FF7A59;
+  --brand-jade:#1FB28A;       --brand-sun:#FFC94D;
+  --brand-ink:#14161F;        --brand-gray:#6B7280;
+  --brand-border:#E8E6E0;
+  --brand-font:'Hanken Grotesk','Inter',system-ui,-apple-system,sans-serif;
 }
+/* Brand lockup components (wordmark + tagline). Use per the README:
+   wordmark 600 lowercase tracking -0.5px; tagline 600 uppercase 3px. */
+.ts-wordmark{font-family:var(--brand-font);font-weight:600;text-transform:lowercase;letter-spacing:-0.5px;color:#000;line-height:1}
+.ts-lockup{display:inline-flex;align-items:center;gap:5px}
+.ts-lockup .ts-mark{width:38px;height:38px;display:block;flex-shrink:0}
+.ts-lockup .ts-wordmark{font-size:38px}
+.ts-tagline{font-family:var(--brand-font);font-weight:600;text-transform:uppercase;font-size:12.5px;letter-spacing:3px;color:var(--brand-gray)}
+.ts-tagline .d1{color:var(--brand-periwinkle);margin:0 6px}
+.ts-tagline .d2{color:var(--brand-jade);margin:0 6px}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow-x:clip;max-width:100%}
 body{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;touch-action:pan-y;padding-left:4%;padding-right:4%;letter-spacing:-.005em}
@@ -2887,8 +2905,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
 <!-- ============ AUTH ============ -->
 <div id="vAuth" class="auth hidden">
-  <div class="logo"><img src="/logo.svg" alt="TalkSibi" style="height:44px;width:auto;display:block;margin:0 auto 8px" onerror="this.style.display='none'"><span style="display:block;text-align:center">TalkSibi <em>Social</em></span></div>
-  <div class="tag">THE COMMUNITY BEHIND THE GAME</div>
+  <div class="logo" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    <img src="/logo.svg" alt="talksibi" style="height:44px;width:auto;display:block" onerror="this.style.display='none'">
+    <div class="ts-tagline">CONNECT<span class="d1">·</span>LEARN<span class="d2">·</span>PLAY</div>
+  </div>
   <h1 id="authTitle">Practise languages<br>with <em>real people</em></h1>
   <p class="sub" id="authSub">Create your profile, follow language partners,<br>and chat any time.</p>
   <div id="chooser" class="hidden">
@@ -3153,7 +3173,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
        profile chip (right). Persistent across every tab so the site header
        is no longer a per-tab afterthought. -->
   <nav class="topnav">
-    <a class="tnlogo" href="/" aria-label="TalkSibi home">TalkSibi <em>Social</em></a>
+    <a class="tnlogo ts-lockup" href="/" aria-label="talksibi home" style="text-decoration:none">
+      <img class="ts-mark" src="/mark.svg" alt="" style="width:32px;height:32px" onerror="this.style.display='none'">
+      <span class="ts-wordmark" style="font-size:22px">talksibi</span>
+    </a>
     <div class="tntabs" role="tablist">
       <!-- Chats + Community use monochrome SVG line icons — clean,
            consistent across OSes, and pick up the tab's active colour
