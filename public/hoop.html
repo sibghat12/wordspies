@@ -145,8 +145,32 @@ body.embed{padding-top:0}
 .livelead .llrow b{font-family:'Fredoka','Inter',sans-serif;font-weight:700;font-size:14px}
 .livelead .llrow span{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
+<style>
+/* Slim shared top bar — talksibi lockup + Back link. Hidden when the
+   persistent shell in /social opens this page inside an iframe with
+   ?embed=1 (body.embed). Owner ask 16 Aug 2026: 'keep the header and
+   footer everywhere, nothing should be without them'. */
+.ts-gametop{position:sticky;top:0;z-index:80;display:flex;align-items:center;gap:12px;padding:10px 16px;background:#f4f5f9;border-bottom:1px solid #e4e6ee;box-shadow:0 2px 8px rgba(15,17,25,.04);min-height:52px}
+.ts-gametop-back{display:inline-flex;align-items:center;gap:6px;color:#14161f;text-decoration:none;font:600 13px/1 'Hanken Grotesk','Inter',system-ui,sans-serif;padding:8px 12px;border-radius:99px;background:#fff;border:1px solid #e4e6ee;transition:.14s}
+.ts-gametop-back:hover{background:#eef0f5;border-color:#c9cfe3}
+.ts-gametop-brand{margin-left:auto;display:inline-flex;align-items:center;text-decoration:none}
+.ts-gametop-brand img{height:26px;width:auto;display:block}
+.ts-gametop-spacer{width:80px}
+body.embed .ts-gametop{ display:none !important }
+</style>
 </head>
 <body>
+<!-- Shared slim top bar — hidden in embed mode (persistent game shell). -->
+<header class="ts-gametop" data-hide-embed>
+  <a href="/app" class="ts-gametop-back" aria-label="Back to talksibi">
+    <span aria-hidden="true">←</span> Back
+  </a>
+  <a href="/" class="ts-gametop-brand" aria-label="talksibi home">
+    <img src="/logo.svg" alt="talksibi" onerror="this.style.display='none'">
+  </a>
+  <span class="ts-gametop-spacer"></span>
+</header>
+
 <script>if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed');</script>
 
 <header>
