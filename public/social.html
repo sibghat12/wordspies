@@ -2434,14 +2434,14 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 :root{
   --cme-1:#5a7bff; --cme-2:#7c5cff;         /* your bubble gradient */
   --cme-shadow:0 6px 18px rgba(96,88,255,.22);
-  --cthem:#f2f4f8;                          /* their bubble background */
+  --cthem:#ffffff;                          /* their bubble background */
   --cthem-ink:#1a1d24;                      /* their bubble text */
   --caccent:#5a7bff;                        /* chat accents (send btn, links) */
   --caccent-soft:#eef1ff;                   /* soft bg for reactions/actions */
 }
 .mb{position:relative}
 .mb.me{align-self:flex-end;background:linear-gradient(135deg,var(--cme-1),var(--cme-2));color:#fff;border-bottom-right-radius:6px;box-shadow:none}
-.mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:0;border-bottom-left-radius:6px;margin-right:28px}
+.mb.them{align-self:flex-start;background:var(--cthem);color:var(--cthem-ink);border:1px solid #e6e8ee;border-bottom-left-radius:6px;margin-right:28px}
 /* Inline translate button — plain glyph sitting flush against the
    right edge of the peer bubble. Owner ask 9 Aug 2026 — no border,
    no circle, stick close to the bubble. */
