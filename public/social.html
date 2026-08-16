@@ -91,7 +91,8 @@ body{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;b
    up so the community UI doesn't stretch to the browser edges on wide
    monitors. Media query only *increases* the gutter, so 10% never leaks
    to mobile. */
-@media(min-width:769px){body{padding-left:10%;padding-right:10%}}
+/* Owner ask v29: body stays padding:0 at every viewport. Surfaces
+   own their padding via .topnav / #tabWall / footer.sitefoot. */
 button{font-family:inherit;cursor:pointer}
 input,textarea{font-family:inherit;outline:none}
 .hidden{display:none !important}
