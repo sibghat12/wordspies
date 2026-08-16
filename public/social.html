@@ -3079,10 +3079,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    (owner ask 16 Aug 2026 v4: 'I not see the location, the online,
    the status — Say hola button too big — add Follow button'). */
 /* Meta row: plain inline text — pin SVG + city · Online/Active.
-   No pills, no cards, no colored backgrounds. */
+   Owner ask v6: smaller font, black icon. */
 #tabWall .wcard-meta{display:flex;flex-wrap:wrap;gap:4px 8px;margin:2px 0 6px;font-family:var(--brand-font);align-items:center;line-height:1.35}
-#tabWall .wcard-mchip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:0;border:0;background:transparent;color:#8a8d99;letter-spacing:0;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#tabWall .wcard-mchip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:0;border:0;background:transparent;color:#6b6e7a;letter-spacing:0;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 #tabWall .wcard-mchip-on{color:#14785e;font-weight:600}
+/* Pin + dot inside meta = black ink (owner ask v6). */
+#tabWall .wcard-mchip-loc svg{color:#000 !important;opacity:1 !important}
 #tabWall .wcard-mdot{width:6px;height:6px;border-radius:50%;background:#1fb28a;display:inline-block;animation:mchipPulse 1.6s ease-in-out infinite}
 #tabWall .wcard-mchip-loc{color:#8a8d99}
 #tabWall .wcard-mchip + .wcard-mchip::before{content:'·';margin-right:2px;color:#c9cbd5}
