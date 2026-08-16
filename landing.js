@@ -72,9 +72,9 @@ module.exports.CONSENT_MODAL = CONSENT_MODAL;
 // further down (per README §41). Other pages still get this one.
 const SITE_FOOTER = `
 <style>
-/* Owner ask v28: footer white everywhere (community + blog + info
-   pages). Ink text on light bg, muted grey links, subtle border. */
-footer.sitefoot{margin-top:56px;padding:44px 24px 24px;background:#ffffff;color:#4a4d59;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:1px solid #e4e6ee}
+/* Footer (v34): mobile 12px sides / desktop 48px sides. White bg. */
+footer.sitefoot{margin-top:56px;padding:44px 12px 24px;background:#ffffff;color:#4a4d59;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:1px solid #e4e6ee}
+@media(min-width:769px){footer.sitefoot{padding:44px 48px 28px}}
 footer.sitefoot *{box-sizing:border-box}
 footer.sitefoot .fwrap{max-width:1200px;margin:0 auto}
 footer.sitefoot .fmenu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 32px;align-items:flex-start}

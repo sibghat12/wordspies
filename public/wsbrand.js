@@ -196,10 +196,9 @@
   // <header> and get the WordSpies strip stacked ABOVE it, so the brand is
   // consistent everywhere.
   function needsHeader() {
-    if (document.documentElement.hasAttribute('data-nochrome')) return false;
-    if (document.querySelector('.topnav,.sitehead,.wshead')) return false;
-    if (document.getElementById('vApp')) return false;      // community app
-    return true;
+    // Disabled after talksibi rebrand — every page ships its own header
+    // (ts-gametop on game pages, ts-sitehead on landing, .topnav in app).
+    return false;
   }
 
   function mount() {
@@ -215,12 +214,11 @@
       document.body.insertBefore(h.firstElementChild, document.body.firstChild);
       document.body.classList.add('wsheaded');
     }
-    // Footer at the very end.
-    if (document.getElementById('wsFooterMount')) return;
-    const w = document.createElement('div');
-    w.id = 'wsFooterMount';
-    w.innerHTML = footerHTML();
-    document.body.appendChild(w);
+    // Footer disabled after talksibi rebrand — game pages carry their own
+    // <footer class="ts-sitefoot"> and community app has its own footer.
+    // Remove any stale mount left over from a previous page load.
+    const stale = document.getElementById('wsFooterMount');
+    if (stale) stale.remove();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
