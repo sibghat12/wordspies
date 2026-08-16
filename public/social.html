@@ -2890,6 +2890,317 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 .rf-metile-title{font-weight:700;font-size:14px;color:var(--ink);letter-spacing:-.1px}
 .rf-metile-sub{font-size:12px;color:var(--sub);margin-top:2px}
 .rf-metile-cta{color:var(--accent);font-weight:700;font-size:13px;flex-shrink:0}
+
+/* ═══════════════════════════════════════════════════════════════════
+   1a Community wall (rebrand 16 Aug 2026)
+   Reskin of #tabWall to the talksibi handoff spec (§1a). Restyles
+   existing markup only — every ID, JS handler, filter-chip data-f,
+   visitors-stripe wiring, and renderSide() output stays intact.
+   Additions:
+   · New right rail (>=1024px): #wallSide (existing renderSide paint) +
+     #tsSideInvite (invite-progress card static markup).
+   · Cards get a periwinkle "Say hola" CTA on hover (revealed via CSS
+     only — no card-HTML change; the whole card stays clickable via
+     the existing onclick="openMember(i)").
+   All new selectors are .ts-* prefixed OR override the existing wall
+   selectors below the rest of the sheet so cascade wins cleanly.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Pulsing "LIVE" dot used by happening-now strip + visitors stripe. */
+@keyframes ts-pulse { 0%,100%{ transform:scale(1); opacity:1 } 50%{ transform:scale(1.28); opacity:.55 } }
+
+/* ── Visitors stripe → periwinkle tint per §1a ── */
+#tabWall .vsStripe{
+  background:#f0f1ff !important; border:1px solid #e4e6fa !important;
+  border-radius:14px; padding:10px 12px 10px 14px;
+  box-shadow:none;
+}
+#tabWall .vsStripe:hover{ background:#e9ebff !important; border-color:#d8dbff !important; transform:translateY(-1px) }
+#tabWall .vsStripe .vsAv{ border-color:#f0f1ff }
+#tabWall .vsStripe .vsMore{ background:#ff7a59; color:#fff; border-color:#f0f1ff; font-weight:700 }
+#tabWall .vsStripe .vsTxt{ color:#4353e8; font-weight:600; font-size:13.5px }
+#tabWall .vsStripe .vsCta{ color:#5b6cff; font-weight:700; font-size:13px }
+#tabWall .vsStripe .vsX{ color:#9a9db8 }
+
+/* ── Happening-now strip → white pill with red LIVE dot ── */
+#tabWall .livebanner{
+  background:#fff; border:1px solid #eceef4; border-radius:14px;
+  padding:12px 16px; margin:8px 0 14px;
+}
+#tabWall .livebanner h3{
+  font-family:var(--brand-font);
+  text-transform:uppercase; letter-spacing:2px; font-size:12px; font-weight:700;
+  color:#d9544d; margin:0 0 8px;
+}
+#tabWall .livebanner h3 .live-dot,
+#tabWall .livebanner h3 .ts-livedot{
+  width:7px; height:7px; background:#d9544d; border-radius:50%;
+  animation:ts-pulse 1.6s infinite; display:inline-block;
+}
+#tabWall .lvnudge{
+  background:#fff !important; border:1px solid #eceef4; color:#4a4d59 !important;
+  border-radius:14px !important;
+}
+#tabWall .lvnudge .lvdot{ background:#d9544d !important; animation:ts-pulse 1.6s infinite }
+#tabWall .lvnudge b{ color:#16181f }
+#tabWall .lvnudge .lvna{ color:#5b6cff; opacity:1; font-weight:700 }
+
+/* ── Search + filter chips row per §1a ── */
+#tabWall .filterrow{
+  gap:10px; margin:6px 0 14px;
+}
+#tabWall .search{
+  background:#fff; border:1px solid #e4e6ee; border-radius:99px;
+  padding:0 18px; min-width:200px;
+  font-family:var(--brand-font);
+}
+#tabWall .search input{
+  font-size:14px; font-weight:500; color:#16181f;
+  font-family:var(--brand-font);
+}
+#tabWall .search input::placeholder{ color:#9a9db8; font-weight:500 }
+#tabWall .fchips{ gap:7px }
+#tabWall .fchip{
+  background:#fafafa; border:1px solid #e8e6e0; color:#6b6e7a;
+  font-family:var(--brand-font); font-weight:600; font-size:13px;
+  padding:9px 16px; border-radius:99px;
+  transition:background .12s, border-color .12s, color .12s, transform .08s;
+}
+#tabWall .fchip:hover{ border-color:#c9cfe3; color:#16181f }
+#tabWall .fchip.on{
+  background:#5b6cff !important; color:#fff !important; border-color:#5b6cff !important;
+}
+/* Chat Experts chip keeps its purple-gradient tint even when inactive
+   so users spot the AI row at a glance. */
+#tabWall .fchip[data-f="ai"]:not(.on){
+  background:linear-gradient(135deg,#f0f1ff,#f6f1ff);
+  border-color:#d8dbff; color:#4353e8;
+}
+#tabWall .fchip[data-f="ai"].on{
+  background:linear-gradient(135deg,#5b6cff,#9b6cff) !important;
+  border-color:#5b6cff !important; color:#fff !important;
+}
+
+/* ── Refer pill (👑 Invite & win) → soft neutral chip per §1a top bar ── */
+#tabWall .rfpill{
+  background:#fafafa; border:1px solid #e8e6e0; color:#6b6e7a;
+  font-weight:600; font-size:12.5px;
+}
+#tabWall .rfpill:hover{ background:#fff; border-color:#c9cfe3; color:#16181f }
+
+/* ── Accent sub-row chips (only shown under 'Chat Experts') ── */
+#tabWall .acrow .achip{
+  font-family:var(--brand-font);
+}
+#tabWall .acrow .achip.on{
+  background:#5b6cff; border-color:#5b6cff;
+}
+
+/* ── Cards grid: 1 col mobile, 2 col tablet, 3 col desktop per §1a ── */
+#tabWall .wall{ display:grid; grid-template-columns:1fr; gap:12px; padding:6px 0 30px }
+@media(min-width:720px){ #tabWall .wall{ grid-template-columns:repeat(2,1fr); gap:14px } }
+@media(min-width:1024px){ #tabWall .wall{ grid-template-columns:repeat(3,1fr); gap:14px } }
+@media(min-width:1500px){ #tabWall .wall{ grid-template-columns:repeat(3,1fr) } }
+
+/* ── Member card: white, 16px radius, soft shadow, hover lift ── */
+#tabWall .wcard{
+  background:#fff; border:1px solid #eceef4; border-radius:16px;
+  padding:14px 14px 12px; gap:12px;
+  grid-template-columns:70px 1fr;
+  box-shadow:0 6px 20px rgba(22,24,31,0.05);
+  transition:transform .14s ease, box-shadow .18s ease, border-color .18s ease;
+  font-family:var(--brand-font);
+}
+#tabWall .wcard:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 50px rgba(22,24,31,0.12);
+  border-color:#e0e3ee;
+}
+#tabWall .wcard-photo{
+  width:70px; height:70px; border-radius:50%;
+  background:linear-gradient(135deg,#5b6cff,#9b6cff);
+  position:relative;
+}
+#tabWall .wcard-photo .pcircph{ font-size:26px; font-weight:600; font-family:var(--brand-font) }
+/* Online dot bottom-right of the avatar per §1a. .wcard-dot markup lives
+   next to the name but we render a matching dot on the photo too via
+   the presence of the [data-i] card + .wcard-dot descendant. We keep
+   the inline dot; visual expectation is one green dot on the avatar. */
+#tabWall .wcard-body{ gap:6px }
+#tabWall .wcard-name{
+  color:#16181f !important; font-weight:600 !important; font-size:15px !important;
+  letter-spacing:-.1px !important; gap:6px;
+  font-family:var(--brand-font);
+}
+#tabWall .wcard-dot{
+  width:9px; height:9px; background:#1fb28a; border:2px solid #fff;
+  border-radius:50%; box-shadow:0 0 0 1px rgba(31,178,138,.25);
+}
+#tabWall .wcard-talk{
+  color:#6b6e7a; font-weight:500; font-size:13px; line-height:1.5;
+  -webkit-line-clamp:2;
+  font-family:var(--brand-font);
+}
+/* Language chips row: reads as native (green tint) + learning (periwinkle
+   tint) pill pair. The existing .wf-col markup gets restyled to look
+   like the §1a pills — no JS change. */
+#tabWall .wcard-langs{
+  display:flex; gap:6px; padding-top:2px; flex-wrap:wrap;
+  justify-content:flex-start;
+}
+#tabWall .wcard-langs .wf-col{
+  flex:0 1 auto; display:inline-flex; align-items:center; gap:6px;
+  background:#f2f8f5; color:#2d7a62; border-radius:99px;
+  padding:4px 10px 4px 6px; font-size:12px; font-weight:600;
+  text-align:left; align-items:center;
+}
+#tabWall .wcard-langs .wf-col:last-child{
+  background:#f3f4fb; color:#4a55c9;
+  align-items:center; text-align:left;
+}
+#tabWall .wcard-langs .wf-lbl{
+  font-size:11px; color:inherit; font-weight:600; letter-spacing:0;
+  text-transform:none;
+}
+#tabWall .wcard-langs .wf-row{ gap:4px }
+#tabWall .wcard-langs .wf-flag{ width:16px; height:16px }
+#tabWall .wcard-langs .wf-more{ color:inherit; opacity:.7 }
+
+/* AI expert card variant: gradient tint per §1a. Detected via child
+   .wcard-name .ai-badge. */
+#tabWall .wcard:has(.ai-badge){
+  background:linear-gradient(160deg,#f6f1ff,#f0f1ff);
+  border-color:#ddd6ff;
+}
+#tabWall .wcard:has(.ai-badge) .wcard-photo{
+  border-radius:14px; background:linear-gradient(135deg,#5b6cff,#9b6cff);
+}
+#tabWall .wcard:has(.ai-badge) .wcard-talk{ color:#55496b }
+
+/* "New" corner + refct badge keep their existing look but move slightly
+   so they don't collide with the new smaller avatar. */
+#tabWall .wcard-newref,
+#tabWall .wcard-refct{ top:8px; right:10px }
+
+/* ── Wall layout: single col mobile, main + right rail on desktop ── */
+#tabWall .walllay{ display:block; padding:0 }
+@media(min-width:1024px){
+  #tabWall .walllay{
+    display:grid !important; grid-template-columns:minmax(0,1fr) 300px;
+    gap:22px; align-items:start;
+  }
+  #tabWall .wallmain{ grid-column:1; min-width:0 }
+  #tabWall .wallside{
+    display:flex !important; flex-direction:column; gap:14px;
+    grid-column:2; position:sticky; top:80px;
+  }
+  #tabWall .ts-side-invite{
+    grid-column:2; display:block !important;
+  }
+}
+
+/* ── Right rail card overrides (renderSide paints .sbcard/.sbme/etc.
+      into #wallSide — we just restyle here). ── */
+#tabWall .wallside .sbcard{
+  background:#fff; border:1px solid #eceef4; border-radius:16px; padding:18px;
+  box-shadow:0 6px 20px rgba(22,24,31,0.05);
+  font-family:var(--brand-font);
+  margin-bottom:0;
+}
+/* You card → dark #1d2130 per §1a. */
+#tabWall .wallside .sbcard.sbme{
+  background:#1d2130; color:#fff; border-color:#1d2130;
+  text-align:left; padding:18px;
+  box-shadow:0 6px 20px rgba(22,24,31,0.18);
+}
+#tabWall .wallside .sbme .av,
+#tabWall .wallside .sbme .avph{
+  margin:0 12px 0 0; width:40px !important; height:40px !important;
+  display:inline-block; vertical-align:middle;
+}
+#tabWall .wallside .sbme .sbname{
+  display:inline-block; vertical-align:middle;
+  font-size:14.5px; font-weight:600; letter-spacing:-.1px; color:#fff;
+}
+#tabWall .wallside .sbme .sbloc{
+  color:#9aa0b4; font-size:12px; font-weight:500; margin-top:6px;
+}
+#tabWall .wallside .sbme .sbstats{
+  border-top:0; padding-top:12px; margin-top:12px; gap:6px;
+}
+#tabWall .wallside .sbme .sbstats div{
+  background:#262a3a; border-radius:8px; padding:8px 0; text-align:center;
+}
+#tabWall .wallside .sbme .sbstats div+div{ border-left:0 }
+#tabWall .wallside .sbme .sbstats b{
+  color:#fff; font-size:14px; font-weight:700; letter-spacing:0;
+}
+#tabWall .wallside .sbme .sbstats span{
+  color:#9aa0b4; font-size:9.5px; font-weight:600; letter-spacing:.5px;
+}
+/* Live counter tile pair. */
+#tabWall .wallside .sblive{ gap:8px; margin-bottom:0 }
+#tabWall .wallside .sblive div{
+  background:#fff; border:1px solid #eceef4; border-radius:14px;
+  padding:12px 4px;
+}
+#tabWall .wallside .sblive b{ color:#16181f; font-weight:700; font-size:18px }
+#tabWall .wallside .sblive .lv b{ color:#1fb28a }
+#tabWall .wallside .sblive span{ color:#8a8d99; letter-spacing:.5px }
+/* Top spies → "This week's kings 👑" heading style. */
+#tabWall .wallside .sbh{
+  font-family:var(--brand-font);
+  font-size:13px; font-weight:600; letter-spacing:2px;
+  text-transform:uppercase; color:#9a9da8; margin-bottom:10px;
+}
+#tabWall .wallside .sbrow{ padding:6px; margin:0 -6px; border-radius:10px; gap:8px }
+#tabWall .wallside .sbrow .rk{ color:#ffb02d; font-weight:700; font-size:12px }
+#tabWall .wallside .sbrow .rn{ color:#16181f; font-size:13.5px; font-weight:500 }
+#tabWall .wallside .sbrow .rv{ color:#8a8d99; font-weight:500; font-size:12px }
+/* "Start a game" CTA button → periwinkle. */
+#tabWall .wallside .sbcta{
+  background:#5b6cff; color:#fff; border-radius:99px;
+  padding:12px 18px; font-weight:600; font-size:13.5px;
+  box-shadow:0 6px 18px rgba(91,108,255,.3);
+  margin-bottom:0;
+}
+#tabWall .wallside .sbcta:hover{ background:#4353e8 }
+#tabWall .wallside .sbnote{ color:#9a9db8; font-size:11.5px; padding:2px 6px 4px }
+
+/* ── Invite-progress card (new; static markup in #tabWall shell) ── */
+#tabWall .ts-side-invite{
+  display:none;
+  background:linear-gradient(135deg,#fff6df,#fffdf5);
+  border:1px solid #f2dfae; border-radius:16px; padding:16px 18px;
+  font-family:var(--brand-font); cursor:pointer;
+  transition:transform .14s ease, box-shadow .18s ease;
+  box-shadow:0 6px 20px rgba(22,24,31,0.05);
+}
+#tabWall .ts-side-invite:hover{ transform:translateY(-1px); box-shadow:0 12px 30px rgba(22,24,31,0.10) }
+#tabWall .ts-side-invite-h{ font-size:14.5px; font-weight:700; color:#6b4f09; margin:0 0 4px }
+#tabWall .ts-side-invite-sub{ font-size:12.5px; color:#8a6a12; line-height:1.5; margin:0 0 10px }
+#tabWall .ts-side-invite-bar{
+  background:#fff; border-radius:99px; height:8px; overflow:hidden;
+}
+#tabWall .ts-side-invite-bar > i{
+  display:block; width:0%; height:100%; background:#ffb02d; border-radius:99px;
+  transition:width .3s ease;
+}
+
+/* Mobile-only rule per §42-45: cards become single-column rows.
+   .wcard is already grid 70px 1fr, so it already reads as a row on
+   mobile. Chip row must scroll horizontally without wrapping. */
+@media(max-width:719px){
+  #tabWall .fchips{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch }
+  #tabWall .fchips::-webkit-scrollbar{ display:none }
+  #tabWall .fchip{ flex:0 0 auto; min-height:36px }
+  #tabWall .search{ min-width:0; width:100% }
+  #tabWall .filterrow{ flex-direction:column; align-items:stretch }
+  #tabWall .filterrow .fchips{ margin:0 -4px }
+}
+/* ═══════════════════════════════════════════════════════════════════
+   end 1a Community wall rebrand
+   ═══════════════════════════════════════════════════════════════════ */
 </style>
 </head>
 <body>
@@ -3299,6 +3610,16 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <div class="walllay">
       <!-- desktop only: you, the room's pulse, and who's winning -->
       <aside class="wallside" id="wallSide"></aside>
+      <!-- Invite-progress card (rebrand §1a right rail). Static markup —
+           opens the existing refer modal. Numbers are placeholder; keep
+           the visual until we wire ME.refCount + a 5-invite goal. -->
+      <div class="ts-side-invite" id="tsSideInvite" role="button" tabindex="0"
+           onclick="try{openReferModal()}catch(e){}"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();try{openReferModal()}catch(e){}}">
+        <div class="ts-side-invite-h">👑 Invite 5 friends → 1 year free</div>
+        <div class="ts-side-invite-sub" id="tsSideInviteSub">Share your link and unlock the crown.</div>
+        <div class="ts-side-invite-bar"><i id="tsSideInviteFill"></i></div>
+      </div>
       <div class="wallmain">
         <div class="filterrow">
           <div class="search">🔎<input id="q" placeholder="Search spies…" oninput="resetWallPage();renderWall()"></div>
