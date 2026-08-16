@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body { margin: 0; background: #ffffff; font-family: 'Hanken Grotesk', sans-serif; color: #16181f; }
+a { color: #5b6cff; text-decoration: none; } a:hover { color: #4353e8; }
+html { scroll-behavior: smooth; }
+@keyframes ts-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes ts-float2 { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-14px) rotate(-3deg); } }
+@keyframes ts-pop { 0% { opacity: 0; transform: translateY(16px) scale(0.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ts-dot { 0%, 60%, 100% { opacity: 0.25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+@keyframes ts-wave { 0%, 100% { transform: rotate(0deg); } 20% { transform: rotate(16deg); } 40% { transform: rotate(-8deg); } 60% { transform: rotate(12deg); } 80% { transform: rotate(-4deg); } }
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column;">
+
+  <nav style="display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; border-bottom: 1px solid #f0efec; position: sticky; top: 0; background: rgba(255,255,255,0.92); backdrop-filter: blur(10px); z-index: 50;" data-screen-label="Nav">
+    <div style="display: flex; align-items: center; gap: 5px;">
+      <div style="position: relative; width: 34px; height: 34px;">
+        <div style="position: absolute; top: 0; left: 0; width: 19px; height: 19px; background: #5b6cff; border-radius: 7px 7px 2px 7px;"></div>
+        <div style="position: absolute; top: 1px; right: 0; width: 13px; height: 13px; background: #ff7a59; border-radius: 7px 7px 7px 2px;"></div>
+        <div style="position: absolute; bottom: 0; right: 2px; width: 16px; height: 16px; background: #1fb28a; border-radius: 7px 2px 7px 7px;"></div>
+        <div style="position: absolute; bottom: 1px; left: 1px; width: 11px; height: 11px; background: #ffc94d; border-radius: 2px 7px 7px 7px;"></div>
+      </div>
+      <div style="font-size: 24px; font-weight: 500; letter-spacing: -0.4px; color: #000;">talksibi</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 28px; font-size: 15px; font-weight: 500; color: #4a4d59;">
+      <a href="#connect" style="color: #4a4d59;">Community</a>
+      <a href="#play" style="color: #4a4d59;">Games</a>
+      <a href="#learn" style="color: #4a4d59;">Learn</a>
+      <a href="/become-a-teacher" style="color: #4a4d59;">Teach</a>
+      <a href="#" style="color: #16181f;">Log in</a>
+      <a href="#join" style="background: #16181f; color: #fff; padding: 10px 22px; border-radius: 99px; font-weight: 500;">Join free</a>
+    </div>
+  </nav>
+
+  <section style="background: linear-gradient(180deg, #f5f6ff 0%, #ffffff 100%);"><header style="display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; padding: 72px 48px 84px; max-width: 1240px; margin: 0 auto; width: 100%; box-sizing: border-box;" data-screen-label="Hero">
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; background: #f4f5ff; color: #4353e8; font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 99px; letter-spacing: 0.3px;">
+        <span style="width: 8px; height: 8px; background: #1fb28a; border-radius: 50%;"></span>
+        Live now — join a language party
+      </div>
+      <h1 style="margin: 0; font-size: 62px; font-weight: 600; letter-spacing: -2px; line-height: 1.03;">Practise languages with <span style="color: #5b6cff;">real people</span>.</h1>
+      <p style="margin: 0; font-size: 19px; line-height: 1.55; color: #4a4d59; max-width: 46ch;">Create your profile, follow language partners, and chat any time. Play games together, join live parties, and build an AI learning plan — free, in your browser.</p>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <a href="#join" style="background: #5b6cff; color: #fff; font-size: 17px; font-weight: 500; padding: 15px 32px; border-radius: 99px; box-shadow: 0 6px 18px rgba(91,108,255,0.3);" style-hover="background: #4353e8;">Create my profile — free</a>
+        <a href="#play" style="color: #16181f; font-size: 17px; font-weight: 500; padding: 15px 10px;">See the games →</a>
+      </div>
+      <div style="display: flex; align-items: center; gap: 18px; font-size: 13.5px; color: #8a8d99; font-weight: 500;">
+        <span>Free forever</span><span style="color: #d8d9de;">·</span><span>No install — runs in the browser</span><span style="color: #d8d9de;">·</span><span>18+ community</span>
+      </div>
+    </div>
+    <div style="position: relative; min-height: 520px;">
+      <div style="position: absolute; inset: 20px -10px 20px 10px; background: radial-gradient(circle at 55% 45%, #eef0ff 0%, #f8f9ff 45%, transparent 72%); border-radius: 50%;"></div>
+
+      <div style="position: absolute; top: 8px; left: 24px; animation: ts-float 3s ease-in-out infinite; background: #fff; border: 1px solid #eceae5; border-radius: 16px 16px 16px 4px; padding: 10px 16px; font-size: 16px; font-weight: 500; box-shadow: 0 8px 24px rgba(22,24,31,0.08);">Hola <span style="color: #8a8d99; font-weight: 500; font-size: 13px;">🇪🇸</span></div>
+      <div style="position: absolute; top: 0; right: 60px; animation: ts-float 3.6s ease-in-out infinite 0.5s; background: #ffc94d; border-radius: 16px 16px 4px 16px; padding: 10px 16px; font-size: 16px; font-weight: 500; color: #5c440c; box-shadow: 0 8px 24px rgba(255,201,77,0.35);">こんにちは <span style="font-size: 13px;">🇯🇵</span></div>
+      <div style="position: absolute; top: 215px; left: -14px; animation: ts-float 3.3s ease-in-out infinite 1s; background: #1fb28a; color: #fff; border-radius: 16px 16px 4px 16px; padding: 10px 16px; font-size: 16px; font-weight: 500; box-shadow: 0 8px 24px rgba(31,178,138,0.35); z-index: 2;">Bonjour <span style="font-size: 13px;">🇫🇷</span></div>
+      <div style="position: absolute; bottom: 96px; left: -4px; animation: ts-float 3.8s ease-in-out infinite 0.8s; background: #ff7a59; color: #fff; border-radius: 16px 4px 16px 16px; padding: 10px 16px; font-size: 16px; font-weight: 500; box-shadow: 0 8px 24px rgba(255,122,89,0.35);">مرحبا <span style="font-size: 13px;">🇸🇦</span></div>
+      <div style="position: absolute; bottom: 30px; right: 30px; animation: ts-float 3s ease-in-out infinite 1.2s; background: #fff; border: 1px solid #eceae5; border-radius: 4px 16px 16px 16px; padding: 10px 16px; font-size: 16px; font-weight: 500; box-shadow: 0 8px 24px rgba(22,24,31,0.08);">Olá <span style="color: #8a8d99; font-weight: 500; font-size: 13px;">🇧🇷</span></div>
+
+      <div style="position: relative; margin: 60px auto 0; width: 340px; background: #fff; border: 1px solid #eceae5; border-radius: 22px; box-shadow: 0 24px 60px rgba(22,24,31,0.12); overflow: hidden; animation: ts-pop 0.45s ease-out both;">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #f0efec;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: #ffc94d; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #7a5b0e;">M</div>
+          <div style="display: flex; flex-direction: column;">
+            <div style="font-size: 14.5px; font-weight: 500;">Mariana</div>
+            <div style="font-size: 12px; color: #1fb28a; font-weight: 500;">● online · speaks Spanish</div>
+          </div>
+          <div style="margin-left: auto; display: inline-block; font-size: 20px; animation: ts-wave 1.6s ease-in-out infinite; transform-origin: 70% 70%;">👋</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px;">
+          <div style="align-self: flex-start; background: #f5f6f8; border-radius: 4px 14px 14px 14px; padding: 10px 14px; font-size: 14.5px; max-width: 85%; animation: ts-pop 0.35s ease-out 0.3s both;">¡Hola! ¿Cómo estás? 😊</div>
+          <div style="align-self: flex-start; font-size: 11.5px; color: #8a8d99; margin-top: -4px; animation: ts-pop 0.35s ease-out 0.5s both;">Hi! How are you? — tap to translate</div>
+          <div style="align-self: flex-end; background: #5b6cff; color: #fff; border-radius: 14px 4px 14px 14px; padding: 10px 14px; font-size: 14.5px; max-width: 85%; animation: ts-pop 0.35s ease-out 0.8s both;">¡Muy bien! Word Race? 🏁</div>
+          <div style="align-self: flex-start; display: flex; gap: 4px; background: #f5f6f8; border-radius: 4px 14px 14px 14px; padding: 12px 14px; animation: ts-pop 0.3s ease-out 1.15s both;">
+            <span style="width: 7px; height: 7px; background: #8a8d99; border-radius: 50%; animation: ts-dot 0.9s infinite;"></span>
+            <span style="width: 7px; height: 7px; background: #8a8d99; border-radius: 50%; animation: ts-dot 0.9s infinite 0.15s;"></span>
+            <span style="width: 7px; height: 7px; background: #8a8d99; border-radius: 50%; animation: ts-dot 0.9s infinite 0.3s;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%); background: #16181f; color: #fff; border-radius: 99px; padding: 11px 20px; display: flex; align-items: center; gap: 10px; box-shadow: 0 14px 34px rgba(22,24,31,0.25); white-space: nowrap; animation: ts-float2 4s ease-in-out infinite;">
+        <span style="display: flex;">
+          <span style="width: 26px; height: 26px; border-radius: 50%; background: #ff7a59; border: 2px solid #16181f; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">K</span>
+          <span style="width: 26px; height: 26px; border-radius: 50%; background: #1fb28a; border: 2px solid #16181f; margin-left: -8px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;">A</span>
+          <span style="width: 26px; height: 26px; border-radius: 50%; background: #ffc94d; border: 2px solid #16181f; margin-left: -8px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #7a5b0e;">+5</span>
+        </span>
+        <span style="font-size: 13.5px; font-weight: 500;">🎉 French–English party is live</span>
+      </div>
+    </div>
+  </header></section>
+
+  <section style="background: #16181f; color: #fff; padding: 20px 48px;" data-screen-label="Tagline strip">
+    <div style="max-width: 1240px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 56px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: rgba(91,108,255,0.18); display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8f9bff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+        </span>
+        <span style="font-size: 15px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase;">Connect</span>
+      </div>
+      <span style="width: 5px; height: 5px; border-radius: 50%; background: #3a3d4d;"></span>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: rgba(31,178,138,0.18); display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#43cfa5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+        </span>
+        <span style="font-size: 15px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase;">Learn</span>
+      </div>
+      <span style="width: 5px; height: 5px; border-radius: 50%; background: #3a3d4d;"></span>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: rgba(255,201,77,0.18); display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffd575" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4.5"></rect><circle cx="8.2" cy="8.2" r="1.3" fill="#ffd575" stroke="none"></circle><circle cx="15.8" cy="8.2" r="1.3" fill="#ffd575" stroke="none"></circle><circle cx="8.2" cy="15.8" r="1.3" fill="#ffd575" stroke="none"></circle><circle cx="15.8" cy="15.8" r="1.3" fill="#ffd575" stroke="none"></circle></svg>
+        </span>
+        <span style="font-size: 15px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase;">Play</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 36px 48px 0; max-width: 1240px; margin: 0 auto; width: 100%; box-sizing: border-box;" data-screen-label="Languages strip">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px;">
+      <span style="font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #9a9da8; margin-right: 6px;">40+ languages</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇬🇧 English</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇪🇸 Spanish</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇫🇷 French</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇩🇪 German</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇧🇷 Portuguese</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇯🇵 Japanese</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇰🇷 Korean</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇸🇦 Arabic</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇮🇳 Hindi</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇨🇳 Chinese</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇮🇹 Italian</span>
+      <span style="background: #fff; border: 1px solid #eceae5; border-radius: 99px; padding: 7px 14px; font-size: 14px; font-weight: 500;">🇹🇷 Turkish</span>
+      <span style="font-size: 14px; font-weight: 500; color: #5b6cff;">+ 28 more</span>
+    </div>
+  </section>
+
+  <section id="connect" style="padding: 88px 48px 44px; max-width: 1240px; margin: 0 auto; width: 100%; box-sizing: border-box;" data-screen-label="Connect">
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px;">
+      <div style="font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #5b6cff;">Connect</div>
+      <h2 style="margin: 0; font-size: 40px; font-weight: 600; letter-spacing: -1.2px;">A community, not a classroom.</h2>
+      <p style="margin: 0; font-size: 17px; color: #4a4d59; max-width: 60ch; line-height: 1.55;">Find partners who speak what you're learning — and are learning what you speak. Follow the ones you click with and talk whenever you're both around.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+      <div style="background: #f4f5ff; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: #ffffff; box-shadow: 0 3px 10px rgba(91,108,255,0.18); display: flex; align-items: center; justify-content: center;"><div style="width: 18px; height: 18px; background: #5b6cff; border-radius: 6px 6px 2px 6px;"></div></div>
+        <div style="font-size: 18px; font-weight: 500;">Chat with translation built in</div>
+        <div style="font-size: 15px; color: #4a4d59; line-height: 1.55;">Text, voice notes, photos, and calls. Tap any message to translate, correct, or hear it spoken.</div>
+      </div>
+      <div style="background: #eefaf5; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: #ffffff; box-shadow: 0 3px 10px rgba(31,178,138,0.18); display: flex; align-items: center; justify-content: center;"><div style="width: 18px; height: 18px; background: #1fb28a; border-radius: 50%;"></div></div>
+        <div style="font-size: 18px; font-weight: 500;">Live language parties</div>
+        <div style="font-size: 15px; color: #4a4d59; line-height: 1.55;">Group voice rooms around a language or a topic. Public or private — host one or drop into what's live.</div>
+      </div>
+      <div style="background: #fff6e8; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: #ffffff; box-shadow: 0 3px 10px rgba(255,178,45,0.22); display: flex; align-items: center; justify-content: center;"><div style="width: 18px; height: 18px; background: #ffc94d; border-radius: 2px 6px 6px 6px;"></div></div>
+        <div style="font-size: 18px; font-weight: 500;">References you can trust</div>
+        <div style="font-size: 15px; color: #4a4d59; line-height: 1.55;">Real profiles with photo checks, references from past partners, and Report &amp; Block on every profile.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="rooms" style="padding: 88px 48px 0; max-width: 1240px; margin: 0 auto; width: 100%; box-sizing: border-box;" data-screen-label="Clubs, parties & AI experts">
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px;">
+      <div style="font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #9b6cff;">Always on</div>
+      <h2 style="margin: 0; font-size: 40px; font-weight: 600; letter-spacing: -1.2px;">Parties, clubs, and AI experts.</h2>
+      <p style="margin: 0; font-size: 17px; color: #4a4d59; max-width: 62ch; line-height: 1.55;">Any hour, there's a voice room live, a club meeting up, or an AI expert ready to practise with you.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+      <div style="background: #f6f1ff; border-radius: 20px; padding: 26px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 18px; font-weight: 500;">🎉 Language parties</div>
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border-radius: 99px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: #d9544d;"><span style="width: 7px; height: 7px; background: #d9544d; border-radius: 50%; animation: ts-dot 1s infinite;"></span>LIVE</span>
+        </div>
+        <div style="background: #ffffff; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 6px 18px rgba(122,91,255,0.12);">
+          <div style="font-size: 14.5px; font-weight: 500;">Spanish ↔ English party</div>
+          <div style="display: flex; gap: 10px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;"><div style="width: 44px; height: 44px; border-radius: 50%; background: #ffc94d; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #7a5b0e; border: 2.5px solid #9b6cff;">M</div><span style="font-size: 11px; color: #8a8d99; font-weight: 500;">speaking</span></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;"><div style="width: 44px; height: 44px; border-radius: 50%; background: #5b6cff; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff;">J</div><span style="font-size: 11px; color: #8a8d99; font-weight: 500;">·</span></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;"><div style="width: 44px; height: 44px; border-radius: 50%; background: #1fb28a; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff;">A</div><span style="font-size: 11px; color: #8a8d99; font-weight: 500;">·</span></div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;"><div style="width: 44px; height: 44px; border-radius: 50%; background: #eceaf6; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #9b6cff; border: 2px dashed #9b6cff;">+</div><span style="font-size: 11px; color: #9b6cff; font-weight: 500;">free seat</span></div>
+          </div>
+          <div style="background: #f6f1ff; border-radius: 10px; padding: 8px 12px; font-size: 12.5px; font-weight: 500; color: #6b4fd8;">🎙 12 talking · 34 listening</div>
+        </div>
+        <div style="font-size: 14.5px; color: #4a4d59; line-height: 1.55;">Group voice rooms around a language or a topic — public or private. Host your own or take a free seat.</div>
+      </div>
+
+      <div style="background: #eefaf5; border-radius: 20px; padding: 26px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-size: 18px; font-weight: 500;">🏛 Language clubs</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="background: #ffffff; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 14px rgba(31,178,138,0.1);">
+            <span style="font-size: 22px;">🎬</span>
+            <div style="flex: 1;"><div style="font-size: 14.5px; font-weight: 500;">Cinema club · French</div><div style="font-size: 12.5px; color: #8a8d99;">Fridays · 842 members</div></div>
+            <span style="font-size: 12px; font-weight: 600; color: #1fb28a;">Join</span>
+          </div>
+          <div style="background: #ffffff; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 14px rgba(31,178,138,0.1);">
+            <span style="font-size: 22px;">✈️</span>
+            <div style="flex: 1;"><div style="font-size: 14.5px; font-weight: 500;">Travel stories · Spanish</div><div style="font-size: 12.5px; color: #8a8d99;">Daily · 1.2k members</div></div>
+            <span style="font-size: 12px; font-weight: 600; color: #1fb28a;">Join</span>
+          </div>
+          <div style="background: #ffffff; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 14px rgba(31,178,138,0.1);">
+            <span style="font-size: 22px;">🍜</span>
+            <div style="flex: 1;"><div style="font-size: 14.5px; font-weight: 500;">Food talk · Japanese</div><div style="font-size: 12.5px; color: #8a8d99;">Weekends · 356 members</div></div>
+            <span style="font-size: 12px; font-weight: 600; color: #1fb28a;">Join</span>
+          </div>
+        </div>
+        <div style="font-size: 14.5px; color: #4a4d59; line-height: 1.55;">Find your people around what you love — every club meets in chat and live rooms.</div>
+      </div>
+
+      <div style="background: #f4f5ff; border-radius: 20px; padding: 26px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 18px; font-weight: 500;">✨ AI experts</div>
+          <span style="background: #ffffff; border-radius: 99px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: #5b6cff;">24/7</span>
+        </div>
+        <div style="background: #ffffff; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 6px 18px rgba(91,108,255,0.12);">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #5b6cff, #9b6cff); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 17px;">✦</div>
+            <div><div style="font-size: 14.5px; font-weight: 500;">Sofía · AI conversation coach</div><div style="font-size: 12px; color: #1fb28a; font-weight: 500;">● always online</div></div>
+          </div>
+          <div style="align-self: flex-start; background: #f5f6f8; border-radius: 4px 12px 12px 12px; padding: 9px 13px; font-size: 13.5px;">Let's warm up — order a coffee in Spanish ☕</div>
+          <div style="align-self: flex-end; background: #5b6cff; color: #fff; border-radius: 12px 4px 12px 12px; padding: 9px 13px; font-size: 13.5px;">Un café con leche, por favor…</div>
+          <div style="align-self: flex-start; background: #f2f8f5; color: #2d7a62; border-radius: 4px 12px 12px 12px; padding: 9px 13px; font-size: 12.5px; font-weight: 500;">✓ Perfect! Now ask for the bill.</div>
+        </div>
+        <div style="font-size: 14.5px; color: #4a4d59; line-height: 1.55;">Nobody around? Practise with AI experts — instant corrections, zero judgement, any topic.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="background: #16181f; margin-top: 72px;"><div id="play" style="padding: 80px 48px 88px; max-width: 1240px; margin: 0 auto; width: 100%; box-sizing: border-box;" data-screen-label="Play">
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px;">
+      <div style="font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #ff7a59;">Play</div>
+      <h2 style="margin: 0; font-size: 40px; font-weight: 600; letter-spacing: -1.2px; color: #ffffff;">The fastest way to talk is to play.</h2>
+      <p style="margin: 0; font-size: 17px; color: #b8bac4; max-width: 60ch; line-height: 1.55;">Six games built for language practice. Start a room, challenge a friend, or look in on any live table and take a free seat.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+      <div style="background: #1d2130; border: 1px solid #2a2e42; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 22px;">🕵️</div><div style="font-size: 15.5px; font-weight: 500; color: #ffffff;">Codenames</div><div style="font-size: 13px; color: #9aa0b4; line-height: 1.4;">Two teams, secret words, one wrong guess.</div>
+      </div>
+      <div style="background: #1d2130; border: 1px solid #2a2e42; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 22px;">🎭</div><div style="font-size: 15.5px; font-weight: 500; color: #ffffff;">Who is the Spy?</div><div style="font-size: 13px; color: #9aa0b4; line-height: 1.4;">Find the imposter in the room.</div>
+      </div>
+      <div style="background: #1d2130; border: 1px solid #2a2e42; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 22px;">🔗</div><div style="font-size: 15.5px; font-weight: 500; color: #ffffff;">Word Chain</div><div style="font-size: 13px; color: #9aa0b4; line-height: 1.4;">Last letter starts the next word.</div>
+      </div>
+      <div style="background: #1d2130; border: 1px solid #2a2e42; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 22px;">⏱</div><div style="font-size: 15.5px; font-weight: 500; color: #ffffff;">Word Race</div><div style="font-size: 13px; color: #9aa0b4; line-height: 1.4;">60 seconds. A category. Most words wins.</div>
+      </div>
+      <div style="background: #1d2130; border: 1px solid #2a2e42; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 22px;">🍋</div><div style="font-size: 15.5px; font-weight: 500; color: #ffffff;">Guess the Word</div><div style="font-size: 13px; color: #9aa0b4; line-height: 1.4;">Describe it. Everyone races to guess.</div>
+      </div>
+      <div style="background: #1d2130; border: 1px solid #2a2e42; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 22px;">🧠</div><div style="font-size: 15.5px; font-weight: 500; color: #ffffff;">Mind Meld</div><div style="font-size: 13px; color: #9aa0b4; line-height: 1.4;">Type the same word at the same time.</div>
+      </div>
+    </div>
+  </div></section>
+
+  <section id="learn" style="padding: 88px 48px; max-width: 1240px; margin: 0 auto; width: 100%; box-sizing: border-box;" data-screen-label="Learn">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #1fb28a;">Learn</div>
+        <h2 style="margin: 0; font-size: 40px; font-weight: 600; letter-spacing: -1.2px;">Your plan, built in seconds.</h2>
+        <p style="margin: 0; font-size: 17px; color: #4a4d59; line-height: 1.55;">Tell us what you speak, what you're learning, and the minutes you can spare — the AI builds a personalised lesson plan. Free forever. Prepping for IELTS or TOEFL? There's a dedicated track with hand-picked resources and real test dates.</p>
+        <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+          <span style="background: #f5f6f8; border-radius: 99px; padding: 8px 16px; font-size: 14px; font-weight: 500; color: #4a4d59;">✨ AI lesson plans</span>
+          <span style="background: #f5f6f8; border-radius: 99px; padding: 8px 16px; font-size: 14px; font-weight: 500; color: #4a4d59;">📝 IELTS &amp; TOEFL prep</span>
+          <span style="background: #f5f6f8; border-radius: 99px; padding: 8px 16px; font-size: 14px; font-weight: 500; color: #4a4d59;">🗓 Real test dates</span>
+        </div>
+      </div>
+      <div style="background: linear-gradient(160deg, #eefaf5, #ffffff 70%); border: 1px solid #d9efe6; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 14px 34px rgba(31,178,138,0.1);">
+        <div style="font-size: 15px; font-weight: 500;">Build your plan</div>
+        <div style="display: flex; gap: 8px;">
+          <span style="flex: 1; background: #fff; border: 1px solid #e4e3df; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #8a8d99;">You want to learn… <b style="color: #16181f;">Spanish</b></span>
+          <span style="flex: 1; background: #fff; border: 1px solid #e4e3df; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #8a8d99;">You speak… <b style="color: #16181f;">English</b></span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <span style="background: #eefaf5; border: 1px solid #1fb28a; color: #14785e; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-weight: 500;">🌿 Intermediate</span>
+          <span style="background: #fff; border: 1px solid #e4e3df; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #8a8d99;">✈️ Travel</span>
+          <span style="background: #fff; border: 1px solid #e4e3df; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #8a8d99;">15 min/day</span>
+        </div>
+        <div style="background: #5b6cff; color: #fff; border-radius: 12px; padding: 14px; text-align: center; font-size: 15px; font-weight: 500;">✨ Build my plan — about 5 seconds</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="teach" style="width: 100%; margin-bottom: 88px; background: linear-gradient(115deg, #2a1e05 0%, #16181f 55%);" data-screen-label="Become a teacher">
+    <div style="position: relative; overflow: hidden; padding: 72px 48px; max-width: 1240px; margin: 0 auto; box-sizing: border-box; display: grid; grid-template-columns: 1.5fr auto; gap: 36px; align-items: center;">
+      <div style="position: absolute; top: -40px; right: 220px; width: 130px; height: 130px; background: rgba(255,201,77,0.14); border-radius: 40px 40px 10px 40px; transform: rotate(-12deg);"></div>
+      <div style="position: absolute; bottom: -50px; right: 40px; width: 170px; height: 170px; background: rgba(255,122,89,0.12); border-radius: 50px 12px 50px 50px; transform: rotate(10deg);"></div>
+      <div style="position: absolute; top: 30px; right: 60px; animation: ts-float 3.4s ease-in-out infinite; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px 14px 14px 4px; padding: 8px 14px; font-size: 13.5px; font-weight: 500; color: #ffd575;">“Great teacher!” ★★★★★</div>
+      <div style="position: relative; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #ffc94d;">Teach on talksibi</div>
+        <div style="font-size: 34px; font-weight: 600; letter-spacing: -1px; color: #ffffff;">Fluent in something? <span style="color: #ffc94d;">Get paid to teach it.</span></div>
+        <div style="font-size: 16px; color: #b8bac4; line-height: 1.55; max-width: 58ch;">Host lessons and conversation sessions, build your student circle, and earn from the languages you already speak — right inside talksibi.</div>
+        <div style="display: flex; gap: 18px; margin-top: 6px; font-size: 13.5px; font-weight: 500; color: #9aa0b4;">
+          <span>💸 Set your own rate</span><span>🗓 Your schedule</span><span>🌍 Students worldwide</span>
+        </div>
+      </div>
+      <a href="/become-a-teacher" style="position: relative; background: #ffc94d; color: #3a2c07; font-size: 17px; font-weight: 600; padding: 17px 34px; border-radius: 99px; white-space: nowrap; justify-self: end; box-shadow: 0 10px 28px rgba(255,201,77,0.35);" style-hover="background: #ffd575;">Become a teacher →</a>
+    </div>
+  </section>
+
+  <section style="padding: 0 48px 88px; max-width: 1240px; margin: 0 auto; width: 100%; box-sizing: border-box;" data-screen-label="Referral + Safety">
+    <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px;">
+      <div style="background: #16181f; color: #fff; border-radius: 20px; padding: 36px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #ffc94d;">👑 Invite &amp; win</div>
+        <div style="font-size: 28px; font-weight: 600; letter-spacing: -0.8px;">Bring 5 friends, unlock 1 year free.</div>
+        <div style="font-size: 15.5px; color: #b8bac4; line-height: 1.55;">Everything is free to use — referrals unlock the premium year as a thank-you for growing the community.</div>
+      </div>
+      <div style="border: 1px solid #eceae5; border-radius: 20px; padding: 36px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #1fb28a;">Safe by design</div>
+        <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.4px;">18+, verified, moderated.</div>
+        <div style="font-size: 15px; color: #4a4d59; line-height: 1.55;">Every profile is reviewed within a day. Report and Block sit on every profile — reports are handled within 24 hours.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <section id="join" style="width: 100%;" data-screen-label="Join CTA">
+    <div style="background: #5b6cff; border-radius: 0; padding: 92px 48px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; position: relative; overflow: hidden;">
+      <div style="position: absolute; top: -30px; left: 60px; width: 90px; height: 90px; background: rgba(255,255,255,0.12); border-radius: 28px 28px 8px 28px; transform: rotate(-10deg);"></div>
+      <div style="position: absolute; bottom: -24px; right: 80px; width: 74px; height: 74px; background: rgba(255,255,255,0.12); border-radius: 24px 8px 24px 24px; transform: rotate(12deg);"></div>
+      <h2 style="margin: 0; font-size: 44px; font-weight: 600; letter-spacing: -1.4px; color: #fff;">Your first conversation is a game away.</h2>
+      <p style="margin: 0; font-size: 18px; color: rgba(255,255,255,0.85); max-width: 52ch; line-height: 1.5;">Join free, set your languages, and say hi — someone on the other side of the world is waiting to practise with you.</p>
+      <a href="#" style="background: #fff; color: #16181f; font-size: 17px; font-weight: 600; padding: 15px 36px; border-radius: 99px; margin-top: 6px;">Create my profile — free</a>
+      <div style="font-size: 13.5px; color: rgba(255,255,255,0.7); font-weight: 500;">No credit card · No install · 18+</div>
+    </div>
+  </section>
+
+  <footer style="border-top: 1px solid #f0efec; background: #fafafa;" data-screen-label="Footer">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 56px 48px 28px; box-sizing: border-box;">
+      <div style="display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 40px; border-bottom: 1px solid #ececea;">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 5px;">
+            <div style="position: relative; width: 30px; height: 30px;">
+              <div style="position: absolute; top: 0; left: 0; width: 17px; height: 17px; background: #5b6cff; border-radius: 6px 6px 2px 6px;"></div>
+              <div style="position: absolute; top: 1px; right: 0; width: 11px; height: 11px; background: #ff7a59; border-radius: 6px 6px 6px 2px;"></div>
+              <div style="position: absolute; bottom: 0; right: 2px; width: 14px; height: 14px; background: #1fb28a; border-radius: 6px 2px 6px 6px;"></div>
+              <div style="position: absolute; bottom: 1px; left: 1px; width: 10px; height: 10px; background: #ffc94d; border-radius: 2px 6px 6px 6px;"></div>
+            </div>
+            <div style="font-size: 21px; font-weight: 500; color: #000;">talksibi</div>
+          </div>
+          <div style="font-size: 14.5px; color: #6b6e7a; line-height: 1.55; max-width: 34ch;">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
+          <div style="display: flex; gap: 10px; margin-top: 4px;">
+            <a href="#" aria-label="Instagram" style="width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 1px solid #e6e5e1; display: flex; align-items: center; justify-content: center;" style-hover="border-color: #5b6cff;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg></a>
+            <a href="#" aria-label="TikTok" style="width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 1px solid #e6e5e1; display: flex; align-items: center; justify-content: center;" style-hover="border-color: #5b6cff;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#4a4d59"><path d="M16.6 5.82C15.9 5.03 15.5 4 15.5 2.9h-3.1v12.4c0 1.4-1.14 2.54-2.55 2.54a2.55 2.55 0 0 1 0-5.1c.26 0 .52.04.76.12V9.7a5.7 5.7 0 0 0-.76-.05 5.66 5.66 0 1 0 5.66 5.66V9.64a7.2 7.2 0 0 0 4.19 1.34V7.9c-1.24 0-2.37-.5-3.1-2.08z"></path></svg></a>
+            <a href="#" aria-label="YouTube" style="width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 1px solid #e6e5e1; display: flex; align-items: center; justify-content: center;" style-hover="border-color: #5b6cff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M23 7.5s-.23-1.63-.94-2.35c-.9-.94-1.9-.95-2.36-1C16.4 3.9 12 3.9 12 3.9h-.01s-4.4 0-7.7.25c-.46.05-1.46.06-2.36 1C1.22 5.87 1 7.5 1 7.5S.76 9.42.76 11.33v1.8C.76 15.05 1 16.96 1 16.96s.23 1.63.93 2.35c.9.94 2.08.9 2.6 1 1.89.18 7.47.24 7.47.24s4.4-.01 7.7-.25c.46-.06 1.46-.07 2.36-1.01.7-.72.94-2.35.94-2.35s.24-1.9.24-3.82v-1.8C23.24 9.42 23 7.5 23 7.5zM9.7 14.85V8.66l6.22 3.1-6.22 3.09z"></path></svg></a>
+            <a href="#" aria-label="X" style="width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 1px solid #e6e5e1; display: flex; align-items: center; justify-content: center;" style-hover="border-color: #5b6cff;"><svg width="15" height="15" viewBox="0 0 24 24" fill="#4a4d59"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg></a>
+            <a href="#" aria-label="Discord" style="width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 1px solid #e6e5e1; display: flex; align-items: center; justify-content: center;" style-hover="border-color: #5b6cff;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.89-1.52.07.07 0 0 0-.08.04c-.21.38-.44.87-.6 1.25a18.3 18.3 0 0 0-5.5 0 12.6 12.6 0 0 0-.61-1.25.08.08 0 0 0-.08-.04 19.74 19.74 0 0 0-4.88 1.52.07.07 0 0 0-.04.03C.53 9.05-.32 13.58.1 18.06c0 .02.01.04.03.05a19.9 19.9 0 0 0 6 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.22-2a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.9.08.08 0 0 1-.01-.13c.13-.09.25-.19.37-.29a.07.07 0 0 1 .08 0c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08 0c.12.1.25.2.37.3a.08.08 0 0 1-.01.12c-.6.35-1.22.64-1.87.9a.08.08 0 0 0-.04.1c.36.7.77 1.37 1.22 2a.08.08 0 0 0 .08.04 19.84 19.84 0 0 0 6.02-3.03.08.08 0 0 0 .03-.05c.5-5.18-.84-9.68-3.55-13.66a.06.06 0 0 0-.03-.03zM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42z"></path></svg></a>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #9a9da8;">Product</div>
+          <a href="#connect" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Community</a>
+          <a href="#play" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Games</a>
+          <a href="#learn" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">AI lesson plans</a>
+          <a href="#learn" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">IELTS &amp; TOEFL prep</a>
+          <a href="/become-a-teacher" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Become a teacher</a>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #9a9da8;">Support</div>
+          <a href="#" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Safety centre</a>
+          <a href="#" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Community guidelines</a>
+          <a href="#" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Report a problem</a>
+          <a href="#" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Contact us</a>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 13px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #9a9da8;">Legal</div>
+          <a href="#" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Terms &amp; conditions</a>
+          <a href="#" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Privacy policy</a>
+          <a href="#" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">Cookie policy</a>
+          <a href="#" style="color: #4a4d59; font-size: 14.5px; font-weight: 500;">18+ policy</a>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-top: 22px;">
+        <div style="font-size: 13.5px; color: #8a8d99;">© 2026 talksibi · Connect, Learn, Play</div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 17px;">
+          <span>🇬🇧</span><span>🇪🇸</span><span>🇫🇷</span><span>🇩🇪</span><span>🇧🇷</span><span>🇯🇵</span><span>🇰🇷</span><span>🇸🇦</span><span>🇮🇳</span><span>🇨🇳</span><span>🇮🇹</span><span>🇹🇷</span>
+          <span style="font-size: 13px; font-weight: 500; color: #5b6cff;">+ 28 more</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div></x-dc>
+</body>
+</html>

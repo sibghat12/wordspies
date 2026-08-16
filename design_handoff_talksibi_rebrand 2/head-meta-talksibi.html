@@ -1,0 +1,106 @@
+<!-- ═══ talksibi <head> block — paste into every page; swap per-page title/desc/canonical ═══ -->
+
+<!-- Core -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>talksibi — Practise languages with real people</title>
+<meta name="description" content="Chat with native speakers, play word games together, and join live language parties. Free forever, in your browser. Connect · Learn · Play.">
+<link rel="canonical" href="https://talksibi.com/">
+<meta name="theme-color" content="#5b6cff">
+
+<!-- Per-page title patterns:
+  Home:      talksibi — Practise languages with real people
+  Community: Community · talksibi
+  Games:     Word games in any language · talksibi
+  Parties:   Live language parties · talksibi
+  Learn:     AI lesson plans & IELTS prep · talksibi
+  Teach:     Become a language teacher · talksibi
+  Blog post: <Post title> · talksibi blog
+-->
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="talksibi">
+<meta property="og:title" content="talksibi — Practise languages with real people">
+<meta property="og:description" content="Chat with native speakers, play games together, join live parties. Free forever. Connect · Learn · Play.">
+<meta property="og:url" content="https://talksibi.com/">
+<meta property="og:image" content="https://talksibi.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_GB">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="talksibi — Practise languages with real people">
+<meta name="twitter:description" content="Chat with native speakers, play games together, join live parties. Free forever.">
+<meta name="twitter:image" content="https://talksibi.com/og-image.png">
+
+<!-- Icons / PWA (regenerate icon-192/512 + favicon from the new 4-bubble mark) -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<!-- manifest.json: { "name": "talksibi", "short_name": "talksibi",
+     "theme_color": "#5b6cff", "background_color": "#ffffff", "display": "standalone" } -->
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- JSON-LD: landing page only -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://talksibi.com/#org",
+      "name": "talksibi",
+      "url": "https://talksibi.com/",
+      "logo": "https://talksibi.com/icon-512.png",
+      "slogan": "Connect · Learn · Play",
+      "sameAs": [
+        "https://instagram.com/talksibi",
+        "https://tiktok.com/@talksibi",
+        "https://youtube.com/@talksibi",
+        "https://x.com/talksibi"
+      ]
+    },
+    {
+      "@type": "WebApplication",
+      "name": "talksibi",
+      "url": "https://talksibi.com/",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+      "description": "Language exchange community: chat with native speakers, play word games, join live voice parties, and build AI lesson plans. 18+, free forever.",
+      "publisher": { "@id": "https://talksibi.com/#org" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is talksibi free?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — talksibi is free forever. Inviting 5 friends unlocks a bonus premium year." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does talksibi work?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Create a free profile, pick the languages you speak and the ones you're learning, then chat with native speakers, play word games together, or join live voice parties. AI experts are available 24/7 when no partner is online." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to install anything?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No — talksibi runs in your browser on phone and desktop. You can add it to your home screen like an app." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<!-- Redirects to add server-side (Express):
+  wordspies.co.uk/*  -> 301 https://talksibi.com/$1   (keeps SEO juice)
+  Update sitemap.xml URLs to talksibi.com, resubmit in Google Search Console,
+  add talksibi.com as a new property, and keep robots.txt + llms.txt in sync. -->

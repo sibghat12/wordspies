@@ -1,4 +1,8 @@
-// TalkSibi marketing landing page — server-rendered at "/"
+// TalkSibi marketing landing page — server-rendered at "/".
+// Rebuilt 16 Aug 2026 from design_handoff_talksibi_rebrand 2/landing-standalone.html
+// + README.md spec. Design tokens, colors, radii, animations, section order,
+// and copy all match the DC handoff. GA, CONSENT_MODAL, and SITE_FOOTER blocks
+// are preserved unchanged — they're consumed by blog.js and pages.js.
 const SITE = 'https://talksibi.com';
 const GA_ID = 'G-JTH809Z8NH';
 // Consent-gated GA — mirrors pages.js. No analytics/ads cookies until
@@ -21,20 +25,20 @@ const GA = `<script>
 </script>`;
 const CONSENT_MODAL = `
 <style>
-.ws-cc{position:fixed;inset:0;background:rgba(15,17,25,.6);display:none;align-items:center;justify-content:center;z-index:100000;padding:20px;font-family:'Inter',system-ui,sans-serif}
+.ws-cc{position:fixed;inset:0;background:rgba(15,17,25,.6);display:none;align-items:center;justify-content:center;z-index:100000;padding:20px;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif}
 .ws-cc.on{display:flex;animation:wsccFade .2s ease}
 @keyframes wsccFade{from{opacity:0}to{opacity:1}}
 .ws-cc-card{background:#fff;border-radius:20px;max-width:440px;width:100%;padding:26px 24px 22px;box-shadow:0 24px 60px rgba(0,0,0,.32)}
-.ws-cc-card h3{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:20px;margin:0 0 8px;color:#111318}
-.ws-cc-card p{font-size:14px;line-height:1.55;color:#4b5563;margin:0 0 16px}
-.ws-cc-card p a{color:#0f7500;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.ws-cc-card h3{font-weight:600;font-size:20px;margin:0 0 8px;color:#16181f}
+.ws-cc-card p{font-size:14px;line-height:1.55;color:#4a4d59;margin:0 0 16px}
+.ws-cc-card p a{color:#5b6cff;font-weight:600;text-decoration:underline;text-underline-offset:2px}
 .ws-cc-actions{display:flex;flex-direction:column;gap:8px}
-.ws-cc-actions button{border:0;border-radius:12px;padding:12px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:15px;cursor:pointer}
-.ws-cc-actions .ws-cc-accept{background:#0f7500;color:#fff}
-.ws-cc-actions .ws-cc-reject{background:#f3f4f6;color:#111318}
+.ws-cc-actions button{border:0;border-radius:12px;padding:12px;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit}
+.ws-cc-actions .ws-cc-accept{background:#5b6cff;color:#fff}
+.ws-cc-actions .ws-cc-reject{background:#f3f4f6;color:#16181f}
 </style>
 <div class="ws-cc" id="wsCcBd" role="dialog" aria-modal="true"><div class="ws-cc-card">
-  <h3>🍪 Cookies on TalkSibi</h3>
+  <h3>🍪 Cookies on talksibi</h3>
   <p>We use essential cookies to sign you in. With your permission we'd also use analytics + advertising cookies on the home / blog pages. <a href="/privacy">Read the full policy</a>.</p>
   <div class="ws-cc-actions">
     <button class="ws-cc-accept" onclick="wsCcSet('accept')">Accept all</button>
@@ -63,15 +67,18 @@ module.exports.CONSENT_MODAL = CONSENT_MODAL;
 // ${SITE_FOOTER}. Classes are already namespaced (sitefoot, fwrap,
 // fmenu, fcol, fsocial-grid, fstores, stbadge, flang, fsub, fmeta,
 // fbrand) so collisions are unlikely.
+//
+// The landing itself uses the design-handoff-native inline footer
+// further down (per README §41). Other pages still get this one.
 const SITE_FOOTER = `
 <style>
-footer.sitefoot{margin-top:56px;padding:44px 24px 24px;background:#1a1d23;color:#a4a8b1;font-family:'Inter',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:0}
+footer.sitefoot{margin-top:56px;padding:44px 24px 24px;background:#1a1d23;color:#a4a8b1;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:0}
 footer.sitefoot *{box-sizing:border-box}
 footer.sitefoot .fwrap{max-width:1200px;margin:0 auto}
 footer.sitefoot .fmenu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 32px;align-items:flex-start}
 @media(max-width:840px){footer.sitefoot .fmenu{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}}
 @media(max-width:520px){footer.sitefoot .fmenu{grid-template-columns:1fr;gap:28px}}
-footer.sitefoot .fcol h4{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:15px;color:#fff;letter-spacing:-.1px;margin:0 0 14px}
+footer.sitefoot .fcol h4{font-weight:600;font-size:15px;color:#fff;letter-spacing:-.1px;margin:0 0 14px}
 footer.sitefoot .fcol a{display:block;color:#c9ccd4;text-decoration:none;font-size:13.5px;font-weight:500;padding:6px 0;transition:color .12s}
 footer.sitefoot .fcol a:hover{color:#fff}
 footer.sitefoot .fsocial-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px;max-width:220px}
@@ -90,7 +97,7 @@ footer.sitefoot .flang .fflag{width:22px;height:22px;border-radius:50%;overflow:
 footer.sitefoot .flang .fchev{color:#a4a8b1;font-weight:400;margin-left:2px}
 footer.sitefoot .fsub{margin-top:36px;padding-top:20px;border-top:1px solid #2b2e36;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 footer.sitefoot .fmeta{color:#7b8090;font-size:12px;letter-spacing:.02em;line-height:1.6}
-footer.sitefoot .fbrand{font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:16px;color:#fff;text-decoration:none;letter-spacing:-.2px}
+footer.sitefoot .fbrand{font-weight:600;font-size:16px;color:#fff;text-decoration:none;letter-spacing:-.2px}
 footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
 </style>
 <footer class="sitefoot"><div class="fwrap">
@@ -98,8 +105,8 @@ footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
     <div class="fcol">
       <h4>Useful Information</h4>
       <a href="/become-a-teacher" style="color:#ffd166;font-weight:700">🎓 Become a teacher</a>
-      <a href="mailto:contact@talksibi.com?subject=TalkSibi%20—%20Bug%20report">Report a bug</a>
-      <a href="mailto:contact@talksibi.com?subject=TalkSibi%20—%20Feature%20request">Request a feature</a>
+      <a href="mailto:contact@talksibi.com?subject=talksibi%20—%20Bug%20report">Report a bug</a>
+      <a href="mailto:contact@talksibi.com?subject=talksibi%20—%20Feature%20request">Request a feature</a>
       <a href="/how-to-play">FAQs</a>
       <a href="mailto:contact@talksibi.com">Contact us</a>
       <a href="/about">About us</a>
@@ -152,7 +159,7 @@ footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
     </div>
   </div>
   <div class="fsub">
-    <div class="fmeta">© 2026 TalkSibi — Practise languages with real people.<br>Independent language-exchange community, based in the United Kingdom.</div>
+    <div class="fmeta">© 2026 talksibi — Practise languages with real people.<br>Independent language-exchange community, based in the United Kingdom.</div>
     <a class="fbrand ts-lockup" href="/" style="color:#fff">
       <img class="ts-mark" src="/mark.svg" alt="" style="width:24px;height:24px" onerror="this.style.display='none'">
       <span class="ts-wordmark" style="font-size:18px;color:#fff">talksibi</span>
@@ -161,436 +168,720 @@ footer.sitefoot .fbrand em{font-style:normal;color:#ff5a72}
 </div></footer>`;
 module.exports.SITE_FOOTER = SITE_FOOTER;
 
-function avatar(hat, skin, blushOpacity = '.8') {
-  return `<svg viewBox="0 0 100 100" width="52" height="52" aria-hidden="true">
-  <circle cx="50" cy="54" r="30" fill="${skin}"/>
-  <ellipse cx="50" cy="30" rx="30" ry="7" fill="${hat}"/>
-  <path d="M31 28 q0 -17 19 -17 q19 0 19 17 q0 4 -19 4 q-19 0 -19 -4z" fill="${hat}" opacity=".85"/>
-  <circle cx="41" cy="55" r="3.2" fill="#20263b"/><circle cx="59" cy="55" r="3.2" fill="#20263b"/>
-  <circle cx="35" cy="63" r="3.4" fill="#ffb1a8" opacity="${blushOpacity}"/><circle cx="65" cy="63" r="3.4" fill="#ffb1a8" opacity="${blushOpacity}"/>
-  <path d="M43 66 q7 6 14 0" stroke="#c96b4a" stroke-width="3" fill="none" stroke-linecap="round"/>
-</svg>`;
+// ── Landing-only building blocks ─────────────────────────────────────────
+// 4-bubble logo mark, sized parametrically. Colors + radii per README §Logo.
+// Base spec is 46×46 with an inner 34px cluster; we expose a scale factor
+// so we can drop this into the nav (34px), hero (26px), and footer (30px)
+// without duplicating markup.
+function tsLogoMark(size) {
+  // size = outer box; inner bubble sizes scale with it.
+  const s = size;
+  const bigW  = Math.round(s * 0.56);   // top-left, bottom-right big-ish
+  const smW   = Math.round(s * 0.38);   // top-right smallest
+  const midW  = Math.round(s * 0.47);   // bottom-right
+  const tinyW = Math.round(s * 0.32);   // bottom-left
+  return `<div style="position:relative;width:${s}px;height:${s}px;flex-shrink:0" aria-hidden="true">
+    <div style="position:absolute;top:0;left:0;width:${bigW}px;height:${bigW}px;background:#5b6cff;border-radius:${Math.round(s*0.2)}px ${Math.round(s*0.2)}px 2px ${Math.round(s*0.2)}px"></div>
+    <div style="position:absolute;top:1px;right:0;width:${smW}px;height:${smW}px;background:#ff7a59;border-radius:${Math.round(s*0.2)}px ${Math.round(s*0.2)}px ${Math.round(s*0.2)}px 2px"></div>
+    <div style="position:absolute;bottom:0;right:2px;width:${midW}px;height:${midW}px;background:#1fb28a;border-radius:${Math.round(s*0.2)}px 2px ${Math.round(s*0.2)}px ${Math.round(s*0.2)}px"></div>
+    <div style="position:absolute;bottom:1px;left:1px;width:${tinyW}px;height:${tinyW}px;background:#ffc94d;border-radius:2px ${Math.round(s*0.2)}px ${Math.round(s*0.2)}px ${Math.round(s*0.2)}px"></div>
+  </div>`;
 }
 
-// Hero illustration — the killer Correct feature in action. Learner's imperfect
-// Spanish, then a green correction bubble underneath. Chosen as hero because it's
-// the single most valuable thing the app does that lesson apps don't do well.
-const CHAT_MOCK = `<svg viewBox="0 0 380 320" width="100%" height="auto" aria-hidden="true">
-  <defs>
-    <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#f7f8fb"/></linearGradient>
-    <filter id="sh1" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1a2247" flood-opacity=".12"/></filter>
-  </defs>
-  <rect x="10" y="10" width="360" height="300" rx="24" fill="url(#bg1)" filter="url(#sh1)"/>
-  <rect x="10" y="10" width="360" height="46" rx="24" fill="#fff"/>
-  <circle cx="42" cy="34" r="14" fill="#ffd9b3"/>
-  <circle cx="42" cy="30" r="9" fill="#ffe6cc"/>
-  <text x="66" y="30" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="700" fill="#111318">Maria</text>
-  <text x="66" y="45" font-family="Plus Jakarta Sans,sans-serif" font-size="11" font-weight="500" fill="#5f6675">learning English · online</text>
-  <circle cx="340" cy="34" r="4" fill="#22c55e"/>
-  <rect x="30" y="78" width="220" height="42" rx="16" fill="#e8f0ff"/>
-  <text x="46" y="104" font-family="Plus Jakarta Sans,sans-serif" font-size="14" font-weight="500" fill="#111318">I go to store yesterday</text>
-  <text x="30" y="134" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="600" fill="#5f6675">MARIA · 2:14 PM</text>
-  <rect x="30" y="148" width="320" height="62" rx="14" fill="#e7fbe9" stroke="#7cd58a" stroke-width="1.4"/>
-  <text x="46" y="170" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="700" fill="#0f7500" letter-spacing=".5">✓ CORRECTION</text>
-  <text x="46" y="192" font-family="Plus Jakarta Sans,sans-serif" font-size="14" font-weight="600" fill="#0f7500">I <tspan text-decoration="underline">went</tspan> to <tspan text-decoration="underline">the</tspan> store yesterday</text>
-  <text x="46" y="204" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="500" fill="#3a7040">past tense · missing article</text>
-  <rect x="130" y="228" width="220" height="42" rx="16" fill="#111318"/>
-  <text x="146" y="254" font-family="Plus Jakarta Sans,sans-serif" font-size="14" font-weight="500" fill="#fff">Thanks! Que compraste?</text>
-  <text x="330" y="284" text-anchor="end" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="600" fill="#5f6675">YOU · 2:15 PM</text>
-</svg>`;
+// Flag pill row + full flag list. First 12 render as pills in the hero
+// languages strip; the footer flag row mirrors them.
+const HERO_FLAGS = [
+  ['🇬🇧','English'], ['🇪🇸','Spanish'], ['🇫🇷','French'], ['🇩🇪','German'],
+  ['🇧🇷','Portuguese'], ['🇯🇵','Japanese'], ['🇰🇷','Korean'], ['🇸🇦','Arabic'],
+  ['🇮🇳','Hindi'], ['🇨🇳','Chinese'], ['🇮🇹','Italian'], ['🇹🇷','Turkish'],
+];
 
-// Four small pillar illustrations — inline SVG so no image requests, no layout shift.
-const ILLUS_CHAT = `<svg viewBox="0 0 160 120" width="100%" height="auto" aria-hidden="true">
-  <rect x="12" y="20" width="98" height="32" rx="14" fill="#e8f0ff"/>
-  <text x="26" y="40" font-family="Plus Jakarta Sans" font-size="12" font-weight="600" fill="#111318">Hola amigo!</text>
-  <rect x="52" y="60" width="96" height="32" rx="14" fill="#111318"/>
-  <text x="66" y="80" font-family="Plus Jakarta Sans" font-size="12" font-weight="600" fill="#fff">¿Cómo estás?</text>
-  <circle cx="20" cy="94" r="8" fill="#22c55e"/>
-  <text x="34" y="98" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#0f7500">Tap to correct</text>
-</svg>`;
-
-const ILLUS_GAMES = `<svg viewBox="0 0 160 120" width="100%" height="auto" aria-hidden="true">
-  <rect x="10" y="14" width="42" height="42" rx="10" fill="#ffe7ed"/><text x="31" y="42" text-anchor="middle" font-size="22">🎲</text>
-  <rect x="58" y="14" width="42" height="42" rx="10" fill="#e8f0ff"/><text x="79" y="42" text-anchor="middle" font-size="22">🎱</text>
-  <rect x="106" y="14" width="42" height="42" rx="10" fill="#f5efde"/><text x="127" y="42" text-anchor="middle" font-size="22">🔴</text>
-  <rect x="10" y="62" width="42" height="42" rx="10" fill="#e7fbe9"/><text x="31" y="90" text-anchor="middle" font-size="22">🧠</text>
-  <rect x="58" y="62" width="42" height="42" rx="10" fill="#fef3c7"/><text x="79" y="90" text-anchor="middle" font-size="22">⚡</text>
-  <rect x="106" y="62" width="42" height="42" rx="10" fill="#ede9fe"/><text x="127" y="90" text-anchor="middle" font-size="22">🕵</text>
-</svg>`;
-
-const ILLUS_PARTY = `<svg viewBox="0 0 160 120" width="100%" height="auto" aria-hidden="true">
-  <circle cx="80" cy="60" r="42" fill="none" stroke="#e6e8ef" stroke-width="1.5" stroke-dasharray="3 4"/>
-  <g><circle cx="80" cy="18" r="14" fill="#ffd9b3"/><circle cx="80" cy="15" r="9" fill="#ff4d6b"/></g>
-  <g><circle cx="122" cy="60" r="14" fill="#f3c39a"/><circle cx="122" cy="57" r="9" fill="#3d7bff"/></g>
-  <g><circle cx="80" cy="102" r="14" fill="#ffd9b3"/><circle cx="80" cy="99" r="9" fill="#7c3aed"/></g>
-  <g><circle cx="38" cy="60" r="14" fill="#f3c39a"/><circle cx="38" cy="57" r="9" fill="#0f9d58"/></g>
-  <text x="80" y="66" text-anchor="middle" font-size="18" font-family="Plus Jakarta Sans" font-weight="700" fill="#0f7500">🎤</text>
-</svg>`;
-
-const ILLUS_AI = `<svg viewBox="0 0 160 120" width="100%" height="auto" aria-hidden="true">
-  <rect x="14" y="20" width="132" height="80" rx="16" fill="#f7f8fb" stroke="#e6e8ef"/>
-  <rect x="26" y="34" width="70" height="8" rx="4" fill="#111318"/>
-  <rect x="26" y="48" width="46" height="6" rx="3" fill="#5f6675"/>
-  <rect x="26" y="60" width="60" height="6" rx="3" fill="#5f6675"/>
-  <circle cx="130" cy="34" r="14" fill="#ede9fe"/>
-  <text x="130" y="39" text-anchor="middle" font-size="14">🤖</text>
-  <rect x="26" y="76" width="80" height="14" rx="7" fill="#e7fbe9"/>
-  <text x="66" y="86" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#0f7500">Muy bien! 🎉</text>
-</svg>`;
-
-const PAD = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align:-4px;margin-right:7px" aria-hidden="true"><path d="M7.5 7A6.5 6.5 0 0 0 1 13.5v.6a4.4 4.4 0 0 0 8 2.4h6a4.4 4.4 0 0 0 8-2.4v-.6A6.5 6.5 0 0 0 16.5 7h-9zM7 11h1.4v1.1H9.5v1.4H8.4v1.1H7v-1.1H5.9v-1.4H7V11zm8.6.4a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1zm2.3-2.3a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z"/></svg>';
-
-// Every game gets a shelf card. Order = frequency we want to surface. Each card
-// links straight to its game page.
-const GAMES = [
-  { href: '/play',      icon: '🕵', name: 'TalkSibi',     line: 'Codenames-style · 4–10+ players' },
-  { href: '/wordrace',  icon: '⚡', name: 'Word Race',     line: '60-second vocab sprint · solo or party' },
-  { href: '/wordchain', icon: '🔗', name: 'Word Chain',    line: 'Last letter starts the next · 2+ players' },
-  { href: '/guessword', icon: '❓', name: 'Guess the Word', line: 'One player knows · the rest ask · 3+' },
-  { href: '/spy',       icon: '🕶', name: 'Spy',           line: 'Find the fake · social deduction · 4+' },
-  { href: '/ludo',      icon: '🎲', name: 'Ludo',          line: 'Board race · 2–4 · bots fill seats' },
-  { href: '/pool',      icon: '🎱', name: '8-Ball Pool',   line: 'Real physics · 1 or 2 players' },
-  { href: '/four',      icon: '🔴', name: 'Connect 4',     line: '30-second rounds · friend or bot' },
-  { href: '/hoop',      icon: '🏀', name: 'Hoop',          line: '60-second free-throw arcade · solo' },
+// Games band — six cards. Colored top-border per README §1d.
+const GAME_CARDS = [
+  { icon: '🕵️', name: 'Codenames',      line: 'Two teams, secret words, one wrong guess.', bar: '#5b6cff', href: '/play' },
+  { icon: '🎭', name: 'Who is the Spy?', line: 'Find the imposter in the room.',             bar: '#ff7a59', href: '/spy'  },
+  { icon: '🔗', name: 'Word Chain',      line: 'Last letter starts the next word.',          bar: '#1fb28a', href: '/wordchain' },
+  { icon: '⏱',  name: 'Word Race',       line: '60 seconds. A category. Most words wins.',   bar: '#ffc94d', href: '/wordrace' },
+  { icon: '🍋', name: 'Guess the Word',  line: 'Describe it. Everyone races to guess.',      bar: '#9b6cff', href: '/guessword' },
+  { icon: '🧠', name: 'Mind Meld',       line: 'Type the same word at the same time.',       bar: '#d9544d', href: '/app' },
 ];
 
 function page() {
-  const gameCards = GAMES.map(g => `
-    <a class="gamecard" href="${g.href}">
-      <div class="ico">${g.icon}</div>
-      <h3>${g.name}</h3>
-      <p>${g.line}</p>
+  const flagPills = HERO_FLAGS.map(([f, name]) =>
+    `<span class="ts-flagpill">${f} ${name}</span>`
+  ).join('');
+
+  const gameCards = GAME_CARDS.map(g => `
+    <a class="ts-gamecard" href="${g.href}" style="border-top:4px solid ${g.bar}">
+      <div class="ts-gameico">${g.icon}</div>
+      <div class="ts-gamename">${g.name}</div>
+      <div class="ts-gameline">${g.line}</div>
     </a>`).join('');
 
   return `<!DOCTYPE html>
 <html lang="en"><head>
 ${GA}
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>TalkSibi — Learn Any Language Free: Real People, Voice Chat & AI Corrections</title>
-<meta name="description" content="Free language exchange with real speakers, one-tap AI grammar correction on every message, live voice parties, and 9 multiplayer games — Spanish, French, Japanese, and 20+ more. No sign-up, no downloads, no paywall.">
-<meta name="keywords" content="learn language free, language exchange app, practice speaking language, chat with native speakers, language learning games, ai grammar correction, correct my writing, language partner online, free language app, voice chat language practice">
-<meta name="author" content="TalkSibi">
-<meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="theme-color" content="#0f7500">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>talksibi — Practise languages with real people</title>
+<meta name="description" content="Chat with native speakers, play word games together, and join live language parties. Free forever, in your browser. Connect · Learn · Play.">
 <link rel="canonical" href="${SITE}/">
+<meta name="theme-color" content="#5b6cff">
+<meta name="robots" content="index, follow, max-image-preview:large">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="talksibi">
+<meta property="og:title" content="talksibi — Practise languages with real people">
+<meta property="og:description" content="Chat with native speakers, play games together, join live parties. Free forever. Connect · Learn · Play.">
+<meta property="og:url" content="${SITE}/">
+<meta property="og:image" content="${SITE}/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_GB">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="talksibi — Practise languages with real people">
+<meta name="twitter:description" content="Chat with native speakers, play games together, join live parties. Free forever.">
+<meta name="twitter:image" content="${SITE}/og-image.png">
+
+<!-- Icons / PWA -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta property="og:site_name" content="TalkSibi">
-<meta property="og:locale" content="en_GB">
-<meta property="og:title" content="TalkSibi — Learn Any Language Free: Real People, Voice & AI Corrections">
-<meta property="og:description" content="Free language exchange with real speakers, AI grammar corrections on every message, live voice parties, and 9 free games. Spanish, French, Japanese, 20+ more.">
-<meta property="og:url" content="${SITE}/"><meta property="og:type" content="website">
-<meta property="og:image" content="${SITE}/og-image.png"><meta property="og:image:alt" content="TalkSibi — chat, correct, play, speak with real people">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="TalkSibi — Learn Any Language Free: Real People, Voice & AI Corrections">
-<meta name="twitter:description" content="Free language exchange with real speakers, AI grammar corrections, voice parties, and 9 free games. 20+ languages.">
-<meta name="twitter:image" content="${SITE}/og-image.png">
+
+<!-- Fonts (Hanken Grotesk per README §12) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
-{"@type":"WebApplication","@id":"${SITE}/#app","name":"TalkSibi","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Any web browser","browserRequirements":"Requires JavaScript","description":"Free language exchange platform with real speakers, AI-powered corrections, live voice parties, and 8 multiplayer language games. Practice any language for free — no sign-up.","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"publisher":{"@id":"${SITE}/#org"}},
-{"@type":"Organization","@id":"${SITE}/#org","name":"TalkSibi","url":"${SITE}/","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png","width":512,"height":512},"email":"contact@talksibi.com","foundingDate":"2026","areaServed":"Worldwide","knowsLanguage":["en","es","fr","de","it","pt","ja","ko","zh","ar","ru","hi","nl","tr","pl","sv","vi","th","id"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"contact@talksibi.com"}},
-{"@type":"WebSite","@id":"${SITE}/#website","url":"${SITE}/","name":"TalkSibi","publisher":{"@id":"${SITE}/#org"}},
-{"@type":"HowTo","@id":"${SITE}/#howto","name":"How to learn a language on TalkSibi","description":"Practise a new language with real speakers, AI corrections, and games in three steps.","totalTime":"PT2M","step":[
-{"@type":"HowToStep","position":1,"name":"Pick a language","text":"Sign up in 30 seconds — no email required. Tell us which language you speak and which you want to learn."},
-{"@type":"HowToStep","position":2,"name":"Chat, correct, play","text":"Message real speakers, tap Correct on any message for an instant AI fix, join a voice party, or start a game together."},
-{"@type":"HowToStep","position":3,"name":"Practise every day","text":"Follow the people you click with, get invited to game nights, and watch your fluency grow through actual conversation."}]},
-{"@type":"FAQPage","@id":"${SITE}/#faq","mainEntity":[
-{"@type":"Question","name":"Is TalkSibi really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Chat, corrections, games, and voice parties are 100% free. No paywall, no premium tier, no ads that make you sign up."}},
-{"@type":"Question","name":"How is TalkSibi different from other language apps?","acceptedAnswer":{"@type":"Answer","text":"TalkSibi is language exchange plus multiplayer games plus AI corrections in one place — real conversations with real speakers, plus games you play together, plus one-tap grammar corrections powered by AI. Free forever."}},
-{"@type":"Question","name":"Do I need to sign up?","acceptedAnswer":{"@type":"Answer","text":"You can play any game as a guest with no account. For chat, corrections, and voice parties, a free 30-second sign-up unlocks everything."}},
-{"@type":"Question","name":"Which languages can I practise?","acceptedAnswer":{"@type":"Answer","text":"All of them. You choose which language you speak and which you're learning — Spanish, French, Japanese, Korean, Mandarin, Arabic, German, Italian, Portuguese, Russian, Hindi, and every other language have active speakers on the platform."}},
-{"@type":"Question","name":"How does the Correct feature work?","acceptedAnswer":{"@type":"Answer","text":"Tap any message and hit Correct. Our AI (powered by Claude) proposes the corrected version with a short explanation of what changed. It never overwrites the original — corrections appear underneath so you learn from your own mistakes."}}
+{"@type":"Organization","@id":"${SITE}/#org","name":"talksibi","url":"${SITE}/","logo":"${SITE}/icon-512.png","slogan":"Connect · Learn · Play","sameAs":["https://instagram.com/wordspies","https://tiktok.com/@wordspies","https://youtube.com/@wordspies","https://x.com/wordspies"]},
+{"@type":"WebApplication","name":"talksibi","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"description":"Language exchange community: chat with native speakers, play word games, join live voice parties, and build AI lesson plans. 18+, free forever.","publisher":{"@id":"${SITE}/#org"}},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Is talksibi free?","acceptedAnswer":{"@type":"Answer","text":"Yes — talksibi is free forever. Inviting 5 friends unlocks a bonus premium year."}},
+{"@type":"Question","name":"How does talksibi work?","acceptedAnswer":{"@type":"Answer","text":"Create a free profile, pick the languages you speak and the ones you're learning, then chat with native speakers, play word games together, or join live voice parties. AI experts are available 24/7 when no partner is online."}},
+{"@type":"Question","name":"Do I need to install anything?","acceptedAnswer":{"@type":"Answer","text":"No — talksibi runs in your browser on phone and desktop. You can add it to your home screen like an app."}}
 ]}
 ]}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Hanken+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-:root{--ink:#111318;--muted:#5f6675;--line:#e6e8ef;--red:#ff4d6b;--blue:#3d7bff;--green:#0f7500;--bg:#f7f8fb;
---sh:0 2px 4px rgba(35,41,70,.06),0 10px 28px rgba(35,41,70,.09);--spring:cubic-bezier(.34,1.56,.64,1);
---brand-periwinkle:#5B6CFF;--brand-coral:#FF7A59;--brand-jade:#1FB28A;--brand-sun:#FFC94D;--brand-ink:#14161F;--brand-gray:#6B7280;--brand-border:#E8E6E0;--brand-font:'Hanken Grotesk','Inter',system-ui,sans-serif}
-.ts-wordmark{font-family:var(--brand-font);font-weight:600;text-transform:lowercase;letter-spacing:-0.5px;color:#000;line-height:1}
-.ts-lockup{display:inline-flex;align-items:center;gap:5px;text-decoration:none}
-.ts-lockup .ts-mark{display:block;flex-shrink:0}
-.ts-tagline{font-family:var(--brand-font);font-weight:600;text-transform:uppercase;font-size:12.5px;letter-spacing:3px;color:var(--brand-gray)}
-.ts-tagline .d1{color:var(--brand-periwinkle);margin:0 6px}
-.ts-tagline .d2{color:var(--brand-jade);margin:0 6px}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);
-background:
-  radial-gradient(900px 480px at 85% -6%, rgba(61,123,255,.16), transparent 62%),
-  radial-gradient(760px 460px at 4% 1%, rgba(255,77,107,.14), transparent 60%),
-  radial-gradient(700px 520px at 50% 118%, rgba(15,117,0,.06), transparent 60%),
-  var(--bg);
-background-attachment:fixed;background-repeat:no-repeat}
-.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
-a{text-decoration:none;color:inherit}
-.sitehead{background:#fff;border-bottom:1.5px solid var(--line);position:sticky;top:0;z-index:50}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.band{padding:56px 0}
-.band.white{background:#fff}
-.band.gray{background:var(--bg)}
-.band.greenb{background:linear-gradient(135deg,#128a04,var(--green));color:#fff}
-.band.greenb .sec-h{color:#fff}
-.band.greenb p{color:#d8f5d0}
-.logo{font-family:'Fredoka';font-weight:600;font-size:24px}
-.logo .r{color:var(--red)}.logo .b{color:var(--blue)}
-.navlinks{display:flex;gap:26px;align-items:center;font-weight:500;font-size:15px;color:var(--muted)}
-.navlinks>a:not(.btn){letter-spacing:.2px}
-.navlinks a:hover{color:var(--ink)}
-@media(max-width:600px){.navlinks{gap:14px;font-size:13.5px}.navlinks .hideSm{display:none}}
-.btn{display:inline-block;background:linear-gradient(180deg,#159f07,var(--green));color:#fff;font-weight:700;padding:14px 28px;border-radius:14px;font-size:16.5px;transition:transform .14s var(--spring),filter .15s}
-.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
-.btn.small{padding:10px 20px;font-size:14.5px;white-space:nowrap}
-.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
-.btn.ghost:hover{border-color:var(--ink)}
-@media(max-width:600px){.btn.small{padding:9px 15px;font-size:13.5px}}
-/* hero */
-.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:44px;align-items:center;padding:52px 0 66px}
-@media(max-width:860px){.hero{grid-template-columns:1fr;text-align:center;padding-top:26px}}
-.hero h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:clamp(32px,4.6vw,50px);line-height:1.1;letter-spacing:-1.4px;margin-bottom:16px;color:var(--ink)}
-.hero h1 .accent{background:linear-gradient(90deg,var(--red),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero p{font-size:18px;color:var(--muted);font-weight:500;line-height:1.6;margin-bottom:26px;max-width:500px}
-@media(max-width:860px){.hero p{margin-inline:auto}}
-.cta-row{display:flex;gap:12px;flex-wrap:wrap}
-@media(max-width:860px){.cta-row{justify-content:center}}
-.herometa{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px}
-@media(max-width:860px){.herometa{justify-content:center}}
-.pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--ink);font-weight:500;font-size:13px;box-shadow:0 1px 2px rgba(35,41,70,.05)}
-.pill::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green)}
-.playersrow{display:flex;align-items:center;gap:12px;margin-top:22px}
-@media(max-width:860px){.playersrow{justify-content:center}}
-.avstack{display:flex}
-.avstack svg{width:38px;height:38px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(35,41,70,.18);margin-left:-12px;border:2.5px solid #fff}
-.avstack svg:first-child{margin-left:0}
-.playersrow .cap{color:var(--muted);font-weight:600;font-size:13.5px;line-height:1.35}
-.playersrow .cap b{color:var(--ink)}
-.mockwrap{max-width:420px;margin-inline:auto}
-/* sections */
-.sec-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:29px;letter-spacing:-.7px;text-align:center;margin-bottom:8px}
-.sec-sub{text-align:center;color:var(--muted);font-weight:500;font-size:16px;margin-bottom:38px;max-width:640px;margin-inline:auto}
-/* Flag grid — Lingopie-style language shelf. Big, bright, tappable. */
-.flaggrid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
-@media(max-width:900px){.flaggrid{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:520px){.flaggrid{grid-template-columns:repeat(3,1fr);gap:10px}}
-.flagcard{background:#fff;border-radius:16px;padding:18px 12px;text-align:center;text-decoration:none;color:var(--ink);border:1.5px solid var(--line);transition:transform .16s var(--spring),border-color .12s,box-shadow .16s;display:flex;flex-direction:column;align-items:center;gap:8px}
-.flagcard:hover{transform:translateY(-4px);border-color:var(--green);box-shadow:0 12px 28px rgba(15,117,0,.12)}
-.flagcard .fl{font-size:36px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.1))}
-.flagcard b{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14.5px;letter-spacing:-.2px}
-@media(max-width:520px){.flagcard{padding:14px 8px}.flagcard .fl{font-size:30px}.flagcard b{font-size:13px}}
-.flagfoot{text-align:center;color:var(--muted);font-weight:500;font-size:14.5px;margin-top:24px}
-/* Alternating feature strips (image ⇄ text). */
-.strip{display:grid;grid-template-columns:1fr 1.15fr;gap:44px;align-items:center;padding:36px 0}
-.strip + .strip{border-top:1px dashed rgba(35,41,70,.1)}
-.strip-rev{grid-template-columns:1.15fr 1fr}
-.strip-rev .strip-art{order:2}
-.strip-rev .strip-txt{order:1}
-@media(max-width:820px){.strip,.strip-rev{grid-template-columns:1fr;gap:20px;padding:28px 0;text-align:center}.strip-rev .strip-art{order:1}.strip-rev .strip-txt{order:2}}
-.strip-art{background:linear-gradient(160deg,#fff,#f7f8fb);border-radius:20px;padding:24px;box-shadow:var(--sh);max-width:420px;justify-self:center;width:100%}
-.strip-txt .strip-tag{display:inline-block;background:var(--caccent-soft,#eef1ff);color:var(--green);font-weight:800;font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;padding:5px 11px;border-radius:99px;margin-bottom:12px}
-.strip-txt h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:24px;letter-spacing:-.6px;line-height:1.2;margin-bottom:12px;color:var(--ink)}
-.strip-txt p{color:var(--muted);font-weight:500;font-size:16px;line-height:1.55}
-@media(max-width:820px){.strip-txt h3{font-size:22px}.strip-txt p{font-size:15px}}
-.pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-@media(max-width:900px){.pillars{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.pillars{grid-template-columns:1fr}}
-.pillar{background:#fff;border-radius:20px;padding:22px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06);transition:transform .18s var(--spring)}
-.pillar:hover{transform:translateY(-3px)}
-.pillar .illus{background:linear-gradient(180deg,#f7f8fb,#fff);border-radius:14px;padding:10px;margin-bottom:14px;min-height:130px;display:flex;align-items:center;justify-content:center}
-.pillar h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.3px;margin-bottom:6px}
-.pillar p{color:var(--muted);font-weight:500;font-size:14.5px;line-height:1.55}
-/* steps */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;counter-reset:step}
-@media(max-width:820px){.steps{grid-template-columns:1fr}}
-.step{background:#fff;border-radius:20px;padding:26px;box-shadow:var(--sh);position:relative;border:1px solid rgba(35,41,70,.06)}
-.step .n{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--red) 49%,var(--blue) 51%);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-size:18px;margin-bottom:14px}
-.step h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.2px;margin-bottom:6px}
-.step p{color:var(--muted);font-weight:500;font-size:15px;line-height:1.6}
-/* games shelf */
-.gamegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-@media(max-width:820px){.gamegrid{grid-template-columns:repeat(2,1fr)}}
-.gamecard{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06);text-decoration:none;color:var(--ink);transition:transform .16s var(--spring);display:block}
-.gamecard:hover{transform:translateY(-3px)}
-.gamecard .ico{font-size:32px;margin-bottom:10px}
-.gamecard h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15.5px;margin-bottom:4px}
-.gamecard p{color:var(--muted);font-weight:500;font-size:12.5px;line-height:1.5}
-/* reviews */
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-@media(max-width:820px){.grid3{grid-template-columns:1fr}}
-.rev{background:#fff;border-radius:20px;padding:24px;box-shadow:var(--sh);border:1px solid rgba(35,41,70,.06)}
-.rev p{font-size:15.5px;line-height:1.65;font-weight:500;margin-bottom:16px}
-.rev .who{display:flex;align-items:center;gap:12px}
-.rev .who b{font-size:15px;display:block}
-.rev .who span{color:var(--muted);font-size:13px;font-weight:500}
-.disclaim{text-align:center;color:var(--muted);font-size:12.5px;font-weight:500;margin-top:14px}
-/* faq */
-.faq{max-width:720px;margin:0 auto}
-details{background:#fff;border-radius:16px;padding:18px 22px;box-shadow:var(--sh);margin-bottom:12px}
-summary{font-weight:700;font-size:16px;cursor:pointer}
-details p{padding-top:10px;color:var(--muted);font-weight:500;font-size:15px;line-height:1.65}
-/* footer{} rules removed — SITE_FOOTER carries its own styles. */
-</style></head>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#ffffff;font-family:'Hanken Grotesk','Inter',system-ui,-apple-system,sans-serif;color:#16181f;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:#5b6cff;text-decoration:none}
+a:hover{color:#4353e8}
+
+/* ── Landing keyframes (README §Interactions) ── */
+@keyframes ts-float  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes ts-float2 { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -6px); } }
+@keyframes ts-pop    { 0% { opacity:0; transform: translateY(16px) scale(0.96); } 100% { opacity:1; transform: translateY(0) scale(1); } }
+@keyframes ts-dot    { 0%,60%,100% { opacity:.25; transform: translateY(0); } 30% { opacity:1; transform: translateY(-3px); } }
+@keyframes ts-wave   { 0%,100% { transform: rotate(0deg); } 20% { transform: rotate(16deg); } 40% { transform: rotate(-8deg); } 60% { transform: rotate(12deg); } 80% { transform: rotate(-4deg); } }
+@keyframes ts-pulse  { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation: none !important; transition: none !important; } }
+
+/* ── Layout helpers ── */
+.ts-wrap{max-width:1240px;margin:0 auto;width:100%;padding:0 48px;box-sizing:border-box}
+.ts-wordmark{font-weight:500;letter-spacing:-0.3px;color:#000;line-height:1;text-transform:lowercase}
+.ts-lockup{display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:inherit}
+
+/* ── Nav ── */
+.ts-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid #f0efec;position:sticky;top:0;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:50}
+.ts-navlinks{display:flex;align-items:center;gap:28px;font-size:15px;font-weight:500;color:#4a4d59}
+.ts-navlinks a{color:#4a4d59;transition:color .12s}
+.ts-navlinks a:hover{color:#16181f}
+.ts-navlinks .ts-navlogin{color:#16181f}
+.ts-navjoin{background:#16181f !important;color:#fff !important;padding:10px 22px;border-radius:99px;font-weight:500;transition:background .15s}
+.ts-navjoin:hover{background:#2a2e42 !important;color:#fff !important}
+@media(max-width:900px){
+  .ts-nav{padding:14px 20px}
+  .ts-navlinks{gap:14px;font-size:14px}
+  .ts-navlinks .ts-hide-sm{display:none}
+}
+
+/* ── Hero ── */
+.ts-hero-band{background:linear-gradient(180deg, #f5f6ff 0%, #ffffff 100%)}
+.ts-hero{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;padding:72px 48px 84px;max-width:1240px;margin:0 auto;width:100%;box-sizing:border-box}
+.ts-hero-txt{display:flex;flex-direction:column;gap:24px}
+.ts-livepill{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;background:#f4f5ff;color:#4353e8;font-size:13px;font-weight:500;padding:7px 14px;border-radius:99px;letter-spacing:.3px}
+.ts-livepill .ts-livedot{width:8px;height:8px;background:#1fb28a;border-radius:50%}
+.ts-h1{margin:0;font-size:62px;font-weight:600;letter-spacing:-2px;line-height:1.03;color:#16181f}
+.ts-h1 .ts-accent{color:#5b6cff}
+.ts-hero-sub{margin:0;font-size:19px;line-height:1.55;color:#4a4d59;max-width:46ch}
+.ts-hero-ctas{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ts-cta-primary{background:#5b6cff;color:#fff;font-size:17px;font-weight:500;padding:15px 32px;border-radius:99px;box-shadow:0 6px 18px rgba(91,108,255,.3);transition:background .15s,transform .15s}
+.ts-cta-primary:hover{background:#4353e8;color:#fff;transform:translateY(-1px)}
+.ts-cta-ghost{color:#16181f;font-size:17px;font-weight:500;padding:15px 10px}
+.ts-cta-ghost:hover{color:#5b6cff}
+.ts-hero-meta{display:flex;align-items:center;gap:18px;font-size:13.5px;color:#8a8d99;font-weight:500;flex-wrap:wrap}
+.ts-hero-meta .ts-sep{color:#d8d9de}
+
+.ts-hero-art{position:relative;min-height:520px}
+.ts-hero-halo{position:absolute;inset:20px -10px 20px 10px;background:radial-gradient(circle at 55% 45%, #eef0ff 0%, #f8f9ff 45%, transparent 72%);border-radius:50%}
+.ts-bubble{position:absolute;padding:10px 16px;font-size:16px;font-weight:500;box-shadow:0 8px 24px rgba(22,24,31,.08)}
+.ts-bubble .ts-flg{font-weight:500;font-size:13px;color:#8a8d99}
+.ts-bubble.b-hola{top:8px;left:24px;background:#fff;border:1px solid #eceae5;border-radius:16px 16px 16px 4px;animation:ts-float 3s ease-in-out infinite}
+.ts-bubble.b-hi  {top:0;right:60px;background:#ffc94d;color:#5c440c;border-radius:16px 16px 4px 16px;box-shadow:0 8px 24px rgba(255,201,77,.35);animation:ts-float 3.6s ease-in-out infinite .5s}
+.ts-bubble.b-bon {top:215px;left:-14px;background:#1fb28a;color:#fff;border-radius:16px 16px 4px 16px;box-shadow:0 8px 24px rgba(31,178,138,.35);animation:ts-float 3.3s ease-in-out infinite 1s;z-index:2}
+.ts-bubble.b-mar {bottom:96px;left:-4px;background:#ff7a59;color:#fff;border-radius:16px 4px 16px 16px;box-shadow:0 8px 24px rgba(255,122,89,.35);animation:ts-float 3.8s ease-in-out infinite .8s}
+.ts-bubble.b-ola {bottom:30px;right:30px;background:#fff;border:1px solid #eceae5;border-radius:4px 16px 16px 16px;animation:ts-float 3s ease-in-out infinite 1.2s}
+
+.ts-chatcard{position:relative;margin:60px auto 0;width:340px;background:#fff;border:1px solid #eceae5;border-radius:22px;box-shadow:0 24px 60px rgba(22,24,31,.12);overflow:hidden;animation:ts-pop .45s ease-out both}
+.ts-chatcard-hd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #f0efec}
+.ts-chatcard-av{width:36px;height:36px;border-radius:50%;background:#ffc94d;display:flex;align-items:center;justify-content:center;font-weight:600;color:#7a5b0e}
+.ts-chatcard-name{font-size:14.5px;font-weight:500}
+.ts-chatcard-status{font-size:12px;color:#1fb28a;font-weight:500}
+.ts-chatcard-wave{margin-left:auto;font-size:20px;animation:ts-wave 1.6s ease-in-out infinite;transform-origin:70% 70%}
+.ts-chatcard-body{display:flex;flex-direction:column;gap:10px;padding:16px}
+.ts-msg{max-width:85%;font-size:14.5px;padding:10px 14px}
+.ts-msg.recv{align-self:flex-start;background:#f5f6f8;border-radius:4px 14px 14px 14px;animation:ts-pop .35s ease-out .3s both}
+.ts-msg-hint{align-self:flex-start;font-size:11.5px;color:#8a8d99;margin-top:-4px;animation:ts-pop .35s ease-out .5s both}
+.ts-msg.sent{align-self:flex-end;background:#5b6cff;color:#fff;border-radius:14px 4px 14px 14px;animation:ts-pop .35s ease-out .8s both}
+.ts-msg.typing{align-self:flex-start;display:flex;gap:4px;background:#f5f6f8;border-radius:4px 14px 14px 14px;padding:12px 14px;animation:ts-pop .3s ease-out 1.15s both}
+.ts-msg.typing span{width:7px;height:7px;background:#8a8d99;border-radius:50%;animation:ts-dot .9s infinite}
+
+.ts-partypill{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:#16181f;color:#fff;border-radius:99px;padding:11px 20px;display:flex;align-items:center;gap:10px;box-shadow:0 14px 34px rgba(22,24,31,.25);white-space:nowrap;animation:ts-float2 4s ease-in-out infinite;font-size:13.5px;font-weight:500}
+.ts-partypill .ts-avstk{display:flex}
+.ts-partypill .ts-avstk span{width:26px;height:26px;border-radius:50%;border:2px solid #16181f;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.ts-partypill .ts-avstk span + span{margin-left:-8px}
+
+/* ── Tagline strip (dark: Connect · Learn · Play) ── */
+.ts-tagline-band{background:#16181f;color:#fff;padding:20px 48px}
+.ts-tagline-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:56px;flex-wrap:wrap}
+.ts-tagline-item{display:flex;align-items:center;gap:12px}
+.ts-tagline-icon{width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center}
+.ts-tagline-label{font-size:15px;font-weight:500;letter-spacing:3px;text-transform:uppercase}
+.ts-tagline-sep{width:5px;height:5px;border-radius:50%;background:#3a3d4d}
+
+/* ── 40+ languages strip ── */
+.ts-langs-band{padding:36px 48px 0;max-width:1240px;margin:0 auto;width:100%;box-sizing:border-box}
+.ts-langs-inner{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px}
+.ts-langs-label{font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#9a9da8;margin-right:6px}
+.ts-flagpill{background:#fff;border:1px solid #eceae5;border-radius:99px;padding:7px 14px;font-size:14px;font-weight:500;color:#16181f}
+.ts-langs-more{font-size:14px;font-weight:500;color:#5b6cff}
+
+/* ── Section shared ── */
+.ts-sec{padding:88px 48px 0;max-width:1240px;margin:0 auto;width:100%;box-sizing:border-box}
+.ts-sec.pb44{padding-bottom:44px}
+.ts-sec.pb88{padding-bottom:88px}
+.ts-eyebrow{font-size:13px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase}
+.ts-sec-hd{display:flex;flex-direction:column;gap:10px;margin-bottom:36px}
+.ts-h2{margin:0;font-size:40px;font-weight:600;letter-spacing:-1.2px;color:#16181f}
+.ts-sec-lead{margin:0;font-size:17px;color:#4a4d59;max-width:62ch;line-height:1.55}
+
+/* ── Connect: 3 tinted cards ── */
+.ts-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.ts-tintcard{border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:10px}
+.ts-tintcard.periwinkle{background:#f4f5ff}
+.ts-tintcard.jade{background:#eefaf5}
+.ts-tintcard.sun{background:#fff6e8}
+.ts-tintbadge{width:44px;height:44px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center}
+.ts-tintbadge .ts-b{width:18px;height:18px}
+.ts-tintcard h3{font-size:18px;font-weight:500;margin:0;color:#16181f}
+.ts-tintcard p{font-size:15px;color:#4a4d59;line-height:1.55;margin:0}
+
+/* ── Always-on: parties / clubs / AI ── */
+.ts-alwayscard{border-radius:20px;padding:26px;display:flex;flex-direction:column;gap:16px}
+.ts-alwayscard.periwinkle{background:#f4f5ff}
+.ts-alwayscard.jade{background:#eefaf5}
+.ts-alwayscard.violet{background:#f6f1ff}
+.ts-alwayscard .hd{display:flex;align-items:center;justify-content:space-between}
+.ts-alwayscard .ttl{font-size:18px;font-weight:500;color:#16181f}
+.ts-livepill-red{display:inline-flex;align-items:center;gap:6px;background:#fff;border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600;color:#d9544d}
+.ts-livepill-red .dot{width:7px;height:7px;background:#d9544d;border-radius:50%;animation:ts-dot 1s infinite}
+.ts-innercard{background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 6px 18px rgba(122,91,255,.12)}
+.ts-partyline{font-size:14.5px;font-weight:500}
+.ts-partyseats{display:flex;gap:10px}
+.ts-seat{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ts-seat-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600}
+.ts-seat-lb{font-size:11px;color:#8a8d99;font-weight:500}
+.ts-partymeta{background:#f6f1ff;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:500;color:#6b4fd8}
+.ts-clublist{display:flex;flex-direction:column;gap:10px}
+.ts-clubrow{background:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 14px rgba(31,178,138,.1)}
+.ts-clubemj{font-size:22px}
+.ts-clubbody{flex:1}
+.ts-clubname{font-size:14.5px;font-weight:500}
+.ts-clubmeta{font-size:12.5px;color:#8a8d99}
+.ts-clubjoin{font-size:12px;font-weight:600;color:#1fb28a}
+.ts-aihd{display:flex;align-items:center;gap:10px}
+.ts-aiav{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#5b6cff,#9b6cff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px}
+.ts-247{background:#fff;border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600;color:#5b6cff}
+.ts-aimsg{font-size:13.5px;padding:9px 13px}
+.ts-aimsg.recv{align-self:flex-start;background:#f5f6f8;border-radius:4px 12px 12px 12px}
+.ts-aimsg.sent{align-self:flex-end;background:#5b6cff;color:#fff;border-radius:12px 4px 12px 12px}
+.ts-aimsg.ok  {align-self:flex-start;background:#f2f8f5;color:#2d7a62;border-radius:4px 12px 12px 12px;font-size:12.5px;font-weight:500}
+
+/* ── Games band (dark) ── */
+.ts-play-band{background:#16181f;margin-top:72px}
+.ts-play-inner{padding:80px 48px 88px;max-width:1240px;margin:0 auto;width:100%;box-sizing:border-box}
+.ts-play-inner .ts-h2{color:#fff}
+.ts-play-inner .ts-sec-lead{color:#b8bac4;max-width:60ch}
+.ts-gamegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ts-gamecard{background:#1d2130;border:1px solid #2a2e42;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:6px;transition:transform .15s,border-color .15s;color:#fff;text-decoration:none}
+.ts-gamecard:hover{transform:translateY(-3px);border-color:#3a3f5a;color:#fff}
+.ts-gameico{font-size:22px}
+.ts-gamename{font-size:15.5px;font-weight:500;color:#fff}
+.ts-gameline{font-size:13px;color:#9aa0b4;line-height:1.4}
+
+/* ── Learn split ── */
+.ts-learn-inner{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.ts-learn-txt{display:flex;flex-direction:column;gap:10px}
+.ts-learn-tags{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.ts-learn-tag{background:#f5f6f8;border-radius:99px;padding:8px 16px;font-size:14px;font-weight:500;color:#4a4d59}
+.ts-planner{background:linear-gradient(160deg, #eefaf5, #ffffff 70%);border:1px solid #d9efe6;border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 14px 34px rgba(31,178,138,.1)}
+.ts-planner-hd{font-size:15px;font-weight:500}
+.ts-planner-row{display:flex;gap:8px;flex-wrap:wrap}
+.ts-planner-row > *{flex:1;min-width:0}
+.ts-planner-input{background:#fff;border:1px solid #e4e3df;border-radius:10px;padding:10px 14px;font-size:14px;color:#8a8d99}
+.ts-planner-input b{color:#16181f}
+.ts-chip{border-radius:10px;padding:10px 14px;font-size:14px;font-weight:500;text-align:center;flex:1;min-width:0}
+.ts-chip.act{background:#eefaf5;border:1px solid #1fb28a;color:#14785e}
+.ts-chip.off{background:#fff;border:1px solid #e4e3df;color:#8a8d99}
+.ts-planner-cta{background:#5b6cff;color:#fff;border-radius:12px;padding:14px;text-align:center;font-size:15px;font-weight:500}
+
+/* ── Teach CTA (dark-gold) ── */
+.ts-teach-band{width:100%;margin-bottom:88px;background:linear-gradient(115deg, #2a1e05 0%, #16181f 55%)}
+.ts-teach-inner{position:relative;overflow:hidden;padding:72px 48px;max-width:1240px;margin:0 auto;box-sizing:border-box;display:grid;grid-template-columns:1.5fr auto;gap:36px;align-items:center}
+.ts-teach-blob1{position:absolute;top:-40px;right:220px;width:130px;height:130px;background:rgba(255,201,77,.14);border-radius:40px 40px 10px 40px;transform:rotate(-12deg)}
+.ts-teach-blob2{position:absolute;bottom:-50px;right:40px;width:170px;height:170px;background:rgba(255,122,89,.12);border-radius:50px 12px 50px 50px;transform:rotate(10deg)}
+.ts-teach-quote{position:absolute;top:30px;right:60px;animation:ts-float 3.4s ease-in-out infinite;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:14px 14px 14px 4px;padding:8px 14px;font-size:13.5px;font-weight:500;color:#ffd575}
+.ts-teach-txt{position:relative;display:flex;flex-direction:column;gap:12px}
+.ts-teach-eb{font-size:13px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#ffc94d}
+.ts-teach-h{font-size:34px;font-weight:600;letter-spacing:-1px;color:#fff;line-height:1.15}
+.ts-teach-h .hl{color:#ffc94d}
+.ts-teach-sub{font-size:16px;color:#b8bac4;line-height:1.55;max-width:58ch}
+.ts-teach-facts{display:flex;gap:18px;margin-top:6px;font-size:13.5px;font-weight:500;color:#9aa0b4;flex-wrap:wrap}
+.ts-teach-cta{position:relative;background:#ffc94d;color:#3a2c07;font-size:17px;font-weight:600;padding:17px 34px;border-radius:99px;white-space:nowrap;justify-self:end;box-shadow:0 10px 28px rgba(255,201,77,.35);transition:background .15s,transform .15s}
+.ts-teach-cta:hover{background:#ffd575;color:#3a2c07;transform:translateY(-1px)}
+
+/* ── Referral + safety ── */
+.ts-refsafe{padding:0 48px 88px;max-width:1240px;margin:0 auto;width:100%;box-sizing:border-box}
+.ts-refsafe-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+.ts-refcard{background:#16181f;color:#fff;border-radius:20px;padding:36px;display:flex;flex-direction:column;gap:12px}
+.ts-refcard .eb{font-size:13px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#ffc94d}
+.ts-refcard .h{font-size:28px;font-weight:600;letter-spacing:-.8px}
+.ts-refcard p{font-size:15.5px;color:#b8bac4;line-height:1.55;margin:0}
+.ts-safecard{border:1px solid #eceae5;border-radius:20px;padding:36px;display:flex;flex-direction:column;gap:12px;background:#fff}
+.ts-safecard .eb{font-size:13px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#1fb28a}
+.ts-safecard .h{font-size:20px;font-weight:600;letter-spacing:-.4px}
+.ts-safecard p{font-size:15px;color:#4a4d59;line-height:1.55;margin:0}
+
+/* ── Join CTA (full-bleed periwinkle) ── */
+.ts-join-band{width:100%;background:#5b6cff;padding:92px 48px;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;position:relative;overflow:hidden}
+.ts-join-blob1{position:absolute;top:-30px;left:60px;width:90px;height:90px;background:rgba(255,255,255,.12);border-radius:28px 28px 8px 28px;transform:rotate(-10deg)}
+.ts-join-blob2{position:absolute;bottom:-24px;right:80px;width:74px;height:74px;background:rgba(255,255,255,.12);border-radius:24px 8px 24px 24px;transform:rotate(12deg)}
+.ts-join-h{margin:0;font-size:44px;font-weight:600;letter-spacing:-1.4px;color:#fff;line-height:1.05;position:relative}
+.ts-join-sub{margin:0;font-size:18px;color:rgba(255,255,255,.85);max-width:52ch;line-height:1.5;position:relative}
+.ts-join-cta{background:#fff;color:#16181f;font-size:17px;font-weight:600;padding:15px 36px;border-radius:99px;margin-top:6px;position:relative;transition:transform .15s}
+.ts-join-cta:hover{color:#16181f;transform:translateY(-1px)}
+.ts-join-fine{font-size:13.5px;color:rgba(255,255,255,.7);font-weight:500;position:relative}
+
+/* ── Footer (landing-native, per README §41) ── */
+.ts-foot{border-top:1px solid #f0efec;background:#fafafa}
+.ts-foot-inner{max-width:1240px;margin:0 auto;padding:56px 48px 28px;box-sizing:border-box}
+.ts-foot-cols{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;border-bottom:1px solid #ececea}
+.ts-foot-brand{display:flex;flex-direction:column;gap:14px}
+.ts-foot-blurb{font-size:14.5px;color:#6b6e7a;line-height:1.55;max-width:34ch}
+.ts-foot-socials{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap}
+.ts-foot-socials a{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e6e5e1;display:flex;align-items:center;justify-content:center;transition:border-color .12s}
+.ts-foot-socials a:hover{border-color:#5b6cff}
+.ts-foot-col{display:flex;flex-direction:column;gap:12px}
+.ts-foot-col-h{font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#9a9da8}
+.ts-foot-col a{color:#4a4d59;font-size:14.5px;font-weight:500}
+.ts-foot-col a:hover{color:#5b6cff}
+.ts-foot-sub{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding-top:22px}
+.ts-foot-meta{font-size:13.5px;color:#8a8d99}
+.ts-foot-flags{display:flex;align-items:center;gap:8px;font-size:17px;flex-wrap:wrap}
+.ts-foot-flags .plus{font-size:13px;font-weight:500;color:#5b6cff}
+
+/* ── Responsive collapses ── */
+@media(max-width:960px){
+  .ts-hero{grid-template-columns:1fr;padding:48px 20px 72px;gap:56px;text-align:left}
+  .ts-hero-art{min-height:480px;max-width:420px;margin:0 auto;width:100%}
+  .ts-h1{font-size:44px;letter-spacing:-1.2px}
+  .ts-hero-sub{font-size:17px;max-width:none}
+  .ts-tagline-band{padding:20px}
+  .ts-tagline-inner{gap:24px}
+  .ts-langs-band,.ts-sec,.ts-refsafe{padding-left:20px;padding-right:20px}
+  .ts-sec{padding-top:64px}
+  .ts-h2{font-size:32px;letter-spacing:-.8px}
+  .ts-grid3,.ts-gamegrid{grid-template-columns:1fr}
+  .ts-learn-inner{grid-template-columns:1fr;gap:32px}
+  .ts-teach-band{margin-bottom:64px}
+  .ts-teach-inner{grid-template-columns:1fr;padding:56px 20px;gap:24px}
+  .ts-teach-cta{justify-self:start}
+  .ts-teach-h{font-size:28px}
+  .ts-teach-quote{display:none}
+  .ts-refsafe-grid{grid-template-columns:1fr}
+  .ts-join-band{padding:64px 20px}
+  .ts-join-h{font-size:32px;letter-spacing:-.8px}
+  .ts-play-inner{padding:64px 20px}
+  .ts-foot-inner{padding:44px 20px 24px}
+  .ts-foot-cols{grid-template-columns:1fr 1fr;gap:28px}
+}
+@media(max-width:560px){
+  .ts-foot-cols{grid-template-columns:1fr}
+  .ts-hero-ctas{flex-direction:column;align-items:stretch}
+  .ts-cta-primary,.ts-cta-ghost{text-align:center}
+  .ts-partypill{font-size:12px;padding:9px 14px}
+  .ts-partypill .ts-avstk span{width:22px;height:22px;font-size:10px}
+}
+</style>
+</head>
 <body>
-<header class="sitehead"><div class="wrap">
-  <nav class="nav">
-    <a class="logo ts-lockup" href="/" aria-label="talksibi home">
-      <img class="ts-mark" src="/mark.svg" alt="" style="width:32px;height:32px" onerror="this.style.display='none'">
-      <span class="ts-wordmark" style="font-size:22px">talksibi</span>
-    </a>
-    <div class="navlinks">
-      <a class="hideSm" href="/app">Community</a>
-      <a href="/games">Games</a>
-      <a class="hideSm" href="/blog">Blog</a>
-      <a class="btn small" href="/app">Sign in</a>
-    </div>
-  </nav>
-</div></header>
 
-<div class="wrap">
-  <div class="hero">
-    <div>
-      <h1>Learn a language by <span class="accent">playing</span> with real people</h1>
-      <p>Chat with speakers from every country, get instant AI corrections on your messages, drop into live voice parties, and play 8 free games together — no textbooks, no lessons, no sign-up.</p>
-      <div class="cta-row">
-        <a class="btn" href="/app">${PAD}Start free — 30 seconds</a>
-        <a class="btn ghost" href="/games">Browse games</a>
+<!-- Sticky nav -->
+<nav class="ts-nav">
+  <a class="ts-lockup" href="/" aria-label="talksibi home">
+    ${tsLogoMark(34)}
+    <span class="ts-wordmark" style="font-size:24px">talksibi</span>
+  </a>
+  <div class="ts-navlinks">
+    <a class="ts-hide-sm" href="/app">Community</a>
+    <a href="#play">Games</a>
+    <a class="ts-hide-sm" href="/app#learn">Learn</a>
+    <a class="ts-hide-sm" href="/blog">Blog</a>
+    <a class="ts-navlogin" href="/app">Sign in</a>
+    <a class="ts-navjoin" href="/app">Join free</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="ts-hero-band">
+  <header class="ts-hero">
+    <div class="ts-hero-txt">
+      <div class="ts-livepill">
+        <span class="ts-livedot"></span>
+        Live now — join a language party
       </div>
-      <div class="herometa">
-        <span class="pill">100% free forever</span>
-        <span class="pill">AI corrections built in</span>
-        <span class="pill">Real people from 90+ countries</span>
-        <span class="pill">👑 Founders program — invite 5 friends, get 1 year free</span>
+      <h1 class="ts-h1">Practise languages with <span class="ts-accent">real people</span>.</h1>
+      <p class="ts-hero-sub">Create your profile, follow language partners, and chat any time. Play games together, join live parties, and build an AI learning plan — free, in your browser.</p>
+      <div class="ts-hero-ctas">
+        <a class="ts-cta-primary" href="/app">Start free — 30 seconds</a>
+        <a class="ts-cta-ghost" href="/app#wall">Explore Community →</a>
       </div>
-      <div class="playersrow">
-        <div class="avstack">${avatar('#ff4d6b', '#ffd9b3')}${avatar('#3d7bff', '#f3c39a')}${avatar('#7c3aed', '#ffd9b3')}${avatar('#0f9d58', '#f3c39a')}${avatar('#f59e0b', '#ffe0c2')}</div>
-        <div class="cap"><b>Speakers from 90+ countries</b><br>chat, correct, and play together every day.</div>
+      <div class="ts-hero-meta">
+        <span>Free forever</span><span class="ts-sep">·</span><span>No install — runs in the browser</span><span class="ts-sep">·</span><span>18+ community</span>
       </div>
     </div>
-    <div class="mockwrap">${CHAT_MOCK}</div>
-  </div>
-</div>
 
-<!-- Language flag grid — Lingopie-style 'pick your language' shelf. -->
-<div class="band white"><div class="wrap">
-  <h2 class="sec-h">Learn any of these 24 languages, free</h2>
-  <p class="sec-sub">Tap a language to sign up and start chatting with real speakers in seconds. Every language, every level — beginner to fluent.</p>
-  <div class="flaggrid">
-    <a href="/app" class="flagcard"><span class="fl">🇪🇸</span><b>Spanish</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇫🇷</span><b>French</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇩🇪</span><b>German</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇮🇹</span><b>Italian</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇵🇹</span><b>Portuguese</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇳🇱</span><b>Dutch</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇸🇪</span><b>Swedish</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇵🇱</span><b>Polish</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇬🇷</span><b>Greek</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇹🇷</span><b>Turkish</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇷🇺</span><b>Russian</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇺🇦</span><b>Ukrainian</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇸🇦</span><b>Arabic</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇮🇷</span><b>Persian</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇮🇱</span><b>Hebrew</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇮🇳</span><b>Hindi</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇧🇩</span><b>Bengali</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇵🇰</span><b>Urdu</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇯🇵</span><b>Japanese</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇰🇷</span><b>Korean</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇨🇳</span><b>Mandarin</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇻🇳</span><b>Vietnamese</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇹🇭</span><b>Thai</b></a>
-    <a href="/app" class="flagcard"><span class="fl">🇮🇩</span><b>Indonesian</b></a>
-  </div>
-  <p class="flagfoot">Learning something else? Pick 'Other' at signup — every language works.</p>
-</div></div>
+    <div class="ts-hero-art">
+      <div class="ts-hero-halo"></div>
+      <div class="ts-bubble b-hola">Hola <span class="ts-flg">🇪🇸</span></div>
+      <div class="ts-bubble b-hi">こんにちは <span style="font-size:13px">🇯🇵</span></div>
+      <div class="ts-bubble b-bon">Bonjour <span style="font-size:13px">🇫🇷</span></div>
+      <div class="ts-bubble b-mar">مرحبا <span style="font-size:13px">🇸🇦</span></div>
+      <div class="ts-bubble b-ola">Olá <span class="ts-flg">🇧🇷</span></div>
 
-<!-- Alternating feature strips (Lingopie-style). Image ⇄ text on
-     each row so the eye tracks down the page naturally. -->
-<div class="band gray"><div class="wrap">
-  <div class="strip">
-    <div class="strip-art">${ILLUS_CHAT}</div>
-    <div class="strip-txt">
-      <div class="strip-tag">💬 Chat</div>
-      <h3>Text real speakers. Get instant AI corrections.</h3>
-      <p>Message anyone learning your language. Tap "Correct" on any message and our AI proposes the fixed version underneath — plus a short line explaining what changed ("past tense · missing article"). Your original stays visible so you learn from the mistake, not around it.</p>
+      <div class="ts-chatcard">
+        <div class="ts-chatcard-hd">
+          <div class="ts-chatcard-av">M</div>
+          <div>
+            <div class="ts-chatcard-name">Mariana</div>
+            <div class="ts-chatcard-status">● online · speaks Spanish</div>
+          </div>
+          <div class="ts-chatcard-wave">👋</div>
+        </div>
+        <div class="ts-chatcard-body">
+          <div class="ts-msg recv">¡Hola! ¿Cómo estás? 😊</div>
+          <div class="ts-msg-hint">Hi! How are you? — tap to translate</div>
+          <div class="ts-msg sent">¡Muy bien! Word Race? 🏁</div>
+          <div class="ts-msg typing"><span></span><span style="animation-delay:.15s"></span><span style="animation-delay:.3s"></span></div>
+        </div>
+      </div>
+
+      <div class="ts-partypill">
+        <span class="ts-avstk">
+          <span style="background:#ff7a59;color:#fff">K</span>
+          <span style="background:#1fb28a;color:#fff">A</span>
+          <span style="background:#ffc94d;color:#7a5b0e">+5</span>
+        </span>
+        <span>🎉 French–English party is live</span>
+      </div>
+    </div>
+  </header>
+</section>
+
+<!-- Dark tagline strip: Connect · Learn · Play -->
+<section class="ts-tagline-band">
+  <div class="ts-tagline-inner">
+    <div class="ts-tagline-item">
+      <span class="ts-tagline-icon" style="background:rgba(91,108,255,.18)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8f9bff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      </span>
+      <span class="ts-tagline-label">Connect</span>
+    </div>
+    <span class="ts-tagline-sep"></span>
+    <div class="ts-tagline-item">
+      <span class="ts-tagline-icon" style="background:rgba(31,178,138,.18)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#43cfa5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+      </span>
+      <span class="ts-tagline-label">Learn</span>
+    </div>
+    <span class="ts-tagline-sep"></span>
+    <div class="ts-tagline-item">
+      <span class="ts-tagline-icon" style="background:rgba(255,201,77,.18)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffd575" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4.5"></rect><circle cx="8.2" cy="8.2" r="1.3" fill="#ffd575" stroke="none"></circle><circle cx="15.8" cy="8.2" r="1.3" fill="#ffd575" stroke="none"></circle><circle cx="8.2" cy="15.8" r="1.3" fill="#ffd575" stroke="none"></circle><circle cx="15.8" cy="15.8" r="1.3" fill="#ffd575" stroke="none"></circle></svg>
+      </span>
+      <span class="ts-tagline-label">Play</span>
     </div>
   </div>
-  <div class="strip strip-rev">
-    <div class="strip-art">${ILLUS_GAMES}</div>
-    <div class="strip-txt">
-      <div class="strip-tag">🎮 9 games</div>
-      <h3>Learn by playing — vocabulary that actually sticks.</h3>
-      <p>Word Race, Word Chain, TalkSibi, Guess the Word, Spy, Ludo, 8-Ball Pool, Connect 4, Hoop. Play in your target language and every round builds real vocabulary in real context. Solo or with a friend — one shared link, no downloads.</p>
+</section>
+
+<!-- 40+ languages flag pills -->
+<section class="ts-langs-band">
+  <div class="ts-langs-inner">
+    <span class="ts-langs-label">40+ languages</span>
+    ${flagPills}
+    <span class="ts-langs-more">+ 28 more</span>
+  </div>
+</section>
+
+<!-- Connect: community 3-card -->
+<section id="connect" class="ts-sec pb44">
+  <div class="ts-sec-hd">
+    <div class="ts-eyebrow" style="color:#5b6cff">Connect</div>
+    <h2 class="ts-h2">A community, not a classroom.</h2>
+    <p class="ts-sec-lead">Find partners who speak what you're learning — and are learning what you speak. Follow the ones you click with and talk whenever you're both around.</p>
+  </div>
+  <div class="ts-grid3">
+    <div class="ts-tintcard periwinkle">
+      <div class="ts-tintbadge" style="box-shadow:0 3px 10px rgba(91,108,255,.18)"><div class="ts-b" style="background:#5b6cff;border-radius:6px 6px 2px 6px"></div></div>
+      <h3>Chat with translation built in</h3>
+      <p>Text, voice notes, photos, and calls. Tap any message to translate, correct, or hear it spoken.</p>
+    </div>
+    <div class="ts-tintcard jade">
+      <div class="ts-tintbadge" style="box-shadow:0 3px 10px rgba(31,178,138,.18)"><div class="ts-b" style="background:#1fb28a;border-radius:50%"></div></div>
+      <h3>Live language parties</h3>
+      <p>Group voice rooms around a language or a topic. Public or private — host one or drop into what's live.</p>
+    </div>
+    <div class="ts-tintcard sun">
+      <div class="ts-tintbadge" style="box-shadow:0 3px 10px rgba(255,178,45,.22)"><div class="ts-b" style="background:#ffc94d;border-radius:2px 6px 6px 6px"></div></div>
+      <h3>References you can trust</h3>
+      <p>Real profiles with photo checks, references from past partners, and Report &amp; Block on every profile.</p>
     </div>
   </div>
-  <div class="strip">
-    <div class="strip-art">${ILLUS_PARTY}</div>
-    <div class="strip-txt">
-      <div class="strip-tag">🎤 Voice</div>
-      <h3>Drop into live voice parties. Listen first, speak when ready.</h3>
-      <p>Open audio rooms with speakers from around the world. Join as a listener — hear the rhythm, pick up slang, no pressure to talk. Raise your hand when you're ready and speak with the room. This is the fastest way to break the speaking wall.</p>
+</section>
+
+<!-- Always on: parties, clubs, AI experts -->
+<section id="rooms" class="ts-sec">
+  <div class="ts-sec-hd">
+    <div class="ts-eyebrow" style="color:#9b6cff">Always on</div>
+    <h2 class="ts-h2">Parties, clubs, and AI experts.</h2>
+    <p class="ts-sec-lead">Any hour, there's a voice room live, a club meeting up, or an AI expert ready to practise with you.</p>
+  </div>
+  <div class="ts-grid3">
+
+    <div class="ts-alwayscard violet">
+      <div class="hd">
+        <div class="ttl">🎉 Language parties</div>
+        <span class="ts-livepill-red"><span class="dot"></span>LIVE</span>
+      </div>
+      <div class="ts-innercard">
+        <div class="ts-partyline">Spanish ↔ English party</div>
+        <div class="ts-partyseats">
+          <div class="ts-seat"><div class="ts-seat-av" style="background:#ffc94d;color:#7a5b0e;border:2.5px solid #9b6cff">M</div><span class="ts-seat-lb">speaking</span></div>
+          <div class="ts-seat"><div class="ts-seat-av" style="background:#5b6cff;color:#fff">J</div><span class="ts-seat-lb">·</span></div>
+          <div class="ts-seat"><div class="ts-seat-av" style="background:#1fb28a;color:#fff">A</div><span class="ts-seat-lb">·</span></div>
+          <div class="ts-seat"><div class="ts-seat-av" style="background:#eceaf6;color:#9b6cff;border:2px dashed #9b6cff">+</div><span class="ts-seat-lb" style="color:#9b6cff">free seat</span></div>
+        </div>
+        <div class="ts-partymeta">🎙 12 talking · 34 listening</div>
+      </div>
+      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Group voice rooms around a language or a topic — public or private. Host your own or take a free seat.</div>
+    </div>
+
+    <div class="ts-alwayscard jade">
+      <div class="ttl">🏛 Language clubs</div>
+      <div class="ts-clublist">
+        <div class="ts-clubrow">
+          <span class="ts-clubemj">🎬</span>
+          <div class="ts-clubbody"><div class="ts-clubname">Cinema club · French</div><div class="ts-clubmeta">Fridays · 842 members</div></div>
+          <span class="ts-clubjoin">Join</span>
+        </div>
+        <div class="ts-clubrow">
+          <span class="ts-clubemj">✈️</span>
+          <div class="ts-clubbody"><div class="ts-clubname">Travel stories · Spanish</div><div class="ts-clubmeta">Daily · 1.2k members</div></div>
+          <span class="ts-clubjoin">Join</span>
+        </div>
+        <div class="ts-clubrow">
+          <span class="ts-clubemj">🍜</span>
+          <div class="ts-clubbody"><div class="ts-clubname">Food talk · Japanese</div><div class="ts-clubmeta">Weekends · 356 members</div></div>
+          <span class="ts-clubjoin">Join</span>
+        </div>
+      </div>
+      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Find your people around what you love — every club meets in chat and live rooms.</div>
+    </div>
+
+    <div class="ts-alwayscard periwinkle">
+      <div class="hd">
+        <div class="ttl">✨ AI experts</div>
+        <span class="ts-247">24/7</span>
+      </div>
+      <div class="ts-innercard" style="gap:10px">
+        <div class="ts-aihd">
+          <div class="ts-aiav">✦</div>
+          <div><div class="ts-partyline">Sofía · AI conversation coach</div><div style="font-size:12px;color:#1fb28a;font-weight:500">● always online</div></div>
+        </div>
+        <div class="ts-aimsg recv">Let's warm up — order a coffee in Spanish ☕</div>
+        <div class="ts-aimsg sent">Un café con leche, por favor…</div>
+        <div class="ts-aimsg ok">✓ Perfect! Now ask for the bill.</div>
+      </div>
+      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Nobody around? Practise with AI experts — instant corrections, zero judgement, any topic.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Games band (dark) -->
+<section class="ts-play-band">
+  <div id="play" class="ts-play-inner">
+    <div class="ts-sec-hd">
+      <div class="ts-eyebrow" style="color:#ff7a59">Play</div>
+      <h2 class="ts-h2">The fastest way to talk is to play.</h2>
+      <p class="ts-sec-lead">Six games built for language practice. Start a room, challenge a friend, or look in on any live table and take a free seat.</p>
+    </div>
+    <div class="ts-gamegrid">${gameCards}</div>
+  </div>
+</section>
+
+<!-- Learn split -->
+<section id="learn" class="ts-sec pb88">
+  <div class="ts-learn-inner">
+    <div class="ts-learn-txt">
+      <div class="ts-eyebrow" style="color:#1fb28a">Learn</div>
+      <h2 class="ts-h2">Your plan, built in seconds.</h2>
+      <p class="ts-sec-lead" style="max-width:none">Tell us what you speak, what you're learning, and the minutes you can spare — the AI builds a personalised lesson plan. Free forever. Prepping for IELTS or TOEFL? There's a dedicated track with hand-picked resources and real test dates.</p>
+      <div class="ts-learn-tags">
+        <span class="ts-learn-tag">✨ AI lesson plans</span>
+        <span class="ts-learn-tag">📝 IELTS &amp; TOEFL prep</span>
+        <span class="ts-learn-tag">🗓 Real test dates</span>
+      </div>
+    </div>
+    <div class="ts-planner">
+      <div class="ts-planner-hd">Build your plan</div>
+      <div class="ts-planner-row">
+        <span class="ts-planner-input">You want to learn… <b>Spanish</b></span>
+        <span class="ts-planner-input">You speak… <b>English</b></span>
+      </div>
+      <div class="ts-planner-row">
+        <span class="ts-chip act">🌿 Intermediate</span>
+        <span class="ts-chip off">✈️ Travel</span>
+        <span class="ts-chip off">15 min/day</span>
+      </div>
+      <div class="ts-planner-cta">✨ Build my plan — about 5 seconds</div>
     </div>
   </div>
-  <div class="strip strip-rev">
-    <div class="strip-art">${ILLUS_AI}</div>
-    <div class="strip-txt">
-      <div class="strip-tag">🤖 AI partners</div>
-      <h3>No one online? Practise with an AI conversation partner.</h3>
-      <p>Three built-in AI experts (British, American, Australian) with real voices — always available, patient, and honest with corrections. Perfect for warm-ups before a real conversation, or late-night practice when nobody's awake.</p>
+</section>
+
+<!-- Become a teacher (dark gold, full-bleed) -->
+<section id="teach" class="ts-teach-band">
+  <div class="ts-teach-inner">
+    <div class="ts-teach-blob1"></div>
+    <div class="ts-teach-blob2"></div>
+    <div class="ts-teach-quote">"Great teacher!" ★★★★★</div>
+    <div class="ts-teach-txt">
+      <div class="ts-teach-eb">Teach on talksibi</div>
+      <div class="ts-teach-h">Fluent in something? <span class="hl">Get paid to teach it.</span></div>
+      <div class="ts-teach-sub">Host lessons and conversation sessions, build your student circle, and earn from the languages you already speak — right inside talksibi.</div>
+      <div class="ts-teach-facts">
+        <span>💸 Set your own rate</span><span>🗓 Your schedule</span><span>🌍 Students worldwide</span>
+      </div>
+    </div>
+    <a class="ts-teach-cta" href="/become-a-teacher">Become a teacher →</a>
+  </div>
+</section>
+
+<!-- Referral + safety -->
+<section class="ts-refsafe">
+  <div class="ts-refsafe-grid">
+    <div class="ts-refcard">
+      <div class="eb">👑 Invite &amp; win</div>
+      <div class="h">Bring 5 friends, unlock 1 year free.</div>
+      <p>Everything is free to use — referrals unlock the premium year as a thank-you for growing the community.</p>
+    </div>
+    <div class="ts-safecard">
+      <div class="eb">Safe by design</div>
+      <div class="h">18+, verified, moderated.</div>
+      <p>Every profile is reviewed within a day. Report and Block sit on every profile — reports are handled within 24 hours.</p>
     </div>
   </div>
-</div></div>
+</section>
 
-<div class="band gray" id="how"><div class="wrap">
-  <h2 class="sec-h">How TalkSibi works</h2>
-  <p class="sec-sub">Three steps, thirty seconds. No credit card, no email required.</p>
-  <div class="steps">
-    <div class="step"><div class="n">1</div><h3>Pick your languages</h3><p>Tell us what you speak and what you're learning. That's it — you're in.</p></div>
-    <div class="step"><div class="n">2</div><h3>Chat, play, correct</h3><p>Message someone, tap Correct on their reply, join a voice party, or start a game. Every message is a mini-lesson.</p></div>
-    <div class="step"><div class="n">3</div><h3>Practise every day</h3><p>Follow the people you click with, get invited to game nights, watch your fluency grow through actual use.</p></div>
+<!-- Full-bleed join CTA -->
+<section id="join">
+  <div class="ts-join-band">
+    <div class="ts-join-blob1"></div>
+    <div class="ts-join-blob2"></div>
+    <h2 class="ts-join-h">Your first conversation is a game away.</h2>
+    <p class="ts-join-sub">Join free, set your languages, and say hi — someone on the other side of the world is waiting to practise with you.</p>
+    <a class="ts-join-cta" href="/app">Create my profile — free</a>
+    <div class="ts-join-fine">No credit card · No install · 18+</div>
   </div>
-</div></div>
+</section>
 
-<div class="band white"><div class="wrap">
-  <h2 class="sec-h">All 8 games, free, in your browser</h2>
-  <p class="sec-sub">Every game is a language workout in disguise. Start solo with a bot or invite friends with one link.</p>
-  <div class="gamegrid">${gameCards}</div>
-</div></div>
-
-<div class="band greenb"><div class="wrap" style="text-align:center">
-  <h2 class="sec-h">Your first conversation starts in 30 seconds</h2>
-  <p style="font-weight:500;margin:8px 0 26px;font-size:17px">Free forever. No credit card. No app store. Just pick your language and go.</p>
-  <a class="btn" href="/app" style="background:#fff;color:var(--green)">${PAD}Start free</a>
-</div></div>
-
-<div class="band white"><div class="wrap">
-  <h2 class="sec-h">What our community says</h2>
-  <p class="sec-sub">Real quotes from real users learning real languages.</p>
-  <div class="grid3">
-    <div class="rev"><p>"I've tried loads of language apps — TalkSibi is the first one that mixes real people with proper AI corrections. The Correct button alone changed how I write in Spanish."</p>
-      <div class="who">${avatar('#2b3350', '#ffd9b3')}<div><b>Ayesha</b><span>Learning Spanish · London</span></div></div></div>
-    <div class="rev"><p>"Voice parties on Sunday nights are the best. Full room of French speakers, I mostly listen, I've picked up more slang in a month than a year of Duolingo."</p>
-      <div class="who">${avatar('#7c3aed', '#f3c39a')}<div><b>Hamza</b><span>Learning French · Karachi</span></div></div></div>
-    <div class="rev"><p>"We play Word Race in Japanese while chatting. It's like a language game night with people from Tokyo, Berlin, and Buenos Aires all at once."</p>
-      <div class="who">${avatar('#e63956', '#ffd9b3')}<div><b>Zara</b><span>Learning Japanese · Manchester</span></div></div></div>
+<!-- Landing-native footer (per README §41) -->
+<footer class="ts-foot">
+  <div class="ts-foot-inner">
+    <div class="ts-foot-cols">
+      <div class="ts-foot-brand">
+        <a class="ts-lockup" href="/">
+          ${tsLogoMark(30)}
+          <span class="ts-wordmark" style="font-size:21px">talksibi</span>
+        </a>
+        <div class="ts-foot-blurb">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
+        <div class="ts-foot-socials">
+          <a href="https://instagram.com/wordspies" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg>
+          </a>
+          <a href="https://tiktok.com/@wordspies" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#4a4d59"><path d="M16.6 5.82C15.9 5.03 15.5 4 15.5 2.9h-3.1v12.4c0 1.4-1.14 2.54-2.55 2.54a2.55 2.55 0 0 1 0-5.1c.26 0 .52.04.76.12V9.7a5.7 5.7 0 0 0-.76-.05 5.66 5.66 0 1 0 5.66 5.66V9.64a7.2 7.2 0 0 0 4.19 1.34V7.9c-1.24 0-2.37-.5-3.1-2.08z"></path></svg>
+          </a>
+          <a href="https://youtube.com/@wordspies" target="_blank" rel="noopener" aria-label="YouTube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M23 7.5s-.23-1.63-.94-2.35c-.9-.94-1.9-.95-2.36-1C16.4 3.9 12 3.9 12 3.9h-.01s-4.4 0-7.7.25c-.46.05-1.46.06-2.36 1C1.22 5.87 1 7.5 1 7.5S.76 9.42.76 11.33v1.8C.76 15.05 1 16.96 1 16.96s.23 1.63.93 2.35c.9.94 2.08.9 2.6 1 1.89.18 7.47.24 7.47.24s4.4-.01 7.7-.25c.46-.06 1.46-.07 2.36-1.01.7-.72.94-2.35.94-2.35s.24-1.9.24-3.82v-1.8C23.24 9.42 23 7.5 23 7.5zM9.7 14.85V8.66l6.22 3.1-6.22 3.09z"></path></svg>
+          </a>
+          <a href="https://x.com/wordspies" target="_blank" rel="noopener" aria-label="X">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#4a4d59"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg>
+          </a>
+          <a href="#" aria-label="Discord">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.89-1.52.07.07 0 0 0-.08.04c-.21.38-.44.87-.6 1.25a18.3 18.3 0 0 0-5.5 0 12.6 12.6 0 0 0-.61-1.25.08.08 0 0 0-.08-.04 19.74 19.74 0 0 0-4.88 1.52.07.07 0 0 0-.04.03C.53 9.05-.32 13.58.1 18.06c0 .02.01.04.03.05a19.9 19.9 0 0 0 6 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.22-2a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.9.08.08 0 0 1-.01-.13c.13-.09.25-.19.37-.29a.07.07 0 0 1 .08 0c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08 0c.12.1.25.2.37.3a.08.08 0 0 1-.01.12c-.6.35-1.22.64-1.87.9a.08.08 0 0 0-.04.1c.36.7.77 1.37 1.22 2a.08.08 0 0 0 .08.04 19.84 19.84 0 0 0 6.02-3.03.08.08 0 0 0 .03-.05c.5-5.18-.84-9.68-3.55-13.66a.06.06 0 0 0-.03-.03zM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42z"></path></svg>
+          </a>
+        </div>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Product</div>
+        <a href="#connect">Community</a>
+        <a href="#play">Games</a>
+        <a href="/app#learn">AI lesson plans</a>
+        <a href="/app#learn">IELTS &amp; TOEFL prep</a>
+        <a href="/become-a-teacher">Become a teacher</a>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Support</div>
+        <a href="/how-to-play">Safety centre</a>
+        <a href="/how-to-play">Community guidelines</a>
+        <a href="mailto:feedback@talksibi.com?subject=talksibi%20—%20Report%20a%20problem">Report a problem</a>
+        <a href="mailto:contact@talksibi.com">Contact us</a>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Legal</div>
+        <a href="/terms">Terms &amp; conditions</a>
+        <a href="/privacy">Privacy policy</a>
+        <a href="/privacy">Cookie policy</a>
+        <a href="/child-safety">18+ policy</a>
+      </div>
+    </div>
+    <div class="ts-foot-sub">
+      <div class="ts-foot-meta">© 2026 talksibi · Connect, Learn, Play</div>
+      <div class="ts-foot-flags">
+        <span>🇬🇧</span><span>🇪🇸</span><span>🇫🇷</span><span>🇩🇪</span><span>🇧🇷</span><span>🇯🇵</span><span>🇰🇷</span><span>🇸🇦</span><span>🇮🇳</span><span>🇨🇳</span><span>🇮🇹</span><span>🇹🇷</span>
+        <span class="plus">+ 28 more</span>
+      </div>
+    </div>
   </div>
-  <p class="disclaim">Quotes from our community. Names and photos edited for privacy.</p>
-</div></div>
-
-<div class="band gray"><div class="wrap">
-  <h2 class="sec-h">Frequently asked questions</h2>
-  <p class="sec-sub">Everything you need to know before you start.</p>
-  <div class="faq">
-    <details><summary>Is TalkSibi really free?</summary><p>Yes — 100% free. Chat, corrections, voice parties, all 8 games. No paywall, no premium tier, no credit card required.</p></details>
-    <details><summary>How is TalkSibi different from other language apps?</summary><p>TalkSibi is language exchange <em>plus</em> multiplayer games <em>plus</em> AI corrections in one place — real conversations with real speakers, games you play together, and one-tap grammar corrections powered by AI. Free forever.</p></details>
-    <details><summary>Do I need to sign up?</summary><p>You can play any game as a guest with no account. For chat, corrections, and voice parties, a free 30-second sign-up (no email required) unlocks everything.</p></details>
-    <details><summary>Which languages can I practise?</summary><p>Any language with speakers online — Spanish, French, Japanese, Korean, Mandarin, Arabic, German, Italian, Portuguese, Russian, Hindi, Dutch, Turkish, Polish, Swedish, Vietnamese, Thai, Indonesian, and more.</p></details>
-    <details><summary>How does the Correct feature work?</summary><p>Tap any message and hit Correct. Our AI (powered by Claude) proposes the corrected version with a short explanation of what changed. It never overwrites the original — corrections appear underneath so you learn from your own mistakes.</p></details>
-    <details><summary>Can I still play Codenames-style word games?</summary><p>Yes — TalkSibi (our Codenames-style game) is still the main word game on the site. It's now one of 8 games alongside chat, voice, and everything else.</p></details>
-    <details><summary>Do you store my data?</summary><p>Minimal data: your name, chosen languages, and messages. No selling, no ads, no tracking beyond basic analytics. Delete your account any time and everything goes with it.</p></details>
-  </div>
-</div></div>
-
-${SITE_FOOTER}
+</footer>
 
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
