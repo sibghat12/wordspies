@@ -3374,6 +3374,205 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 /* ═══════════════════════════════════════════════════════════════════
    end 1a Community wall rebrand
    ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══ Rebrand v2: 1b Chats + 1e Auth + 1f Profile ═══
+   Pixel-lift from `TalkSibi App Screens.dc.html` (spec of record).
+   Selectors are scoped to the tab or the auth screen so nothing else
+   in the shared file drifts. Every touched element keeps its ID +
+   handler wiring — this is a pure re-skin. See README §12 for tokens
+   and §35 / §38 / §39 for per-screen intent. */
+
+/* ── 1b Chats — chat-list column (280px on desktop, full-width mobile) ── */
+#tabChats{ background:#ffffff }
+.splitview #tabChats,
+.splitview #tabChat{ border-radius:20px !important; border:1px solid #e6e7ee !important;
+  box-shadow:0 18px 50px rgba(22,24,31,0.12); overflow:hidden }
+.splitview #tabChats #chatList{ background:#ffffff }
+#tabChats #chatList{ background:#ffffff; padding-top:2px }
+.citem{ display:flex; align-items:center; gap:10px; padding:14px 18px; cursor:pointer;
+  border-bottom:0; background:#ffffff; transition:background .1s }
+.citem + .citem{ box-shadow:inset 0 1px 0 #f2f3f7 }
+.citem:hover{ background:#fafbff }
+.citem.sel{ background:#f0f1ff !important; box-shadow:inset 3px 0 0 #5b6cff }
+.citem .cav > *{ width:40px !important; height:40px !important; border-radius:50% !important; font-size:15px !important }
+.citem .cav .cdot{ width:11px; height:11px; background:#1fb28a; border-radius:50%;
+  box-shadow:0 0 0 2px #ffffff; bottom:0; right:0 }
+.citem .cname{ font-family:var(--brand-font); font-weight:500; font-size:14px;
+  color:#16181f; letter-spacing:-.1px }
+.citem .cprev{ color:#8a8d99; font-size:12.5px; font-weight:400; margin-top:2px }
+.citem .cright{ display:flex; flex-direction:column; align-items:flex-end; gap:4px }
+.citem .ctime{ color:#9a9db8; font-size:11px; font-weight:500 }
+.citem .cunread{ background:#5b6cff; color:#ffffff; font-size:10.5px; font-weight:600;
+  min-width:20px; height:18px; border-radius:99px; padding:0 6px; margin-top:0 }
+
+/* Chats-list header — matches "Chats" bold row in spec. Only paints when
+   the list is used as a standalone column (mobile). Desktop split-view
+   already carries its own head-row. */
+#tabChats::before{ content:''; display:none }
+
+/* ── 1b Chats — conversation column ── */
+#tabChat{ background:#fbfbfd }
+.chathead{ background:#ffffff !important; border-bottom:1px solid #eef0f4 !important;
+  padding:12px 18px !important; min-height:60px }
+.chname{ font-family:var(--brand-font); font-weight:500; font-size:14.5px; letter-spacing:-.1px; color:#16181f }
+#tabChat .msgs{ background:#fbfbfd; padding:18px 18px 150px; gap:10px }
+.chatfull .msgs, .splitview .msgs{ background:#fbfbfd !important }
+
+/* Chat bubble shape — spec §35: received 4/14/14/14 white with border,
+   sent 14/4/14/14 periwinkle. Overrides the older iMessage gradient. */
+.mb{ max-width:75%; padding:10px 14px; font-size:14px; font-weight:400; line-height:1.42 }
+.mb.them{ background:#ffffff !important; color:#16181f !important;
+  border:1px solid #eceef4 !important; border-radius:4px 14px 14px 14px !important;
+  border-bottom-left-radius:14px !important; box-shadow:none !important; margin-right:28px }
+.mb.me{ background:#5b6cff !important; color:#ffffff !important;
+  border-radius:14px 4px 14px 14px !important; border-bottom-right-radius:14px !important;
+  box-shadow:none !important }
+.mb.me .mtime{ color:rgba(255,255,255,.75) }
+.mb.them .mtime{ color:#9a9db8 }
+
+/* Translation hint line under a received bubble, and green correction line
+   under a sent bubble. Purely visual affordances the existing renderer
+   already supports via .mb-xlat (green-tinted) — this just tightens the
+   voice + hint copy to the spec.  Colours reference §12 tokens. */
+.mb.them .mb-xlat-btn{ color:#5b6cff; opacity:.85 }
+.mb.them .mb-xlat-btn:hover{ color:#4353e8; opacity:1 }
+
+/* Game-invite card centered inside .msgs (spec §35 "Take your seat").
+   Renders whenever a chat message contains a /play, /wordrace, etc.
+   URL — no JS change; the existing anchor picks up this class through
+   the .ginvite selector below. */
+.msgs .ginvite{ align-self:center; background:#f0f1ff; border:1px solid #d8dbff;
+  border-radius:12px; padding:10px 16px; color:#4353e8 !important;
+  font-family:var(--brand-font); font-weight:500; font-size:13px; text-align:center }
+.mb .ginvite{ /* keep the in-bubble variant unchanged */ }
+
+/* ── 1b composer — pill input + periwinkle send + subtle icons ── */
+.composer{ background:#ffffff !important; border-top:1px solid #eef0f4 !important }
+.composer input{ background:#f4f5f9 !important; border:0 !important;
+  border-radius:99px !important; padding:11px 18px; font-size:14px;
+  color:#16181f }
+.composer input::placeholder{ color:#9a9db8 }
+.composer input:focus{ background:#eef0f5 !important; box-shadow:none !important }
+.composer .cbtn{ color:#8a8d99 }
+.composer .cbtn:hover{ background:#f4f5f9; color:#5b6cff }
+.composer .cbtn.send{ background:#5b6cff !important; color:#ffffff !important;
+  box-shadow:0 4px 12px rgba(91,108,255,.28) }
+.composer .cbtn.send:hover{ background:#4353e8 !important }
+
+/* ── 1e Auth — spec §38 ══
+   Existing auth screen keeps its email + password + terms field
+   (needed for actual signup) — this restyles the shell to match the
+   handoff: centered logo, soft headline, green trust note, full-width
+   periwinkle CTA. Copy for headline is updated below in setMode(). */
+.auth{ padding:40px 22px 32px }
+.auth h1{ font-family:var(--brand-font); font-weight:600; font-size:22px;
+  letter-spacing:-.4px; color:#16181f; margin-bottom:6px }
+.auth h1 em{ color:#5b6cff }
+.auth .sub{ font-family:var(--brand-font); font-size:13.5px; color:#6b6e7a;
+  font-weight:400; margin-bottom:22px }
+.auth .logo{ margin-bottom:14px }
+.auth .ts-tagline{ color:#8a8d99; font-size:11px; font-weight:600; letter-spacing:2px }
+
+/* Trust note — 18+ / photo check.  Injected via ::before on the terms
+   field so the DOM stays untouched but the screen matches the mock. */
+#suTerms::before{ content:'🛡 18+ community · photo check keeps profiles real';
+  display:block; background:#eefaf5; border:1px solid #cdeee1; border-radius:12px;
+  padding:10px 14px; font-size:12.5px; color:#14785e; font-weight:500;
+  text-align:center; margin:0 0 12px }
+
+/* Primary CTA — full-width periwinkle pill.  Wrapped in the .authcol so
+   it can't leak into other buttons. */
+.auth #authGo,
+.auth .btn-dark{ background:#5b6cff !important; color:#ffffff !important;
+  border:0 !important; border-radius:99px !important; padding:13px 0 !important;
+  font-family:var(--brand-font); font-weight:600; font-size:15px !important;
+  box-shadow:0 6px 16px rgba(91,108,255,.3) !important; letter-spacing:-.1px }
+.auth #authGo:hover,
+.auth .btn-dark:hover{ background:#4353e8 !important }
+.auth .alt{ color:#8a8d99; font-size:13px }
+.auth .alt a{ color:#5b6cff }
+
+/* Auth in modal form still gets the periwinkle CTA. */
+body.authmodal #vAuth #authGo{ border-radius:99px !important }
+
+/* ── 1f Profile Me — spec §39 ══
+   Purple gradient chrome band sits ON TOP of the existing hero (the
+   Leaflet city map stays — owner ask 16 Aug 2026). Adds an overlay
+   header row with "Me" label + Edit chip, and a soft top-fade so the
+   map reads as a bg photo behind a gradient banner.
+   No DOM change — we use pseudo-elements + a small chrome node added
+   below via CSS content. */
+#tabMe .mp-hero{ background:linear-gradient(135deg,#5b6cff,#9b6cff) }
+#tabMe .mp-hero::before{
+  content:''; position:absolute; inset:0 0 auto 0; height:72px;
+  background:linear-gradient(180deg, rgba(91,108,255,.72), rgba(155,108,255,0));
+  z-index:2; pointer-events:none;
+}
+#tabMe .mp-hero::after{
+  content:'Me'; position:absolute; top:22px; left:20px; z-index:3;
+  color:#ffffff; font-family:var(--brand-font); font-weight:600; font-size:16px;
+  text-shadow:0 1px 8px rgba(22,24,31,.18); pointer-events:none;
+}
+/* Back button already lives top-left — bump z-index above the fade. */
+#tabMe .mp-hero .mp-back{ z-index:4 }
+#tabMe .mp-hero .mp-loc-pill{ z-index:4 }
+
+/* Photo overlaps the hero by -32px like Speaky / Tandem. On desktop the
+   photo sits in the sidebar; nudge it up so it kisses the hero band.
+   Ring in bg colour so it reads as a punched-out avatar. */
+#tabMe .mp-side .mp-photo.me-photo-edit{ margin-top:-32px; border:4px solid #fbfbfd;
+  box-shadow:0 8px 22px rgba(22,24,31,.14) }
+
+/* Stats row → tile grid per spec (bordered rounded rects, big number
+   top, uppercase caption bottom).  We keep the existing 3 wired tiles
+   (Following / Followers / Blocked) since they are click-through
+   drawers — the spec's 4th "points" tile isn't wired server-side and
+   is documented in the commit body. Wide numeric on top, small
+   uppercase caption below. */
+#tabMe .mp-stats{ padding:12px 4px 4px }
+#tabMe .me-stats-row{ gap:8px; grid-template-columns:1fr 1fr 1fr }
+#tabMe .me-stat{ background:#ffffff !important; border:1px solid #eceef4;
+  border-radius:12px; padding:12px 8px; transition:transform .12s,box-shadow .12s }
+#tabMe .me-stat::after{ display:none }
+#tabMe .me-stat:hover{ background:#fafbff !important; transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(22,24,31,.06) }
+#tabMe .me-stat-n{ font-family:var(--brand-font); font-weight:600; font-size:18px;
+  color:#16181f; letter-spacing:-.2px }
+#tabMe .me-stat:first-child .me-stat-n{ color:#5b6cff }
+#tabMe .me-stat-lbl{ font-family:var(--brand-font); font-size:10.5px; font-weight:600;
+  color:#8a8d99; letter-spacing:.2px; text-transform:uppercase }
+
+/* Language chips inside /me — periwinkle for learning, green for native,
+   matching README §12 tokens. Scoped to #tabMe .chiprow so member view
+   is untouched. */
+#tabMe .chiprow .chip{ background:#f3f4fb; color:#4a55c9; border:0;
+  font-family:var(--brand-font); font-weight:500; font-size:12px; padding:4px 10px;
+  border-radius:99px }
+#tabMe .chiprow .chip.native{ background:#f2f8f5; color:#2d7a62 }
+
+/* Share + Invite pair — ink pill + neutral pill per §39. Only applies
+   to the tight actions row we already show at the top of /me. */
+#tabMe .mp-actions.mp-actions-tight .mp-btn{ border-radius:99px !important;
+  font-family:var(--brand-font); font-weight:600; font-size:13px }
+#tabMe .mp-actions.mp-actions-tight .mp-btn:not(.line){ background:#16181f !important;
+  color:#ffffff !important; border:0 }
+#tabMe .mp-actions.mp-actions-tight .mp-btn.line{ background:#fafafa !important;
+  border:1px solid #e8e6e0 !important; color:#6b6e7a !important }
+
+/* Mobile — chat full-screen back arrow already exists (.back2). Just
+   makes sure hit targets never dip under 44px on any of the three
+   surfaces we touched. Spec §42-45. */
+@media(max-width:720px){
+  .composer .cbtn,
+  .composer .cbtn.send,
+  .composer .micrec{ min-width:44px; width:44px; height:44px }
+  .citem{ padding:14px 16px }
+  #tabMe .mp-hero{ min-height:150px }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   end Rebrand v2 (1b + 1e + 1f)
+   ═══════════════════════════════════════════════════════════════════ */
 </style>
 </head>
 <body>
@@ -3393,8 +3592,8 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
     <img src="/logo.svg" alt="talksibi" style="height:44px;width:auto;display:block" onerror="this.style.display='none'">
     <div class="ts-tagline">CONNECT<span class="d1">·</span>LEARN<span class="d2">·</span>PLAY</div>
   </div>
-  <h1 id="authTitle">Practise languages<br>with <em>real people</em></h1>
-  <p class="sub" id="authSub">Create your profile, follow language partners,<br>and chat any time.</p>
+  <h1 id="authTitle">Say hi to the world <span aria-hidden="true">👋</span></h1>
+  <p class="sub" id="authSub">Free forever · 2 minutes to set up</p>
   <div id="chooser" class="hidden">
     <div class="authcol">
       <div id="gBtn"></div>
@@ -5087,8 +5286,8 @@ function setMode(m){
   $('fPass').parentElement.classList.toggle('hidden', m === 'forgot');
   $('resetFields').classList.toggle('hidden', m !== 'forgot');
   $('forgotLink').classList.toggle('hidden', m !== 'login');
-  $('authTitle').innerHTML = m === 'login' ? 'Welcome <em>back</em>' : m === 'forgot' ? 'Reset your <em>password</em>' : 'Practise languages<br>with <em>real people</em>';
-  $('authSub').innerHTML = m === 'login' ? 'Log in to your language-exchange profile.' : m === 'forgot' ? 'We\'ll email you a 6-digit code.' : 'Create your profile, follow language partners,<br>and chat any time.';
+  $('authTitle').innerHTML = m === 'login' ? 'Welcome <em>back</em>' : m === 'forgot' ? 'Reset your <em>password</em>' : 'Say hi to the world <span aria-hidden="true">👋</span>';
+  $('authSub').innerHTML = m === 'login' ? 'Log in to your language-exchange profile.' : m === 'forgot' ? 'We\'ll email you a 6-digit code.' : 'Free forever · 2 minutes to set up';
   $('authGo').textContent = m === 'login' ? 'Log in' : m === 'forgot' ? 'Send me the code' : 'Create my profile';
   $('authSwap').innerHTML = m === 'signup' ? 'Already a member? <a>Log in</a>' : 'New here? <a>Create a profile</a>';
   $('authErr').textContent = '';
