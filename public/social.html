@@ -438,7 +438,10 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
     grid-template-areas:
       'logo right'
       'tabs tabs';
-    padding:calc(8px + env(safe-area-inset-top)) 0 6px;   /* clear the notch; zero horizontal so nav aligns with body-edge cards (owner ask 1 Aug 2026) */
+    /* Owner ask v33: mobile needs breathing room on the sides so
+       the logo doesn't sit on the edge. 16px each side, tighter
+       vertical rhythm than desktop's 22/32. */
+    padding:calc(10px + env(safe-area-inset-top)) 16px 12px;
     gap:8px 10px;
     min-height:0;
     align-items:center;
@@ -3369,10 +3372,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    backgrounds white, make the page background little grey'). Cards
    pop against the page instead of blending with the surrounding
    white. Applied only inside #tabWall so we don't touch other tabs. */
-/* Owner ask v32: unify wall sides with topnav (48px left/right at
-   every viewport, mobile included). Vertical rhythm 22 / 32 stays
-   consistent with topnav. */
-#tabWall{background:#f4f5f9;padding:22px 48px 32px;margin:0;border-radius:0;width:100%;box-sizing:border-box}
+/* Owner ask v32 → v33: wall = 48px sides on desktop, 12px sides on
+   mobile (48px on a 375px phone left cards too cramped). Vertical
+   rhythm 22/32 preserved. */
+#tabWall{background:#f4f5f9;padding:16px 12px 22px;margin:0;border-radius:0;width:100%;box-sizing:border-box}
+@media(min-width:640px){ #tabWall{padding:22px 32px 32px} }
+@media(min-width:1024px){ #tabWall{padding:22px 48px 32px} }
 #tabWall .wcard:has(.ai-badge) .wcard-photo{
   border-radius:14px; background:linear-gradient(135deg,#5b6cff,#9b6cff);
 }
