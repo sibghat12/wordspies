@@ -1588,6 +1588,31 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .playgrid{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 0 30px}
 @media(min-width:640px){.playgrid{grid-template-columns:repeat(2,1fr);gap:18px}}
 @media(min-width:1080px){.playgrid{grid-template-columns:repeat(4,1fr)}}
+
+/* ═══ 1d Games hub cards — 4px coloured top border, minimal art.
+   Spec: design_handoff_talksibi_rebrand 2/README.md §1d. Replaces the
+   old .playcard art-panel style below (kept as dead CSS for now). */
+.gh-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;padding:16px 0 30px}
+@media(max-width:960px){.gh-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+@media(max-width:520px){.gh-grid{grid-template-columns:1fr;gap:12px}}
+.gh-card{position:relative;background:#fff;border-radius:16px;padding:22px 20px 20px;display:flex;flex-direction:column;gap:10px;border:1px solid #eceef4;box-shadow:0 1px 2px rgba(0,0,0,.03);text-decoration:none;color:var(--ink);overflow:hidden;transition:transform .15s ease,box-shadow .15s ease}
+.gh-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--gh-top,#5b6cff)}
+.gh-card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(22,24,31,.10)}
+.gh-card .gh-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;background:var(--gh-tint,#f3f4fb)}
+.gh-card .gh-nameline{display:flex;align-items:center;gap:8px;min-width:0}
+.gh-card .gh-nameline b{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:17px;font-weight:600;letter-spacing:-.3px;color:var(--ink)}
+.gh-card .gh-desc{font-size:13px;color:#4a4d59;font-weight:500;line-height:1.5;min-height:calc(13px * 1.5 * 2)}
+.gh-card .gh-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.gh-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:99px;background:#f3f4fb;color:#4a55c9;white-space:nowrap}
+.gh-chip.gh-live{background:#f2f8f5;color:#2d7a62}
+.gh-chip.gh-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#1fb28a;display:inline-block}
+.gh-chip.gh-quiet{background:#fff6df;color:#8a6a12}
+.gh-wordspies{--gh-top:#5b6cff;--gh-tint:#eef0ff}
+.gh-spy{--gh-top:#ff7a59;--gh-tint:#ffece5}
+.gh-wordchain{--gh-top:#1fb28a;--gh-tint:#e6f6ef}
+.gh-wordrace{--gh-top:#ffc94d;--gh-tint:#fff4d6}
+.gh-guessword{--gh-top:#9b6cff;--gh-tint:#f2ecff}
+.gh-meld{--gh-top:#e0443c;--gh-tint:#fdeceb}
 .playcard{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;text-decoration:none;color:var(--ink);transition:transform .12s ease,box-shadow .18s ease,border-color .18s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .playcard:hover{transform:translateY(-3px);box-shadow:0 12px 34px rgba(20,25,45,.08);border-color:transparent}
 .playcard:active{transform:translateY(-1px)}
@@ -4437,99 +4462,77 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
         <a class="gh-start" href="#playgrid" onclick="event.preventDefault();document.getElementById('playgrid').scrollIntoView({behavior:'smooth',block:'start'})">+ Start a table</a>
       </div>
     </div>
-    <div class="playgrid" id="playgrid">
-      <!-- 1 · TalkSibi (Codenames-style) -->
-      <a class="playcard playcard-spies" href="/codenames?from=social" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-tile pc-r">RED</div>
-          <div class="pc-tile pc-b">BLUE</div>
-          <div class="pc-tile pc-n">NUT</div>
-          <div class="pc-tile pc-r">MOON</div>
-          <div class="pc-tile pc-b">BANK</div>
-          <div class="pc-tile pc-x">💀</div>
+    <div class="gh-grid" id="playgrid">
+      <a class="gh-card gh-wordspies" href="/codenames?from=social" onclick="return wsPlayStart(this,event)">
+        <span class="gh-icon">🕵️</span>
+        <div class="gh-nameline">
+          <b>TalkSibi</b>
+          <button class="pc-info" type="button" data-pcinfo="wordspies" aria-label="About TalkSibi">i</button>
         </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Team · 4–10 players</div>
-          <h3>TalkSibi <button class="pc-info" type="button" data-pcinfo="wordspies" aria-label="About TalkSibi">i</button></h3>
-          <p>Two teams, secret words, one wrong guess.</p>
-          <span class="playcard-cta">Start a room →</span>
+        <div class="gh-desc">Two teams, secret words, one wrong guess.</div>
+        <div class="gh-chips">
+          <span class="gh-chip">4–10+ players</span>
+          <span class="gh-chip gh-quiet">quiet</span>
         </div>
       </a>
-      <!-- 2 · Who is the Spy? (the Imposter) -->
-      <a class="playcard playcard-imp" href="/spy" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-face" style="left:14%;top:22%">🙂</div>
-          <div class="pc-face" style="left:50%;top:12%;transform:translateX(-50%)">🙂</div>
-          <div class="pc-face" style="right:14%;top:22%">🙂</div>
-          <div class="pc-face pc-face-x" style="left:50%;top:56%;transform:translateX(-50%)">🎭</div>
-          <div class="pc-face" style="left:24%;top:66%">🙂</div>
-          <div class="pc-face" style="right:24%;top:66%">🙂</div>
+      <a class="gh-card gh-spy" href="/spy" onclick="return wsPlayStart(this,event)">
+        <span class="gh-icon">🎭</span>
+        <div class="gh-nameline">
+          <b>Who is the Spy?</b>
+          <button class="pc-info" type="button" data-pcinfo="spy" aria-label="About Who is the Spy?">i</button>
         </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Party · 4–10 players</div>
-          <h3>Who is the Spy? <button class="pc-info" type="button" data-pcinfo="spy" aria-label="About Who is the Spy?">i</button></h3>
-          <p>Find the imposter in the room.</p>
-          <span class="playcard-cta">Start a room →</span>
+        <div class="gh-desc">Find the imposter in the room.</div>
+        <div class="gh-chips">
+          <span class="gh-chip">4–10 players</span>
+          <span class="gh-chip gh-quiet">quiet</span>
         </div>
       </a>
-      <!-- 3 · Word Chain (English-learning warm-up) -->
-      <a class="playcard playcard-chain" href="/wordchain" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-chain">
-            <span>LIGHT</span><span class="pc-arr">→</span>
-            <span>TIGER</span><span class="pc-arr">→</span>
-            <span>RIVER</span>
-          </div>
+      <a class="gh-card gh-wordchain" href="/wordchain" onclick="return wsPlayStart(this,event)">
+        <span class="gh-icon">🔗</span>
+        <div class="gh-nameline">
+          <b>Word Chain</b>
+          <button class="pc-info" type="button" data-pcinfo="wordchain" aria-label="About Word Chain">i</button>
         </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Vocabulary · 2+ players</div>
-          <h3>Word Chain <button class="pc-info" type="button" data-pcinfo="wordchain" aria-label="About Word Chain">i</button></h3>
-          <p>Last letter starts the next word.</p>
-          <span class="playcard-cta">Start a room →</span>
+        <div class="gh-desc">Last letter starts the next word.</div>
+        <div class="gh-chips">
+          <span class="gh-chip">2–8 players</span>
+          <span class="gh-chip gh-quiet">quiet</span>
         </div>
       </a>
-      <!-- 4 · Word Race (60-second vocab sprint) — new 4 Aug 2026 -->
-      <a class="playcard playcard-race" href="/wordrace" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-race-clock">1:00</div>
-          <div class="pc-race-cat">Animals · Foods · Verbs…</div>
+      <a class="gh-card gh-wordrace" href="/wordrace" onclick="return wsPlayStart(this,event)">
+        <span class="gh-icon">⏱</span>
+        <div class="gh-nameline">
+          <b>Word Race</b>
+          <button class="pc-info" type="button" data-pcinfo="wordrace" aria-label="About Word Race">i</button>
         </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Sprint · 2–8 players</div>
-          <h3>Word Race <button class="pc-info" type="button" data-pcinfo="wordrace" aria-label="About Word Race">i</button></h3>
-          <p>60 seconds. A category. Most words wins.</p>
-          <span class="playcard-cta">Start a room →</span>
-        </div>
-      </a>
-      <!-- 5 · Guess the Word (describer + guessers) -->
-      <a class="playcard playcard-guess" href="/guessword" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-guess-word">???</div>
-          <div class="pc-guess-clues">
-            <span>🍋 sour</span>
-            <span>🌳 tree</span>
-            <span>🟡 fruit</span>
-          </div>
-        </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Describe & Guess · 3+ players</div>
-          <h3>Guess the Word <button class="pc-info" type="button" data-pcinfo="guessword" aria-label="About Guess the Word">i</button></h3>
-          <p>Describe it. Everyone races to guess.</p>
-          <span class="playcard-cta">Start a room →</span>
+        <div class="gh-desc">60 seconds. A category. Most words wins.</div>
+        <div class="gh-chips">
+          <span class="gh-chip">2–8 players</span>
+          <span class="gh-chip gh-quiet">quiet</span>
         </div>
       </a>
-      <!-- 6 · Mind Meld (say the same word) -->
-      <a class="playcard playcard-meld" href="/meld" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-meld-brain">🧠</div>
-          <div class="pc-meld-flash">↔︎</div>
-          <div class="pc-meld-brain">🧠</div>
+      <a class="gh-card gh-guessword" href="/guessword" onclick="return wsPlayStart(this,event)">
+        <span class="gh-icon">🍋</span>
+        <div class="gh-nameline">
+          <b>Guess the Word</b>
+          <button class="pc-info" type="button" data-pcinfo="guessword" aria-label="About Guess the Word">i</button>
         </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Together · exactly 2</div>
-          <h3>Mind Meld <button class="pc-info" type="button" data-pcinfo="meld" aria-label="About Mind Meld">i</button></h3>
-          <p>Type the same word at the same time.</p>
-          <span class="playcard-cta">Start a room →</span>
+        <div class="gh-desc">Describe it. Everyone races to guess.</div>
+        <div class="gh-chips">
+          <span class="gh-chip">3+ players</span>
+          <span class="gh-chip gh-quiet">quiet</span>
+        </div>
+      </a>
+      <a class="gh-card gh-meld" href="/meld" onclick="return wsPlayStart(this,event)">
+        <span class="gh-icon">🧠</span>
+        <div class="gh-nameline">
+          <b>Mind Meld</b>
+          <button class="pc-info" type="button" data-pcinfo="meld" aria-label="About Mind Meld">i</button>
+        </div>
+        <div class="gh-desc">Type the same word at the same time.</div>
+        <div class="gh-chips">
+          <span class="gh-chip">exactly 2</span>
+          <span class="gh-chip gh-quiet">quiet</span>
         </div>
       </a>
     </div>
