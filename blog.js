@@ -764,6 +764,143 @@ const articles = {
 <h2>How the games fit the community</h2>
 <p>Games are the low-pressure entry point. New members hop into a room, chat while playing, and by the third round they're comfortable enough to start a real conversation. The whole shelf is one tap from the Community tab, and you can invite anyone on your wall to a game with a single button on their profile.</p>
 <p><a href="/">Sign up</a> to start meeting people — games are open to everyone, sign-up or not.</p>`
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Per-language SEO landing posts — one for each of the top target
+  // languages. Each targets 3–5 high-intent keywords: "learn [lang]
+  // online free", "practice [lang] with native speakers", "[lang]
+  // language exchange", "speak [lang] fluently". Written short + tight
+  // so they rank without diluting the pillar posts above.
+  // ═══════════════════════════════════════════════════════════════════
+  'learn-english-with-native-speakers-free': {
+    title: 'Learn English With Native Speakers Online — Free (2026 Guide)',
+    desc: 'Practise English with real native speakers online, free. No lessons, no textbooks — chat, voice parties, and games with people who actually speak the language every day.',
+    date: '2026-08-17',
+    html: `
+<p>You already know the theory: the fastest way to learn English is to <strong>use it with people who speak it every day</strong>. The hard part is finding those people without paying for lessons or ending up in silent apps. Here's how to do it for free — and how to actually stick with it.</p>
+<h2>Why a language-exchange partner beats a textbook</h2>
+<p>A textbook teaches you the sentence "I would like a coffee." A native speaker teaches you "can I grab a coffee?" — because that's what people actually say. Real conversations expose you to slang, hesitations, jokes and the tiny grammar shortcuts that make you sound natural. That's not something a course can fake.</p>
+<h2>How to practise English on TalkSibi (free)</h2>
+<p><a href="/app">TalkSibi</a> is a free language-exchange community. You pick English as the language you're learning, and the app puts native English speakers in your feed — from London, New York, Sydney, Dublin. You can:</p>
+<ul>
+<li><strong>Text-chat</strong> with anyone on the community wall — with a built-in <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> that gently fixes what you write.</li>
+<li>Join a <strong>voice party</strong> — a live audio room where you drop in, listen, then raise your hand when you're ready to speak.</li>
+<li>Play <strong>word games</strong> together — Codenames, Word Race, Guess Word — because you learn faster when you're not just staring at a chat window.</li>
+</ul>
+<h2>Speaking English out loud — even if you're shy</h2>
+<p>The #1 barrier for English learners is speaking out loud. Parties fix this: you don't have to talk first. Listen for ten minutes, unmute when it feels natural, and no one judges — everyone in the room is either learning something or helping someone learn.</p>
+<h2>Best type of partner to look for</h2>
+<p>Find someone who's learning your native language too. That way you both have a reason to keep meeting — you help them, they help you, and neither person feels like a free tutor.</p>
+<p>English speakers are the biggest community on the app. <a href="/app">Sign up free</a> and you'll be chatting within minutes.</p>`
+  },
+
+  'learn-spanish-online-native-speakers': {
+    title: 'Learn Spanish Online With Native Speakers — Free',
+    desc: 'Practise Spanish with real native speakers from Mexico, Spain, Argentina and beyond. Free chat, voice parties, and games that make speaking Spanish feel easy.',
+    date: '2026-08-17',
+    html: `
+<p>Spanish is one of the easiest languages to <em>start</em> learning and one of the hardest to <em>keep</em> practising once your Duolingo streak runs out. The reason: apps teach you words, but they don't give you anyone to say them to. Here's how to fix that — for free.</p>
+<h2>Where the Spanish native speakers are</h2>
+<p>500+ million people speak Spanish natively — you don't have to live in Madrid or Mexico City to meet one. <a href="/app">TalkSibi</a> is a free language-exchange community with active Spanish speakers from Mexico, Spain, Argentina, Colombia, Chile and beyond. Pick "learning Spanish" in your profile and they'll show up in your feed.</p>
+<h2>Latin American vs Castilian Spanish</h2>
+<p>They're both Spanish — a Mexican and a Spaniard understand each other fine — but the accent, some vocabulary, and one grammar quirk (the <em>vosotros</em> form) differ. Choose based on where you're most likely to travel or work; either is a full skill. Filter the app's community by country if you want to focus.</p>
+<h2>How to actually speak Spanish (not just chat)</h2>
+<p>Texting improves your grammar but not your pronunciation or listening. Join a Spanish party room — you can lurk silently for the first few sessions, then unmute when you're ready. The <strong>gasp of your first real Spanish conversation</strong> hits differently than any lesson.</p>
+<h2>AI corrections without judgement</h2>
+<p>Every message you send in Spanish can be silently corrected by an <a href="/blog/ai-corrections-for-language-learning">AI</a> — so you learn from mistakes without your language partner having to interrupt every sentence. That's the killer feature for shy learners.</p>
+<h2>Games in Spanish</h2>
+<p>Word Race in Spanish. Codenames with Spanish word lists. Playing games in your target language stops it feeling like study. <a href="/app">Try TalkSibi free</a> — no sign-up needed to open a room.</p>`
+  },
+
+  'learn-french-native-speakers-online': {
+    title: 'Learn French Online With Native Speakers — Free',
+    desc: 'Practise French with real native speakers from France, Canada, Belgium and beyond. Free chat, voice, and games — the language-exchange app that makes French speaking easy.',
+    date: '2026-08-17',
+    html: `
+<p>French intimidates a lot of learners — the silent letters, the liaisons, that pronunciation the textbook never quite captures. The fix isn't more grammar drills. It's ears-on time with real French speakers.</p>
+<h2>Why exchange beats classes for French</h2>
+<p>Classes give you structure. But French pronunciation lives in the <em>flow</em> — how words connect, where the schwa falls, when the <em>ne</em> gets dropped in casual speech. Ten minutes of listening to a native speaker teaches you what a month of grammar exercises can't.</p>
+<h2>Meeting French speakers on TalkSibi</h2>
+<p><a href="/app">TalkSibi</a> is a free language-exchange app. Pick "French" as your learning language and native speakers from France, Quebec, Belgium and Switzerland show up in your feed. Text-chat, voice parties, or games together — all free, no premium wall.</p>
+<h2>Parisian French vs Quebecois</h2>
+<p>Different accents, some different vocabulary, one shared written language. Parisian French is what most textbooks teach; Quebecois has its own charm and slightly different rhythm. Both are fully mutually intelligible — pick based on where you plan to use it.</p>
+<h2>Grammar corrections without embarrassment</h2>
+<p>Every text you send in French can be quietly corrected by an <a href="/blog/ai-corrections-for-language-learning">AI</a> — no red pen, no calling out. You see the fix, learn, and send the next message better. It's the biggest confidence unlock for French learners on the app.</p>
+<h2>Speak French, actually</h2>
+<p>Text chat is fine but French rewards ears. Drop into a French voice party — listen for a while, then take the mic when you're ready. Two weeks of this and your listening comprehension jumps. <a href="/app">Start free</a>.</p>`
+  },
+
+  'learn-german-language-exchange-online': {
+    title: 'Learn German Online — Free Language Exchange With Native Speakers',
+    desc: 'Practise German with real native speakers from Germany, Austria and Switzerland. Free language-exchange app with chat, voice parties, AI corrections and games.',
+    date: '2026-08-17',
+    html: `
+<p>German learners hit a wall at the same place: reading it is easy, speaking it out loud isn't. The compound words, the case system, the four "the"s — all fine when you're reading. The moment you open your mouth, everything jams. The fastest fix is talking to actual German speakers.</p>
+<h2>Why a language partner beats a course</h2>
+<p>Duolingo teaches you <em>Wasser</em>. A German native speaker teaches you that Berliners say <em>ick</em> instead of <em>ich</em>, and that "alles klar" ends 40% of conversations. That's the difference between passing an exam and holding a conversation.</p>
+<h2>Finding native German speakers</h2>
+<p><a href="/app">TalkSibi</a> is a free language-exchange community with active speakers from Germany, Austria and Switzerland. Set "German" as your learning language and native speakers appear in your feed — filter by country if you want Berlin German specifically, or Wiener Deutsch, or Swiss High German.</p>
+<h2>Getting the cases right without shame</h2>
+<p>Der/die/das/den/dem/des — the four cases and their gendered articles are what breaks most German learners. The app's built-in <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> silently fixes your case mistakes as you chat, so you learn the pattern from real conversations instead of tables.</p>
+<h2>Voice practice: overcome the fear</h2>
+<p>German has consonant clusters that feel impossible until you've said them a hundred times. Voice parties let you speak with real Germans, at low pressure, in short bursts. Ten minutes twice a week and your <em>Aussprache</em> transforms.</p>
+<h2>Games help too</h2>
+<p>Play Codenames or Word Race in German with a partner. You'll pick up more useful vocabulary in one 20-minute game than an hour of flashcards. <a href="/app">Try TalkSibi free</a>.</p>`
+  },
+
+  'learn-japanese-native-speakers-online-free': {
+    title: 'Learn Japanese Online With Native Speakers — Free (Language Exchange)',
+    desc: 'Practise Japanese with real native speakers from Japan. Free language-exchange community with chat, voice parties, AI corrections and games. No sign-up needed to start.',
+    date: '2026-08-17',
+    html: `
+<p>Japanese is one of the most rewarding — and most terrifying — languages to speak out loud. The politeness levels, the kana, the way pitch changes meaning. Textbook Japanese is nothing like the Japanese you'll actually use in a conversation. The gap closes fast the moment you start talking to a native speaker.</p>
+<h2>Meeting Japanese speakers online</h2>
+<p><a href="/app">TalkSibi</a> is a free language-exchange app with active Japanese speakers from across Japan — Tokyo, Osaka, Kyoto and beyond. Pick "Japanese" as your learning language and native speakers show up in your feed. Many are learning English in return — that's the sweet spot for a lasting exchange.</p>
+<h2>Casual Japanese vs textbook Japanese</h2>
+<p>Textbooks teach you <em>-desu / -masu</em>. Your Japanese friends will use <em>-da / -jan</em>. Neither is wrong — you just need both. Chatting with real speakers teaches you when to switch, something no course explains well.</p>
+<h2>Kana and kanji — don't wait to speak</h2>
+<p>You can practise spoken Japanese while you're still learning kana. Text chat in romaji if you have to, then gradually switch to hiragana as you learn. The point is to build the speaking muscle from day one, not to master the writing system first.</p>
+<h2>Voice parties — the pronunciation unlock</h2>
+<p>Japanese has a particular rhythm that's very different from English or Spanish. Listen to actual Japanese speakers in a party room for ten minutes and your ear starts tuning to it. Take the mic when you feel ready — everyone in the room has been where you are.</p>
+<h2>AI corrections that don't judge</h2>
+<p>The app's <a href="/blog/ai-corrections-for-language-learning">AI corrector</a> quietly fixes particle mistakes and politeness slips as you chat — so you don't have to interrupt your partner every sentence to ask "did I say that right?" <a href="/app">Try it free</a>.</p>`
+  },
+
+  'learn-korean-native-speakers-free': {
+    title: 'Learn Korean With Native Speakers Online — Free Language Exchange',
+    desc: 'Practise Korean with real native speakers from Seoul, Busan and beyond. Free language-exchange app with chat, voice parties, AI corrections and games.',
+    date: '2026-08-17',
+    html: `
+<p>K-drama, K-pop, kimchi and a language that once was called impossible-to-learn — Korean has never had more learners. And yet: the biggest gap is still between reading Korean and speaking it. The fix is the same as every other language: real conversations with native speakers.</p>
+<h2>Why Korean rewards speaking practice more than most</h2>
+<p>Korean grammar is regular. Kana (Hangul) can be learned in a weekend. What kills learners is <strong>speaking</strong> — the politeness system, the sentence-final endings, the tiny particles that change everything. None of it settles until you've heard and used it in real conversations.</p>
+<h2>Meeting Korean speakers on TalkSibi</h2>
+<p><a href="/app">TalkSibi</a> is a free language-exchange community with active Korean speakers, most from Seoul and Busan, plenty from smaller cities too. Pick "Korean" as your learning language and they'll show up in your feed. Many are learning English in return — a mutual exchange stays sustainable in a way a one-way tutoring session doesn't.</p>
+<h2>Formal vs casual Korean — when to use what</h2>
+<p>존댓말 (formal) and 반말 (casual) live in a delicate balance. Textbooks teach you formal. Your language partner will show you where casual actually kicks in — and that's the confidence unlock for real-life Korean.</p>
+<h2>Voice parties for pronunciation</h2>
+<p>Korean pronunciation has sounds that don't exist in English — the aspirated vs plain vs tensed consonants especially. Listening to natives in a party room for ten minutes trains your ear far faster than any app can. Take the mic when you're ready.</p>
+<h2>AI corrections without embarrassment</h2>
+<p>The app's built-in <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> silently fixes your particle mistakes and honorific slips — you get the fix, learn the pattern, and send the next message better. <a href="/app">Try TalkSibi free</a>.</p>`
+  },
+
+  'learn-italian-native-speakers-online-free': {
+    title: 'Learn Italian Online With Native Speakers — Free',
+    desc: 'Practise Italian with real native speakers from across Italy. Free language-exchange community with chat, voice parties, AI corrections and games.',
+    date: '2026-08-17',
+    html: `
+<p>Italian is beautiful, musical, and slightly deceptive — it looks easy enough to start (a lot of English cognates), then throws you the passato remoto and 15 conjugations of every verb. The way through is exactly what it is for every language: talking to Italians.</p>
+<h2>Where the Italian speakers are</h2>
+<p><a href="/app">TalkSibi</a> is a free language-exchange community with active Italian speakers from Milan, Rome, Naples and everywhere in between. Set "Italian" as your learning language and they'll appear in your feed. Many are learning English — the perfect swap.</p>
+<h2>Regional Italian — don't worry about it early</h2>
+<p>Italy has strong regional accents (a Milanese and a Neapolitan sound different). But standard Italian works everywhere and everyone understands it. Focus on that first, then let your language partner introduce you to their region's twist later.</p>
+<h2>Corrections without the awkwardness</h2>
+<p>The app's <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> silently fixes agreement errors, wrong prepositions, and tense mix-ups as you chat. You get the fix, learn, and your partner doesn't have to play tutor.</p>
+<h2>Voice parties — hear the melody</h2>
+<p>Italian is famously musical. Ten minutes in an Italian voice party trains your ear for its rhythm and intonation better than any listening exercise. Speak when you're ready.</p>
+<h2>Games in Italian</h2>
+<p>Play word games with an Italian partner. You'll pick up conversational vocabulary faster than any flashcard app. <a href="/app">Try TalkSibi free</a> — no sign-up needed to open a room.</p>`
   }
 };
 
@@ -785,53 +922,79 @@ ${GA}
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${ogimg}">
 ${schema || ''}
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-body{font-family:'Inter',system-ui,sans-serif;background:#ffffff;color:#1c1e21;margin:0}
-.sitehead{background:#fff;border-bottom:1.5px solid #e6e8ef;position:sticky;top:0;z-index:50}
+body{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;background:#fbfbfd;color:#14161f;margin:0;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.sitehead{background:#ffffff;border-bottom:1px solid #eceef4;position:sticky;top:0;z-index:50}
 .hwrap{max-width:100%;margin:0;padding:0 20px}
 @media(min-width:769px){.hwrap{padding:0 48px}}
-.top{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
-.wrap{max-width:100%;margin:0;padding:34px 20px 70px}
-@media(min-width:769px){.wrap{padding:34px 48px 70px}}
-.wrap-inner{max-width:1080px;margin:0 auto}
-article,.post{max-width:860px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.wrap{max-width:100%;margin:0;padding:36px 20px 80px}
+@media(min-width:769px){.wrap{padding:44px 48px 90px}}
+.wrap-inner{max-width:1140px;margin:0 auto}
+article{max-width:760px;margin:0 auto}
 .logo{display:inline-flex;align-items:center;text-decoration:none}
-.logo img{height:34px;display:block}
-.navlinks{display:flex;gap:34px;align-items:center;font-weight:500;font-size:14.5px;color:#5f6675}
-.navlinks a{color:#5f6675;text-decoration:none}.navlinks a:hover{color:#1c1e21}
-.play{background:#5b6cff;color:#fff;text-decoration:none;font-weight:600;padding:10px 20px;border-radius:12px;font-size:14px;white-space:nowrap}
-@media(max-width:600px){.navlinks{gap:16px;font-size:14px}.navlinks .hideSm{display:none}.play{padding:9px 15px;font-size:13.5px}}
-.play:hover{background:#4353e8}
-h1{font-size:30px;line-height:1.25;letter-spacing:-.5px;margin:0 0 10px;font-weight:800}
-.date{color:#6b7280;font-size:14px;margin-bottom:26px}
-article h2{font-size:21px;letter-spacing:-.3px;margin:30px 0 10px;font-weight:700}
-article p{font-family:Georgia,'Times New Roman',serif;font-size:17.5px;line-height:1.8;margin:0 0 16px;color:#242628}
-article a{color:#5b6cff;font-weight:600;text-decoration:underline;text-underline-offset:3px}
-.cta{display:block;text-align:center;background:#5b6cff;color:#fff;text-decoration:none;font-weight:700;padding:15px;border-radius:12px;font-size:16px;margin-top:30px;font-family:'Inter',sans-serif}
-.cta:hover{background:#4353e8}
-.backrow{margin-top:26px;font-size:15px}
-.backrow a{color:#374151;text-decoration:none;font-weight:600}
-/* blog footer overrides removed — SITE_FOOTER carries its own dark theme. */
-.hero{width:100%;height:auto;border-radius:16px;margin:4px 0 30px;display:block;border:1px solid #e6e8ef}
-.post{padding:24px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:22px;align-items:flex-start;max-width:100%}
-.postthumb{flex:0 0 220px;width:220px;border-radius:12px;border:1px solid #e6e8ef;aspect-ratio:1200/630;overflow:hidden;display:block}
-.postthumb img{width:100%;height:100%;object-fit:cover;display:block}
-.postbody{flex:1;min-width:0}
-@media(max-width:600px){.post{flex-direction:column;gap:12px}.postthumb{flex:none;width:100%}}
-.post h2{font-size:21px;margin:0 0 8px;letter-spacing:-.3px}
-.post h2 a{color:#1c1e21;text-decoration:none}
-.post h2 a:hover{color:#5b6cff}
-.post p{color:#4b5563;font-size:15.5px;line-height:1.65;margin:0 0 12px;font-family:Georgia,serif}
-.more{color:#5b6cff;font-weight:700;font-size:14.5px;text-decoration:none}
-.more:hover{text-decoration:underline;text-underline-offset:3px}
-.pagetitle{font-size:28px;margin:0 0 4px}
+.logo img{height:32px;display:block}
+.navlinks{display:flex;gap:28px;align-items:center;font-weight:500;font-size:14.5px;color:#5f6675}
+.navlinks a{color:#5f6675;text-decoration:none;transition:color .12s}
+.navlinks a:hover{color:#14161f}
+.play{background:#14161f;color:#fff;text-decoration:none;font-weight:600;padding:10px 20px;border-radius:99px;font-size:14px;white-space:nowrap;transition:background .12s}
+.play:hover{background:#2a2e42}
+@media(max-width:600px){.navlinks{gap:14px;font-size:14px}.navlinks .hideSm{display:none}.play{padding:9px 15px;font-size:13.5px}}
+
+/* ── HERO band on the blog index ─────────────────────────────────── */
+.bband{background:linear-gradient(140deg,#f6f4ff 0%,#eef1ff 40%,#e8fbf3 100%);border-bottom:1px solid #e6e8ef;padding:72px 0 60px;position:relative;overflow:hidden}
+.bband::before{content:'';position:absolute;top:-40%;right:-10%;width:520px;height:520px;background:radial-gradient(circle,rgba(91,108,255,.20),transparent 70%);pointer-events:none}
+.bband::after{content:'';position:absolute;bottom:-30%;left:-10%;width:480px;height:480px;background:radial-gradient(circle,rgba(31,178,138,.16),transparent 70%);pointer-events:none}
+.bband-inner{position:relative;z-index:1;padding:0 20px}
+@media(min-width:769px){.bband-inner{padding:0 48px}}
+.bband-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.9);border:1px solid #dce1ff;color:#4353e8;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:99px;margin-bottom:14px;letter-spacing:.3px;text-transform:uppercase}
+.bband h1{font-family:'Hanken Grotesk','Inter',sans-serif;font-weight:700;font-size:44px;line-height:1.12;letter-spacing:-1px;margin:0 0 14px;color:#14161f;max-width:760px}
+@media(max-width:600px){.bband{padding:56px 0 44px}.bband h1{font-size:32px}}
+.bband p{margin:0;font-size:17px;line-height:1.55;font-weight:500;color:#4a4d59;max-width:620px}
+.bcats{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap}
+.bcat{background:#ffffff;border:1px solid #e6e8ef;color:#14161f;font-size:13px;font-weight:600;padding:8px 14px;border-radius:99px;text-decoration:none;transition:all .12s;display:inline-flex;align-items:center;gap:6px}
+.bcat:hover{border-color:#5b6cff;color:#5b6cff}
+.bcat.on{background:#14161f;color:#fff;border-color:#14161f}
+
+/* ── POST grid on the blog index ─────────────────────────────────── */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px;margin-top:14px}
+.pcard{background:#ffffff;border:1px solid #eceef4;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:transform .18s,box-shadow .18s,border-color .12s}
+.pcard:hover{transform:translateY(-3px);box-shadow:0 18px 44px rgba(20,22,31,.08);border-color:#dce1ff}
+.pcard-thumb{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#5b6cff,#9b6cff);overflow:hidden;position:relative}
+.pcard-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.pcard-badge{position:absolute;top:12px;left:12px;background:rgba(20,22,31,.75);color:#fff;font-size:11px;font-weight:600;padding:5px 10px;border-radius:99px;letter-spacing:.4px;text-transform:uppercase;backdrop-filter:blur(4px)}
+.pcard-body{padding:20px 22px 22px;display:flex;flex-direction:column;flex:1;gap:10px}
+.pcard-body h2{font-family:'Hanken Grotesk','Inter',sans-serif;font-size:19px;line-height:1.3;letter-spacing:-.3px;margin:0;font-weight:600;color:#14161f}
+.pcard-body p{margin:0;color:#5f6675;font-size:14.5px;line-height:1.55;font-weight:400;flex:1}
+.pcard-meta{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#8a8d99;font-weight:500;padding-top:4px}
+.pcard-meta .more{color:#5b6cff;font-weight:600}
+
+/* ── SINGLE article ──────────────────────────────────────────────── */
+article h1{font-family:'Hanken Grotesk','Inter',sans-serif;font-size:38px;line-height:1.15;letter-spacing:-.8px;margin:0 0 14px;font-weight:700;color:#14161f}
+@media(max-width:600px){article h1{font-size:28px}}
+.date{color:#8a8d99;font-size:14px;margin-bottom:28px;font-weight:500}
+.date b{color:#5b6cff}
+article h2{font-family:'Hanken Grotesk','Inter',sans-serif;font-size:24px;letter-spacing:-.4px;margin:38px 0 12px;font-weight:600;color:#14161f}
+article h3{font-size:19px;margin:26px 0 8px;font-weight:600;color:#14161f}
+article p{font-family:'Hanken Grotesk','Inter',sans-serif;font-size:17px;line-height:1.72;margin:0 0 18px;color:#333644;font-weight:400}
+article a{color:#5b6cff;font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+article a:hover{color:#4353e8}
+article ul,article ol{padding-left:22px;margin:0 0 20px;line-height:1.72;font-size:17px;color:#333644}
+article ul li,article ol li{margin-bottom:8px}
+article strong,article b{color:#14161f;font-weight:700}
+article em{color:#14161f}
+.cta{display:block;text-align:center;background:#5b6cff;color:#fff !important;text-decoration:none !important;font-weight:700;padding:17px 20px;border-radius:14px;font-size:16px;margin:30px 0;transition:background .12s,transform .12s}
+.cta:hover{background:#4353e8;transform:translateY(-1px)}
+.backrow{margin-top:32px;font-size:15px}
+.backrow a{color:#5b6cff;text-decoration:none;font-weight:600}
+.backrow a:hover{text-decoration:underline}
+.hero{width:100%;height:auto;border-radius:20px;margin:6px 0 34px;display:block;border:1px solid #eceef4}
+.pagetitle{font-size:32px;margin:0 0 4px;font-weight:700;letter-spacing:-.5px}
 .pagesub{color:#6b7280;font-size:15.5px;margin:0 0 8px}
-.bband{background:#fff;border-bottom:1px solid #e5e7eb;padding:44px 0 32px}
-.bband h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:36px;letter-spacing:-.5px;margin:0 0 8px;color:#1c1e21}
-.bband p{margin:0;font-size:16.5px;font-weight:500;color:#5f6675;max-width:640px}
-.relh{font-size:19px;font-weight:800;margin:38px 0 14px}
+.relh{font-size:22px;font-weight:700;margin:44px 0 18px;letter-spacing:-.3px}
 .relgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:560px){.relgrid{grid-template-columns:1fr}}
 .rel{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;text-decoration:none;display:block}
@@ -876,15 +1039,60 @@ function articlePage(slug) {
   return layout(metaTitle, metaDesc, body, '/blog/' + slug, null, schema, img);
 }
 
+// Categorise posts so the blog index can offer a simple filter row.
+// Language-exchange posts sit above games so the SEO surface leads with
+// the pillar the app is actually positioned on now.
+function postCat(slug, a){
+  const t = (a.title + ' ' + a.desc).toLowerCase();
+  if (/language|spanish|french|english|german|italian|japanese|korean|mandarin|chinese|portuguese|arabic|exchange|native speaker|correction|hellotalk|tandem|speaking|learn (a )?language/i.test(t)) return 'language';
+  if (/codenames|word game|game night|zoom|meet|team|party|meeting/i.test(t)) return 'games';
+  return 'other';
+}
+function catLabel(c){ return c === 'language' ? '🌍 Language exchange'
+  : c === 'games' ? '🎲 Party games' : '✦ Community'; }
+
 function indexPage() {
-  const items = Object.entries(articles).map(([slug, a]) =>
-    `<div class="post"><a class="postthumb" href="/blog/${slug}" aria-label="${esc(a.title)}"><img src="/blog-img/${slug}.jpg" alt="${esc(a.title)}" loading="lazy" width="1200" height="630"></a><div class="postbody"><h2><a href="/blog/${slug}">${a.title}</a></h2><p>${a.desc}</p><a class="more" href="/blog/${slug}">Read article &rarr;</a></div></div>`).join('');
-  const body = items;
-  const banner = `<div class="bband"><div class="hwrap"><h1>TalkSibi Blog</h1><p>Language-learning tips, game guides, and stories from a community of speakers practising together.</p></div></div>`;
+  // Language-exchange posts float to the top of the grid — they're the
+  // SEO surface we want to lead with now the app is language-first.
+  const sorted = Object.entries(articles).sort(([, a], [, b]) => {
+    const rank = c => c === 'language' ? 0 : c === 'games' ? 1 : 2;
+    const ra = rank(postCat('', a)), rb = rank(postCat('', b));
+    if (ra !== rb) return ra - rb;
+    return (b.date || '').localeCompare(a.date || '');
+  });
+  const items = sorted.map(([slug, a]) => {
+    const cat = postCat(slug, a);
+    return `<a class="pcard" href="/blog/${slug}">
+      <div class="pcard-thumb">
+        <img src="/blog-img/${slug}.jpg" alt="${esc(a.title)}" loading="lazy" width="1200" height="630">
+        <span class="pcard-badge">${catLabel(cat)}</span>
+      </div>
+      <div class="pcard-body">
+        <h2>${a.title}</h2>
+        <p>${a.desc}</p>
+        <div class="pcard-meta"><span>${a.date || ''}</span><span class="more">Read →</span></div>
+      </div>
+    </a>`;
+  }).join('');
+  const body = `<div class="pgrid">${items}</div>`;
+  const banner = `<div class="bband"><div class="bband-inner">
+    <span class="bband-tag">talksibi journal</span>
+    <h1>Language learning, real conversations, and the games that make it stick.</h1>
+    <p>Practise English, Spanish, French and 40+ more languages with real native speakers — free forever. This is where we write about what actually works: language-exchange tips, AI corrections, and games that teach without feeling like homework.</p>
+    <div class="bcats">
+      <a class="bcat on" href="/blog">All</a>
+      <a class="bcat" href="/blog#language">🌍 Language exchange</a>
+      <a class="bcat" href="/blog#games">🎲 Party games</a>
+      <a class="bcat" href="/app">✦ Open the app</a>
+    </div>
+  </div></div>`;
   const blogItems = Object.entries(articles).map(([slug, a]) =>
     `{"@type":"BlogPosting","headline":"${esc(a.title)}","description":"${esc(a.desc)}","url":"${SITE}/blog/${slug}","datePublished":"${a.date}"}`).join(',');
-  const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"${SITE}/blog","name":"TalkSibi Blog","description":"Language-learning tips, game guides, and stories from a global community practising languages through chat, voice, and games.","url":"${SITE}/blog","publisher":{"@type":"Organization","name":"TalkSibi","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"blogPost":[${blogItems}]}</script>`;
-  return layout('TalkSibi Blog — Language Learning, Games & Community Tips', 'Language-learning tips, game guides, and stories from a global community practising languages together — chat, voice parties, AI corrections, and free games.', body, '/blog', banner, schema);
+  const schema = `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"${SITE}/blog","name":"TalkSibi Blog","description":"Language-exchange tips, AI-correction guides, party-game reviews, and stories from a global community learning languages through chat, voice, and games.","url":"${SITE}/blog","publisher":{"@type":"Organization","name":"TalkSibi","logo":{"@type":"ImageObject","url":"${SITE}/icon-512.png"}},"blogPost":[${blogItems}]}</script>`;
+  return layout(
+    'Language Learning Blog — Language Exchange, English, Spanish & More | TalkSibi',
+    'Learn English, Spanish, French, German, Japanese and 40+ more languages with real native speakers. Free language-exchange tips, AI-correction guides, speaking-practice ideas and party-game reviews from the TalkSibi community.',
+    body, '/blog', banner, schema);
 }
 
 module.exports = { articles, articlePage, indexPage };
