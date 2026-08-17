@@ -1716,9 +1716,6 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
         spy:       { path: '/spy',       icon: '🕵️', label: 'Who is the Spy?' },
         wordchain: { path: '/wordchain', icon: '🔗', label: 'Word Chain' },
         guessword: { path: '/guessword', icon: '❓', label: 'Guess the Word' },
-        ludo:      { path: '/ludo',      icon: '🎲', label: 'Ludo' },
-        four:      { path: '/four',      icon: '🔴', label: 'Connect 4' },
-        pool:      { path: '/pool',      icon: '🎱', label: '8-Ball Pool' },
         meld:      { path: '/meld',      icon: '🧠', label: 'Mind Meld' },
         party:     { path: '/party',     icon: '🎉', label: 'a party' }
       };

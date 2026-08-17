@@ -1550,9 +1550,6 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
   padding:8px 0;text-align:center;cursor:pointer;text-decoration:none;letter-spacing:-.1px}
 .gcard .gplay{background:#fff;color:#16181f}
 .gcard .gch{background:rgba(255,255,255,.22);color:#fff}
-.gcard.g-ludo{background:linear-gradient(150deg,#3b6fe0,#2b4fb0)}
-.gcard.g-pool{background:linear-gradient(150deg,#1d8f5f,#0e6b44)}
-.gcard.g-four{background:linear-gradient(150deg,#4c5ec7,#2c3a85)}
 .gcard.g-meld{background:linear-gradient(150deg,#6b5ce8,#4d3fc0)}
 .gcard.g-spy{background:linear-gradient(150deg,#e8506b,#c22e4d)}
 .gcard.g-imp{background:linear-gradient(150deg,#3a3f4f,#16181f)}
@@ -1662,25 +1659,13 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .pc-meld-flash{font-size:26px;color:#fff;font-weight:800;opacity:.85;text-shadow:0 3px 8px rgba(0,0,0,.24)}
 
 /* Ludo — a big die on a warm board-game amber. */
-.playcard-ludo .playcard-art{background:linear-gradient(135deg,#ffc067,#e08a1c);padding:18px;display:flex;align-items:center;justify-content:center}
 .pc-die{font-size:80px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.28))}
 
 /* Connect 4 — mini 3x3 grid showing a partial diagonal to hint at the win pattern. */
-.playcard-four .playcard-art{background:linear-gradient(135deg,#5b8bff,#2f57d4);padding:18px;display:flex;align-items:center;justify-content:center}
-.pc-four-grid{display:grid;grid-template-columns:repeat(3,26px);gap:6px}
-.pc-four-grid > span{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.18)}
-.pc-four-grid > span.r{background:#ff5a72}
-.pc-four-grid > span.y{background:#ffcc4d}
 
 /* 8-Ball Pool — the 8-ball on billiard green. Real 8-ball look:
    black sphere with a white circle sitting on top of it that holds
    the numeral. The circle sits ABOVE the number so we set z-index. */
-.playcard-pool .playcard-art{background:linear-gradient(135deg,#2fa66b,#177140);padding:18px;display:flex;align-items:center;justify-content:center;position:relative}
-.pc-pool-ball{position:relative;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 32% 30%, #4a4a4a 0%, #1a1a1a 60%, #050505 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(0,0,0,.35), inset 0 -8px 12px rgba(0,0,0,.4)}
-.pc-pool-ball.pc-pool-8{color:#111;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:22px;line-height:1}
-.pc-pool-ball.pc-pool-8::after{content:'8';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#111;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:800;font-size:18px}
-.playcard-hoop .playcard-art{background:linear-gradient(135deg,#ff8f2c,#e34a2e);padding:18px;display:flex;align-items:center;justify-content:center}
-.pc-hoop{font-size:80px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.28))}
 .ggrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:16px 20px 26px}
 .ggrid .gcard{width:auto}
 .ggrid .g-spy{grid-column:1/-1}
@@ -1736,7 +1721,6 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 /* Very subtle per-card tint on the icon chip only — hint of theme
    without shouting. Owner: "not so colourful". */
 .gcard2.g-spy .gicon,.gcard2.g-imp .gicon{background:#eef1ff;color:#4358d1}
-.gcard2.g-pool .gicon{background:#e8f9ef;color:#159f5d}
 
 /* ══ Parties tab ══ */
 /* Subtab bar inside the Social tab (owner ask 10 Aug 2026 —
@@ -2236,7 +2220,6 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .lvc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px 14px 12px;position:relative}
 .lvc .lvtop{display:flex;align-items:center;gap:9px}
 .lvc .lvi{flex:none;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;line-height:1;background:#f3f1fe}
-.lvc.g-ludo .lvi{background:#e7eefc}.lvc.g-pool .lvi{background:#e2f4ec}.lvc.g-four .lvi{background:#e8eafb}
 .lvc.g-meld .lvi{background:#eeebfd}.lvc.g-wordspies .lvi{background:#fdeaee}
 .lvc .lvn{flex:1;min-width:0;font-size:14.5px;font-weight:800;letter-spacing:-.3px}
 .lvc .lvn small{display:block;font-weight:600;font-size:11px;color:var(--faint);letter-spacing:0}
@@ -2753,9 +2736,6 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 .icebrk .ib-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
 .icebrk .ib-g{border:0;border-radius:14px;padding:10px 14px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:13.5px;color:#fff;cursor:pointer}
 .icebrk .ib-g:active{filter:brightness(.94)}
-.ib-g.g-ludo{background:linear-gradient(150deg,#3b6fe0,#2b4fb0)}
-.ib-g.g-pool{background:linear-gradient(150deg,#1d8f5f,#0e6b44)}
-.ib-g.g-four{background:linear-gradient(150deg,#4c5ec7,#2c3a85)}
 .ib-g.g-meld{background:linear-gradient(150deg,#6b5ce8,#4d3fc0)}
 .ginvite{display:block;margin-top:6px;background:var(--ink);color:#fff !important;text-decoration:none;font-weight:700;font-size:13.5px;padding:10px 14px;border-radius:12px;text-align:center}
 .mb.me .ginvite{background:rgba(255,255,255,.22)}
@@ -4431,10 +4411,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
     </div>
   </div>
 
-  <!-- ═══ PLAY — a curated 3-card shelf. Owner ask 1 Aug 2026:
-       'bring the games back — Codenames, the Imposter and 8-ball
-       pool, very nice layout so real users love it'. Three big
-       gradient cards, one gameplay illustration each, clear CTA. -->
+  <!-- ═══ PLAY — the language-games shelf. -->
   <div id="tabGames" class="hidden">
     <!-- Happening-now banner — shows every currently-playing room from
          /api/live (falling back to lobby rooms if nothing is mid-game
@@ -4553,58 +4530,6 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
           <h3>Mind Meld <button class="pc-info" type="button" data-pcinfo="meld" aria-label="About Mind Meld">i</button></h3>
           <p>Type the same word at the same time.</p>
           <span class="playcard-cta">Start a room →</span>
-        </div>
-      </a>
-      <!-- 7 · Ludo -->
-      <a class="playcard playcard-ludo" href="/ludo" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-die">🎲</div>
-        </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Classic · 2–4 players</div>
-          <h3>Ludo <button class="pc-info" type="button" data-pcinfo="ludo" aria-label="About Ludo">i</button></h3>
-          <p>Roll, race, send them home.</p>
-          <span class="playcard-cta">Start a room →</span>
-        </div>
-      </a>
-      <!-- 8 · Connect 4 -->
-      <a class="playcard playcard-four" href="/four" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-four-grid">
-            <span></span><span class="r"></span><span></span>
-            <span class="y"></span><span class="r"></span><span></span>
-            <span class="y"></span><span class="y"></span><span class="r"></span>
-          </div>
-        </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Strategy · 2 players</div>
-          <h3>Connect 4 <button class="pc-info" type="button" data-pcinfo="four" aria-label="About Connect 4">i</button></h3>
-          <p>Four in a row, up down or diagonal.</p>
-          <span class="playcard-cta">Start a room →</span>
-        </div>
-      </a>
-      <!-- 9 · 8-Ball Pool -->
-      <a class="playcard playcard-pool" href="/pool" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-pool-ball pc-pool-8"></div>
-        </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Physics · 2 players</div>
-          <h3>8-Ball Pool <button class="pc-info" type="button" data-pcinfo="pool" aria-label="About 8-Ball Pool">i</button></h3>
-          <p>Sink your set, then the 8. Not the cue.</p>
-          <span class="playcard-cta">Start a room →</span>
-        </div>
-      </a>
-      <!-- 10 · Hoop -->
-      <a class="playcard playcard-hoop" href="/hoop" onclick="return wsPlayStart(this,event)">
-        <div class="playcard-art">
-          <div class="pc-hoop">🏀</div>
-        </div>
-        <div class="playcard-body">
-          <div class="playcard-badge">Arcade · solo · 60s</div>
-          <h3>Hoop <button class="pc-info" type="button" data-pcinfo="hoop" aria-label="About Hoop">i</button></h3>
-          <p>Drag to aim. Release to shoot. Beat your best.</p>
-          <span class="playcard-cta">Play →</span>
         </div>
       </a>
     </div>
@@ -9156,7 +9081,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) chec
 // ═══════════════════════════════════════════════════════════════════
 // Persistent game-session pill. Owner ask 1 Aug 2026: 'if he left the
 // tab he can come back with the black stripe'.
-// Game pages (index.html for TalkSibi, spy.html, pool.html) stamp
+// Game pages (index.html for TalkSibi, spy.html) stamp
 // { game, path, code, title } into localStorage['wsActiveGame'] on
 // mount and clear it on end/leave. This pill reads that stamp and
 // resumes the game with one tap when the user returns to /social.
@@ -9176,7 +9101,7 @@ window.dismissGameBar = dismissGameBar;
 // into. If a stale stamp or malicious writer puts anything else in
 // localStorage, we ignore it (rather than making the pill a
 // one-tap redirect to any URL).
-const KNOWN_GAME_PATHS = /^\/(codenames|spy|wordchain|guessword|wordrace|four|pool|meld|hoop|ludo)(\?.*)?$/;
+const KNOWN_GAME_PATHS = /^\/(codenames|spy|wordchain|guessword|wordrace|meld)(\?.*)?$/;
 function refreshGameBar(){
   const bar = $('gameBar');
   if (!bar) return;
@@ -9294,18 +9219,6 @@ const PCINFO = {
   meld: { name:'Mind Meld', href:'/meld',
     body:'Both players type a word at the same time. If you both type the same word, you win. If not, the two words become the next hint — try again. Silly, fast, weirdly bonding.',
     meta:'2 players only · no bot' },
-  ludo: { name:'Ludo', href:'/ludo',
-    body:'Classic Ludo. Roll the die, move your four tokens around the board, land on an opponent to send them home. First to get all four tokens home wins. 2–4 players; bots fill empty seats.',
-    meta:'2–4 players · vs friends or bots' },
-  four: { name:'Connect 4', href:'/four',
-    body:'Drop pieces into columns. Get four in a row — up, down, sideways, diagonal — before your opponent. Two players; play a friend or the bot.',
-    meta:'2 players · vs a friend or the bot' },
-  pool: { name:'8-Ball Pool', href:'/pool',
-    body:'Real physics 8-ball. Break, call your set (stripes or solids), pot them all, then the 8 — but don\'t sink the cue on the way. Aim by dragging, tap to shoot. 2 players or vs bot.',
-    meta:'2 players · vs a friend or the bot' },
-  hoop: { name:'Hoop', href:'/hoop',
-    body:'Arcade free-throw. You have 60 seconds to sink as many baskets as possible — drag the ball back to aim, release to shoot. Real physics arc, rim bounces, streak bonuses. Beat your best score.',
-    meta:'solo · 60-second round · best score saved' },
 };
 function openPcInfo(id){
   const g = PCINFO[id]; if (!g) return;
@@ -9456,10 +9369,10 @@ function togglePartyExpand(){
 // 2026: 'stay in the site, one-click end, mini-player at the bottom'.
 const GAME_LABEL = { wordspies:'TalkSibi', wordrace:'Word Race', wordchain:'Word Chain',
   guessword:'Guess the Word', spy:'Who is the Spy?', meld:'Mind Meld',
-  ludo:'Ludo', four:'Connect 4', pool:'8-Ball Pool', hoop:'Hoop' };
+ };
 const GAME_ROUTE = { wordspies:'/play', wordrace:'/wordrace', wordchain:'/wordchain',
   guessword:'/guessword', spy:'/spy', meld:'/meld',
-  ludo:'/ludo', four:'/four', pool:'/pool', hoop:'/hoop' };
+ };
 let GHOST_GAME = null, GHOST_CODE = null;
 function openGameInApp(game, code, title){
   game = String(game || '').toLowerCase();
@@ -9529,7 +9442,7 @@ function closeGameInApp(silent){
   // pushState('/social') → history would grow one entry per Back.
   if (!window._closingFromPopstate) {
     try {
-      if (/^\/(codenames|play|meld|ludo|four|pool|spy|wordchain|guessword|wordrace|hoop)(\/|\?|$)/.test(location.pathname + location.search)) {
+      if (/^\/(codenames|play|meld|spy|wordchain|guessword|wordrace)(\/|\?|$)/.test(location.pathname + location.search)) {
         history.pushState({}, '', '/social');
       }
     } catch(e){}
@@ -9598,7 +9511,7 @@ document.addEventListener('click', (ev) => {
   const a = ev.target.closest && ev.target.closest('a[href]');
   if (!a) return;
   const href = a.getAttribute('href') || '';
-  const m = href.match(/^\/(wordrace|wordchain|guessword|spy|meld|ludo|four|pool|play|codenames)(\?|$)/);
+  const m = href.match(/^\/(wordrace|wordchain|guessword|spy|meld|play|codenames)(\?|$)/);
   if (!m) return;
   // Let non-primary clicks / cmd+click / new-tab requests behave normally.
   if (ev.metaKey || ev.ctrlKey || ev.shiftKey || (ev.button|0) !== 0) return;
@@ -9751,8 +9664,7 @@ function paintLiveGames(j){
   // here too would double-render a party as a "game card" (owner ask 14 Aug 2026).
   paintLiveBanners(games.filter(g => g.game !== 'party'));
   const gameCardMap = {
-    wordspies: 'cntWordspies', ludo: 'cntLudo', pool: 'cntPool',
-    four: 'cntFour', meld: 'cntMeld', spy: 'cntSpy'
+    wordspies: 'cntWordspies', meld: 'cntMeld', spy: 'cntSpy'
   };
   Object.entries(gameCardMap).forEach(([key, id]) => {
     const el = document.getElementById(id);
@@ -10056,7 +9968,7 @@ async function refreshChats(){
       if (m.k === 'call') return m.cans ? '📞 Voice call' : '📞 Missed call';
       const t = String(m.x || '');
       if (/\/party\?room=[A-Za-z0-9]{4}/.test(t))                       return '🎉 Party invitation';
-      if (/\/(play|ludo|four|pool|meld|spy)\?room=[A-Za-z0-9]{4}/.test(t)) return '🎮 Game invitation';
+      if (/\/(play|meld|spy)\?room=[A-Za-z0-9]{4}/.test(t)) return '🎮 Game invitation';
       return esc(t.slice(0, 46));
     };
     $('chatList').innerHTML = L.map(c => `
@@ -10250,8 +10162,7 @@ addEventListener('orientationchange', () => setTimeout(fitChat, 250));
 // Render a message: GIFs as images, game invite links as a big Join button,
 // other links clickable. Everything is escaped first.
 const GAME_TAGS = {
-  play: ['🕵️', 'TalkSibi'], ludo: ['🎲', 'Ludo'], four: ['🔴', 'Connect 4'],
-  pool: ['🎱', '8-Ball Pool'], meld: ['🧠', 'Mind Meld'], party: ['🎉', 'party']
+  play: ['🕵️', 'TalkSibi'], meld: ['🧠', 'Mind Meld'], party: ['🎉', 'party']
 };
 // Challenges you sent wait politely: the card sits in the chat saying
 // "waiting for them to accept", and only once your friend has actually taken
@@ -10275,7 +10186,7 @@ function msgBody(m){
   // escaped text, so & in the URL appears as &amp; here.
   const mine = ME && m.f === ME.id;
   let found = false;
-  let out = esc(m.x).replace(/(?:https?:\/\/[^\s<]+)?\/(play|ludo|four|pool|meld|party)\?room=([A-Za-z0-9]{4})(?:&amp;go=1)?/g, (all, g, code) => {
+  let out = esc(m.x).replace(/(?:https?:\/\/[^\s<]+)?\/(play|meld|party)\?room=([A-Za-z0-9]{4})(?:&amp;go=1)?/g, (all, g, code) => {
     found = true;
     const [ic, nm] = GAME_TAGS[g];
     const c = code.toUpperCase();
@@ -10358,7 +10269,6 @@ function iceBreaker(u){
     <div class="ib-s">Say hi to ${nm} — or better, challenge them.<br>One tap sets up the game and drops the invite in this chat. You both just tap it to play.</div>
     <div class="ib-row">
       <button class="ib-g g-spy"  onclick="gameInvite('spy','🎭 Who is the Spy?')">🎭 Spy</button>
-      <button class="ib-g g-pool" onclick="gameInvite('pool','🎱 8-Ball Pool')">🎱 Pool</button>
     </div>
   </div>`;
 }
@@ -11112,7 +11022,7 @@ function toggleGamePick(){ /* no-op — game picker retired */ }
 //                                  caller should navigate to active.url
 //     { action: 'cancel' }      → user cancelled; caller should do nothing
 const AG_LABEL = { wordspies:'TalkSibi', spy:'Who is the Spy?', wordchain:'Word Chain',
-  guessword:'Guess the Word', wordrace:'Word Race', meld:'Mind Meld', pool:'8-Ball Pool', ludo:'Ludo', four:'Connect 4' };
+  guessword:'Guess the Word', wordrace:'Word Race', meld:'Mind Meld' };
 async function wsHandleActiveGame(active){
   const nice = AG_LABEL[active.game] || active.game;
   const useSwal = typeof window.Swal === 'object' && typeof window.Swal.fire === 'function';

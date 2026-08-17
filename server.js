@@ -373,28 +373,6 @@ function scanMyRooms(uid) {
     });
   }
 
-  // Arcade — ludo / four / pool
-  if (arcadeMod) {
-    const spec = [
-      ['ludo', '🎲', 'Ludo',        arcadeMod.ludoRooms],
-      ['four', '🔴', 'Connect 4',   arcadeMod.fourRooms],
-      ['pool', '🎱', '8-Ball Pool', arcadeMod.poolRooms]
-    ];
-    for (const [game, icon, title, table] of spec) {
-      if (!table) continue;
-      for (const r of table.values()) {
-        if (r.creatorUid !== uid) continue;
-        push(game, r, {
-          icon, title,
-          players: [...r.players.values()].filter(p => !p.bot).length,
-          cap: r.cap || null,
-          href: '/' + game + '?room=' + r.code,
-          watchers: r.watchers ? r.watchers.size : 0
-        });
-      }
-    }
-  }
-
   // Mind Meld
   if (meldMod && meldMod.rooms) {
     for (const r of meldMod.rooms.values()) {
@@ -496,11 +474,6 @@ app.post('/api/social/my-rooms/close', express.json({ limit: '2kb' }), async (re
   };
   let ok = false;
   if (game === 'wordspies') ok = closeIn(rooms, r => { try { io.to(r.code).emit('roomClosed', { code: r.code }); } catch (e) {} });
-  else if (arcadeMod) {
-    if (game === 'ludo') ok = closeIn(arcadeMod.ludoRooms, r => { clearTimeout(r.botT); try { io.of('/ludo').to(code).emit('roomClosed', { code }); } catch (e) {} });
-    if (game === 'four') ok = closeIn(arcadeMod.fourRooms, r => { clearTimeout(r.botT); try { io.of('/four').to(code).emit('roomClosed', { code }); } catch (e) {} });
-    if (game === 'pool') ok = closeIn(arcadeMod.poolRooms, r => { clearTimeout(r.botT); try { io.of('/pool').to(code).emit('roomClosed', { code }); } catch (e) {} });
-  }
   if (!ok && meldMod && meldMod.rooms && game === 'meld') ok = closeIn(meldMod.rooms, () => { try { io.of('/meld').to(code).emit('roomClosed', { code }); } catch (e) {} });
   if (!ok && spyMod  && spyMod.rooms  && game === 'spy')  ok = closeIn(spyMod.rooms,  () => { try { io.of('/spy' ).to(code).emit('roomClosed', { code }); } catch (e) {} });
   if (!ok && wordChainMod && wordChainMod.rooms && game === 'wordchain') ok = closeIn(wordChainMod.rooms, () => { try { io.of('/wordchain').to(code).emit('roomClosed', { code }); } catch (e) {} });
@@ -754,11 +727,6 @@ let meldMod = null;
 try { meldMod = require('./meld').mount(app, io, gameOpts) || null; }
 catch (e) { console.error('meld module failed to load (game unaffected):', e.message); }
 
-// 🎲 The arcade — Ludo, Connect 4 and 8-ball pool, at /games.
-let arcadeMod = null;
-try { arcadeMod = require('./arcade').mount(app, io, gameOpts) || null; }
-catch (e) { console.error('arcade module failed to load (game unaffected):', e.message); }
-
 // 🕵️ Who is the Spy? — the party word game at /spy.
 let spyMod = null;
 try { spyMod = require('./spy').mount(app, io, gameOpts) || null; }
@@ -780,13 +748,6 @@ catch (e) { console.error('guessword module failed to load (game unaffected):', 
 let wordRaceMod = null;
 try { wordRaceMod = require('./wordrace').mount(app, io, gameOpts) || null; }
 catch (e) { console.error('wordrace module failed to load (game unaffected):', e.message); }
-
-// 🏀 Hoop — arcade free-throw solo score attack at /hoop. All physics
-// client-side; module only registers the route + a stub /api/hoop/new so
-// the shared game-shell flow doesn't 404.
-let hoopMod = null;
-try { hoopMod = require('./hoop').mount(app, io, gameOpts) || null; }
-catch (e) { console.error('hoop module failed to load (game unaffected):', e.message); }
 
 // 🎉 Parties — audio rooms with speakers + listeners + rationed listener chat.
 // Uses the same Cloudflare Realtime pipeline the games do. Own namespace at
@@ -862,7 +823,6 @@ app.get('/api/live', (req, res) => {
   let games = [];
   const add = (fn) => { try { if (fn) games = games.concat(fn() || []); } catch (e) { /* one game's bad day is not the tab's */ } };
   add(wordspiesLive);
-  add(arcadeMod && arcadeMod.live);
   add(meldMod && meldMod.live);
   add(spyMod && spyMod.live);
   add(wordChainMod && wordChainMod.live);

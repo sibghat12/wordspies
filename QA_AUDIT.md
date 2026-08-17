@@ -1,5 +1,7 @@
-# WordSpies — Quality Audit
+# TalkSibi — Quality Audit
 _Read-only sweep of the 14 Aug 2026 codebase (commit 3af66da + WIP). Focuses on the code paths that JUST shipped: Learn redesign, ElevenLabs TTS, party mic sync, invite modal on four/pool/meld, single-session enforcement, community visitors stripe, profile hero clock, 60-language list, per-club SSR._
+
+> **2026-08-17 — DEPRECATED for removed games.** Ludo, Connect 4 (`/four`), 8-Ball Pool (`/pool`), Hoop (`/hoop`) were deleted from the app. Bugs and test cases referencing those routes below are historical — the routes now 404.
 
 **How to use this doc.** Part 1 is the 30-second exec view. Part 2 is the real bug list — every entry cites `file:line` you can jump to. Part 3 is the test-case matrix a coworker (or Playwright) can run through — grouped by feature, checkbox-ready. Part 4 is the "beat Tandem/HelloTalk/Speaky" wish list — 30+ prioritised ideas sorted by effort vs impact. Part 5 is the honest "if I had one more session" pick. Don't treat this as gospel — the audit is deep but not exhaustive; where a section says "not verified" I ran out of read-budget, not evidence of a clean bill of health.
 

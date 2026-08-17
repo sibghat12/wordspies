@@ -1,6 +1,8 @@
-# WordSpies — Manual Product Review
+# TalkSibi — Manual Product Review
 
-**For:** WordSpies tester
+> **2026-08-17 — DEPRECATED for removed games.** Ludo, Connect 4 (`/four`), 8-Ball Pool (`/pool`), Hoop (`/hoop`) were deleted from the app. Test cases and rows referencing those routes are historical.
+
+**For:** TalkSibi tester
 **From:** Sibghat (owner)
 **Site:** https://wordspies.co.uk
 **Environment:** Production. Every push to `main` auto-deploys in ~60s, so if a bug appears mid-test, refresh and retry once before filing.

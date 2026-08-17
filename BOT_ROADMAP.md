@@ -1,6 +1,8 @@
-# Bot Roadmap — WordSpies
+# Bot Roadmap — TalkSibi
 
-Turning "make the 7 games playable with bots" into a safe, phased plan the owner can pick up game-by-game.
+> **2026-08-17 — DEPRECATED for removed games.** Ludo, Connect 4, 8-Ball Pool and Hoop were deleted from the app. Any bot plans below for those four games are historical and no longer apply. Word Race / Word Chain / Guess the Word / Mind Meld / Spy / TalkSibi (spy word game) plans remain valid.
+
+Turning "make the language games playable with bots" into a safe, phased plan the owner can pick up game-by-game.
 
 ---
 

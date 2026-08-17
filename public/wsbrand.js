@@ -169,7 +169,6 @@
   // an extra ~30px of dedicated hero space.
   function pageLabel() {
     const map = {
-      '/pool':'8-Ball Pool', '/ludo':'Ludo', '/four':'Connect 4',
       '/meld':'Mind Meld', '/spy':'Who is the Spy?',
       '/codenames':'TalkSibi · Codenames', '/play':'TalkSibi',
       '/games':'All games'

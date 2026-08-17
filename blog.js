@@ -606,7 +606,7 @@ const articles = {
 <p>Almost every platform advertises a free tier. The question is what they hold back. Common paywall tricks: translation limited to short messages, only one target language, voice call minutes capped, "moments" (social feed) capped per day, VIP filters (native speakers only, gender, verified) locked, group audio hidden. If you're serious about a language you'll bump into at least one of these within a week. Before signing up, search the app store reviews for the word "paywall" — it's usually the top complaint.</p>
 
 <h2>TalkSibi</h2>
-<p><a href="/">TalkSibi</a> is language exchange plus multiplayer games plus AI corrections in one browser tab. Message any member, tap "Correct" on any message bubble for a one-tap grammar fix with a short note about what changed, jump into a live voice party, or start a language game (Word Race, Word Chain, Guess the Word, Spy, TalkSibi, Ludo, Pool, Connect 4, Hoop) together. No paywall, no premium tier, no ads that force a signup wall. Everything works from day one — including the AI corrections powered by Claude, which most competitors gate behind subscription. Downside: the community is newer, so if you're learning a rare language pair (like Finnish ↔ Filipino) the roster is thin — for those you'll want a fallback.</p>
+<p><a href="/">TalkSibi</a> is language exchange plus multiplayer games plus AI corrections in one browser tab. Message any member, tap "Correct" on any message bubble for a one-tap grammar fix with a short note about what changed, jump into a live voice party, or start a language game (Word Race, Word Chain, Guess the Word, Spy, TalkSibi, Mind Meld) together. No paywall, no premium tier, no ads that force a signup wall. Everything works from day one — including the AI corrections powered by Claude, which most competitors gate behind subscription. Downside: the community is newer, so if you're learning a rare language pair (like Finnish ↔ Filipino) the roster is thin — for those you'll want a fallback.</p>
 
 <h2>Older exchange platforms (Tandem, HelloTalk, Speaky, Bilingua)</h2>
 <p>The classics still have the largest user bases, so if you're learning a rare or "small" language your best chance of finding an active partner is there. Downsides in 2026: most useful features (translations of long messages, VIP filters, group audio, cross-language moments feed) sit behind a subscription that's crept up to £10–15 per month. AI corrections either don't exist or arrived late and are gated behind Pro. Discovery is dominated by a "featured" row that many users complain feels pay-to-play. Verdict: keep an account for the volume, but don't lean on the free tier as your daily driver.</p>
@@ -693,9 +693,6 @@ const articles = {
 <p><b>Paraphrase games.</b> <a href="/guessword">Guess the Word</a> is Taboo for language learners. One player has a secret word, the others ask questions to figure it out — all in the target language. Being forced to describe "elephant" without using "elephant" builds paraphrasing skills faster than any textbook exercise. Paraphrasing IS fluency — fluent speakers just have more ways to say the same thing.</p>
 <p><b>Association games.</b> <a href="/play">TalkSibi</a> (Codenames-style) asks you to give a one-word clue that links two or three secret words on a board. Trains word association — the mental map native speakers have that lets them navigate a conversation. Playing "APPLE, TREE, RIVER" as a clue links three concepts and forces your brain to build the same webs a native carries.</p>
 
-<h2>What about non-language games?</h2>
-<p>Even games that aren't about words teach language when played with a partner in the target tongue. <a href="/hoop">Hoop</a> is a 60-second arcade round of free-throws — not a language game strictly, but the trash talk between shots is real conversation. Same for <a href="/pool">8-Ball Pool</a> and <a href="/four">Connect 4</a>. The low stakes let you chat in the target language without the pressure of "this is a lesson". Some of the best sessions I've had were losing at Ludo to a French partner while both of us made increasingly desperate excuses in French.</p>
-
 <h2>The rule that makes games actually teach you</h2>
 <p>Play in your target language, not in English. If you play Word Race and type English words, you learn nothing. If you type Spanish, every letter combination is real practice. Same for chatting between rounds — it's the low-stakes conversation that games unlock that does the teaching.</p>
 <p>This is harder than it sounds. When you're losing a round of Word Chain, your brain screams for the fastest word it can find — which is usually the English one. Fighting that instinct is the actual training. Every time you resist it and force the Spanish word out, you're not just adding a vocab item, you're building the mental muscle that stops your native language from hijacking every fluent-adjacent moment.</p>
@@ -766,7 +763,7 @@ const articles = {
 
   'party-games-shelf': {
     title: 'The TalkSibi Games Shelf: One Place, Free, No Sign-Up',
-    desc: 'Codenames-style word game, Ludo, 8-ball pool, Connect 4, Mind Meld and Who is the Spy — all free, in the browser, with friends or against the bot.',
+    desc: 'Codenames-style word game, Word Race, Word Chain, Guess the Word, Mind Meld and Who is the Spy — all free, in the browser, with friends or against the bot.',
     date: '2026-08-01',
     html: `
 <p>TalkSibi is a language-exchange community first, but games are part of how we bring people together. Here's what's on the shelf — all free, all browser-based, all playable in seconds.</p>
@@ -774,12 +771,6 @@ const articles = {
 <p>The Codenames-style spy game the whole site was named after. Two teams, a 5×5 grid, one-word clues, one assassin word that ends everything. 4-10+ players from any device. <a href="/blog/codenames-rules-explained">Full rules here</a>.</p>
 <h2>Who is the Spy?</h2>
 <p>A conversation game for 4+ players. Everyone gets a word except the spy, who has to blend in without knowing what everyone else is describing. Perfect for a party or a warm-up before a language-exchange session — the deception is the fun.</p>
-<h2>Ludo</h2>
-<p>The classic board race — roll, move around the board, send other players' pieces back to start. 2-4 players, plays in about 15 minutes. Great for hanging out with friends without needing intense concentration.</p>
-<h2>8-Ball Pool</h2>
-<p>Real physics, 8-ball rules, one shared table. Play a friend with a link or take on the bot. The satisfying click when you sink the black ball is universal.</p>
-<h2>Connect 4</h2>
-<p>Drop pieces, make four in a row, block theirs. Thirty-second rounds, quick and addictive. Good filler between longer games.</p>
 <h2>Mind Meld</h2>
 <p>Two players type a word at the same time trying to say the SAME word. Miss? Both those words become the new prompt. Aim for a match. Sounds simple, is oddly beautiful, and only takes a minute.</p>
 <h2>How the games fit the community</h2>

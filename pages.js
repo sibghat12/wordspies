@@ -326,7 +326,7 @@ function howToPlayPage() {
 <p>Keep your Zoom, Meet or FaceTime call running. Everyone opens TalkSibi on their phone. Debates happen live on the call; the tapping happens on the phones. It's the same game — just louder.</p>
 <h2>Frequently asked</h2>
 <p><b>Is TalkSibi really free?</b> Yes. No sign-up, no download, no ads on the game screen.</p>
-<p><b>Can we play with 2 or 3?</b> Technically yes, but 4+ makes the game come alive. With just 2, our <a href="/meld">🧠 Mind Meld</a> or <a href="/four">🔴 Connect 4</a> are better fits.</p>
+<p><b>Can we play with 2 or 3?</b> Technically yes, but 4+ makes the game come alive. With just 2, our <a href="/meld">🧠 Mind Meld</a> is a better fit.</p>
 <p><b>What happens if my phone drops the connection?</b> Rejoin from the same link — the game reseats you.</p>
 <p><b>Is this Codenames?</b> TalkSibi is inspired by Codenames but is its own independent game, not affiliated with Codenames or Czech Games Edition.</p>
 <div style="margin-top:32px;text-align:center">

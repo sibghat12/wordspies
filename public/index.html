@@ -1110,7 +1110,7 @@ socket.on('sessionExpired', () => { try { localStorage.removeItem('ws_sess'); } 
 // cancel. Owner ask 4 Aug 2026.
 socket.on('activeGame', async (active) => {
   const AG_LABEL = { wordspies:'TalkSibi', spy:'Who is the Spy?', wordchain:'Word Chain',
-    guessword:'Guess the Word', wordrace:'Word Race', meld:'Mind Meld', pool:'8-Ball Pool', ludo:'Ludo', four:'Connect 4' };
+    guessword:'Guess the Word', wordrace:'Word Race', meld:'Mind Meld' };
   const nice = AG_LABEL[active.game] || active.game;
   const useSwal = typeof window.Swal === 'object' && typeof window.Swal.fire === 'function';
   if (!useSwal) {
