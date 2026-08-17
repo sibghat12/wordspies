@@ -8205,7 +8205,12 @@ function planMiniHtml(plan){
   const examLbl = isExam
     ? (String(plan.exam || '').toUpperCase().indexOf('TOEFL') >= 0 ? 'TOEFL' : 'IELTS')
     : '';
-  const topLabel = isExam ? examLbl : (plan.language || '—');
+  // Normalise plan.language: might be a { c, lvl } object on plans
+  // saved before the client-side rename fix.
+  const _planLang = (x) => !x ? '—'
+    : typeof x === 'string' ? (x.length <= 3 ? (langName(x) || x) : x)
+    : (typeof x === 'object' ? (langName(x.c || x.code || '') || '—') : '—');
+  const topLabel = isExam ? examLbl : _planLang(plan.language);
   const topCls = isExam ? 'ln-planmini-lang exam' : 'ln-planmini-lang';
   return '<button type="button" class="ln-planmini" onclick="showLearnPlanDetail(\'' + esc(plan.id) + '\')">' +
     '<div class="ln-planmini-top">' +
@@ -8256,9 +8261,18 @@ function planDetailHtml(plan){
             '<span class="ln-detail-hero-chip">' + esc(plan.goal || '—') + '</span>' +
             '<span class="ln-detail-hero-chip">' + esc(String(plan.minutesPerDay || 10)) + ' min/day</span>';
   }
+  // Normalise plan.language (might be a { c, lvl } object on plans
+  // generated before the client-side rename fix). Same helper style
+  // as _lnPickName in openLearnSetup.
+  function _planLangName(x){
+    if (!x) return '—';
+    if (typeof x === 'string') return x.length <= 3 ? langName(x) : x;
+    if (typeof x === 'object') return langName(x.c || x.code || '') || '—';
+    return '—';
+  }
   const heroTitle = plan.kind === 'exam'
     ? 'Preparing <span>' + esc(plan.exam ? plan.exam.replace('-', ' ') : 'exam') + '</span>'
-    : 'Learning <span>' + esc(plan.language || '—') + '</span>';
+    : 'Learning <span>' + esc(_planLangName(plan.language)) + '</span>';
   const progressWord = plan.kind === 'exam' ? 'drills' : 'lessons';
   return '<div class="ln-plans-detail">' +
     '<div class="ln-detail-hero">' +
