@@ -3419,12 +3419,14 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    community wall — 20px mobile, 48px desktop — so nothing hugs the edge. */
 #tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats,#tabChat{padding:16px 20px;box-sizing:border-box;width:100%}
 @media(min-width:769px){#tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats,#tabChat{padding:20px 48px}}
-/* Desktop chat split-view: reset the inner tab paddings — the grid on
-   #vApp.splitview owns its own outer padding so both columns sit inside
-   a proper 48px gutter matching every other tab. Owner ask 17 Aug 2026
-   ("give the space to tabschat/tabchat, 48px like the others"). */
+/* Desktop chat split-view: give the two columns a 42px side gutter so
+   the total space from viewport edge is ~48px (the .wrap already adds
+   6px), matching every other tab. Owner ask 17 Aug 2026. The topnav
+   is inside #vApp so it needs negative margin to stay edge-to-edge —
+   otherwise it visibly gets pushed inward and looks broken. */
 @media(min-width:900px){
-  #vApp.splitview{padding:20px 48px;box-sizing:border-box;max-width:1400px;margin:0 auto}
+  #vApp.splitview{padding-left:42px;padding-right:42px;box-sizing:border-box}
+  #vApp.splitview > .topnav{margin-left:-42px;margin-right:-42px;width:calc(100% + 84px)}
   #vApp.splitview > #tabChats,
   #vApp.splitview > #tabChat{padding:0}
 }
@@ -10125,10 +10127,15 @@ async function refreshChat(first){
        w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join('');
      $('chName').innerHTML = esc(titleCase(j.user.name)) + mark(j.user);
     // Header subtitle per 1b spec: ● online (green) + language chip.
-    // Falls back to just online/offline if the peer hasn't set speaks.
+    // `speaks` on the profile is stored as { c, lvl } objects (legacy
+    // string codes still supported). Normalise both shapes to a name
+    // before rendering — otherwise the chip printed "[object Object]".
     const dot = j.user.online ? '<span style="color:#1fb28a;font-weight:600">● online</span>' : '<span style="color:#8a8d99">offline</span>';
-    const spk = Array.isArray(j.user.speaks) && j.user.speaks[0];
-    const flag = spk ? ' · <span class="chstate-lang">speaks ' + flagFor(spk) + ' ' + esc(spk) + '</span>' : '';
+    const rawSpk = Array.isArray(j.user.speaks) && j.user.speaks[0];
+    let spkName = '';
+    if (rawSpk && typeof rawSpk === 'object') spkName = langName(rawSpk.c || rawSpk.code || '');
+    else if (typeof rawSpk === 'string') spkName = rawSpk.length <= 3 ? langName(rawSpk) : rawSpk;
+    const flag = spkName ? ' · <span class="chstate-lang">speaks ' + flagFor(spkName) + ' ' + esc(spkName) + '</span>' : '';
     $('chState').innerHTML = dot + flag;
     // A fingerprint of what we last drew — includes reactions and edits so
     // a purely metadata change (like someone hearting an old message) still
