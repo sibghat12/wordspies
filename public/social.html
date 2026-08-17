@@ -4429,22 +4429,18 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
         <button class="fs-x" type="button" onclick="closeLearnSetup()" aria-label="Close">✕</button>
       </div>
       <div class="ln-setup-body">
-        <!-- Languages: auto-filled from profile, collapsed unless the user
-             hasn't set them (or wants to change for this plan). -->
-        <details class="ln-langs" id="lnLangsBox">
-          <summary>
-            <span id="lnLangsLabel">Learning Spanish · speak English</span>
-            <span class="ln-langs-edit">change</span>
-          </summary>
-          <div class="ln-setup-q" style="margin-top:0">
-            <div class="ln-setup-qlbl">You want to learn</div>
-            <select class="ln-select" id="lnPickLearn"></select>
-          </div>
-          <div class="ln-setup-q">
-            <div class="ln-setup-qlbl">You already speak</div>
-            <select class="ln-select" id="lnPickNative"></select>
-          </div>
-        </details>
+        <!-- Languages: auto-filled from profile, but visible as normal
+             dropdowns so the user can change them without hunting for
+             an edit link. Owner ask 17 Aug 2026 v4: 'make the plan
+             languages as dropdown, not show like change button'. -->
+        <div class="ln-setup-q">
+          <div class="ln-setup-qlbl">You want to learn</div>
+          <select class="ln-select" id="lnPickLearn"></select>
+        </div>
+        <div class="ln-setup-q">
+          <div class="ln-setup-qlbl">You already speak</div>
+          <select class="ln-select" id="lnPickNative"></select>
+        </div>
         <div class="ln-setup-q">
           <div class="ln-setup-qlbl">Your current level</div>
           <div class="ln-opts" data-ln-q="level">
@@ -8384,21 +8380,8 @@ function openLearnSetup(){
   LN_SETUP.learn = meLearn;
   LN_SETUP.native = meSpeak;
   LN_SETUP.focus = LN_SETUP.focus || 'General';
-  // Compact "Learning 🇪🇸 Spanish · speak 🇬🇧 English" summary label.
-  // Uses flagFor() (emoji) so the chip reads at a glance without a
-  // network request. Force details open when profile is empty.
-  const label = document.getElementById('lnLangsLabel');
-  function _paintLangsLabel(){
-    if (label) label.textContent =
-      'Learning ' + flagFor(LN_SETUP.learn) + ' ' + LN_SETUP.learn +
-      ' · speak ' + flagFor(LN_SETUP.native) + ' ' + LN_SETUP.native;
-  }
-  _paintLangsLabel();
-  const box = document.getElementById('lnLangsBox');
-  const hasProfileLangs = !!((ME && Array.isArray(ME.learns) && ME.learns[0]) && (ME && Array.isArray(ME.speaks) && ME.speaks[0]));
-  if (box) box.open = !hasProfileLangs;
-  if (learnSel) learnSel.onchange = e => { LN_SETUP.learn = e.target.value; _paintLangsLabel(); };
-  if (nativeSel) nativeSel.onchange = e => { LN_SETUP.native = e.target.value; _paintLangsLabel(); };
+  if (learnSel) learnSel.onchange = e => { LN_SETUP.learn = e.target.value; };
+  if (nativeSel) nativeSel.onchange = e => { LN_SETUP.native = e.target.value; };
 }
 function closeLearnSetup(){
   const bd = $('lnSetupBd'); if (bd) { bd.classList.remove('show'); document.body.style.overflow = ''; }
