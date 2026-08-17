@@ -3736,8 +3736,12 @@ Do NOT add quotes, preambles, or explanations.`,
       const { level, goal, minutesPerDay } = req.body || {};
       const okLevels = ['Beginner','Intermediate','Advanced'];
       if (!okLevels.includes(level)) return res.status(400).json({ error: 'Pick a level.' });
-      const goalStr = String(goal || '').trim().slice(0, 60);
-      if (!goalStr) return res.status(400).json({ error: 'Pick a goal.' });
+      // Owner ask 17 Aug 2026 v2: dropped the 'Why are you learning?' + 'Time
+      // per day' pickers from the client. Both now default server-side so
+      // the plan generates from just level + focus + languages. Keep goal
+      // as an optional string in the API contract for anything that still
+      // sends it (or a future re-add).
+      const goalStr = String(goal || 'General practice').trim().slice(0, 60);
       // Owner ask 17 Aug 2026: let the learner pick a focus (Vocabulary /
       // Idioms / General / Grammar / Speaking / Listening) so the plan
       // isn't a one-size-fits-all curriculum. Falls back to General for

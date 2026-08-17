@@ -4457,26 +4457,6 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
             <button type="button" class="ln-opt" data-v="Listening">🎧 Listening</button>
           </div>
         </div>
-        <div class="ln-setup-q">
-          <div class="ln-setup-qlbl">Why are you learning?</div>
-          <div class="ln-opts ln-opts-wrap" data-ln-q="goal">
-            <button type="button" class="ln-opt on" data-v="Travel">✈️ Travel</button>
-            <button type="button" class="ln-opt" data-v="Work">💼 Work</button>
-            <button type="button" class="ln-opt" data-v="Chat with locals">💬 Chat</button>
-            <button type="button" class="ln-opt" data-v="IELTS or TOEIC exam">📝 Exam</button>
-            <button type="button" class="ln-opt" data-v="Partner or family">❤️ Partner</button>
-            <button type="button" class="ln-opt" data-v="Fun and hobbies">🎨 Fun</button>
-          </div>
-        </div>
-        <div class="ln-setup-q">
-          <div class="ln-setup-qlbl">Time you can spare a day</div>
-          <div class="ln-opts" data-ln-q="mpd">
-            <button type="button" class="ln-opt" data-v="5">5 min</button>
-            <button type="button" class="ln-opt on" data-v="10">10 min</button>
-            <button type="button" class="ln-opt" data-v="15">15 min</button>
-            <button type="button" class="ln-opt" data-v="30">30 min</button>
-          </div>
-        </div>
         <div class="ln-setup-err hidden" id="lnSetupErr"></div>
         <button class="ln-cta ln-setup-go" id="lnSetupGo" onclick="submitLearnSetup()">✨ Build my plan</button>
         <div class="ln-setup-hint">Your plan is designed just for you. Takes about 5 seconds.</div>
@@ -8366,28 +8346,38 @@ function openLearnSetup(){
   if (nativeSel && !nativeSel.options.length) {
     nativeSel.innerHTML = LANGS.map(l => '<option value="' + l.n + '">' + l.f + ' ' + l.n + '</option>').join('');
   }
-  const meLearn = (ME && Array.isArray(ME.learns) && ME.learns[0]) || 'Spanish';
-  const meSpeak = (ME && Array.isArray(ME.speaks) && ME.speaks[0]) || 'English';
+  // Normalise `speaks` / `learns` entries. Profile stores them as
+  // { c, lvl } objects; older accounts might have plain string codes
+  // or plain names. Return a proper language NAME string in every
+  // case so the <select> value + payload land right.
+  function _lnPickName(x, fallback){
+    if (!x) return fallback;
+    if (typeof x === 'string') return x.length <= 3 ? langName(x) : x;
+    if (typeof x === 'object') return langName(x.c || x.code || '') || fallback;
+    return fallback;
+  }
+  const meLearn = _lnPickName((ME && Array.isArray(ME.learns) && ME.learns[0]), 'Spanish');
+  const meSpeak = _lnPickName((ME && Array.isArray(ME.speaks) && ME.speaks[0]), 'English');
   if (learnSel) learnSel.value = meLearn;
   if (nativeSel) nativeSel.value = meSpeak;
   LN_SETUP.learn = meLearn;
   LN_SETUP.native = meSpeak;
   LN_SETUP.focus = LN_SETUP.focus || 'General';
-  // Update the compact "Learning X · speak Y" summary label. If the user
-  // has neither language on file, force the details open so they pick.
+  // Compact "Learning 🇪🇸 Spanish · speak 🇬🇧 English" summary label.
+  // Uses flagFor() (emoji) so the chip reads at a glance without a
+  // network request. Force details open when profile is empty.
   const label = document.getElementById('lnLangsLabel');
-  if (label) label.textContent = 'Learning ' + meLearn + ' · speak ' + meSpeak;
+  function _paintLangsLabel(){
+    if (label) label.textContent =
+      'Learning ' + flagFor(LN_SETUP.learn) + ' ' + LN_SETUP.learn +
+      ' · speak ' + flagFor(LN_SETUP.native) + ' ' + LN_SETUP.native;
+  }
+  _paintLangsLabel();
   const box = document.getElementById('lnLangsBox');
   const hasProfileLangs = !!((ME && Array.isArray(ME.learns) && ME.learns[0]) && (ME && Array.isArray(ME.speaks) && ME.speaks[0]));
   if (box) box.open = !hasProfileLangs;
-  if (learnSel) learnSel.onchange = e => {
-    LN_SETUP.learn = e.target.value;
-    if (label) label.textContent = 'Learning ' + LN_SETUP.learn + ' · speak ' + LN_SETUP.native;
-  };
-  if (nativeSel) nativeSel.onchange = e => {
-    LN_SETUP.native = e.target.value;
-    if (label) label.textContent = 'Learning ' + LN_SETUP.learn + ' · speak ' + LN_SETUP.native;
-  };
+  if (learnSel) learnSel.onchange = e => { LN_SETUP.learn = e.target.value; _paintLangsLabel(); };
+  if (nativeSel) nativeSel.onchange = e => { LN_SETUP.native = e.target.value; _paintLangsLabel(); };
 }
 function closeLearnSetup(){
   const bd = $('lnSetupBd'); if (bd) { bd.classList.remove('show'); document.body.style.overflow = ''; }
@@ -8412,7 +8402,7 @@ async function submitLearnSetup(){
   const err = $('lnSetupErr'); if (err) err.classList.add('hidden');
   try {
     const j = await api('/learn/plan', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ level: LN_SETUP.level, goal: LN_SETUP.goal, focus: LN_SETUP.focus || 'General', minutesPerDay: LN_SETUP.mpd, language: LN_SETUP.learn, nativeLanguage: LN_SETUP.native }) });
+      body: JSON.stringify({ level: LN_SETUP.level, focus: LN_SETUP.focus || 'General', language: LN_SETUP.learn, nativeLanguage: LN_SETUP.native }) });
     const newPlan = j && j.plan;
     if (!newPlan) throw new Error('No plan returned.');
     // Append to the local list, update the AI Plan card subtitle,
