@@ -47,7 +47,7 @@
     // a plain alert is fine and works everywhere.
     const modal = document.getElementById('a2hs');
     if (modal) modal.classList.remove('hidden');
-    else alert('Install WordSpies\n\n1. ' + one.replace(/<[^>]+>/g,'') + '\n2. ' + two.replace(/<[^>]+>/g,''));
+    else alert('Install TalkSibi\n\n1. ' + one.replace(/<[^>]+>/g,'') + '\n2. ' + two.replace(/<[^>]+>/g,''));
   }
   window.wsDoInstall = doInstall;
 
@@ -138,7 +138,7 @@
       <div class="wsfoot-inner">
         <div class="wsfoot-cols">
           <div class="wsfoot-col">
-            <h4>WordSpies</h4>
+            <h4>TalkSibi</h4>
             <a href="/">Community</a>
             <a href="/about">About</a>
           </div>
@@ -146,32 +146,32 @@
             <h4>Legal</h4>
             <a href="/terms">Terms of Service</a>
             <a href="/privacy">Privacy Policy</a>
-            <a href="mailto:contact@wordspies.co.uk">Contact us</a>
+            <a href="mailto:contact@talksibi.com">Contact us</a>
             <h4 style="margin-top:22px">Follow</h4>
             <div class="row">
-              <a class="wsfoot-sicon" href="https://instagram.com/wordspies" target="_blank" rel="noopener" aria-label="Instagram">${ICONS.ig}</a>
-              <a class="wsfoot-sicon" href="https://x.com/wordspies" target="_blank" rel="noopener" aria-label="X">${ICONS.tw}</a>
-              <a class="wsfoot-sicon" href="https://facebook.com/wordspies" target="_blank" rel="noopener" aria-label="Facebook">${ICONS.fb}</a>
-              <a class="wsfoot-sicon" href="https://youtube.com/@wordspies" target="_blank" rel="noopener" aria-label="YouTube">${ICONS.yt}</a>
+              <a class="wsfoot-sicon" href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">${ICONS.ig}</a>
+              <a class="wsfoot-sicon" href="https://x.com/talksibi" target="_blank" rel="noopener" aria-label="X">${ICONS.tw}</a>
+              <a class="wsfoot-sicon" href="https://facebook.com/talksibi" target="_blank" rel="noopener" aria-label="Facebook">${ICONS.fb}</a>
+              <a class="wsfoot-sicon" href="https://youtube.com/@talksibi" target="_blank" rel="noopener" aria-label="YouTube">${ICONS.yt}</a>
             </div>
           </div>
         </div>
         <div class="wsfoot-bar">
-          <div>© ${y} WordSpies. All rights reserved.</div>
+          <div>© ${y} TalkSibi. All rights reserved.</div>
           <div class="wsfoot-brand">Word<em>Spies</em></div>
         </div>
       </div>
     </footer>`;
   }
 
-  // A short label for the current page — reads next to the WordSpies logo in
+  // A short label for the current page — reads next to the TalkSibi logo in
   // the shared brand header so a visitor knows where they are without needing
   // an extra ~30px of dedicated hero space.
   function pageLabel() {
     const map = {
       '/pool':'8-Ball Pool', '/ludo':'Ludo', '/four':'Connect 4',
       '/meld':'Mind Meld', '/spy':'Who is the Spy?',
-      '/codenames':'WordSpies · Codenames', '/play':'WordSpies',
+      '/codenames':'TalkSibi · Codenames', '/play':'TalkSibi',
       '/games':'All games'
     };
     const p = location.pathname.replace(/\/$/, '') || '/';
@@ -193,7 +193,7 @@
   // Inject the shared brand strip UNLESS the page already ships its own top
   // nav (community app: .topnav) or full marketing header (.sitehead) or has
   // opted out via data-nochrome. Game pages keep their own game-specific
-  // <header> and get the WordSpies strip stacked ABOVE it, so the brand is
+  // <header> and get the TalkSibi strip stacked ABOVE it, so the brand is
   // consistent everywhere.
   function needsHeader() {
     // Disabled after talksibi rebrand — every page ships its own header
@@ -205,7 +205,7 @@
     injectStyles();
     if (chromeless()) return;
     // Header (prepend, before any body content) — game pages that ship their
-    // own <header> keep theirs; the WordSpies brand strip sits above them so
+    // own <header> keep theirs; the TalkSibi brand strip sits above them so
     // branding is consistent everywhere. `wsheaded` on body reserves the
     // vertical space so nothing gets covered.
     if (needsHeader() && !document.querySelector('.wshead')) {

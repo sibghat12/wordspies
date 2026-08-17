@@ -5,6 +5,27 @@ const { GA, CONSENT_MODAL, SITE_FOOTER } = require('./landing.js');
 const GA_ID = 'G-JTH809Z8NH';
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
+// Pick the best hero image for a post: prefer .png (used by the newer
+// generated banners), fall back to .jpg (older posts). Checked on disk
+// once and cached — the file set doesn't change at runtime.
+const fs = require('fs');
+const path = require('path');
+const _imgCache = {};
+function postImg(slug){
+  if (_imgCache[slug]) return _imgCache[slug];
+  const dir = path.join(__dirname, 'public', 'blog-img');
+  for (const ext of ['png', 'jpg']) {
+    if (fs.existsSync(path.join(dir, slug + '.' + ext))) {
+      _imgCache[slug] = '/blog-img/' + slug + '.' + ext;
+      return _imgCache[slug];
+    }
+  }
+  // Neither exists → use the site OG banner as a graceful fallback so
+  // the article + card still render.
+  _imgCache[slug] = '/og-image.png';
+  return _imgCache[slug];
+}
+
 const articles = {
   'games-like-codenames': {
     title: '6 Free Games Like Codenames to Play Online (2026)',
@@ -1020,7 +1041,7 @@ function articlePage(slug) {
   if (!a) return null;
   const related = Object.entries(articles).filter(([s2]) => s2 !== slug).slice(0, 4)
     .map(([s2, r]) => `<a class="rel" href="/blog/${s2}"><b>${r.title}</b><span>Read article &rarr;</span></a>`).join('');
-  const img = '/blog-img/' + slug + '.jpg';
+  const img = postImg(slug);
   // SEO meta: branded title tag (distinct from on-page H1) + unique description per post
   const metaTitle = a.metaTitle || `${a.title} | TalkSibi`;
   const metaDesc = a.metaDesc || a.desc;
@@ -1064,7 +1085,7 @@ function indexPage() {
     const cat = postCat(slug, a);
     return `<a class="pcard" href="/blog/${slug}">
       <div class="pcard-thumb">
-        <img src="/blog-img/${slug}.jpg" alt="${esc(a.title)}" loading="lazy" width="1200" height="630">
+        <img src="${postImg(slug)}" alt="${esc(a.title)}" loading="lazy" width="1200" height="630">
         <span class="pcard-badge">${catLabel(cat)}</span>
       </div>
       <div class="pcard-body">

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5b6cff"/>
+      <stop offset="55%" stop-color="#7857ff"/>
+      <stop offset="100%" stop-color="#9b6cff"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="20%" cy="85%" r="55%">
+      <stop offset="0%" stop-color="#e0443c" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#e0443c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="90%" cy="12%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+  <g font-family="'Hanken Grotesk','Inter',system-ui,sans-serif">
+    <!-- eyebrow -->
+    <text x="80" y="150" font-size="20" font-weight="700" letter-spacing="6" fill="rgba(255,255,255,0.75)">
+      TALKSIBI · LANGUAGE EXCHANGE
+    </text>
+    <!-- headline -->
+    <text x="80" y="260" font-size="88" font-weight="700" fill="#ffffff" letter-spacing="-2">
+      Learn Japanese
+    </text>
+    <text x="80" y="360" font-size="88" font-weight="700" fill="#ffffff" letter-spacing="-2">
+      with real people
+    </text>
+    <!-- greeting in target language -->
+    <text x="80" y="460" font-size="42" font-weight="600" fill="#e0443c" opacity="0.95">
+      こんにちは！お元気ですか？
+    </text>
+    <!-- CTA badge -->
+    <g transform="translate(80,510)">
+      <rect x="0" y="0" width="360" height="64" rx="32" fill="#ffffff"/>
+      <text x="180" y="42" font-size="20" font-weight="700" fill="#14161f" text-anchor="middle" letter-spacing="0">
+        talksibi.com  ·  free forever
+      </text>
+    </g>
+  </g>
+</svg>

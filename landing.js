@@ -123,19 +123,19 @@ footer.sitefoot .fbrand em{font-style:normal;color:#5b6cff}
     <div class="fcol">
       <h4>Social Media</h4>
       <div class="fsocial-grid">
-        <a href="https://instagram.com/wordspies" target="_blank" rel="noopener" aria-label="Instagram">
+        <a href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">
           <svg viewBox="0 0 24 24"><path d="M12 2.2c2.7 0 3 0 4 .1 1 0 1.5.2 1.9.4a3.4 3.4 0 0 1 1.9 1.9c.2.4.3.9.4 1.9 0 1.1.1 1.4.1 4s0 3-.1 4c0 1-.2 1.5-.4 1.9a3.4 3.4 0 0 1-1.9 1.9c-.4.2-.9.3-1.9.4-1 0-1.3.1-4 .1s-3 0-4-.1c-1 0-1.5-.2-1.9-.4a3.4 3.4 0 0 1-1.9-1.9c-.2-.4-.3-.9-.4-1.9C2.2 15 2.2 14.7 2.2 12s0-3 .1-4c0-1 .2-1.5.4-1.9A3.4 3.4 0 0 1 4.6 4.2c.4-.2.9-.3 1.9-.4C7.4 3.7 7.7 3.7 12 3.7zm0-1.5c-2.7 0-3.1 0-4.1.1-1.1 0-1.9.2-2.5.5A4.9 4.9 0 0 0 3.3 5.4c-.3.6-.4 1.4-.5 2.5-.1 1-.1 1.4-.1 4.1s0 3.1.1 4.1c0 1.1.2 1.9.5 2.5a4.9 4.9 0 0 0 2.7 2.7c.6.3 1.4.4 2.5.5 1 .1 1.4.1 4.1.1s3.1 0 4.1-.1c1.1 0 1.9-.2 2.5-.5a4.9 4.9 0 0 0 2.7-2.7c.3-.6.4-1.4.5-2.5.1-1 .1-1.4.1-4.1s0-3.1-.1-4.1c0-1.1-.2-1.9-.5-2.5a4.9 4.9 0 0 0-2.7-2.7c-.6-.3-1.4-.4-2.5-.5-1-.1-1.4-.1-4.1-.1zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.3a3.3 3.3 0 1 1 0-6.6 3.3 3.3 0 0 1 0 6.6zM18.4 5.4a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>
         </a>
-        <a href="https://x.com/wordspies" target="_blank" rel="noopener" aria-label="X">
+        <a href="https://x.com/talksibi" target="_blank" rel="noopener" aria-label="X">
           <svg viewBox="0 0 24 24"><path d="M18.9 3H22l-7.1 8.1L23 21h-6.6l-5.2-6.6L5 21H2l7.5-8.6L1.6 3h6.7l4.7 6zm-1.2 16.1h1.7L7 4.8H5.1z"/></svg>
         </a>
-        <a href="https://tiktok.com/@wordspies" target="_blank" rel="noopener" aria-label="TikTok">
+        <a href="https://tiktok.com/@talksibi" target="_blank" rel="noopener" aria-label="TikTok">
           <svg viewBox="0 0 24 24"><path d="M17.4 3.4c-1.5 0-2.7-1.2-2.7-2.7v-.7h-3.3v14.6a2.7 2.7 0 1 1-2.7-2.7c.3 0 .5 0 .8.1V8.6h-.8a6 6 0 1 0 6 6V8.9a6 6 0 0 0 3.8 1.3V7c-.4 0-.7-.1-1.1-.2-.4-.1-.8-.2-1.1-.4a5.4 5.4 0 0 1-2.7-3z"/></svg>
         </a>
-        <a href="https://facebook.com/wordspies" target="_blank" rel="noopener" aria-label="Facebook">
+        <a href="https://facebook.com/talksibi" target="_blank" rel="noopener" aria-label="Facebook">
           <svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H8V12h2.4V9.9c0-2.4 1.4-3.7 3.6-3.7 1 0 2.1.2 2.1.2v2.4h-1.2c-1.2 0-1.5.7-1.5 1.5V12h2.6l-.4 2.9h-2.2v7A10 10 0 0 0 22 12z"/></svg>
         </a>
-        <a href="https://youtube.com/@wordspies" target="_blank" rel="noopener" aria-label="YouTube">
+        <a href="https://youtube.com/@talksibi" target="_blank" rel="noopener" aria-label="YouTube">
           <svg viewBox="0 0 24 24"><path d="M23.5 6.5a3 3 0 0 0-2.1-2.1C19.6 4 12 4 12 4s-7.6 0-9.4.4A3 3 0 0 0 .5 6.5C0 8.4 0 12 0 12s0 3.6.5 5.5a3 3 0 0 0 2.1 2.1C4.4 20 12 20 12 20s7.6 0 9.4-.4a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.5.5-5.5s0-3.6-.5-5.5zM9.6 15.6V8.4l6.4 3.6z"/></svg>
         </a>
         <a href="mailto:contact@talksibi.com" aria-label="Email">
@@ -268,7 +268,7 @@ ${GA}
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
-{"@type":"Organization","@id":"${SITE}/#org","name":"talksibi","url":"${SITE}/","logo":"${SITE}/icon-512.png","slogan":"Connect · Learn · Play","sameAs":["https://instagram.com/wordspies","https://tiktok.com/@wordspies","https://youtube.com/@wordspies","https://x.com/wordspies"]},
+{"@type":"Organization","@id":"${SITE}/#org","name":"talksibi","url":"${SITE}/","logo":"${SITE}/icon-512.png","slogan":"Connect · Learn · Play","sameAs":["https://instagram.com/talksibi","https://tiktok.com/@talksibi","https://youtube.com/@talksibi","https://x.com/talksibi"]},
 {"@type":"WebApplication","name":"talksibi","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"description":"Language exchange community: chat with native speakers, play word games, join live voice parties, and build AI lesson plans. 18+, free forever.","publisher":{"@id":"${SITE}/#org"}},
 {"@type":"FAQPage","mainEntity":[
 {"@type":"Question","name":"Is talksibi free?","acceptedAnswer":{"@type":"Answer","text":"Yes — talksibi is free forever. Inviting 5 friends unlocks a bonus premium year."}},
@@ -841,16 +841,16 @@ a:hover{color:#4353e8}
         </a>
         <div class="ts-foot-blurb">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
         <div class="ts-foot-socials">
-          <a href="https://instagram.com/wordspies" target="_blank" rel="noopener" aria-label="Instagram">
+          <a href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg>
           </a>
-          <a href="https://tiktok.com/@wordspies" target="_blank" rel="noopener" aria-label="TikTok">
+          <a href="https://tiktok.com/@talksibi" target="_blank" rel="noopener" aria-label="TikTok">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#4a4d59"><path d="M16.6 5.82C15.9 5.03 15.5 4 15.5 2.9h-3.1v12.4c0 1.4-1.14 2.54-2.55 2.54a2.55 2.55 0 0 1 0-5.1c.26 0 .52.04.76.12V9.7a5.7 5.7 0 0 0-.76-.05 5.66 5.66 0 1 0 5.66 5.66V9.64a7.2 7.2 0 0 0 4.19 1.34V7.9c-1.24 0-2.37-.5-3.1-2.08z"></path></svg>
           </a>
-          <a href="https://youtube.com/@wordspies" target="_blank" rel="noopener" aria-label="YouTube">
+          <a href="https://youtube.com/@talksibi" target="_blank" rel="noopener" aria-label="YouTube">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M23 7.5s-.23-1.63-.94-2.35c-.9-.94-1.9-.95-2.36-1C16.4 3.9 12 3.9 12 3.9h-.01s-4.4 0-7.7.25c-.46.05-1.46.06-2.36 1C1.22 5.87 1 7.5 1 7.5S.76 9.42.76 11.33v1.8C.76 15.05 1 16.96 1 16.96s.23 1.63.93 2.35c.9.94 2.08.9 2.6 1 1.89.18 7.47.24 7.47.24s4.4-.01 7.7-.25c.46-.06 1.46-.07 2.36-1.01.7-.72.94-2.35.94-2.35s.24-1.9.24-3.82v-1.8C23.24 9.42 23 7.5 23 7.5zM9.7 14.85V8.66l6.22 3.1-6.22 3.09z"></path></svg>
           </a>
-          <a href="https://x.com/wordspies" target="_blank" rel="noopener" aria-label="X">
+          <a href="https://x.com/talksibi" target="_blank" rel="noopener" aria-label="X">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="#4a4d59"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg>
           </a>
           <a href="#" aria-label="Discord">
