@@ -3417,8 +3417,17 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 @media(min-width:769px){ #tabWall{padding:20px 48px} }
 /* Owner ask: every other content tab gets the same side padding as the
    community wall — 20px mobile, 48px desktop — so nothing hugs the edge. */
-#tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats{padding:16px 20px;box-sizing:border-box;width:100%}
-@media(min-width:769px){#tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats{padding:20px 48px}}
+#tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats,#tabChat{padding:16px 20px;box-sizing:border-box;width:100%}
+@media(min-width:769px){#tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats,#tabChat{padding:20px 48px}}
+/* Desktop chat split-view: reset the inner tab paddings — the grid on
+   #vApp.splitview owns its own outer padding so both columns sit inside
+   a proper 48px gutter matching every other tab. Owner ask 17 Aug 2026
+   ("give the space to tabschat/tabchat, 48px like the others"). */
+@media(min-width:900px){
+  #vApp.splitview{padding:20px 48px;box-sizing:border-box;max-width:1400px;margin:0 auto}
+  #vApp.splitview > #tabChats,
+  #vApp.splitview > #tabChat{padding:0}
+}
 /* Owner ask: desktop-only — inset the chat conversation view too so it
    lines up with the header + wall. Mobile stays flush. */
 @media(min-width:769px){#tabChat{padding:20px 48px}}
