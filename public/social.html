@@ -13531,6 +13531,17 @@ async function openClubFromDeepLinkParam() {
   /* Give scroll body enough breathing room to clear the fixed nav. */
   body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 }
+
+/* ═══ Flat design pass (owner ask 17 Aug 2026) ═══
+   Every drop-shadow across the app is stripped. Accessibility focus
+   rings restored via outline instead of box-shadow so keyboard nav
+   still shows where you are. Applied last so it beats all earlier
+   author rules without needing to touch each one individually. */
+*, *::before, *::after { box-shadow: none !important; }
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid #5b6cff !important;
+  outline-offset: 2px !important;
+}
 </style>
 <div id="a2hsSteps" class="hidden">
   <div class="card">
