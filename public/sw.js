@@ -58,9 +58,9 @@ self.addEventListener('push', e => {
       const r = await fetch('/api/social/push/peek', { credentials: 'include', cache: 'no-store' });
       if (r.ok) n = (await r.json()).n;
     } catch (err) {}
-    const title = (n && n.title) || 'WordSpies';
+    const title = (n && n.title) || 'TalkSibi';
     const body  = (n && n.body)  || 'You have something new.';
-    const url   = (n && n.url)   || '/social';
+    const url   = (n && n.url)   || '/app';
     await self.registration.showNotification(title, {
       body,
       icon: '/icon-192.png',

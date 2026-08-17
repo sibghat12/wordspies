@@ -1,9 +1,9 @@
 {
   "id": "/",
-  "name": "WordSpies — word game with friends",
-  "short_name": "WordSpies",
-  "description": "Free online word team game — play with friends, no sign-up.",
-  "start_url": "/social?src=app",
+  "name": "TalkSibi — practise languages with real people",
+  "short_name": "TalkSibi",
+  "description": "Language exchange with native speakers, AI experts, live voice parties and language games. Free, in the browser.",
+  "start_url": "/app?src=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
@@ -18,7 +18,8 @@
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Start a game", "short_name": "Play", "url": "/play", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Community", "short_name": "Social", "url": "/social", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Community", "short_name": "People", "url": "/app/community", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Chats", "short_name": "Chats", "url": "/app/chats", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Games", "short_name": "Play", "url": "/app/games", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
   ]
 }
