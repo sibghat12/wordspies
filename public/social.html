@@ -1603,30 +1603,48 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 @media(min-width:640px){.playgrid{grid-template-columns:repeat(2,1fr);gap:18px}}
 @media(min-width:1080px){.playgrid{grid-template-columns:repeat(4,1fr)}}
 
-/* ═══ 1d Games hub cards — 4px coloured top border, minimal art.
-   Spec: design_handoff_talksibi_rebrand 2/README.md §1d. Replaces the
-   old .playcard art-panel style below (kept as dead CSS for now). */
-.gh-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;padding:16px 0 30px}
-@media(max-width:960px){.gh-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
-@media(max-width:520px){.gh-grid{grid-template-columns:1fr;gap:12px}}
-.gh-card{position:relative;background:#fff;border-radius:16px;padding:22px 20px 20px;display:flex;flex-direction:column;gap:10px;border:1px solid #eceef4;box-shadow:0 1px 2px rgba(0,0,0,.03);text-decoration:none;color:var(--ink);overflow:hidden;transition:transform .15s ease,box-shadow .15s ease}
+/* ═══ 1d Games hub — card shell + 3-col grid with 4px top border.
+   Spec: design_handoff_talksibi_rebrand 2/ §1d. */
+.gh-shell{max-width:1120px;margin:0 auto;background:#fbfbfd;border:1px solid #e6e7ee;border-radius:20px;padding:24px 26px;display:flex;flex-direction:column;gap:18px}
+@media(max-width:520px){.gh-shell{padding:18px 16px;border-radius:16px;gap:14px}}
+.gh-head{padding:0}
+.gh-title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.gh-title{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-weight:600;font-size:21px;letter-spacing:-.3px;color:#14161f;margin:0}
+.gh-tag{font-size:13px;color:#8a8d99;font-weight:500;flex:1;min-width:120px}
+.gh-start{background:#14161f;color:#fff;text-decoration:none;font-weight:600;font-size:13px;padding:8px 18px;border-radius:99px;white-space:nowrap;transition:background .12s}
+.gh-start:hover{background:#2a2e42}
+@media(max-width:520px){.gh-tag{display:none}}
+/* LIVE TABLES strip — single-row bar per 1d mock. */
+.gh-live-strip{background:#fff;border:1px solid #eceef4;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:14px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.gh-live-strip::-webkit-scrollbar{display:none}
+.gh-live-strip .gh-live-lbl{font-size:12.5px;font-weight:600;color:#d9544d;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
+.gh-live-strip .gh-live-lbl::before{content:"";width:7px;height:7px;border-radius:50%;background:#d9544d}
+.gh-live-strip .gh-live-item{font-size:13px;color:#4a4d59;font-weight:500;white-space:nowrap;flex-shrink:0}
+.gh-live-strip .gh-live-item b{color:#5b6cff}
+.gh-live-strip .gh-live-item .muted{color:#8a8d99}
+.gh-live-strip.empty .gh-live-item{color:#8a8d99;font-style:italic;font-weight:500}
+/* 3-col grid with per-game 4px top border + soft icon tint. */
+.gh-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:960px){.gh-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.gh-grid{grid-template-columns:1fr}}
+.gh-card{position:relative;background:#fff;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px;border:1px solid #eceef4;text-decoration:none;color:var(--ink);overflow:hidden;transition:transform .15s ease}
 .gh-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--gh-top,#5b6cff)}
-.gh-card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(22,24,31,.10)}
-.gh-card .gh-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;background:var(--gh-tint,#f3f4fb)}
+.gh-card:hover{transform:translateY(-3px)}
+.gh-card .gh-icon{font-size:26px;line-height:1;background:transparent;padding:0;width:auto;height:auto;display:block}
 .gh-card .gh-nameline{display:flex;align-items:center;gap:8px;min-width:0}
-.gh-card .gh-nameline b{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:17px;font-weight:600;letter-spacing:-.3px;color:var(--ink)}
-.gh-card .gh-desc{font-size:13px;color:#4a4d59;font-weight:500;line-height:1.5;min-height:calc(13px * 1.5 * 2)}
+.gh-card .gh-nameline b{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:16px;font-weight:600;letter-spacing:-.2px;color:#14161f}
+.gh-card .gh-desc{font-size:12.5px;color:#8a8d99;font-weight:500;line-height:1.45}
 .gh-card .gh-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.gh-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:99px;background:#f3f4fb;color:#4a55c9;white-space:nowrap}
+.gh-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;background:#f3f4fb;color:#4a55c9;white-space:nowrap}
 .gh-chip.gh-live{background:#f2f8f5;color:#2d7a62}
-.gh-chip.gh-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#1fb28a;display:inline-block}
+.gh-chip.gh-live::before{content:"🟢";font-size:9px;line-height:1}
 .gh-chip.gh-quiet{background:#fff6df;color:#8a6a12}
-.gh-wordspies{--gh-top:#5b6cff;--gh-tint:#eef0ff}
-.gh-spy{--gh-top:#ff7a59;--gh-tint:#ffece5}
-.gh-wordchain{--gh-top:#1fb28a;--gh-tint:#e6f6ef}
-.gh-wordrace{--gh-top:#ffc94d;--gh-tint:#fff4d6}
-.gh-guessword{--gh-top:#9b6cff;--gh-tint:#f2ecff}
-.gh-meld{--gh-top:#e0443c;--gh-tint:#fdeceb}
+.gh-wordspies{--gh-top:#5b6cff}
+.gh-spy{--gh-top:#ff7a59}
+.gh-wordchain{--gh-top:#1fb28a}
+.gh-wordrace{--gh-top:#ffc94d}
+.gh-guessword{--gh-top:#9b6cff}
+.gh-meld{--gh-top:#e0443c}
 .playcard{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;text-decoration:none;color:var(--ink);transition:transform .12s ease,box-shadow .18s ease,border-color .18s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .playcard:hover{transform:translateY(-3px);box-shadow:0 12px 34px rgba(20,25,45,.08);border-color:transparent}
 .playcard:active{transform:translateY(-1px)}
@@ -4485,15 +4503,8 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
     </div>
   </div>
 
-  <!-- ═══ PLAY — the language-games shelf. -->
+  <!-- ═══ PLAY — the language-games shelf (1d spec). -->
   <div id="tabGames" class="hidden">
-    <!-- Happening-now banner — shows every currently-playing room from
-         /api/live (falling back to lobby rooms if nothing is mid-game
-         yet). Hidden entirely when zero live + zero lobby. -->
-    <div class="livebanner hidden" id="lbGames">
-      <h3><span class="live-dot"></span>Happening now</h3>
-      <div id="lbGamesRows"></div>
-    </div>
     <div class="myrooms hidden" id="myRooms">
       <div class="myrooms-h">
         <span>🎮 My open games</span>
@@ -4501,89 +4512,96 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
       </div>
       <div class="myrooms-list" id="myRoomsList"></div>
     </div>
-    <!-- Games hub header — matches design 1d: title + tagline + start-a-table
-         pill. The "+ Start a table" pill scrolls the grid into view since
-         every card already opens a room. Simpler than a separate flow. -->
-    <div class="gh-head">
-      <div class="gh-title-row">
-        <h2 class="gh-title">Games</h2>
-        <span class="gh-tag">Play in your learning language — every table has chat + voice</span>
-        <a class="gh-start" href="#playgrid" onclick="event.preventDefault();document.getElementById('playgrid').scrollIntoView({behavior:'smooth',block:'start'})">+ Start a table</a>
+    <div class="gh-shell">
+      <!-- Header row: title + tagline + Start-a-table pill (per §1d). -->
+      <div class="gh-head">
+        <div class="gh-title-row">
+          <h2 class="gh-title">Games</h2>
+          <span class="gh-tag">Play in your learning language — every table has chat + voice</span>
+          <a class="gh-start" href="#playgrid" onclick="event.preventDefault();document.getElementById('playgrid').scrollIntoView({behavior:'smooth',block:'start'})">+ Start a table</a>
+        </div>
       </div>
-    </div>
-    <div class="gh-grid" id="playgrid">
-      <a class="gh-card gh-wordspies" href="/codenames?from=social" onclick="return wsPlayStart(this,event)">
-        <span class="gh-icon">🕵️</span>
-        <div class="gh-nameline">
-          <b>TalkSibi</b>
-          <button class="pc-info" type="button" data-pcinfo="wordspies" aria-label="About TalkSibi">i</button>
-        </div>
-        <div class="gh-desc">Two teams, secret words, one wrong guess.</div>
-        <div class="gh-chips">
-          <span class="gh-chip">4–10+ players</span>
-          <span class="gh-chip gh-quiet">quiet</span>
-        </div>
-      </a>
-      <a class="gh-card gh-spy" href="/spy" onclick="return wsPlayStart(this,event)">
-        <span class="gh-icon">🎭</span>
-        <div class="gh-nameline">
-          <b>Who is the Spy?</b>
-          <button class="pc-info" type="button" data-pcinfo="spy" aria-label="About Who is the Spy?">i</button>
-        </div>
-        <div class="gh-desc">Find the imposter in the room.</div>
-        <div class="gh-chips">
-          <span class="gh-chip">4–10 players</span>
-          <span class="gh-chip gh-quiet">quiet</span>
-        </div>
-      </a>
-      <a class="gh-card gh-wordchain" href="/wordchain" onclick="return wsPlayStart(this,event)">
-        <span class="gh-icon">🔗</span>
-        <div class="gh-nameline">
-          <b>Word Chain</b>
-          <button class="pc-info" type="button" data-pcinfo="wordchain" aria-label="About Word Chain">i</button>
-        </div>
-        <div class="gh-desc">Last letter starts the next word.</div>
-        <div class="gh-chips">
-          <span class="gh-chip">2–8 players</span>
-          <span class="gh-chip gh-quiet">quiet</span>
-        </div>
-      </a>
-      <a class="gh-card gh-wordrace" href="/wordrace" onclick="return wsPlayStart(this,event)">
-        <span class="gh-icon">⏱</span>
-        <div class="gh-nameline">
-          <b>Word Race</b>
-          <button class="pc-info" type="button" data-pcinfo="wordrace" aria-label="About Word Race">i</button>
-        </div>
-        <div class="gh-desc">60 seconds. A category. Most words wins.</div>
-        <div class="gh-chips">
-          <span class="gh-chip">2–8 players</span>
-          <span class="gh-chip gh-quiet">quiet</span>
-        </div>
-      </a>
-      <a class="gh-card gh-guessword" href="/guessword" onclick="return wsPlayStart(this,event)">
-        <span class="gh-icon">🍋</span>
-        <div class="gh-nameline">
-          <b>Guess the Word</b>
-          <button class="pc-info" type="button" data-pcinfo="guessword" aria-label="About Guess the Word">i</button>
-        </div>
-        <div class="gh-desc">Describe it. Everyone races to guess.</div>
-        <div class="gh-chips">
-          <span class="gh-chip">3+ players</span>
-          <span class="gh-chip gh-quiet">quiet</span>
-        </div>
-      </a>
-      <a class="gh-card gh-meld" href="/meld" onclick="return wsPlayStart(this,event)">
-        <span class="gh-icon">🧠</span>
-        <div class="gh-nameline">
-          <b>Mind Meld</b>
-          <button class="pc-info" type="button" data-pcinfo="meld" aria-label="About Mind Meld">i</button>
-        </div>
-        <div class="gh-desc">Type the same word at the same time.</div>
-        <div class="gh-chips">
-          <span class="gh-chip">exactly 2</span>
-          <span class="gh-chip gh-quiet">quiet</span>
-        </div>
-      </a>
+      <!-- LIVE TABLES strip — single-row bar. Rendered dynamically from
+           /api/live; falls back to a "no tables live yet" hint when empty. -->
+      <div class="gh-live-strip empty" id="ghLiveStrip">
+        <span class="gh-live-lbl">LIVE TABLES</span>
+        <span class="gh-live-item" id="ghLiveItems">No tables live right now — start one and share the code.</span>
+      </div>
+      <!-- 3-col grid, 6 cards, 4px coloured top border per game. -->
+      <div class="gh-grid" id="playgrid">
+        <a class="gh-card gh-wordspies" href="/codenames?from=social" onclick="return wsPlayStart(this,event)">
+          <span class="gh-icon">🕵️</span>
+          <div class="gh-nameline">
+            <b>Codenames</b>
+            <button class="pc-info" type="button" data-pcinfo="wordspies" aria-label="About Codenames">i</button>
+          </div>
+          <div class="gh-desc">Two teams, secret words, one assassin. The classic.</div>
+          <div class="gh-chips">
+            <span class="gh-chip">4-10 players</span>
+            <span class="gh-chip gh-quiet">quiet now</span>
+          </div>
+        </a>
+        <a class="gh-card gh-spy" href="/spy" onclick="return wsPlayStart(this,event)">
+          <span class="gh-icon">🎭</span>
+          <div class="gh-nameline">
+            <b>Who is the Spy?</b>
+            <button class="pc-info" type="button" data-pcinfo="spy" aria-label="About Who is the Spy?">i</button>
+          </div>
+          <div class="gh-desc">Everyone gets a word — except one. Find the imposter.</div>
+          <div class="gh-chips">
+            <span class="gh-chip">3-12 players</span>
+            <span class="gh-chip gh-quiet">quiet now</span>
+          </div>
+        </a>
+        <a class="gh-card gh-wordchain" href="/wordchain" onclick="return wsPlayStart(this,event)">
+          <span class="gh-icon">🔗</span>
+          <div class="gh-nameline">
+            <b>Word Chain</b>
+            <button class="pc-info" type="button" data-pcinfo="wordchain" aria-label="About Word Chain">i</button>
+          </div>
+          <div class="gh-desc">Last letter starts the next word. Don't break the chain.</div>
+          <div class="gh-chips">
+            <span class="gh-chip">2-8 players</span>
+            <span class="gh-chip gh-quiet">quiet now</span>
+          </div>
+        </a>
+        <a class="gh-card gh-wordrace" href="/wordrace" onclick="return wsPlayStart(this,event)">
+          <span class="gh-icon">⏱</span>
+          <div class="gh-nameline">
+            <b>Word Race</b>
+            <button class="pc-info" type="button" data-pcinfo="wordrace" aria-label="About Word Race">i</button>
+          </div>
+          <div class="gh-desc">60 seconds, one category, most words wins.</div>
+          <div class="gh-chips">
+            <span class="gh-chip">2-8 players</span>
+            <span class="gh-chip gh-quiet">quiet now</span>
+          </div>
+        </a>
+        <a class="gh-card gh-guessword" href="/guessword" onclick="return wsPlayStart(this,event)">
+          <span class="gh-icon">🍋</span>
+          <div class="gh-nameline">
+            <b>Guess the Word</b>
+            <button class="pc-info" type="button" data-pcinfo="guessword" aria-label="About Guess the Word">i</button>
+          </div>
+          <div class="gh-desc">Describe it without saying it. Everyone races to guess.</div>
+          <div class="gh-chips">
+            <span class="gh-chip">2-10 players</span>
+            <span class="gh-chip gh-quiet">quiet now</span>
+          </div>
+        </a>
+        <a class="gh-card gh-meld" href="/meld" onclick="return wsPlayStart(this,event)">
+          <span class="gh-icon">🧠</span>
+          <div class="gh-nameline">
+            <b>Mind Meld</b>
+            <button class="pc-info" type="button" data-pcinfo="meld" aria-label="About Mind Meld">i</button>
+          </div>
+          <div class="gh-desc">Say the same word at the same time. Harder than it sounds.</div>
+          <div class="gh-chips">
+            <span class="gh-chip">2 players</span>
+            <span class="gh-chip gh-quiet">quiet now</span>
+          </div>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -8892,6 +8910,30 @@ function paintLiveBanners(games){
 
   if (wallBox && wallRows) { wallRows.innerHTML = html; wallBox.classList.remove('hidden'); }
   if (gamesBox && gamesRows) { gamesRows.innerHTML = html; gamesBox.classList.remove('hidden'); }
+
+  // Games hub 1d LIVE TABLES strip — compact single-line entries.
+  const strip = $('ghLiveStrip'), stripItems = $('ghLiveItems');
+  if (strip && stripItems) {
+    if (!show.length) {
+      strip.classList.add('empty');
+      stripItems.outerHTML = '<span class="gh-live-item" id="ghLiveItems">No tables live right now — start one and share the code.</span>';
+    } else {
+      strip.classList.remove('empty');
+      const parts = show.slice(0, 6).map(g => {
+        const icon = esc(g.icon || '🎮');
+        const title = esc(g.title || 'Game');
+        const seats = (typeof g.seatsFree === 'number' && g.seatsFree > 0)
+          ? '<b>' + g.seatsFree + (g.seatsFree === 1 ? ' seat' : ' seats') + '</b>'
+          : '<span class="muted">watch</span>';
+        return '<a class="gh-live-item" href="' + esc(g.href || '#') + '">' + icon + ' ' + title + ' · ' + seats + '</a>';
+      });
+      // Rebuild the tail — outerHTML replace loses the id, so re-set.
+      const tail = parts.join('');
+      // Clear everything after the LIVE TABLES label
+      while (strip.children.length > 1) strip.removeChild(strip.lastChild);
+      strip.insertAdjacentHTML('beforeend', tail);
+    }
+  }
 }
 
 // ---------- 📞 Voice calls (1-on-1) ----------
