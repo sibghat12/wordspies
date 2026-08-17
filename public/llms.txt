@@ -1,35 +1,61 @@
-# WordSpies
+# TalkSibi
 
-> WordSpies is a free online Codenames-style word game for 4 to 10+ players. Two teams race to find their secret words from one-word spymaster clues while avoiding the hidden assassin word. It runs in any web browser with no sign-up, no download and no account — players create a room, share a 4-letter code, and play together on any phone or laptop.
+> TalkSibi is a free language-exchange community. Members practise a new language with real native speakers over chat, live voice parties and word-based games, with an AI expert on hand 24/7 when no partner is online. Everything runs in the browser — no download, no paywall, no ads. Chat messages get one-tap AI translation (powered by Claude), and the AI experts give gentle real-time corrections while you talk.
 
 ## Key facts
-- Name: WordSpies
-- URL: https://wordspies.co.uk
-- Play the game: https://wordspies.co.uk/play
-- Price: Free (no sign-up, no account, no download)
-- Players: 4 to 10+, two teams (red and blue), each with a spymaster and guessers
-- Category: Online word game, party game, team game (Codenames-style / like Codenames)
-- Platforms: Any web browser on phone, tablet or laptop
-- Contact: contact@wordspies.co.uk
-- WordSpies is an independent game and is not affiliated with Codenames or Czech Games Edition.
+- Name: TalkSibi
+- URL: https://talksibi.com
+- App: https://talksibi.com/app
+- Price: Free forever (no paywall, no ads, no premium tier)
+- Age: 18+, photo-verified
+- Audience: adults learning a second language, plus native speakers helping learners
+- Platforms: any modern web browser on phone, tablet or desktop; PWA installable
+- Contact: contact@talksibi.com
+- Origin: built by an ex-Tandem user after an unfair permanent ban — the north star is fair, transparent, user-owned data.
 
-## How to play
-1. One player types a name and taps "New game" to create a room, then shares the 4-letter code or invite link.
-2. Friends join from their own devices, split into two teams, and one player per team becomes the spymaster.
-3. Spymasters give one-word clues with a number (e.g. "OCEAN 2"); teammates discuss and tap the words they think match.
-4. Find all your team's words first to win — but tapping the hidden assassin word loses the game instantly.
+## What TalkSibi offers
+1. **Community wall** — real people learning the language you speak, filterable by online / nearby / AI experts.
+2. **Chats** — 1:1 conversations with tap-to-translate previews on peer messages.
+3. **AI language experts** — 24/7 Claude-powered personas (Sofía for Spanish, etc.) with gentle correction.
+4. **Live voice parties** — drop-in language-exchange rooms with speakers, listeners and raise-hand.
+5. **Language games** — six word-based games designed for learners: Codenames, Word Race, Word Chain, Guess the Word, Mind Meld, Who is the Spy?
+6. **AI learning plans** — Claude generates a 5-lesson plan tuned to your target language, level, daily minutes and chosen focus (vocabulary / idioms / grammar / speaking / listening / general).
+7. **IELTS & TOEFL prep** — hand-picked tips + free resources per section.
+
+## Core app URLs
+- Landing: https://talksibi.com/
+- Community wall: https://talksibi.com/app/community
+- Games hub (6 language games): https://talksibi.com/app/games
+- Live voice parties: https://talksibi.com/app/parties
+- Learn (AI plan builder + IELTS/TOEFL guide): https://talksibi.com/app/learn
+- Standalone games hub (marketing): https://talksibi.com/games
+- Blog: https://talksibi.com/blog
+- FAQs: https://talksibi.com/how-to-play
+- About: https://talksibi.com/about
+- Become a teacher: https://talksibi.com/become-a-teacher
+- Legal: /terms, /privacy, /child-safety
 
 ## Guides and articles
-- Games like Codenames to play online free: https://wordspies.co.uk/blog/games-like-codenames
-- Codenames rules explained simply: https://wordspies.co.uk/blog/codenames-rules-explained
-- Word games for Zoom / Google Meet calls: https://wordspies.co.uk/blog/word-games-for-zoom-calls
-- Playing with 4 players (2v2 setup): https://wordspies.co.uk/blog/codenames-with-4-players
-- How to play Codenames online free: https://wordspies.co.uk/blog/play-codenames-online-free
-- Best online word party games: https://wordspies.co.uk/blog/best-online-word-party-games
-- Spymaster clue strategies: https://wordspies.co.uk/blog/spymaster-clue-strategies
-- Virtual team building word games for remote teams: https://wordspies.co.uk/blog/virtual-team-building-word-games
-- Family game night word game ideas: https://wordspies.co.uk/blog/family-game-night-word-games
-- How to win at Codenames — 7 strategies: https://wordspies.co.uk/blog/how-to-win-codenames
+- Best free language-exchange apps in 2026: https://talksibi.com/blog/best-free-language-exchange-apps
+- Practise speaking a language online: https://talksibi.com/blog/practise-speaking-a-language-online
+- Find a language exchange partner: https://talksibi.com/blog/find-a-language-exchange-partner
+- AI corrections for language learning: https://talksibi.com/blog/ai-corrections-for-language-learning
+- AI grammar correction for Spanish learners: https://talksibi.com/blog/ai-grammar-correction-spanish
+- Voice chat vs text chat for language learning: https://talksibi.com/blog/voice-chat-vs-text-chat-language
+- Learn a language by playing games: https://talksibi.com/blog/learn-language-by-playing-games
+- Games to learn a language: https://talksibi.com/blog/games-to-learn-a-language
+- Meet the chat experts (AI personas): https://talksibi.com/blog/meet-the-chat-experts
+- A quick tour of the app: https://talksibi.com/blog/the-app-a-tour
 
-## Full article list (sitemap)
-https://wordspies.co.uk/sitemap.xml
+## Per-language landing posts
+- Learn English with native speakers (free): https://talksibi.com/blog/learn-english-with-native-speakers-free
+- Learn Spanish online with native speakers: https://talksibi.com/blog/learn-spanish-online-native-speakers
+- Learn Spanish free with real people: https://talksibi.com/blog/learn-spanish-free-with-real-people
+- Learn French with native speakers online: https://talksibi.com/blog/learn-french-native-speakers-online
+- Learn German language exchange online: https://talksibi.com/blog/learn-german-language-exchange-online
+- Learn Italian with native speakers online (free): https://talksibi.com/blog/learn-italian-native-speakers-online-free
+- Learn Japanese with native speakers online (free): https://talksibi.com/blog/learn-japanese-native-speakers-online-free
+- Learn Korean with native speakers (free): https://talksibi.com/blog/learn-korean-native-speakers-free
+
+## Full sitemap
+https://talksibi.com/sitemap.xml
