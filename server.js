@@ -55,9 +55,57 @@ app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.type('html').send(landing.page());
 });
+// ── /app slug routes with per-tab metadata ────────────────────────────
+// Owner ask 17 Aug 2026: "give them slugs so we can use more meta data".
+// Each tab now has its own URL — bookmarkable, shareable, indexable —
+// while still serving the same social.html SPA. The server just
+// swaps <title> + description + og tags + adds data-initial-tab on
+// <body> so the client opens the right tab on load. Cache the file
+// contents at boot so this stays fast; a graceful fallback re-reads
+// per request if the boot read failed.
+const fs = require('fs');
+let _appShell = '';
+try { _appShell = fs.readFileSync(path.join(__dirname, 'public', 'social.html'), 'utf8'); }
+catch (e) { console.error('[app] could not preload social.html:', e.message); }
+const APP_TAB_META = {
+  community: { tab:'wall',    title:'Community · TalkSibi',                 desc:'Meet native speakers, follow language partners, and start a conversation — free and browser-based.' },
+  chats:     { tab:'chats',   title:'Chats · TalkSibi',                     desc:'Your language-exchange conversations with AI experts and real people, with one-tap translation.' },
+  games:     { tab:'games',   title:'Language games · TalkSibi',            desc:'Play Codenames, Word Race, Word Chain, Guess the Word, Mind Meld and Who is the Spy? — free, in the browser, with friends.' },
+  parties:   { tab:'parties', title:'Live voice parties · TalkSibi',        desc:'Drop into a live language-exchange voice room. Listen, raise your hand, take the mic — anytime, free.' },
+  learn:     { tab:'learn',   title:'Build your language plan · TalkSibi',  desc:'AI-generated learning plans tuned to your language, level, focus and daily time. Free, powered by Claude.' },
+  me:        { tab:'me',      title:'My profile · TalkSibi',                desc:'Your TalkSibi profile — streak, references, plans and settings.' },
+};
+function renderApp(slug) {
+  if (!_appShell) {
+    try { _appShell = fs.readFileSync(path.join(__dirname, 'public', 'social.html'), 'utf8'); }
+    catch (e) { return null; }
+  }
+  const m = APP_TAB_META[slug];
+  if (!m) return _appShell;
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const ogBlock =
+    `<meta property="og:title" content="${esc(m.title)}">\n` +
+    `<meta property="og:description" content="${esc(m.desc)}">\n` +
+    `<meta property="og:type" content="website">\n` +
+    `<meta property="og:url" content="https://talksibi.com/app/${slug}">\n` +
+    `<meta name="twitter:card" content="summary_large_image">\n` +
+    `<meta name="twitter:title" content="${esc(m.title)}">\n` +
+    `<meta name="twitter:description" content="${esc(m.desc)}">\n` +
+    `<link rel="canonical" href="https://talksibi.com/app/${slug}">`;
+  return _appShell
+    .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(m.title)}</title>`)
+    .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${esc(m.desc)}">\n${ogBlock}`)
+    .replace(/<body([^>]*)>/, `<body$1 data-initial-tab="${m.tab}">`);
+}
 app.get('/app', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public', 'social.html'));
+  res.type('html').send(renderApp('community') || _appShell);
+});
+app.get('/app/:slug', (req, res, next) => {
+  const slug = String(req.params.slug || '').toLowerCase();
+  if (!APP_TAB_META[slug]) return next();
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('html').send(renderApp(slug));
 });
 app.get('/social', (req, res) => {
   // Legacy — the SPA has always been reachable at /social via internal

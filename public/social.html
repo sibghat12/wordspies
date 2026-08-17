@@ -13348,7 +13348,11 @@ async function openClubFromDeepLinkParam() {
     }
     loadMembers();
     // Watching costs nothing and asks for nothing, so a guest lands here fine.
-    showTab(location.hash === '#live' ? 'live' : 'wall');
+    // Owner ask 17 Aug 2026: server sets data-initial-tab on <body> when
+    // the URL is /app/chats, /app/games etc — respect it so bookmarks
+    // and shared links open on the right tab.
+    const initTab = document.body.dataset.initialTab;
+    showTab(initTab || (location.hash === '#live' ? 'live' : 'wall'));
     await setupGoogle();
     // /social?login=1 — they clicked "Log in" on the play page, so open the
     // form rather than dropping them on the wall to hunt for it.
