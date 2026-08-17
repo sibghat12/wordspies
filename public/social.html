@@ -401,7 +401,7 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
 /* Top nav (v34): mobile 12px sides / desktop 48px sides.
    Same padding rule applied to #tabWall + footer.sitefoot below
    so every surface aligns. Vertical stays 22 top / 32 bottom. */
-.topnav{position:sticky;top:0;background:#ffffff;z-index:20;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:12px 12px;min-height:60px;width:100%;margin:0;box-sizing:border-box;border:0;border-bottom:1px solid #e4e6ee;box-shadow:0 2px 8px rgba(15,17,25,.04)}
+.topnav{position:sticky;top:0;background:#ffffff;z-index:20;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:12px 20px;min-height:60px;width:100%;margin:0;box-sizing:border-box;border:0;border-bottom:1px solid #e4e6ee;box-shadow:0 2px 8px rgba(15,17,25,.04)}
 @media(min-width:769px){ .topnav{padding:12px 48px} }
 /* Stale ≥769px override retired (v32). Was resetting topnav padding
    to 12px 0 on desktop, wiping the base 22 48 32 rule the owner
@@ -440,8 +440,8 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
     grid-template-areas:
       'logo right'
       'tabs tabs';
-    /* Owner ask: 12px all around on mobile. */
-    padding:calc(12px + env(safe-area-inset-top)) 12px 12px;
+    /* Match wall mobile padding (20px sides) so header + wall line up. */
+    padding:calc(12px + env(safe-area-inset-top)) 20px 12px;
     gap:8px 10px;
     min-height:0;
     align-items:center;
@@ -1579,6 +1579,15 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
    title / desc / CTA. */
 .playhead{padding:8px 0 4px}
 .playhead h2{font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:20px;font-weight:500;letter-spacing:-.3px;color:var(--ink)}
+/* Games hub header row — design 1d spec: 'Games' 21px/600 title,
+   subtle tagline, ink pill '+ Start a table' pushed to the right. */
+.gh-head{padding:4px 0 14px}
+.gh-title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.gh-title{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-weight:600;font-size:21px;letter-spacing:-.3px;color:#14161f;margin:0}
+.gh-tag{font-size:13px;color:#8a8d99;font-weight:500;flex:1;min-width:120px}
+.gh-start{background:#14161f;color:#fff;text-decoration:none;font-weight:600;font-size:13px;padding:8px 18px;border-radius:99px;white-space:nowrap;transition:background .12s}
+.gh-start:hover{background:#2a2e42}
+@media(max-width:520px){.gh-tag{display:none}}
 .playgrid{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 0 30px}
 @media(min-width:640px){.playgrid{grid-template-columns:repeat(2,1fr);gap:18px}}
 @media(min-width:1080px){.playgrid{grid-template-columns:repeat(4,1fr)}}
@@ -4441,10 +4450,17 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
       </div>
       <div class="myrooms-list" id="myRoomsList"></div>
     </div>
-    <div class="playhead">
-      <h2>Play together</h2>
+    <!-- Games hub header — matches design 1d: title + tagline + start-a-table
+         pill. The "+ Start a table" pill scrolls the grid into view since
+         every card already opens a room. Simpler than a separate flow. -->
+    <div class="gh-head">
+      <div class="gh-title-row">
+        <h2 class="gh-title">Games</h2>
+        <span class="gh-tag">Play in your learning language — every table has chat + voice</span>
+        <a class="gh-start" href="#playgrid" onclick="event.preventDefault();document.getElementById('playgrid').scrollIntoView({behavior:'smooth',block:'start'})">+ Start a table</a>
+      </div>
     </div>
-    <div class="playgrid">
+    <div class="playgrid" id="playgrid">
       <!-- 1 · TalkSibi (Codenames-style) -->
       <a class="playcard playcard-spies" href="/codenames?from=social" onclick="return wsPlayStart(this,event)">
         <div class="playcard-art">
@@ -13815,7 +13831,7 @@ async function openClubFromDeepLinkParam() {
     <h3 id="tsBetaPopTitle">Hey, welcome to TalkSibi!</h3>
     <p>This app is still under development — the more people join, the better it gets. I'm working every day to make it a nicer place to <b>learn languages and make friends while playing</b>.</p>
     <p>Ran into a bug? (You will 😅) Got a feature idea? <b>Email me!</b> If we ship your idea, you get credit on the release notes.</p>
-    <a class="ts-beta-mail" href="mailto:contact@talksibi.com?subject=TalkSibi%20feedback%20%2F%20idea">✉️ contact@talksibi.com</a>
+    <button type="button" class="ts-beta-mail" onclick="tsBetaCopyMail(this)">✉️ contact@talksibi.com <span class="ts-beta-mail-hint">(tap to copy)</span></button>
     <button class="ts-beta-go" onclick="tsBetaClose()">Let's go →</button>
   </div>
 </div>
@@ -13830,8 +13846,10 @@ async function openClubFromDeepLinkParam() {
   .ts-beta-card h3{font-family:'Hanken Grotesk','Inter',sans-serif;font-size:22px;font-weight:700;letter-spacing:-.4px;color:#14161f;margin:0 0 12px;line-height:1.2}
   .ts-beta-card p{font-size:14.5px;line-height:1.6;color:#4a4d59;margin:0 0 12px;font-weight:400}
   .ts-beta-card p b{color:#14161f;font-weight:700}
-  .ts-beta-mail{display:block;text-align:center;background:#f4f5f9;color:#5b6cff;text-decoration:none;font-weight:600;font-size:14px;padding:12px;border-radius:12px;margin:10px 0 14px;transition:background .12s}
+  .ts-beta-mail{display:block;width:100%;text-align:center;background:#f4f5f9;color:#5b6cff;text-decoration:none;font-weight:600;font-size:14px;padding:12px;border-radius:12px;margin:10px 0 14px;transition:background .12s;border:0;cursor:pointer;font-family:inherit}
   .ts-beta-mail:hover{background:#eef1ff}
+  .ts-beta-mail-hint{font-size:11.5px;color:#8a8d99;font-weight:500;display:block;margin-top:2px}
+  .ts-beta-mail.copied{background:#e6f7f0;color:#1fb28a}
   .ts-beta-go{display:block;width:100%;background:#5b6cff;color:#fff;border:0;padding:13px;border-radius:12px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:background .12s}
   .ts-beta-go:hover{background:#4353e8}
   @keyframes tsBetaFade{from{opacity:0}to{opacity:1}}
@@ -13853,6 +13871,31 @@ async function openClubFromDeepLinkParam() {
       const el = document.getElementById('tsBetaPop');
       if (el) el.classList.add('hidden');
       try { localStorage.setItem('ts_beta_seen_v1', String(Date.now())); } catch(e){}
+    };
+    // Copy the address so no mailto: handoff runs — some corporate
+    // networks (Microsoft MCAS) intercept mailto: with a cert-checker
+    // screen that scares people off.
+    window.tsBetaCopyMail = async function(btn){
+      const addr = 'contact@talksibi.com';
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(addr);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = addr; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+          document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); } catch(e){}
+          document.body.removeChild(ta);
+        }
+      } catch(e){}
+      if (btn) {
+        btn.classList.add('copied');
+        btn.innerHTML = '✓ Copied — paste it in your email app';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '✉️ contact@talksibi.com <span class="ts-beta-mail-hint">(tap to copy)</span>';
+        }, 2400);
+      }
     };
   })();
 </script>
