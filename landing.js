@@ -170,6 +170,122 @@ footer.sitefoot .fbrand em{font-style:normal;color:#5b6cff}
 </div></footer>`;
 module.exports.SITE_FOOTER = SITE_FOOTER;
 
+// ── Shared TalkSibi chrome (ts-nav + ts-foot) — exported so blog.js,
+// static pages etc. can drop the landing's exact header + footer in
+// with two template strings + one <style> block. Owner ask 17 Aug 2026:
+// "the blog page has not same header as the landing page — copy the
+// header and footer into the blog archive and single pages".
+// -----------------------------------------------------------------------
+
+const TS_CHROME_CSS = `
+.ts-lockup{display:inline-flex;align-items:center;gap:8px}
+.ts-wordmark{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-weight:600;letter-spacing:-.3px;color:#16181f}
+.ts-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid #f0efec;position:sticky;top:0;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:50}
+.ts-navlinks{display:flex;align-items:center;gap:28px;font-size:15px;font-weight:500;color:#4a4d59}
+.ts-navlinks a{color:#4a4d59;transition:color .12s;text-decoration:none}
+.ts-navlinks a:hover{color:#16181f}
+.ts-navlinks .ts-navlogin{color:#16181f}
+.ts-navjoin{background:#16181f !important;color:#fff !important;padding:10px 22px;border-radius:99px;font-weight:500;transition:background .15s;text-decoration:none}
+.ts-navjoin:hover{background:#2a2e42 !important;color:#fff !important}
+@media(max-width:900px){
+  .ts-nav{padding:14px 20px}
+  .ts-navlinks{gap:14px;font-size:14px}
+  .ts-navlinks .ts-hide-sm{display:none}
+}
+.ts-foot{border-top:1px solid #f0efec;background:#fafafa;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;color:#16181f}
+.ts-foot-inner{max-width:1240px;margin:0 auto;padding:56px 48px 28px;box-sizing:border-box}
+.ts-foot-cols{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;border-bottom:1px solid #ececea}
+.ts-foot-brand{display:flex;flex-direction:column;gap:14px}
+.ts-foot-blurb{font-size:14.5px;color:#6b6e7a;line-height:1.55;max-width:34ch}
+.ts-foot-socials{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap}
+.ts-foot-socials a{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e6e5e1;display:flex;align-items:center;justify-content:center;transition:border-color .12s;text-decoration:none}
+.ts-foot-socials a:hover{border-color:#5b6cff}
+.ts-foot-col{display:flex;flex-direction:column;gap:12px}
+.ts-foot-col-h{font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#9a9da8}
+.ts-foot-col a{color:#4a4d59;font-size:14.5px;font-weight:500;text-decoration:none}
+.ts-foot-col a:hover{color:#5b6cff}
+.ts-foot-sub{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding-top:22px}
+.ts-foot-meta{font-size:13.5px;color:#8a8d99}
+.ts-foot-flags{display:flex;align-items:center;gap:8px;font-size:17px;flex-wrap:wrap}
+.ts-foot-flags .plus{font-size:13px;font-weight:500;color:#5b6cff}
+@media(max-width:960px){ .ts-foot-inner{padding:44px 20px 24px} .ts-foot-cols{grid-template-columns:1fr 1fr;gap:28px} }
+@media(max-width:560px){ .ts-foot-cols{grid-template-columns:1fr} }
+`;
+
+const TS_NAV = `<nav class="ts-nav">
+  <a class="ts-lockup" href="/" aria-label="talksibi home" style="text-decoration:none">
+    <img src="/logo.svg" alt="talksibi" style="height:34px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:24px&quot;&gt;talksibi&lt;/span&gt;'">
+  </a>
+  <div class="ts-navlinks">
+    <a class="ts-hide-sm" href="/app">Community</a>
+    <a href="/games">Games</a>
+    <a class="ts-hide-sm" href="/app/learn">Learn</a>
+    <a class="ts-hide-sm" href="/blog">Blog</a>
+    <a class="ts-navlogin" href="/app">Sign in</a>
+    <a class="ts-navjoin" href="/app">Join free</a>
+  </div>
+</nav>`;
+
+const TS_FOOTER_TS = `<footer class="ts-foot">
+  <div class="ts-foot-inner">
+    <div class="ts-foot-cols">
+      <div class="ts-foot-brand">
+        <a class="ts-lockup" href="/" style="text-decoration:none">
+          <img src="/logo.svg" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px&quot;&gt;talksibi&lt;/span&gt;'">
+        </a>
+        <div class="ts-foot-blurb">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
+        <div class="ts-foot-socials">
+          <a href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg>
+          </a>
+          <a href="https://tiktok.com/@talksibi" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#4a4d59"><path d="M16.6 5.82C15.9 5.03 15.5 4 15.5 2.9h-3.1v12.4c0 1.4-1.14 2.54-2.55 2.54a2.55 2.55 0 0 1 0-5.1c.26 0 .52.04.76.12V9.7a5.7 5.7 0 0 0-.76-.05 5.66 5.66 0 1 0 5.66 5.66V9.64a7.2 7.2 0 0 0 4.19 1.34V7.9c-1.24 0-2.37-.5-3.1-2.08z"></path></svg>
+          </a>
+          <a href="https://youtube.com/@talksibi" target="_blank" rel="noopener" aria-label="YouTube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M23 7.5s-.23-1.63-.94-2.35c-.9-.94-1.9-.95-2.36-1C16.4 3.9 12 3.9 12 3.9h-.01s-4.4 0-7.7.25c-.46.05-1.46.06-2.36 1C1.22 5.87 1 7.5 1 7.5S.76 9.42.76 11.33v1.8C.76 15.05 1 16.96 1 16.96s.23 1.63.93 2.35c.9.94 2.08.9 2.6 1 1.89.18 7.47.24 7.47.24s4.4-.01 7.7-.25c.46-.06 1.46-.07 2.36-1.01.7-.72.94-2.35.94-2.35s.24-1.9.24-3.82v-1.8C23.24 9.42 23 7.5 23 7.5zM9.7 14.85V8.66l6.22 3.1-6.22 3.09z"></path></svg>
+          </a>
+          <a href="https://x.com/talksibi" target="_blank" rel="noopener" aria-label="X">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#4a4d59"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg>
+          </a>
+        </div>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Product</div>
+        <a href="/app">Community</a>
+        <a href="/games">Games</a>
+        <a href="/app/learn">AI lesson plans</a>
+        <a href="/app/learn">IELTS &amp; TOEFL prep</a>
+        <a href="/become-a-teacher">Become a teacher</a>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Support</div>
+        <a href="/how-to-play">Safety centre</a>
+        <a href="/how-to-play">Community guidelines</a>
+        <a href="mailto:feedback@talksibi.com?subject=talksibi%20—%20Report%20a%20problem">Report a problem</a>
+        <a href="mailto:contact@talksibi.com">Contact us</a>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Legal</div>
+        <a href="/terms">Terms &amp; conditions</a>
+        <a href="/privacy">Privacy policy</a>
+        <a href="/privacy">Cookie policy</a>
+        <a href="/child-safety">18+ policy</a>
+      </div>
+    </div>
+    <div class="ts-foot-sub">
+      <div class="ts-foot-meta">© 2026 talksibi · Connect, Learn, Play</div>
+      <div class="ts-foot-flags">
+        <span>🇬🇧</span><span>🇪🇸</span><span>🇫🇷</span><span>🇩🇪</span><span>🇧🇷</span><span>🇯🇵</span><span>🇰🇷</span><span>🇸🇦</span><span>🇮🇳</span><span>🇨🇳</span><span>🇮🇹</span><span>🇹🇷</span>
+        <span class="plus">+ 28 more</span>
+      </div>
+    </div>
+  </div>
+</footer>`;
+
+module.exports.TS_CHROME_CSS = TS_CHROME_CSS;
+module.exports.TS_NAV = TS_NAV;
+module.exports.TS_FOOTER_TS = TS_FOOTER_TS;
+
 // ── Landing-only building blocks ─────────────────────────────────────────
 // 4-bubble logo mark, sized parametrically. Colors + radii per README §Logo.
 // Base spec is 46×46 with an inner 34px cluster; we expose a scale factor
@@ -901,4 +1017,4 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 </body></html>`;
 }
 
-module.exports = { page, GA, GA_ID, CONSENT_MODAL, SITE_FOOTER };
+module.exports = { page, GA, GA_ID, CONSENT_MODAL, SITE_FOOTER, TS_CHROME_CSS, TS_NAV, TS_FOOTER_TS };

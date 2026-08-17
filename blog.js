@@ -1,7 +1,7 @@
 // Blog articles for TalkSibi — server-rendered for SEO.
 const SITE = 'https://talksibi.com';
 // Consent-gated GA + cookie modal are single-sourced from landing.js.
-const { GA, CONSENT_MODAL, SITE_FOOTER } = require('./landing.js');
+const { GA, CONSENT_MODAL, SITE_FOOTER, TS_NAV, TS_FOOTER_TS, TS_CHROME_CSS } = require('./landing.js');
 const GA_ID = 'G-JTH809Z8NH';
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -939,6 +939,13 @@ ${schema || ''}
 *{box-sizing:border-box}
 body{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;background:#fbfbfd;color:#14161f;margin:0;-webkit-font-smoothing:antialiased}
 a{color:inherit}
+/* Landing's shared chrome (ts-nav + ts-foot). Injected verbatim so
+   the blog reads as part of the same site. Owner ask 17 Aug 2026:
+   "the blog page has not same header as the landing page — copy the
+   header and footer to blog archive and single pages". */
+${TS_CHROME_CSS}
+/* Legacy .sitehead / .navlinks / .play classes kept below for any
+   article body that may reference them; the shell now uses ts-nav. */
 .sitehead{background:#ffffff;border-bottom:1px solid #eceef4;position:sticky;top:0;z-index:50}
 .hwrap{max-width:100%;margin:0;padding:0 20px}
 @media(min-width:769px){.hwrap{padding:0 48px}}
@@ -1015,14 +1022,12 @@ article em{color:#14161f}
 .rel span{color:#5b6cff;font-weight:700;font-size:13.5px}
 </style></head>
 <body>
-<header class="sitehead"><div class="hwrap">
-<div class="top"><a class="logo" href="/" aria-label="talksibi"><img src="/logo.svg" alt="talksibi"></a><div class="navlinks"><a class="hideSm" href="/">Home</a><a class="hideSm" href="/about">About</a><a href="/blog">Blog</a><a class="play" href="/app">Open app</a></div></div>
-</div></header>
+${TS_NAV}
 ${banner || ''}
 <div class="wrap"><div class="wrap-inner">
 ${body}
 </div></div>
-${SITE_FOOTER}
+${TS_FOOTER_TS}
 <!-- Cookie consent modal removed 16 Aug 2026 (owner ask v22). -->
 </body></html>`;
 }
