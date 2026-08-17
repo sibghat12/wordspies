@@ -1991,7 +1991,7 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
       const theirRead = parseInt(await db.get('soc:read:' + convo + ':' + o)) || 0;
       const theirTyping = await db.exists('soc:typing:' + o + ':' + me.id);
       res.json({
-        user: { id: u.id, name: u.name, photo: u.photo || null, ...marks(u), isAI: !!u.isAI, online: await db.exists('soc:online:' + o) },
+        user: { id: u.id, name: u.name, photo: u.photo || null, ...marks(u), isAI: !!u.isAI, online: await db.exists('soc:online:' + o), speaks: Array.isArray(u.speaks) ? u.speaks : [] },
         messages: msgs,
         theirRead,
         theirTyping: !!theirTyping

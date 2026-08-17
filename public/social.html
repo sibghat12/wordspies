@@ -2472,6 +2472,26 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .mb .mb-xlat-btn{position:absolute;right:-26px;bottom:6px;width:24px;height:24px;background:transparent;border:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--sub);padding:0;opacity:.75;transition:opacity .12s,color .12s}
 .mb .mb-xlat-btn:hover{opacity:1;color:var(--caccent)}
 .mb .mb-xlat-btn:active{transform:scale(.92)}
+/* 1b spec: translation offered as a subtle periwinkle text hint under
+   the peer bubble, not a corner icon. Same click handler still wires
+   up (.mb-xlat-btn selector still matches). */
+.mb .mb-xlat-btn.mb-xlat-hint{position:static;width:auto;height:auto;padding:2px 0 0;margin-top:2px;font:600 11.5px/1.3 'Hanken Grotesk','Inter',system-ui,sans-serif;color:#5b6cff;opacity:.85;text-align:left;background:none;border:0;cursor:pointer;display:inline-block;letter-spacing:0}
+.mb .mb-xlat-btn.mb-xlat-hint:hover{opacity:1;color:#4353e8;text-decoration:underline}
+/* Centered game-invite card per 1b spec — periwinkle tint, "Take your
+   seat" pill on the right. Replaces the older .ginvite bubble style. */
+.gcinvite{align-self:center;display:inline-flex;align-items:center;gap:10px;background:#f0f1ff;border:1px solid #d8dbff;border-radius:14px;padding:10px 14px;text-decoration:none;color:#4353e8;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-weight:500;font-size:13.5px;line-height:1.3;max-width:88%;transition:transform .12s,box-shadow .12s,background .12s}
+.gcinvite:hover{background:#e6e8ff;transform:translateY(-1px);box-shadow:0 6px 16px rgba(91,108,255,.14)}
+.gcinvite .gci-title{color:#4353e8;font-weight:600}
+.gcinvite .gci-pill{background:#5b6cff;color:#fff;padding:5px 14px;border-radius:99px;font-size:12.5px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.gcinvite.gci-live .gci-pill{background:#1fb28a}
+.gcinvite.gci-wait{cursor:default;background:#f5f6fb;border-color:#e4e6f2;color:#8a8d99}
+.gcinvite.gci-wait:hover{background:#f5f6fb;transform:none;box-shadow:none}
+.gcinvite.gci-wait .gci-title{color:#6b6e7a;font-weight:600}
+.gcinvite .gci-sub{font-size:11.5px;color:#9a9db8;font-weight:500;margin-left:6px}
+/* Chat header subtitle — online + language chip per 1b spec. */
+.chstate{font-size:12.5px;color:#8a8d99;line-height:1.3;font-weight:500;margin-top:1px}
+.chstate .chstate-lang{color:#4a4d59;font-weight:500}
+.chstate .chstate-lang .cflag{width:14px;height:14px;vertical-align:-3px;border-radius:50%;margin:0 2px 0 1px}
 .mb img{max-width:220px;border-radius:10px;display:block}
 /* Chat image messages — bigger than GIFs so photos are actually
    visible. Tap opens the full image in a new tab. */
@@ -4814,7 +4834,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
            Cursor:pointer + a hover tint so it reads as tappable. AI
            partners open too so users can read the persona bio. -->
       <span id="chAv" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"></span>
-      <div class="chwho" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"><div class="chname" id="chName"></div><!-- state subtitle removed per owner ask: just the name in the chat header. Kept id in DOM as an empty hidden shell so any code still writing to chState doesn't crash. --><div class="chstate hidden" id="chState"></div></div>
+      <div class="chwho" onclick="openChatPeerProfile()" style="cursor:pointer" title="Open profile"><div class="chname" id="chName"></div><div class="chstate" id="chState"></div></div>
       <button class="chcall" id="chCall" onclick="ringCurrentChat()" title="Voice call" aria-label="Voice call">
         <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7 12.8 12.8 0 0 0 .7 2.8 2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5 12.8 12.8 0 0 0 2.8.7 2 2 0 0 1 1.8 2z"/></svg>
       </button>
@@ -4868,31 +4888,26 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
       <button type="button" class="rec-send" id="recPreviewSend" onclick="sendPreviewedVoice()" title="Send">➤</button>
     </div>
     <div class="composer">
-      <!-- One + button opens a menu with Photo / Emoji / Voice.
-           Owner ask 9 Aug 2026 v7 — cleaner than a row of icons.
-           The old buttons (😊 📷 🎤) still exist below with
-           style="display:none" so all their JS references + IDs keep
-           working; we just don't show them in the composer row. -->
-      <button class="cbtn" type="button" id="plusBtn" onclick="togglePlusMenu(event)" title="More" aria-label="More">
+      <!-- Composer icons row per 1b spec: 😊 emoji · 🎙 voice · 📷 photo.
+           Owner ask 17 Aug 2026 reversed the 9 Aug 'single + menu'
+           decision — go back to the row for parity with the design
+           handoff. The +/plusBtn remains in DOM as a hidden fallback
+           so any lingering JS references don't throw. -->
+      <button class="cbtn" type="button" id="plusBtn" style="display:none" onclick="togglePlusMenu(event)" title="More" aria-label="More">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
-      <button class="cbtn" style="display:none" onclick="togglePicker()">😊</button>
-      <button class="cbtn" style="display:none" onclick="$('imgIn').click()" title="Send a photo">📷</button>
+      <button class="cbtn" onclick="togglePicker()" title="Emoji" aria-label="Emoji">😊</button>
+      <button class="cbtn micrec" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
+        <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
+      </button>
+      <button class="cbtn" onclick="$('imgIn').click()" title="Send a photo" aria-label="Send a photo">📷</button>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
       <button class="cbtn xlat" style="display:none" id="composerXlat" onclick="translateComposer()" title="Translate my typing" aria-label="Translate my typing">🌐</button>
       <!-- Talk-to-AI mic (owner ask 11 Aug 2026 — 'user can speak with
            AI experts, reply back in text + audio'). Shown only when
-           the current chat is an AI expert. Uses the browser's built-in
-           SpeechRecognition (no key, no cost). Falls back to a toast on
-           unsupported browsers. -->
+           the current chat is an AI expert. -->
       <button class="cbtn aitalk hidden" id="aiTalkBtn" onclick="toggleAITalk()" title="Speak to the AI expert" aria-label="Speak to the AI expert">🎙️</button>
       <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
-      <!-- Mic stays in DOM (voice recording flow references #micRecBtn)
-           but is hidden from the composer — Voice launches from the +
-           menu now. -->
-      <button class="cbtn micrec" style="display:none" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
-        <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
-      </button>
       <!-- Send button always visible now (owner ask 9 Aug 2026 —
            'keep show the send button'). sendMsg() bails on empty. -->
       <button class="cbtn send" id="sendBtn" onclick="sendMsg()" aria-label="Send">
@@ -10100,7 +10115,12 @@ async function refreshChat(first){
      const titleCase = s => String(s || '').split(/(\s+)/).map(w =>
        w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join('');
      $('chName').innerHTML = esc(titleCase(j.user.name)) + mark(j.user);
-    $('chState').innerHTML = j.user.online ? '<span style="color:var(--green)">● online</span>' : 'offline';
+    // Header subtitle per 1b spec: ● online (green) + language chip.
+    // Falls back to just online/offline if the peer hasn't set speaks.
+    const dot = j.user.online ? '<span style="color:#1fb28a;font-weight:600">● online</span>' : '<span style="color:#8a8d99">offline</span>';
+    const spk = Array.isArray(j.user.speaks) && j.user.speaks[0];
+    const flag = spk ? ' · <span class="chstate-lang">speaks ' + flagFor(spk) + ' ' + esc(spk) + '</span>' : '';
+    $('chState').innerHTML = dot + flag;
     // A fingerprint of what we last drew — includes reactions and edits so
     // a purely metadata change (like someone hearting an old message) still
     // triggers a redraw without waiting for a new message to arrive.
@@ -10152,8 +10172,12 @@ async function refreshChat(first){
         // Uses a clean SVG glyph (Google-Translate-style A→文) because
         // the 🇦 emoji renders as a broken 'A in a square' on iOS —
         // it's only half a flag code point.
+        // 1b spec: translation offered as a subtle text hint under the
+        // bubble instead of a corner icon. Same click handler wires up
+        // in wireBubbleGestures — class name kept as .mb-xlat-btn so
+        // the existing selector still finds it.
         const xlatBtn = (!mine && (m.k || 'text') === 'text' && !m.d)
-          ? `<button class="mb-xlat-btn" type="button" title="Translate" aria-label="Translate"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg></button>`
+          ? `<button class="mb-xlat-btn mb-xlat-hint" type="button" aria-label="Tap to translate">tap to translate</button>`
           : '';
         return sep + `
         <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
@@ -10233,19 +10257,19 @@ function msgBody(m){
     found = true;
     const [ic, nm] = GAME_TAGS[g];
     const c = code.toUpperCase();
-    // Party links don't need the &go=1 auto-join query. Party invites
-    // are also symmetrical — no waiting handshake, anyone can jump in
-    // any time — so both sender and recipient see the same Join card.
+    // 1b spec: game invite renders as a centered periwinkle-tint card
+    // with a "Take your seat" pill instead of a regular chat bubble.
+    // Party invites — symmetrical, no handshake — anyone can jump in.
     if (g === 'party') {
-      return `<a class="ginvite" href="/party?room=${c}">${ic} Join the ${nm} · ${c}</a>`;
+      return `<a class="gcinvite" href="/party?room=${c}"><span class="gci-title">${ic} ${nm} invite</span><span class="gci-pill">Join</span></a>`;
     }
     const href = `/${g}?room=${c}${g === 'play' ? '' : '&go=1'}`;
     if (mine) {
       const who = ACCEPTED[c];
-      if (who) return `<a class="ginvite" href="${href}">▶ ${who === true ? 'They’re in' : esc(who) + ' is in'} — Start ${nm}!</a>`;
-      return `<span class="ginvite gwait" data-g="${g}" data-c="${c}" style="opacity:.75">⏳ ${ic} ${nm} · ${c} — waiting for them to accept…</span>`;
+      if (who) return `<a class="gcinvite gci-live" href="${href}"><span class="gci-title">▶ ${who === true ? 'They’re in' : esc(who) + ' is in'} — Start ${nm}!</span><span class="gci-pill">Play</span></a>`;
+      return `<span class="gcinvite gci-wait" data-g="${g}" data-c="${c}"><span class="gci-title">⏳ ${ic} ${nm} · ${c}</span><span class="gci-sub">waiting for them to accept…</span></span>`;
     }
-    return `<a class="ginvite" href="${href}">${ic} Join my ${nm} game · ${c}</a>`;
+    return `<a class="gcinvite" href="${href}"><span class="gci-title">${ic} ${nm} invite · ${c}</span><span class="gci-pill">Take your seat</span></a>`;
   });
   if (found) return out;
   return out.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" rel="noopener" class="mlink">${u}</a>`);
