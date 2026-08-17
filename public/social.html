@@ -13802,6 +13802,61 @@ async function openClubFromDeepLinkParam() {
 })();
 </script>
 
+<!-- ─── Beta welcome popup (owner ask 17 Aug 2026) ───────────────────
+     Small friendly note the first time someone opens the app. Explains
+     it's still in dev, invites bug reports + feature ideas by email, and
+     promises credit if a suggestion ships. One-time per browser via
+     localStorage. Skipped entirely on embed pages so it doesn't pop up
+     inside a game iframe. -->
+<div id="tsBetaPop" class="ts-beta-pop hidden" role="dialog" aria-modal="true" aria-labelledby="tsBetaPopTitle">
+  <div class="ts-beta-card" onclick="event.stopPropagation()">
+    <button class="ts-beta-x" onclick="tsBetaClose()" aria-label="Close">×</button>
+    <div class="ts-beta-emo" aria-hidden="true">😊</div>
+    <h3 id="tsBetaPopTitle">Hey, welcome to TalkSibi!</h3>
+    <p>This app is still under development — the more people join, the better it gets. I'm working every day to make it a nicer place to <b>learn languages and make friends while playing</b>.</p>
+    <p>Ran into a bug? (You will 😅) Got a feature idea? <b>Email me!</b> If we ship your idea, you get credit on the release notes.</p>
+    <a class="ts-beta-mail" href="mailto:contact@talksibi.com?subject=TalkSibi%20feedback%20%2F%20idea">✉️ contact@talksibi.com</a>
+    <button class="ts-beta-go" onclick="tsBetaClose()">Let's go →</button>
+  </div>
+</div>
+<style>
+  .ts-beta-pop{position:fixed;inset:0;background:rgba(20,22,31,.55);z-index:2000;display:flex;align-items:flex-end;justify-content:center;padding:16px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:tsBetaFade .22s ease-out}
+  @media(min-width:520px){.ts-beta-pop{align-items:center}}
+  .ts-beta-pop.hidden{display:none}
+  .ts-beta-card{background:#ffffff;border-radius:22px;padding:26px 24px 22px;max-width:400px;width:100%;box-shadow:0 30px 80px rgba(20,22,31,.28);position:relative;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;animation:tsBetaUp .28s cubic-bezier(.2,.9,.3,1)}
+  .ts-beta-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border:0;background:#f4f5f9;color:#6b6e7a;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;font-family:inherit}
+  .ts-beta-x:hover{background:#e6e8ee;color:#14161f}
+  .ts-beta-emo{font-size:48px;line-height:1;margin-bottom:8px}
+  .ts-beta-card h3{font-family:'Hanken Grotesk','Inter',sans-serif;font-size:22px;font-weight:700;letter-spacing:-.4px;color:#14161f;margin:0 0 12px;line-height:1.2}
+  .ts-beta-card p{font-size:14.5px;line-height:1.6;color:#4a4d59;margin:0 0 12px;font-weight:400}
+  .ts-beta-card p b{color:#14161f;font-weight:700}
+  .ts-beta-mail{display:block;text-align:center;background:#f4f5f9;color:#5b6cff;text-decoration:none;font-weight:600;font-size:14px;padding:12px;border-radius:12px;margin:10px 0 14px;transition:background .12s}
+  .ts-beta-mail:hover{background:#eef1ff}
+  .ts-beta-go{display:block;width:100%;background:#5b6cff;color:#fff;border:0;padding:13px;border-radius:12px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:background .12s}
+  .ts-beta-go:hover{background:#4353e8}
+  @keyframes tsBetaFade{from{opacity:0}to{opacity:1}}
+  @keyframes tsBetaUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+</style>
+<script>
+  (function(){
+    // Skip inside game iframes (body.embed set by game-shell) — the shell
+    // handles first-run itself. Also skip if the user already dismissed it.
+    if (document.body && document.body.classList.contains('embed')) return;
+    try { if (localStorage.getItem('ts_beta_seen_v1')) return; } catch(e){}
+    // Wait a tick so the app has painted first — feels less intrusive than
+    // popping over a blank screen.
+    setTimeout(() => {
+      const el = document.getElementById('tsBetaPop');
+      if (el) el.classList.remove('hidden');
+    }, 900);
+    window.tsBetaClose = function(){
+      const el = document.getElementById('tsBetaPop');
+      if (el) el.classList.add('hidden');
+      try { localStorage.setItem('ts_beta_seen_v1', String(Date.now())); } catch(e){}
+    };
+  })();
+</script>
+
 <script src="/wsbrand.js" defer></script>
 </body>
 </html>
