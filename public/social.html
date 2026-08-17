@@ -2651,7 +2651,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .composer .cbtn.send{background:#5b6cff;color:#fff;box-shadow:none}
 .composer .cbtn.send:hover{background:#4353e8}
 .composer .cbtn.send svg{width:16px;height:16px;fill:currentColor}
-.composer input:focus{outline:none;border-color:var(--caccent);box-shadow:0 0 0 3px rgba(90,123,255,.12)}
+.composer input:focus,.composer textarea:focus{outline:none;border-color:var(--caccent);box-shadow:0 0 0 3px rgba(90,123,255,.12)}
 
 /* Hold-to-record mic — the send-slot when the input is empty. Solid
    ink circle so it reads as *the* primary action, same visual weight
@@ -2675,7 +2675,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
   .composer{gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
   .composer .cbtn{min-width:38px;width:38px;height:38px;font-size:19px}
   .composer .micrec{min-width:38px;width:38px;height:38px}
-  .composer input{padding:9px 14px;font-size:15px}
+  .composer input,.composer textarea{padding:9px 14px;font-size:15px}
 }
 .recbar{display:none;background:#fff;border-top:1px solid var(--line);padding:9px 12px;align-items:center;gap:10px;position:relative}
 .recbar.show{display:flex}
@@ -2757,7 +2757,8 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
    themselves — they read as touchable icons, not chrome. */
 .composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:12;align-items:center}
 @media(min-width:700px){.composer{bottom:0}}
-.composer input{flex:1;background:#fff;border:1px solid var(--line);border-radius:99px;padding:11px 18px;font-size:16px;min-width:0}
+.composer input,.composer textarea{flex:1;background:#fff;border:1px solid var(--line);border-radius:22px;padding:11px 18px;font-size:16px;min-width:0}
+.composer textarea{resize:none;font-family:inherit;line-height:1.4;min-height:44px;max-height:130px;overflow-y:auto}
 /* + menu — floats above the composer (owner ask 9 Aug 2026 v7). */
 .plusmenu{position:fixed;left:14px;bottom:calc(70px + 62px + env(safe-area-inset-bottom));background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06);z-index:14;display:none;flex-direction:column;min-width:180px}
 .plusmenu.show{display:flex;animation:pcinfoFade .14s ease-out}
@@ -2837,7 +2838,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
 
 /* desktop: WhatsApp-style split — every chat on the left, the open one on the right */
 @media(min-width:900px){
-  .splitview{display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;align-items:start}
+  .splitview{display:grid;grid-template-columns:320px minmax(0,1fr);gap:0;align-items:start}
   /* every other child of the app shell — the live-room banner, the play link —
      is a grid item too, and would otherwise eat the 360px column and shove the
      chat list across the page. They get a full-width row of their own. */
@@ -2848,7 +2849,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
      the viewport. #chatList inside scrolls independently, chat header
      stays pinned at top. Owner ask: conversation on the right stays
      fixed while the chat list scrolls as the user browses many chats. */
-  .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid #e6e7ee;border-radius:20px;position:sticky;top:74px;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 32px rgba(22,24,31,.06)}
+  .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid #e6e7ee;border-right:1px solid #eef0f4;border-radius:20px 0 0 20px;position:sticky;top:74px;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:-12px 12px 32px -20px rgba(22,24,31,.10)}
   /* Empty-state card for the right pane on desktop when no chat is
      picked. Owner ask 1 Aug 2026 v2: 'remove pick a conversation
      from the mobile — makes the chat look bad'. Hidden by default;
@@ -2867,8 +2868,8 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .splitview:not(.chatempty-mode) .chatempty{display:none}
   .splitview #tabChats #chatList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .splitview #tabChats .head{padding:18px 20px 10px}
-  .splitview #tabChat{margin:0;max-width:none;background:#fbfbfd;border:1px solid #e6e7ee;border-radius:20px;position:relative;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 32px rgba(22,24,31,.06)}
-  .splitview #tabChat .chathead{position:static;border-radius:20px 20px 0 0;border-bottom:1px solid #eef0f4;padding:12px 18px}
+  .splitview #tabChat{margin:0;max-width:none;background:#fbfbfd;border:1px solid #e6e7ee;border-left:0;border-radius:0 20px 20px 0;position:relative;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:12px 12px 32px -20px rgba(22,24,31,.10)}
+  .splitview #tabChat .chathead{position:static;border-radius:0 20px 0 0;border-bottom:1px solid #eef0f4;padding:12px 18px}
   .splitview #tabChat .back2{display:none}
   .splitview .msgs{flex:1;overflow-y:auto;min-height:0;padding:18px 18px 16px;background:#fbfbfd;gap:10px}
   .splitview .composer{position:static;left:auto;transform:none;width:auto;max-width:none;margin:0;border-top:1px solid #eef0f4;background:#ffffff;border-left:0;border-right:0;border-bottom:0;border-radius:0;padding:12px 18px}
@@ -3643,13 +3644,21 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
 /* ── 1b Chats — chat-list column (280px on desktop, full-width mobile) ── */
 #tabChats{ background:#ffffff }
+.splitview #tabChats{ border-radius:20px 0 0 20px !important; }
+.splitview #tabChat{ border-radius:0 20px 20px 0 !important; }
 .splitview #tabChats,
-.splitview #tabChat{ border-radius:20px !important; border:1px solid #e6e7ee !important;
+.splitview #tabChat{ border:1px solid #e6e7ee !important;
   box-shadow:0 18px 50px rgba(22,24,31,0.12); overflow:hidden }
 .splitview #tabChats #chatList{ background:#ffffff }
 #tabChats #chatList{ background:#ffffff; padding-top:2px }
 .citem{ display:flex; align-items:center; gap:12px; padding:14px 0; cursor:pointer;
   border-bottom:0; background:#ffffff; transition:background .1s }
+/* Owner ask 17 Aug 2026: give the chat-list rows breathing room on
+   big screens — 10px left/right so the avatar isn't glued to the
+   card edge. Mobile keeps the original 0-side padding. */
+@media(min-width:900px){
+  .splitview .citem{ padding-left:10px; padding-right:10px }
+}
 .citem + .citem{ box-shadow:inset 0 1px 0 #f2f3f7 }
 .citem:hover{ background:#fafbff }
 .citem.sel{ background:#f0f1ff !important; box-shadow:inset 3px 0 0 #5b6cff }
@@ -3712,10 +3721,10 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 
 /* ── 1b composer — pill input + periwinkle send + subtle icons ── */
 .composer{ background:#ffffff !important; border-top:1px solid #eef0f4 !important }
-.composer input{ background:#f4f5f9 !important; border:0 !important;
+.composer input,.composer textarea{ background:#f4f5f9 !important; border:0 !important;
   border-radius:99px !important; padding:11px 18px; font-size:14px;
   color:#16181f }
-.composer input::placeholder{ color:#9a9db8 }
+.composer input::placeholder,.composer textarea::placeholder{ color:#9a9db8 }
 .composer input:focus{ background:#eef0f5 !important; box-shadow:none !important }
 .composer .cbtn{ color:#8a8d99 }
 .composer .cbtn:hover{ background:#f4f5f9; color:#5b6cff }
@@ -4899,26 +4908,31 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
       <button type="button" class="rec-send" id="recPreviewSend" onclick="sendPreviewedVoice()" title="Send">➤</button>
     </div>
     <div class="composer">
-      <!-- Composer icons row per 1b spec: 😊 emoji · 🎙 voice · 📷 photo.
-           Owner ask 17 Aug 2026 reversed the 9 Aug 'single + menu'
-           decision — go back to the row for parity with the design
-           handoff. The +/plusBtn remains in DOM as a hidden fallback
-           so any lingering JS references don't throw. -->
-      <button class="cbtn" type="button" id="plusBtn" style="display:none" onclick="togglePlusMenu(event)" title="More" aria-label="More">
+      <!-- Owner ask 17 Aug 2026 v2: bring the + back — it opens the
+           Photo / Emoji / Voice menu (cleaner than a row of icons on
+           mobile). Old 😊 🎙 📷 buttons stay in the DOM as hidden
+           fallbacks so any lingering JS references / event wiring
+           don't throw. -->
+      <button class="cbtn" type="button" id="plusBtn" onclick="togglePlusMenu(event)" title="More" aria-label="More">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
-      <button class="cbtn" onclick="togglePicker()" title="Emoji" aria-label="Emoji">😊</button>
-      <button class="cbtn micrec" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
+      <button class="cbtn" style="display:none" onclick="togglePicker()" title="Emoji" aria-label="Emoji">😊</button>
+      <button class="cbtn micrec" style="display:none" id="micRecBtn" title="Hold to record a voice message" aria-label="Hold to record a voice message">
         <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
       </button>
-      <button class="cbtn" onclick="$('imgIn').click()" title="Send a photo" aria-label="Send a photo">📷</button>
+      <button class="cbtn" style="display:none" onclick="$('imgIn').click()" title="Send a photo" aria-label="Send a photo">📷</button>
       <input type="file" id="imgIn" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
       <button class="cbtn xlat" style="display:none" id="composerXlat" onclick="translateComposer()" title="Translate my typing" aria-label="Translate my typing">🌐</button>
       <!-- Talk-to-AI mic (owner ask 11 Aug 2026 — 'user can speak with
            AI experts, reply back in text + audio'). Shown only when
            the current chat is an AI expert. -->
       <button class="cbtn aitalk hidden" id="aiTalkBtn" onclick="toggleAITalk()" title="Speak to the AI expert" aria-label="Speak to the AI expert">🎙️</button>
-      <input id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off">
+      <!-- Owner ask 17 Aug 2026 v3: 'if the person typing and it
+           becomes more text don't hide, grow the input field in
+           multiple lines not one line'. Switched from <input> to
+           <textarea rows="1"> with auto-grow on the input event.
+           Enter still sends (Shift+Enter = new line). -->
+      <textarea id="msgIn" maxlength="500" placeholder="Message…" autocomplete="off" rows="1"></textarea>
       <!-- Send button always visible now (owner ask 9 Aug 2026 —
            'keep show the send button'). sendMsg() bails on empty. -->
       <button class="cbtn send" id="sendBtn" onclick="sendMsg()" aria-label="Send">
@@ -10372,7 +10386,7 @@ let CUR_AI_MSGS_LEFT = null;
 async function sendMsg(kind, gifUrl){
   const text = kind === 'gif' ? gifUrl : $('msgIn').value.trim();
   if (!text || !curChat) return;
-  if (kind !== 'gif') $('msgIn').value = '';
+  if (kind !== 'gif') { $('msgIn').value = ''; _autoGrowMsgIn && _autoGrowMsgIn(); }
   hidePickers();
   hideAutocomplete();
 
@@ -10683,12 +10697,22 @@ async function typewriteAIReply(msg){
   // replaces the placeholder (avoids a visible flicker).
   await new Promise(r => setTimeout(r, 250));
 }
-$('msgIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+// Enter sends; Shift+Enter inserts a newline (owner ask 17 Aug 2026:
+// grow the input in multiple lines, don't hide the text).
+$('msgIn').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+// Auto-grow the textarea as the user types: reset to 0 first so
+// scrollHeight shrinks when they delete text. Capped at 6 lines
+// (~130px) so the composer never eats the whole screen.
+function _autoGrowMsgIn(){
+  const el = $('msgIn'); if (!el) return;
+  el.style.height = '0px';
+  el.style.height = Math.min(el.scrollHeight, 130) + 'px';
+}
 $('msgIn').addEventListener('input', () => {
   sendTypingSoon();
-  // Send button is now ALWAYS visible (owner ask 9 Aug 2026); mic
-  // lives inside the + menu, so we no longer toggle either button
-  // based on whether there's text.
+  _autoGrowMsgIn();
 });
 
 // Shared upload path used by the 📷 picker + drag-drop + paste.
