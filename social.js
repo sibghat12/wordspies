@@ -3752,30 +3752,43 @@ Do NOT add quotes, preambles, or explanations.`,
       const client = getAnthropic();
       if (!client) return res.status(503).json({ error: 'AI not configured yet.' });
       const nativeLang = bodyNative || (Array.isArray(me.speaks) && me.speaks[0]) || 'English';
-      const system = 'You are an expert language-learning curriculum designer. Output ONLY valid JSON, no prose, no markdown fences. Design a 5-lesson short-term plan tailored to the learner. Each lesson must build on the previous one and be doable in the daily time budget. Focus on the goal — the phrases must be immediately useful for that specific goal.';
+      // Owner ask 17 Aug 2026 v3: build a REAL curriculum — no travel /
+      // love / situational fluff. Start from the basics, deliver "as
+      // much as necessary to learn", and let the focus pick the shape:
+      // Vocabulary → thematic word lists, Idioms → real idioms with
+      // meaning, Grammar → construction per lesson, etc. Bigger lessons,
+      // more of them.
+      const perFocus = {
+        General:    { lessons: 12, items: 10, unit: 'a useful everyday phrase or word', order: 'fundamentals first (greetings, numbers, days, everyday nouns, common verbs), then everyday sentences, then simple past/future.' },
+        Vocabulary: { lessons: 15, items: 12, unit: 'a single word (noun / verb / adjective) with its translation', order: 'theme per lesson — Numbers 1–20, Colors, Days & months, Family, Body parts, Food & drink, House & rooms, Clothes, Weather, Common verbs, Common adjectives, Time expressions, Transport, Jobs, School.' },
+        Idioms:     { lessons: 10, items: 8,  unit: 'ONE common idiom in the target language; the dst field explains its literal meaning AND when to use it (both, separated by " — ")', order: 'start with the most common everyday idioms, move to slightly less common ones. Prefer real idioms native speakers actually use, not textbook translations.' },
+        Grammar:    { lessons: 12, items: 8,  unit: 'a short example sentence demonstrating the lesson\'s grammar rule', order: 'one construction per lesson, in learning order: present tense, articles / gender, plurals, pronouns, adjective agreement, negation, questions, past tense, future tense, comparatives, imperatives, conditional.' },
+        Speaking:   { lessons: 12, items: 10, unit: 'a natural spoken phrase (contractions, fillers, colloquialisms OK)', order: 'greetings & introductions, small talk, ordering food, asking directions, at the shop, on the phone, agreement & disagreement, expressing opinions, feelings, storytelling, apologising, saying goodbye.' },
+        Listening:  { lessons: 10, items: 10, unit: 'a phrase the learner will HEAR in real life (announcements, casual replies, everyday spoken registers)', order: 'greetings & short replies, café / shop replies, transport announcements, directions given aloud, phone openings, weather forecasts, news headlines cadence, casual reactions, slang & filler words, common questions asked TO the learner.' }
+      };
+      const rec = perFocus[focus] || perFocus.General;
+      const system = 'You are an expert language-learning curriculum designer. Output ONLY valid JSON, no prose, no markdown fences. Design a proper beginner-friendly learning curriculum tailored to the learner. Start from the absolute basics and build up. Do NOT invent situational phrases about travel, love, work, exam prep or hobbies — the learner asked for pure learning content, not a travel phrasebook. Keep the content authentic to how native speakers actually use the language.';
       const userMsg = 'Target language: ' + language + '\n' +
         'Learner speaks natively: ' + nativeLang + '\n' +
         'Level: ' + level + '\n' +
-        'Goal: ' + goalStr + '\n' +
-        'Focus area: ' + focus + '\n' +
-        'Time per day: ' + mpd + ' minutes\n\n' +
+        'Focus area: ' + focus + '\n\n' +
         'Return JSON in EXACTLY this shape:\n' +
-        '{"lessons":[{"title":"2-5 word title","focus":"one sentence describing what this lesson teaches","phrases":[{"src":"phrase in ' + language + '","dst":"translation in ' + nativeLang + '"}]}]}\n\n' +
+        '{"lessons":[{"title":"2-5 word title","focus":"one sentence describing what this lesson teaches","phrases":[{"src":"' + rec.unit + ' — in ' + language + '","dst":"translation in ' + nativeLang + '"}]}]}\n\n' +
         'Rules:\n' +
-        '- Exactly 5 lessons.\n' +
-        '- Exactly 5 phrases per lesson.\n' +
-        '- Phrases must be real things a learner would actually SAY in situations related to the goal (not textbook grammar drills).\n' +
+        '- Produce EXACTLY ' + rec.lessons + ' lessons.\n' +
+        '- Produce EXACTLY ' + rec.items + ' entries per lesson (src + dst).\n' +
+        '- Ordering: ' + rec.order + '\n' +
+        '- Match the level. Beginner = fundamentals only (no idioms unless focus is Idioms, no conditional, no rare vocab). Intermediate = adds past/future, opinions, everyday idioms. Advanced = conditional, subjunctive, register-shifting.\n' +
         '- Titles under 5 words. No emoji in JSON.\n' +
-        '- Match the level: Beginner = present tense, everyday nouns; Intermediate = past/future, opinions; Advanced = conditional, idioms.\n' +
-        '- Tilt every lesson to the Focus area: Vocabulary = new nouns and adjectives per lesson; Idioms = one common idiom + literal + when-to-use per phrase; Grammar = each lesson centers on one construction (endings, tenses, agreement); Speaking = spoken/conversational phrasing, contractions, filler words; Listening = phrases the learner will HEAR, everyday spoken registers; General = balanced mix.';
+        '- No fluff: skip greetings-only lessons unless the focus is Speaking or Listening.';
       let plan;
       const startTime = Date.now();
       let usage = { input_tokens: 0, output_tokens: 0 };
       try {
         const result = await client.messages.create({
           model: process.env.BOT_MODEL || 'claude-haiku-4-5',
-          max_tokens: 1800,
-          temperature: 0.6,
+          max_tokens: 8000,
+          temperature: 0.5,
           system,
           messages: [{ role:'user', content: userMsg }]
         });
@@ -3791,10 +3804,13 @@ Do NOT add quotes, preambles, or explanations.`,
       if (!plan || !Array.isArray(plan.lessons) || plan.lessons.length < 3) {
         return res.status(502).json({ error: 'The plan came back malformed — try again.' });
       }
-      const cleanedLessons = plan.lessons.slice(0, 5).map(l => ({
+      // Bigger caps: up to 20 lessons × up to 15 entries per lesson so
+      // curriculum-style focus plans (Vocabulary 15 lessons × 12 words)
+      // land intact. Keep the per-entry length cap tight.
+      const cleanedLessons = plan.lessons.slice(0, 20).map(l => ({
         title: String((l && l.title) || 'Lesson').slice(0, 60),
         focus: String((l && l.focus) || '').slice(0, 200),
-        phrases: (Array.isArray(l && l.phrases) ? l.phrases : []).slice(0, 5)
+        phrases: (Array.isArray(l && l.phrases) ? l.phrases : []).slice(0, 15)
           .map(p => ({ src: String((p && p.src) || '').slice(0, 200), dst: String((p && p.dst) || '').slice(0, 200) }))
           .filter(p => p.src && p.dst),
         done: false, doneAt: null
@@ -3802,7 +3818,7 @@ Do NOT add quotes, preambles, or explanations.`,
       if (cleanedLessons.length < 3) return res.status(502).json({ error: 'Plan too thin — try again.' });
       const stored = {
         id: crypto.randomBytes(6).toString('base64url'),
-        language, level, goal: goalStr, focus, minutesPerDay: mpd,
+        language, nativeLanguage: nativeLang, level, goal: goalStr, focus, minutesPerDay: mpd,
         createdAt: Date.now(),
         lessons: cleanedLessons
       };

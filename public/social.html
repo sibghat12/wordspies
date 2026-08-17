@@ -1035,8 +1035,15 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
    front of each written message'. Uses browser SpeechSynthesis
    so it's free + supports 30+ languages natively (no ElevenLabs
    burn per phrase). */
-.ln-phrase{display:flex;align-items:flex-start;gap:12px}
-.ln-phrase-txt{flex:1;min-width:0}
+.ln-phrase{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f2f3f7}
+.ln-phrase:last-child{border-bottom:0}
+.ln-phrase-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.ln-phrase-row{display:flex;align-items:center;gap:10px}
+.ln-phrase-row .ln-phrase-src{font-size:15px;font-weight:600;color:var(--ink,#16181f);line-height:1.35}
+.ln-phrase-row-dst .ln-phrase-dst{font-size:13.5px;color:var(--sub,#4a4d59);line-height:1.4}
+.ln-phrase-speak-dst{background:#f4f5f9;width:26px;height:26px}
+.ln-phrase-speak-dst svg{width:10px;height:10px}
+.ln-phrase-speak-dst.on{background:#7c5cff;color:#fff}
 /* WhatsApp-style voice-note play button — neutral idle, filled ink when
    playing. Swaps a play triangle for pause bars via the .on class. */
 .ln-phrase-speak{width:32px;height:32px;border-radius:50%;background:#eff2f7;color:var(--ink,#16181f);border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;transition:background .14s,color .14s,transform .1s}
@@ -8659,20 +8666,32 @@ function openLearnLesson(planId, idx){
   $('lnLessonFocus').textContent = l.focus || '';
   const body = $('lnLessonBody');
   const targetLang = (LN_PLAN && LN_PLAN.language) || '';
+  const nativeLang = (LN_PLAN && LN_PLAN.nativeLanguage) || 'English';
+  // Owner ask 17 Aug 2026 v3: 'let the mic speak both languages'.
+  // Every phrase gets TWO speak buttons — target-language on the source
+  // line, native-language on the translation line. Same shared handler.
   body.innerHTML = (l.phrases || []).map((p, pi) =>
     '<div class="ln-phrase">' +
-      '<button type="button" class="ln-phrase-speak" data-src="' + esc(p.src || '') + '" data-lang="' + esc(targetLang) + '" data-idx="' + pi + '" aria-label="Hear this phrase">' +
-        '<svg class="pl-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>' +
-        '<svg class="pl-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>' +
-      '</button>' +
       '<div class="ln-phrase-txt">' +
-        '<div class="ln-phrase-src">' + esc(p.src || '') + '</div>' +
-        '<div class="ln-phrase-dst">' + esc(p.dst || '') + '</div>' +
+        '<div class="ln-phrase-row">' +
+          '<button type="button" class="ln-phrase-speak" data-src="' + esc(p.src || '') + '" data-lang="' + esc(targetLang) + '" data-idx="' + pi + '" aria-label="Hear in ' + esc(targetLang) + '">' +
+            '<svg class="pl-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>' +
+            '<svg class="pl-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>' +
+          '</button>' +
+          '<div class="ln-phrase-src">' + esc(p.src || '') + '</div>' +
+        '</div>' +
+        '<div class="ln-phrase-row ln-phrase-row-dst">' +
+          '<button type="button" class="ln-phrase-speak ln-phrase-speak-dst" data-src="' + esc(p.dst || '') + '" data-lang="' + esc(nativeLang) + '" data-idx="' + pi + '" aria-label="Hear in ' + esc(nativeLang) + '">' +
+            '<svg class="pl-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>' +
+            '<svg class="pl-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>' +
+          '</button>' +
+          '<div class="ln-phrase-dst">' + esc(p.dst || '') + '</div>' +
+        '</div>' +
       '</div>' +
     '</div>'
   ).join('');
-  // Wire the speak buttons — one shared handler so a lesson with 25
-  // phrases doesn't create 25 inline handlers in the HTML string.
+  // Wire both speak buttons — one shared handler so a lesson with 30
+  // phrases (15 items × 2 buttons) doesn't create inline handlers.
   body.querySelectorAll('.ln-phrase-speak').forEach(btn => {
     btn.onclick = ev => {
       ev.stopPropagation();
