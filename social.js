@@ -3738,6 +3738,12 @@ Do NOT add quotes, preambles, or explanations.`,
       if (!okLevels.includes(level)) return res.status(400).json({ error: 'Pick a level.' });
       const goalStr = String(goal || '').trim().slice(0, 60);
       if (!goalStr) return res.status(400).json({ error: 'Pick a goal.' });
+      // Owner ask 17 Aug 2026: let the learner pick a focus (Vocabulary /
+      // Idioms / General / Grammar / Speaking / Listening) so the plan
+      // isn't a one-size-fits-all curriculum. Falls back to General for
+      // clients that don't send it yet.
+      const okFocus = ['General','Vocabulary','Idioms','Grammar','Speaking','Listening'];
+      const focus = okFocus.includes(String(req.body && req.body.focus)) ? String(req.body.focus) : 'General';
       const mpd = Math.max(5, Math.min(60, Number(minutesPerDay) || 10));
       const client = getAnthropic();
       if (!client) return res.status(503).json({ error: 'AI not configured yet.' });
@@ -3747,6 +3753,7 @@ Do NOT add quotes, preambles, or explanations.`,
         'Learner speaks natively: ' + nativeLang + '\n' +
         'Level: ' + level + '\n' +
         'Goal: ' + goalStr + '\n' +
+        'Focus area: ' + focus + '\n' +
         'Time per day: ' + mpd + ' minutes\n\n' +
         'Return JSON in EXACTLY this shape:\n' +
         '{"lessons":[{"title":"2-5 word title","focus":"one sentence describing what this lesson teaches","phrases":[{"src":"phrase in ' + language + '","dst":"translation in ' + nativeLang + '"}]}]}\n\n' +
@@ -3755,7 +3762,8 @@ Do NOT add quotes, preambles, or explanations.`,
         '- Exactly 5 phrases per lesson.\n' +
         '- Phrases must be real things a learner would actually SAY in situations related to the goal (not textbook grammar drills).\n' +
         '- Titles under 5 words. No emoji in JSON.\n' +
-        '- Match the level: Beginner = present tense, everyday nouns; Intermediate = past/future, opinions; Advanced = conditional, idioms.';
+        '- Match the level: Beginner = present tense, everyday nouns; Intermediate = past/future, opinions; Advanced = conditional, idioms.\n' +
+        '- Tilt every lesson to the Focus area: Vocabulary = new nouns and adjectives per lesson; Idioms = one common idiom + literal + when-to-use per phrase; Grammar = each lesson centers on one construction (endings, tenses, agreement); Speaking = spoken/conversational phrasing, contractions, filler words; Listening = phrases the learner will HEAR, everyday spoken registers; General = balanced mix.';
       let plan;
       const startTime = Date.now();
       let usage = { input_tokens: 0, output_tokens: 0 };
@@ -3790,7 +3798,7 @@ Do NOT add quotes, preambles, or explanations.`,
       if (cleanedLessons.length < 3) return res.status(502).json({ error: 'Plan too thin — try again.' });
       const stored = {
         id: crypto.randomBytes(6).toString('base64url'),
-        language, level, goal: goalStr, minutesPerDay: mpd,
+        language, level, goal: goalStr, focus, minutesPerDay: mpd,
         createdAt: Date.now(),
         lessons: cleanedLessons
       };
