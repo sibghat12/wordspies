@@ -817,8 +817,8 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .mp-actions.mp-actions-tight{padding-top:2px;gap:6px}
 .mp-btn.small{padding:8px 14px;font-size:12.5px}
 .me-savebar{position:sticky;bottom:0;left:0;right:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(250,251,253,0),rgba(250,251,253,.96) 40%);display:flex;justify-content:center;pointer-events:none;z-index:30}
-.me-savebar-btn{pointer-events:auto;background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);color:#fff;border:0;padding:14px 28px;border-radius:999px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 8px 24px rgba(232,80,107,.32);transition:transform .12s,box-shadow .16s;min-width:220px;letter-spacing:-.1px}
-.me-savebar-btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(232,80,107,.42)}
+.me-savebar-btn{pointer-events:auto;background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);color:#fff;border:0;padding:14px 28px;border-radius:999px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:15px;cursor:pointer;box-shadow:none;transition:transform .12s;min-width:220px;letter-spacing:-.1px}
+.me-savebar-btn:hover{transform:translateY(-1px);box-shadow:none}
 .me-savebar-btn:active{transform:translateY(0)}
 @media(min-width:769px){ .me-savebar{padding-bottom:18px} }
 /* Owner ask 12 Aug 2026: turn the flat gradient banner into a real
@@ -897,15 +897,15 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .fs-lang{background:linear-gradient(135deg,rgba(232,80,107,.10),rgba(124,92,255,.10));border:1px solid rgba(232,80,107,.15);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;color:var(--accent,#e8506b);white-space:nowrap}
 .fs-act{background:transparent;border:1.5px solid var(--line,#e6e8ec);color:var(--ink);padding:7px 14px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:.14s;flex-shrink:0;min-width:96px;text-align:center}
 .fs-act:hover{background:#f2f4f7;border-color:#c8ced6}
-.fs-act.primary{background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(232,80,107,.28)}
-.fs-act.primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,80,107,.36)}
+.fs-act.primary{background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);border-color:transparent;color:#fff;box-shadow:none}
+.fs-act.primary:hover{transform:translateY(-1px);box-shadow:none}
 .fs-act.warn:hover{background:#fef2f2;border-color:#fecaca;color:#dc2626}
 .fs-empty{padding:48px 24px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
 .fs-empty-emoji{font-size:44px;line-height:1;margin-bottom:8px}
 .fs-empty-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:18px;color:var(--ink)}
 .fs-empty-sub{font-size:13.5px;color:var(--sub);max-width:280px;line-height:1.5;font-weight:500}
-.fs-empty-cta{margin-top:14px;background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);border:0;color:#fff;padding:10px 22px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:0 4px 14px rgba(232,80,107,.28);transition:.14s}
-.fs-empty-cta:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,80,107,.36)}
+.fs-empty-cta{margin-top:14px;background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);border:0;color:#fff;padding:10px 22px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:none;transition:.14s}
+.fs-empty-cta:hover{transform:translateY(-1px);box-shadow:none}
 /* ═══ Learn tab — personalised AI roadmap ═══════════════════════════
    Three states share the same wrap: no plan → hero + Create.
    Plan exists → header with progress ring + 5 lesson cards. */
@@ -934,7 +934,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ln-heroCta-btn{background:#fff;color:var(--ink,#16181f);border:0;padding:13px 26px;border-radius:999px;
   font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;
   box-shadow:0 8px 22px rgba(20,15,50,.24);transition:.18s;display:inline-flex;align-items:center;gap:8px}
-.ln-heroCta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(20,15,50,.32)}
+.ln-heroCta-btn:hover{transform:translateY(-2px);box-shadow:none}
 .ln-heroCta-btn:active{transform:translateY(0)}
 .ln-heroCta.compact{padding:18px 22px}
 .ln-heroCta.compact .ln-heroCta-emoji{font-size:30px;margin-bottom:6px}
@@ -947,9 +947,9 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ln-hero p{font-size:14.5px;line-height:1.65;color:var(--sub);margin:0 auto 24px;max-width:440px;font-weight:500}
 .ln-hero p b{color:var(--ink);font-weight:700}
 .ln-hero-hint{font-size:12px;color:var(--faint);margin-top:14px;font-weight:500}
-.ln-cta{background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);color:#fff;border:0;padding:14px 26px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:0 6px 20px rgba(232,80,107,.32);transition:.18s;display:inline-flex;align-items:center;gap:6px}
-.ln-cta:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(232,80,107,.44)}
-.ln-cta:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:0 4px 12px rgba(232,80,107,.2)}
+.ln-cta{background:linear-gradient(135deg,var(--accent,#e8506b),#c93257);color:#fff;border:0;padding:14px 26px;border-radius:999px;font-family:'Inter',system-ui,sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:none;transition:.18s;display:inline-flex;align-items:center;gap:6px}
+.ln-cta:hover{transform:translateY(-2px);box-shadow:none}
+.ln-cta:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 .ln-planhead{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1px solid var(--line,#e6e8ec);border-radius:20px;padding:18px 22px;box-shadow:0 2px 12px rgba(20,30,60,.04)}
 .ln-planhead-l{min-width:0;flex:1}
 .ln-planhead-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:20px;letter-spacing:-.3px;color:var(--ink);line-height:1.15}
@@ -1012,7 +1012,7 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ln-phrase-dst{font-size:13px;color:var(--sub);font-weight:500;margin-top:4px;line-height:1.4}
 .ln-lesson-foot{padding:14px 22px 20px;border-top:1px solid var(--line,#e6e8ec);flex-shrink:0}
 .ln-lesson-foot .ln-cta{width:100%;justify-content:center;display:flex;padding:14px}
-.ln-lesson-foot .ln-cta.done{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 6px 20px rgba(34,197,94,.32);pointer-events:none;opacity:.9}
+.ln-lesson-foot .ln-cta.done{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:none;pointer-events:none;opacity:.9}
 /* Learning methods grid — 'AI Plan' + coming-soon siblings. Owner ask
    13 Aug 2026 (Learn tab tweaks): 'make it one option from many'. */
 .ln-methods{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:22px auto 20px;max-width:520px}
@@ -1151,7 +1151,7 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .ln-exam-book{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:520px){.ln-exam-book{grid-template-columns:1fr}}
 .ln-exam-bookbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(180deg,#fafbff,#fff);border:1.5px solid var(--line,#e6e8ec);border-radius:16px;padding:16px 14px;text-decoration:none;color:var(--ink);font-family:inherit;transition:.14s;gap:4px}
-.ln-exam-bookbtn:hover{transform:translateY(-1px);border-color:var(--accent,#e8506b);box-shadow:0 8px 20px rgba(20,30,60,.10)}
+.ln-exam-bookbtn:hover{transform:translateY(-1px);border-color:var(--accent,#e8506b);box-shadow:none}
 .ln-exam-bookttl{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:15px;background:linear-gradient(135deg,var(--accent,#e8506b),#7c5cff);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.2px}
 .ln-exam-booksub{font-size:11.5px;color:var(--sub);font-weight:600}
 .ln-exam-bookhint{font-size:11.5px;color:var(--faint);text-align:center;margin-top:10px;font-weight:500}
@@ -2584,7 +2584,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
    goes underneath as a low-key secondary link. */
 .xlat-setup-actions{display:flex !important;flex-direction:column;gap:8px;flex:none;border-top:1px solid var(--line);padding-top:14px;align-items:stretch}
 .xlat-setup-actions button{border:0;border-radius:14px;padding:14px 22px;font-family:'Fredoka','Inter',sans-serif;font-weight:600;font-size:16px;cursor:pointer;transition:.12s;width:100%;display:block;text-align:center}
-.xlat-setup-actions .primary{background:#0f7500;color:#fff;box-shadow:0 4px 12px rgba(15,117,0,.25);order:1}
+.xlat-setup-actions .primary{background:#0f7500;color:#fff;box-shadow:none;order:1}
 .xlat-setup-actions .primary:hover{filter:brightness(1.08)}
 .xlat-setup-actions .ghost{background:transparent;color:var(--sub);font-weight:500;font-size:14px;padding:8px;box-shadow:none;order:2}
 .xlat-setup-actions .ghost:hover{color:var(--ink)}
@@ -2692,7 +2692,7 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 .recbar .rec-hint{font-size:12px;color:var(--sub);font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .recbar .rec-cancel{background:transparent;border:0;color:var(--sub);font-size:18px;width:34px;height:34px;border-radius:50%;cursor:pointer}
 .recbar .rec-cancel:hover{background:#f2f3f5;color:var(--err)}
-.recbar .rec-send{background:linear-gradient(135deg,#22c07a,#159f5d);color:#fff;border:0;border-radius:99px;padding:0 16px;height:36px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 4px 12px rgba(23,155,90,.28)}
+.recbar .rec-send{background:linear-gradient(135deg,#22c07a,#159f5d);color:#fff;border:0;border-radius:99px;padding:0 16px;height:36px;font-family:'Fredoka',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;box-shadow:none}
 .recbar .rec-send:disabled{opacity:.6;cursor:progress}
 /* Preview-play button that appears in the "listen back" bar after
    recording stops. Sits where the pulsing red dot did during capture. */
@@ -2856,7 +2856,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
      the viewport. #chatList inside scrolls independently, chat header
      stays pinned at top. Owner ask: conversation on the right stays
      fixed while the chat list scrolls as the user browses many chats. */
-  .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid #e6e7ee;border-right:1px solid #eef0f4;border-radius:20px 0 0 20px;position:sticky;top:74px;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:-12px 12px 32px -20px rgba(22,24,31,.10)}
+  .splitview #tabChats{margin:0;max-width:none;background:#fff;border:1px solid #e6e7ee;border-right:1px solid #eef0f4;border-radius:20px 0 0 20px;position:sticky;top:74px;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:none}
   /* Empty-state card for the right pane on desktop when no chat is
      picked. Owner ask 1 Aug 2026 v2: 'remove pick a conversation
      from the mobile — makes the chat look bad'. Hidden by default;
@@ -2875,7 +2875,7 @@ body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:
   .splitview:not(.chatempty-mode) .chatempty{display:none}
   .splitview #tabChats #chatList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .splitview #tabChats .head{padding:18px 20px 10px}
-  .splitview #tabChat{margin:0;max-width:none;background:#fbfbfd;border:1px solid #e6e7ee;border-left:0;border-radius:0 20px 20px 0;position:relative;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:12px 12px 32px -20px rgba(22,24,31,.10)}
+  .splitview #tabChat{margin:0;max-width:none;background:#fbfbfd;border:1px solid #e6e7ee;border-left:0;border-radius:0 20px 20px 0;position:relative;height:calc(100vh - 130px);display:flex;flex-direction:column;overflow:hidden;box-shadow:none}
   .splitview #tabChat .chathead{position:static;border-radius:0 20px 0 0;border-bottom:1px solid #eef0f4;padding:12px 18px}
   .splitview #tabChat .back2{display:none}
   .splitview .msgs{flex:1;overflow-y:auto;min-height:0;padding:18px 18px 16px;background:#fbfbfd;gap:10px}
@@ -10149,17 +10149,13 @@ async function refreshChat(first){
      const titleCase = s => String(s || '').split(/(\s+)/).map(w =>
        w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join('');
      $('chName').innerHTML = esc(titleCase(j.user.name)) + mark(j.user);
-    // Header subtitle per 1b spec: ● online (green) + language chip.
-    // `speaks` on the profile is stored as { c, lvl } objects (legacy
-    // string codes still supported). Normalise both shapes to a name
-    // before rendering — otherwise the chip printed "[object Object]".
-    const dot = j.user.online ? '<span style="color:#1fb28a;font-weight:600">● online</span>' : '<span style="color:#8a8d99">offline</span>';
-    const rawSpk = Array.isArray(j.user.speaks) && j.user.speaks[0];
-    let spkName = '';
-    if (rawSpk && typeof rawSpk === 'object') spkName = langName(rawSpk.c || rawSpk.code || '');
-    else if (typeof rawSpk === 'string') spkName = rawSpk.length <= 3 ? langName(rawSpk) : rawSpk;
-    const flag = spkName ? ' · <span class="chstate-lang">speaks ' + flagFor(spkName) + ' ' + esc(spkName) + '</span>' : '';
-    $('chState').innerHTML = dot + flag;
+    // Header subtitle: just ● online / offline. Owner ask 17 Aug 2026:
+    // 'remove the words speaks flag Russian like that' — the language
+    // chip is gone from the header; language info stays on the peer
+    // profile page.
+    $('chState').innerHTML = j.user.online
+      ? '<span style="color:#1fb28a;font-weight:600">● online</span>'
+      : '<span style="color:#8a8d99">offline</span>';
     // A fingerprint of what we last drew — includes reactions and edits so
     // a purely metadata change (like someone hearting an old message) still
     // triggers a redraw without waiting for a new message to arrive.
