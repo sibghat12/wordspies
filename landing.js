@@ -222,7 +222,7 @@ const TS_NAV = `<nav class="ts-nav">
     <a class="ts-hide-sm" href="/app/learn">Learn</a>
     <a class="ts-hide-sm" href="/blog">Blog</a>
     <a class="ts-navlogin" href="/app">Sign in</a>
-    <a class="ts-navjoin" href="/app">Join free</a>
+    <a class="ts-navjoin" href="/app">Join app</a>
   </div>
 </nav>`;
 
@@ -670,7 +670,7 @@ a:hover{color:#4353e8}
     <a class="ts-hide-sm" href="/app#learn">Learn</a>
     <a class="ts-hide-sm" href="/blog">Blog</a>
     <a class="ts-navlogin" href="/app">Sign in</a>
-    <a class="ts-navjoin" href="/app">Join free</a>
+    <a class="ts-navjoin" href="/app">Join app</a>
   </div>
 </nav>
 
@@ -941,7 +941,7 @@ a:hover{color:#4353e8}
     <div class="ts-join-blob1"></div>
     <div class="ts-join-blob2"></div>
     <h2 class="ts-join-h">Your first conversation is a game away.</h2>
-    <p class="ts-join-sub">Join free, set your languages, and say hi — someone on the other side of the world is waiting to practise with you.</p>
+    <p class="ts-join-sub">Join app, set your languages, and say hi — someone on the other side of the world is waiting to practise with you.</p>
     <a class="ts-join-cta" href="/app">Create my profile — free</a>
     <div class="ts-join-fine">No credit card · No install · 18+</div>
   </div>

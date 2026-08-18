@@ -120,7 +120,7 @@
       '</div>' +
       '<div class="tnright">' +
         '<a class="tnlink" href="/app">Sign in</a>' +
-        '<a class="tnjoin" href="/app">Join free</a>' +
+        '<a class="tnjoin" href="/app">Join app</a>' +
       '</div>' +
     '</nav>';
   }
