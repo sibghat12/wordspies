@@ -472,7 +472,7 @@ function view(id){
     .forEach(v => $(v).classList.toggle('hidden', v !== id));
 }
 function toast(t){ const el = $('toastEl'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2200); }
-function showErr(id, msg){ const e = $(id); if (!msg) return e.classList.add('hidden'); e.textContent = msg; e.classList.remove('hidden'); }
+function showErr(id, msg){ const e = $(id); if (!msg) return e.classList.add('hidden'); e.innerHTML = msg; e.classList.remove('hidden'); }
 
 function avatarHtml(p){
   if (p && p.photo) return '<span class="av"><img src="' + esc(p.photo) + '" alt=""></span>';
@@ -493,7 +493,7 @@ function saveName(){
 function _handleAck(r){
   if (!r || !r.error) return false;
   const map = {
-    gone:    'No game with that code — it may have finished.',
+    gone:    'Room ended — the app was updated. <a href="#" onclick="event.preventDefault();document.getElementById(\'createBtn\').click()" style="color:#5b6cff;font-weight:700">Start a new room →</a>',
     full:    'That room is full.',
     started: 'That game has already started.'
   };
