@@ -262,34 +262,56 @@ function termsPage() {
 function childSafetyPage() {
   const body = `
 <h1>Child Safety Standards</h1>
-<div class="updated">Last updated: 1 August 2026</div>
-<p>TalkSibi takes the safety of minors seriously. This page describes the standards we apply and how to reach us.</p>
+<div class="updated">Last updated: 18 August 2026</div>
+<p>TalkSibi takes the safety of minors seriously. This page describes the standards we apply and how to reach us. It is written to satisfy the UK Online Safety Act 2023, the Age Appropriate Design Code (Children's Code), Google Play's Child Safety Standards policy, and Apple's App Store safety requirements.</p>
+
 <h2>Our position</h2>
-<p>TalkSibi is <strong>strictly for users aged 18 and over</strong>. Creating an account requires you to enter your date of birth; if it shows you are under 18 we refuse to create the account, do not issue a session, and prevent re-attempts on that email for a period. We do not knowingly permit anyone under 18 to use the service, and we do not knowingly collect personal information from anyone under 18.</p>
-<p>Any content depicting, sexualising, grooming or endangering a minor is <strong>strictly and permanently prohibited</strong> and will result in immediate account termination and reporting to the appropriate authorities.</p>
-<h2>What we do</h2>
+<p>TalkSibi is <strong>strictly for users aged 18 and over</strong>. We do not offer any child-directed features. We do not knowingly permit anyone under 18 to use the service, and we do not knowingly collect personal information from anyone under 18.</p>
+<p>Creating an account requires you to enter your date of birth. If it shows you are under 18 we refuse to create the account, do not issue a session, and rate-limit further attempts on that email address for 24 hours. Date of birth is re-verified on the server, not just in the browser.</p>
+<p>Any content depicting, sexualising, grooming or endangering a minor is <strong>strictly and permanently prohibited</strong>. Such content is removed on discovery, the account is terminated, and the material is preserved and reported to the appropriate authorities (see "Reporting" below).</p>
+
+<h2>Age assurance measures</h2>
 <ul>
-<li>18+ age gate at account creation — required date of birth, server-side re-verification, and a short-lived block on the email after any under-18 attempt.</li>
-<li>We may in future add third-party identity or age verification (for example a selfie-plus-ID check) if we detect elevated risk on the platform.</li>
-<li>A Report button on every message and every user profile.</li>
-<li>A Block button on every user profile that hides them in both directions.</li>
-<li>Server-side profanity and slur filtering on text messages.</li>
-<li>Review of reports within 24 hours of receipt.</li>
-<li>Removal of offending content and termination of offending accounts.</li>
-<li>Reporting of any suspected child sexual abuse material to the National Center for Missing &amp; Exploited Children (NCMEC) in the United States and the Internet Watch Foundation (IWF) in the United Kingdom.</li>
+<li><strong>Self-declared date of birth</strong> at account creation, verified on the server.</li>
+<li><strong>Email cool-down</strong> for 24 hours after any under-18 signup attempt on the same email address.</li>
+<li><strong>Photo verification</strong> — every new profile photo is checked (server-side face detection) before it is public. Cartoon avatars, clearly non-adult photos, and photos flagged as underage-appearing are rejected.</li>
+<li><strong>Reactive removal</strong> — any account suspected to belong to a minor is suspended pending review.</li>
+<li><strong>Highly effective age assurance</strong> — where we detect elevated risk we may require third-party age verification (for example, a photo-plus-ID document check by a verified provider). Refusal will result in suspension.</li>
 </ul>
+
+<h2>Content moderation</h2>
+<ul>
+<li>A <strong>Report</strong> button on every message and every user profile.</li>
+<li>A <strong>Block</strong> button on every user profile that hides them in both directions.</li>
+<li>Server-side profanity and slur filtering on text messages.</li>
+<li>Human review of reports within 24 hours of receipt.</li>
+<li>Removal of offending content and termination of offending accounts.</li>
+<li>No unmoderated broadcast surface — live voice parties always have a host with mute / kick powers, and the party audio stream is subject to the same reporting flow as text.</li>
+</ul>
+
 <h2>Reporting child safety concerns</h2>
-<p>If you believe a user is under 18, or you become aware of content that endangers a minor, email <a href="mailto:safety@talksibi.com">safety@talksibi.com</a> immediately. Include as much detail as you safely can: the username in question, a link or screenshot if possible, and any context.</p>
+<p>If you believe a user is under 18, or you become aware of content that endangers a minor, email <a href="mailto:safety@talksibi.com">safety@talksibi.com</a> immediately. Include as much detail as you safely can: the username in question, a link or screenshot if possible, and any context. We aim to respond within 24 hours.</p>
 <p>Suspected child sexual abuse material can also be reported directly to:</p>
 <ul>
-<li>United Kingdom: <a href="https://iwf.org.uk" rel="noopener" target="_blank">Internet Watch Foundation</a></li>
+<li>United Kingdom: <a href="https://iwf.org.uk" rel="noopener" target="_blank">Internet Watch Foundation (IWF)</a></li>
 <li>United States: <a href="https://report.cybertip.org" rel="noopener" target="_blank">NCMEC CyberTipline</a></li>
+<li>Anywhere: your local police force. In the UK dial 101 (non-emergency) or 999 (emergency).</li>
 </ul>
-<h2>CSAM point of contact</h2>
-<p>The designated point of contact for child sexual abuse material at TalkSibi is the TalkSibi safety team, reachable at <a href="mailto:safety@talksibi.com">safety@talksibi.com</a>.</p>
+
+<h2>Designated safety point of contact</h2>
+<p>The designated point of contact for all child safety matters, including reports of child sexual abuse material, is the TalkSibi safety team at <a href="mailto:safety@talksibi.com">safety@talksibi.com</a>. This inbox is monitored daily.</p>
+
+<h2>Compliance references</h2>
+<ul>
+<li><strong>UK Online Safety Act 2023</strong> — we are a user-to-user service under the Act. Our duties on illegal harms and children include those described above. Ofcom is the regulator; complaints can be made at <a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a> (data) or <a href="https://ofcom.org.uk" rel="noopener" target="_blank">ofcom.org.uk</a> (content).</li>
+<li><strong>ICO Children's Code (Age Appropriate Design Code)</strong> — TalkSibi is not directed at children; we apply the strictest privacy defaults to all accounts.</li>
+<li><strong>US COPPA</strong> — we do not knowingly collect personal information from anyone under 13.</li>
+<li><strong>Google Play Child Safety Standards</strong> and <strong>Apple App Store</strong> safety requirements — this page + the moderation controls above satisfy the disclosures required for social apps in both stores.</li>
+</ul>
+
 <h2>About us</h2>
 <p>TalkSibi is an independent language-exchange community, based in the United Kingdom, reachable at <a href="mailto:contact@talksibi.com">contact@talksibi.com</a>.</p>`;
-  return layout('Child Safety Standards — TalkSibi', 'Our standards for protecting minors: 13+ age gate, reporting, moderation, and the designated CSAM contact.', '/child-safety', body);
+  return layout('Child Safety Standards — TalkSibi', 'Our standards for protecting minors: 18+ age gate, photo verification, reporting, moderation, and the designated CSAM contact.', '/child-safety', body);
 }
 
 // A canonical URL for "how to play". The old shared nav pointed at `/#how`,
