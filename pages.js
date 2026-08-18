@@ -3,6 +3,7 @@
 const { SITE_FOOTER } = require('./landing.js');
 const SITE = 'https://talksibi.com';
 const GA_ID = 'G-JTH809Z8NH';
+const ADS_ID = 'AW-638211258';   // Google Ads conversion tag
 // Consent-gated GA. GDPR / UK-GDPR compliant: no analytics or ad
 // cookies until the user taps 'Accept all' in the cookie modal.
 // Choice is persisted in localStorage.ws_cc_v1 ('accept' | 'reject')
@@ -18,6 +19,7 @@ const GA = `<script>
     document.head.appendChild(s);
     gtag('js', new Date());
     gtag('config', '${GA_ID}', { anonymize_ip: true });
+    gtag('config', '${ADS_ID}');
   };
   window.wsLoadAds = function(){
     if (window._wsAdsLoaded) return; window._wsAdsLoaded = true;

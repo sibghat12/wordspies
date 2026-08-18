@@ -5,6 +5,7 @@
 // are preserved unchanged — they're consumed by blog.js and pages.js.
 const SITE = 'https://talksibi.com';
 const GA_ID = 'G-JTH809Z8NH';
+const ADS_ID = 'AW-638211258';   // Google Ads conversion tag
 // Consent-gated GA — mirrors pages.js. No analytics/ads cookies until
 // the user taps 'Accept all' in the cookie modal (localStorage.ws_cc_v1).
 const GA = `<script>
@@ -18,6 +19,7 @@ const GA = `<script>
     document.head.appendChild(s);
     gtag('js', new Date());
     gtag('config', '${GA_ID}', { anonymize_ip: true });
+    gtag('config', '${ADS_ID}');
   };
   window.wsLoadAds = function(){ if (window._wsAdsLoaded) return; window._wsAdsLoaded = true; };
   try { var c = localStorage.getItem('ws_cc_v1'); if (c === 'accept') { wsLoadAnalytics(); wsLoadAds(); } } catch(e){}
