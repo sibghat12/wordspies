@@ -194,11 +194,6 @@ body.embed .ts-gametop{ display:none !important }
 if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed');
 </script>
 <div class="wrap">
-  <header>
-    <a href="/games" class="logo">🏁 Word Race</a>
-    <div class="sp"></div>
-    <a class="tinylink" href="/games">← Games</a>
-  </header>
 
   <!-- ── HOME (choose: new game or join by code) ─────────────────────── -->
   <div class="card hero" id="scHome">
@@ -565,7 +560,7 @@ function renderEnd(){
   $('btnAgain').textContent = isHost ? 'Play again →' : 'Waiting for host…';
 }
 </script>
-<script src="/talksibi-chrome.js" defer></script>
+<script src="/talksibi-chrome.js?v=6" defer></script>
 
 </body>
 </html>

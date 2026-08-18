@@ -7,7 +7,11 @@
 // offline for a moment. So it caches the three static files that never change
 // meaningfully, and gets out of the way of everything else.
 
-const CACHE = 'wordspies-static-v1';
+// Cache-name change forces every installed SW to invalidate its old
+// cache on activate — needed after the 18 Aug rebrand pass so users
+// stop seeing stale chrome/nav/footer. Bump this on any breaking
+// static-asset change.
+const CACHE = 'talksibi-static-v6';
 const STATIC = ['/icon-192.png', '/icon-512.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', e => {
