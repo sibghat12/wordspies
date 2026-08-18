@@ -42,16 +42,30 @@
     'nav.topnav .tnlink:hover{background:#f4f5f7;color:#16181f}' +
     'nav.topnav .tnjoin{background:#16181f;color:#fff !important;padding:9px 18px;border-radius:99px;font-weight:500;transition:background .15s;text-decoration:none;white-space:nowrap;font-size:13.5px}' +
     'nav.topnav .tnjoin:hover{background:#2a2e42}' +
-    /* mobile two-row layout (matches social.html rules) */
-    '@media(max-width:640px){' +
-      'nav.topnav{grid-template-columns:1fr auto;grid-template-areas:\'logo right\' \'tabs tabs\';padding:calc(12px + env(safe-area-inset-top)) 20px 12px;gap:8px 10px;min-height:0}' +
+    /* mobile — hide the topnav tab row (msnav owns primary nav) */
+    '@media(max-width:720px){' +
+      'nav.topnav{grid-template-columns:1fr auto !important;grid-template-areas:\'logo right\' !important;padding:calc(12px + env(safe-area-inset-top)) 20px 12px !important}' +
       'nav.topnav .tnlogo{grid-area:logo;font-size:19px}' +
       'nav.topnav .tnright{grid-area:right}' +
-      'nav.topnav .tntabs{grid-area:tabs;justify-self:stretch;width:100%;gap:6px;padding:0 8px 4px;margin:2px 0 0}' +
-      'nav.topnav .tntabs .tnt{flex:1 1 0;justify-content:center;padding:9px 14px;font-size:13px;font-weight:600}' +
+      'nav.topnav .tntabs{display:none !important}' +
       'nav.topnav .tnlink{padding:6px 10px;font-size:12.5px}' +
       'nav.topnav .tnjoin{padding:7px 14px;font-size:12.5px}' +
     '}' +
+    /* mobile bottom nav — mirror social.html msnav, per §2a design mock */
+    'nav.msnav{display:none}' +
+    '@media(max-width:720px){' +
+      'nav.msnav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:#f4f5f9;border-top:1px solid #e4e6ee;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:80;box-shadow:0 -8px 24px rgba(15,17,25,.08);font-family:\'Hanken Grotesk\',\'Inter\',system-ui,sans-serif}' +
+      'nav.msnav a{-webkit-appearance:none;background:transparent;border:0;padding:6px 4px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:600;font-size:11px;color:#6b6e7a;text-decoration:none;line-height:1.1;-webkit-tap-highlight-color:transparent}' +
+      'nav.msnav a .msnav-ico{font-size:20px;line-height:1}' +
+      'nav.msnav a::after{content:\"\";display:block;width:16px;height:3px;border-radius:99px;background:transparent;margin-top:3px;transition:background .12s}' +
+      'nav.msnav a.on{color:#5b6cff}' +
+      'nav.msnav a.on::after{background:#5b6cff}' +
+      /* leave breathing room under the sticky game so it doesn\'t sit under the bottom bar */
+      'body{padding-bottom:calc(72px + env(safe-area-inset-bottom)) !important}' +
+    '}' +
+    /* Hide the duplicated inner <header> some games ship (logo + community/all-games links)
+       — the topnav already provides all of that. */
+    '.wrap > header{display:none !important}' +
     /* footer — community sitefoot (white, 4-col) */
     'footer.sitefoot{margin:36px 0 0;padding:36px 12px 22px;background:#ffffff;color:#4a4d59;font-family:\'Hanken Grotesk\',\'Inter\',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:1px solid #e4e6ee;width:100%;box-sizing:border-box}' +
     '@media(min-width:769px){footer.sitefoot{padding:44px 48px 28px}}' +
@@ -72,7 +86,7 @@
     'footer.sitefoot .fbrand img{height:22px;width:auto;display:block}' +
     'footer.sitefoot .fbrand .fbrand-t{font-weight:500;letter-spacing:-.3px;font-size:17px;color:#14161f}' +
     /* opt-outs */
-    'body.embed nav.topnav,body.embed footer.sitefoot,body.embed footer.ts-foot,body.embed footer.ts-sitefoot{display:none !important}';
+    'body.embed nav.topnav,body.embed nav.msnav,body.embed footer.sitefoot,body.embed footer.ts-foot,body.embed footer.ts-sitefoot{display:none !important}';
 
   var IG = '<svg viewBox="0 0 24 24"><path d="M12 2.2c2.7 0 3 0 4 .1 1 0 1.5.2 1.9.4a3.4 3.4 0 0 1 1.9 1.9c.2.4.3.9.4 1.9 0 1.1.1 1.4.1 4s0 3-.1 4c0 1-.2 1.5-.4 1.9a3.4 3.4 0 0 1-1.9 1.9c-.4.2-.9.3-1.9.4-1 0-1.3.1-4 .1s-3 0-4-.1c-1 0-1.5-.2-1.9-.4a3.4 3.4 0 0 1-1.9-1.9c-.2-.4-.3-.9-.4-1.9C2.2 15 2.2 14.7 2.2 12s0-3 .1-4c0-1 .2-1.5.4-1.9A3.4 3.4 0 0 1 4.6 4.2c.4-.2.9-.3 1.9-.4C7.4 3.7 7.7 3.7 12 3.7zm0-1.5c-2.7 0-3.1 0-4.1.1-1.1 0-1.9.2-2.5.5A4.9 4.9 0 0 0 3.3 5.4c-.3.6-.4 1.4-.5 2.5-.1 1-.1 1.4-.1 4.1s0 3.1.1 4.1c0 1.1.2 1.9.5 2.5a4.9 4.9 0 0 0 2.7 2.7c.6.3 1.4.4 2.5.5 1 .1 1.4.1 4.1.1s3.1 0 4.1-.1c1.1 0 1.9-.2 2.5-.5a4.9 4.9 0 0 0 2.7-2.7c.3-.6.4-1.4.5-2.5.1-1 .1-1.4.1-4.1s0-3.1-.1-4.1c0-1.1-.2-1.9-.5-2.5a4.9 4.9 0 0 0-2.7-2.7c-.6-.3-1.4-.4-2.5-.5-1-.1-1.4-.1-4.1-.1zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.3a3.3 3.3 0 1 1 0-6.6 3.3 3.3 0 0 1 0 6.6zM18.4 5.4a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>';
   var XI = '<svg viewBox="0 0 24 24"><path d="M18.9 3H22l-7.1 8.1L23 21h-6.6l-5.2-6.6L5 21H2l7.5-8.6L1.6 3h6.7l4.7 6zm-1.2 16.1h1.7L7 4.8H5.1z"/></svg>';
@@ -97,6 +111,17 @@
         '<a class="tnlink" href="/app">Sign in</a>' +
         '<a class="tnjoin" href="/app">Join free</a>' +
       '</div>' +
+    '</nav>';
+  }
+
+  function mobileNavHTML(){
+    var t = activeTab();
+    var on = function(slug){ return slug === t ? ' on' : ''; };
+    return '<nav class="msnav" role="navigation" aria-label="Primary">' +
+      '<a class="' + on('community').trim() + '" href="/app/community"><span class="msnav-ico" aria-hidden="true">🌍</span><span>Community</span></a>' +
+      '<a class="' + on('games').trim()     + '" href="/app/games"><span class="msnav-ico" aria-hidden="true">🎮</span><span>Play</span></a>' +
+      '<a class="' + on('chats').trim()     + '" href="/app/chats"><span class="msnav-ico" aria-hidden="true">💬</span><span>Chat</span></a>' +
+      '<a class="' + on('learn').trim()     + '" href="/app/learn"><span class="msnav-ico" aria-hidden="true">🎓</span><span>Learn</span></a>' +
     '</nav>';
   }
 
@@ -178,9 +203,18 @@
     else document.body.appendChild(foot);
   }
 
+  function mountMobileNav(){
+    if (document.body.hasAttribute('data-ts-no-header')) return;
+    if (document.querySelector('nav.msnav')) return;
+    var wrap = document.createElement('div');
+    wrap.innerHTML = mobileNavHTML();
+    document.body.appendChild(wrap.firstChild);
+  }
+
   function boot(){
     injectStyles();
     mountHeader();
+    mountMobileNav();
     mountFooter();
   }
 
