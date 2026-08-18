@@ -80,7 +80,11 @@ body{
   padding-left:4%;padding-right:4%;
 }
 @media(min-width:769px){
-  body{padding-left:10%;padding-right:10%}
+  /* Owner ask 18 Aug 2026: dropped the 10% body inset — the game
+     was living inside 80% of the viewport width even on wide
+     screens. Now uses the full width and the .wrap max-width
+     handles centering. */
+  body{padding-left:0;padding-right:0}
 }
 button{font-family:inherit;font-weight:400;cursor:pointer;border:none;color:inherit;background:none}
 input{font-family:inherit;font-weight:400;color:var(--ink);outline:none;border:none}

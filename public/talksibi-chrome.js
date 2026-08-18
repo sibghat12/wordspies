@@ -1,14 +1,33 @@
-/* talksibi-chrome.js — shared site chrome (footer today; header later).
-   Owner ask 17 Aug 2026 v5: game/blog/app pages should use the SAME
-   footer the landing uses (light .ts-foot, 4-col). This file is the
-   single source of truth for it.
+/* talksibi-chrome.js — shared site chrome (header + footer).
+   Owner ask 18 Aug 2026: every game page should have the same
+   full-width top nav (Community / Games / Learn / Blog / Sign in /
+   Join free) as the landing + blog + app. This script injects both
+   the ts-nav header AND the ts-foot footer with zero HTML changes
+   on the page.
 
    Include with: <script src="/talksibi-chrome.js" defer></script>
-   Pages opt out (persistent-shell iframes) via body.embed. */
+   Pages opt out via body.embed (persistent-shell iframes) or
+   data-ts-no-footer / data-ts-no-header attributes. */
 (function(){
   'use strict';
 
-  var FOOTER_CSS =
+  var CHROME_CSS =
+    /* ── nav ── */
+    '.ts-lockup{display:inline-flex;align-items:center;gap:8px;text-decoration:none}' +
+    '.ts-wordmark{font-family:\'Hanken Grotesk\',\'Inter\',system-ui,sans-serif;font-weight:600;letter-spacing:-.3px;color:#16181f}' +
+    'nav.ts-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid #f0efec;position:sticky;top:0;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:200;box-sizing:border-box;font-family:\'Hanken Grotesk\',\'Inter\',system-ui,sans-serif}' +
+    'nav.ts-nav .ts-navlinks{display:flex;align-items:center;gap:28px;font-size:15px;font-weight:500;color:#4a4d59}' +
+    'nav.ts-nav .ts-navlinks a{color:#4a4d59;transition:color .12s;text-decoration:none}' +
+    'nav.ts-nav .ts-navlinks a:hover{color:#16181f}' +
+    'nav.ts-nav .ts-navlinks .ts-navlogin{color:#16181f}' +
+    'nav.ts-nav .ts-navjoin{background:#16181f !important;color:#fff !important;padding:10px 22px;border-radius:99px;font-weight:500;transition:background .15s;text-decoration:none}' +
+    'nav.ts-nav .ts-navjoin:hover{background:#2a2e42 !important;color:#fff !important}' +
+    '@media(max-width:900px){' +
+      'nav.ts-nav{padding:14px 20px}' +
+      'nav.ts-nav .ts-navlinks{gap:14px;font-size:14px}' +
+      'nav.ts-nav .ts-navlinks .ts-hide-sm{display:none}' +
+    '}' +
+    /* ── footer (landing-style ts-foot, light) ── */
     'footer.ts-foot{border-top:1px solid #f0efec;background:#fafafa;font-family:\'Hanken Grotesk\',\'Inter\',system-ui,sans-serif;color:#16181f;margin:36px 0 0}' +
     'footer.ts-foot .ts-foot-inner{max-width:1240px;margin:0 auto;padding:56px 48px 28px;box-sizing:border-box}' +
     'footer.ts-foot .ts-foot-cols{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;border-bottom:1px solid #ececea}' +
@@ -25,16 +44,32 @@
     'footer.ts-foot .ts-foot-meta{font-size:13.5px;color:#8a8d99}' +
     'footer.ts-foot .ts-foot-flags{display:flex;align-items:center;gap:8px;font-size:17px;flex-wrap:wrap}' +
     'footer.ts-foot .ts-foot-flags .plus{font-size:13px;font-weight:500;color:#5b6cff}' +
-    'footer.ts-foot .ts-lockup{display:inline-flex;align-items:center;gap:8px;text-decoration:none}' +
-    'footer.ts-foot .ts-wordmark{font-family:\'Hanken Grotesk\',\'Inter\',system-ui,sans-serif;font-weight:600;letter-spacing:-.3px;color:#16181f}' +
     '@media(max-width:960px){footer.ts-foot .ts-foot-inner{padding:44px 20px 24px}footer.ts-foot .ts-foot-cols{grid-template-columns:1fr 1fr;gap:28px}}' +
     '@media(max-width:560px){footer.ts-foot .ts-foot-cols{grid-template-columns:1fr}}' +
-    'body.embed footer.ts-foot,body.embed footer.ts-sitefoot{display:none !important}';
+    /* embed / no-chrome opt-out */
+    'body.embed nav.ts-nav,body.embed footer.ts-foot,body.embed footer.ts-sitefoot{display:none !important}';
 
   var IG = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg>';
   var TT = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#4a4d59"><path d="M16.6 5.82C15.9 5.03 15.5 4 15.5 2.9h-3.1v12.4c0 1.4-1.14 2.54-2.55 2.54a2.55 2.55 0 0 1 0-5.1c.26 0 .52.04.76.12V9.7a5.7 5.7 0 0 0-.76-.05 5.66 5.66 0 1 0 5.66 5.66V9.64a7.2 7.2 0 0 0 4.19 1.34V7.9c-1.24 0-2.37-.5-3.1-2.08z"></path></svg>';
   var YT = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M23 7.5s-.23-1.63-.94-2.35c-.9-.94-1.9-.95-2.36-1C16.4 3.9 12 3.9 12 3.9h-.01s-4.4 0-7.7.25c-.46.05-1.46.06-2.36 1C1.22 5.87 1 7.5 1 7.5S.76 9.42.76 11.33v1.8C.76 15.05 1 16.96 1 16.96s.23 1.63.93 2.35c.9.94 2.08.9 2.6 1 1.89.18 7.47.24 7.47.24s4.4-.01 7.7-.25c.46-.06 1.46-.07 2.36-1.01.7-.72.94-2.35.94-2.35s.24-1.9.24-3.82v-1.8C23.24 9.42 23 7.5 23 7.5zM9.7 14.85V8.66l6.22 3.1-6.22 3.09z"></path></svg>';
   var XI = '<svg width="15" height="15" viewBox="0 0 24 24" fill="#4a4d59"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg>';
+
+  function headerHTML(){
+    return '<nav class="ts-nav">' +
+      '<a class="ts-lockup" href="/" aria-label="talksibi home" style="text-decoration:none">' +
+        '<img src="/logo.svg" alt="talksibi" style="height:34px;width:auto;display:block" onerror="this.outerHTML=\'&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:24px&quot;&gt;talksibi&lt;/span&gt;\'">' +
+      '</a>' +
+      '<div class="ts-navlinks">' +
+        '<a class="ts-hide-sm" href="/app/community">Community</a>' +
+        '<a href="/games">Play</a>' +
+        '<a class="ts-hide-sm" href="/app/games">Games</a>' +
+        '<a class="ts-hide-sm" href="/app/learn">Learn</a>' +
+        '<a class="ts-hide-sm" href="/blog">Blog</a>' +
+        '<a class="ts-navlogin" href="/app">Sign in</a>' +
+        '<a class="ts-navjoin" href="/app">Join free</a>' +
+      '</div>' +
+    '</nav>';
+  }
 
   function footerHTML(){
     var y = new Date().getFullYear();
@@ -54,8 +89,8 @@
         '</div>' +
         '<div class="ts-foot-col">' +
           '<div class="ts-foot-col-h">Product</div>' +
-          '<a href="/app">Community</a>' +
-          '<a href="/games">Games</a>' +
+          '<a href="/app/community">Community</a>' +
+          '<a href="/app/games">Games</a>' +
           '<a href="/app/learn">AI lesson plans</a>' +
           '<a href="/app/learn">IELTS &amp; TOEFL prep</a>' +
           '<a href="/become-a-teacher">Become a teacher</a>' +
@@ -89,14 +124,27 @@
     if (document.getElementById('ts-chrome-css')) return;
     var s = document.createElement('style');
     s.id = 'ts-chrome-css';
-    s.textContent = FOOTER_CSS;
+    s.textContent = CHROME_CSS;
     (document.head || document.documentElement).appendChild(s);
+  }
+
+  function mountHeader(){
+    if (document.body.hasAttribute('data-ts-no-header')) return;
+    if (document.querySelector('nav.ts-nav')) return;
+    // Replace the slim .ts-gametop bar if present (games shipped
+    // that as the placeholder header before the shared script existed).
+    var old = document.querySelector('.ts-gametop');
+    var wrap = document.createElement('div');
+    wrap.innerHTML = headerHTML();
+    var nav = wrap.firstChild;
+    if (old && old.parentNode) old.parentNode.replaceChild(nav, old);
+    else document.body.insertBefore(nav, document.body.firstChild);
   }
 
   function mountFooter(){
     if (document.body.hasAttribute('data-ts-no-footer')) return;
-    if (document.querySelector('footer.ts-foot')) return;      // page already has one inline
-    if (document.querySelector('footer.ts-sitefoot')) return;  // legacy inline dark footer
+    if (document.querySelector('footer.ts-foot')) return;
+    if (document.querySelector('footer.ts-sitefoot')) return;
     var el = document.createElement('div');
     el.innerHTML = footerHTML();
     document.body.appendChild(el.firstChild);
@@ -104,6 +152,7 @@
 
   function boot(){
     injectStyles();
+    mountHeader();
     mountFooter();
   }
 
@@ -113,5 +162,5 @@
     boot();
   }
 
-  window.tsChrome = { footerHTML: footerHTML, mountFooter: mountFooter };
+  window.tsChrome = { headerHTML: headerHTML, footerHTML: footerHTML, mountHeader: mountHeader, mountFooter: mountFooter };
 })();
