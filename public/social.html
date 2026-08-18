@@ -4638,7 +4638,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
           <div class="mp-info-row"><span id="mLoc"></span></div>
           <div class="mp-info-row"><span id="mLocalTime"></span></div>
           <div class="mp-info-row"><span id="mHandle"></span></div>
-          <div class="mp-counts">
+          <div class="mp-counts hidden">
             <div><b id="mFollowers">0</b><span>Followers</span></div>
             <div><b id="mFollowing">0</b><span>Following</span></div>
             <div><b id="mRecCount">0</b><span>Recommendations</span></div>
@@ -5035,7 +5035,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
               <span class="me-stat-n" id="meNFollowers">—</span>
               <span class="me-stat-lbl">Followers</span>
             </button>
-            <button type="button" class="me-stat" onclick="openFollowsSheet('blocked')">
+            <button type="button" class="me-stat hidden" onclick="openFollowsSheet('blocked')">
               <span class="me-stat-n" id="meNBlocked">—</span>
               <span class="me-stat-lbl">Blocked</span>
             </button>
@@ -7176,12 +7176,11 @@ function paintMe(){
   }
   const myHandleEl = document.getElementById('myHandle');
   if (myHandleEl) {
-    // Streak chip prepends the handle line (owner + streak reads
-    // together as a "who + what they're doing" strip).
-    const sChip = (typeof streakChipHtml === 'function') ? streakChipHtml(ME) : '';
+    // Owner ask 18 Aug 2026: keep the profile basic — no streak chip
+    // in the handle line. Founder chip kept as a subtle brand nod.
     const h = handleFor(ME);
     const fchip = (typeof refFounderChipHtml === 'function') ? refFounderChipHtml(ME) : '';
-    myHandleEl.innerHTML = esc(h) + (fchip ? ' ' + fchip : '') + (sChip ? ' ' + sChip : '');
+    myHandleEl.innerHTML = esc(h) + (fchip ? ' ' + fchip : '');
     myHandleEl.parentElement.style.display = h.length > 1 || fchip ? '' : 'none';
   }
   // "+ Add a bio" chip — visible only when the user has no bio yet.
@@ -10005,7 +10004,7 @@ async function togglePush(){
     }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
-    const reg = await navigator.serviceWorker.register('/sw.js?v=12');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=13');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -10026,7 +10025,7 @@ async function enablePushQuietly(){
     if (Notification.permission !== 'granted') return;
     const { key } = await api('/push/key');
     if (!key) return;
-    const reg = await navigator.serviceWorker.register('/sw.js?v=12');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=13');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -13596,12 +13595,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
-<script src="/a2hs.js?v=12" defer></script>
+<script src="/a2hs.js?v=13" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=12').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=13').catch(() => {}));
   }
   const el = id => document.getElementById(id);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -13995,6 +13994,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   })();
 </script>
 
-<script src="/wsbrand.js?v=12" defer></script>
+<script src="/wsbrand.js?v=13" defer></script>
 </body>
 </html>
