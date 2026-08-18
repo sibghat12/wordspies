@@ -7181,9 +7181,13 @@ function paintMe(){
   // "+ Add a bio" chip — visible only when the user has no bio yet.
   const addBio = document.getElementById('myAddBioChip');
   if (addBio) addBio.classList.toggle('hidden', !!realBio(ME.bio));
-  // Real-map hero: show a Leaflet map centred on the user's city.
-  // Only runs on desktop (.mp-hero is display:none on mobile).
-  try { if (window.matchMedia('(min-width:769px)').matches) initProfileMap('meMap', 'meLocPill', 'meLocPillTxt', ME.location, ME.cc, ME.country); } catch(e){}
+  // Real-map hero + location pill. The location pill (📍 city) is
+  // valuable on mobile too — owner ask 18 Aug 2026 "user location in
+  // the user banner". initProfileMap paints the pill unconditionally
+  // and the map only if the container is visible; on mobile .mp-map is
+  // hidden via CSS so only the pill lands. Cheap: the map init bails
+  // fast when the container is display:none.
+  try { initProfileMap('meMap', 'meLocPill', 'meLocPillTxt', ME.location, ME.cc, ME.country); } catch(e){}
   // Fetch who visited your profile — populates the visitors card at
   // the top of the right column. Silent-fail if the endpoint 500s
   // so the rest of /me keeps rendering.
@@ -9995,7 +9999,7 @@ async function togglePush(){
     }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
-    const reg = await navigator.serviceWorker.register('/sw.js?v=8');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=9');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -10016,7 +10020,7 @@ async function enablePushQuietly(){
     if (Notification.permission !== 'granted') return;
     const { key } = await api('/push/key');
     if (!key) return;
-    const reg = await navigator.serviceWorker.register('/sw.js?v=8');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=9');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -12577,7 +12581,9 @@ function openMemberObj(m){
   // Real-map hero for the member profile — see initProfileMap() for
   // caching + Nominatim details. Desktop-only (.mp-hero is display:none
   // on mobile).
-  try { if (window.matchMedia('(min-width:769px)').matches) initProfileMap('memberMap', 'memberLocPill', 'memberLocPillTxt', m.location, m.cc, m.country); } catch(e){}
+  // Location pill valuable on mobile too — desktop-only guard removed
+  // (owner ask 18 Aug 2026 "user location in the user banner").
+  try { initProfileMap('memberMap', 'memberLocPill', 'memberLocPillTxt', m.location, m.cc, m.country); } catch(e){}
   // Handle + optional founder chip (owner ask 14 Aug 2026 — small "Founder 👑"
   // in the meta row, only if this user has earned the crown).
   const _handleTxt = handleFor(m);
@@ -13584,12 +13590,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
-<script src="/a2hs.js?v=8" defer></script>
+<script src="/a2hs.js?v=9" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=8').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=9').catch(() => {}));
   }
   const el = id => document.getElementById(id);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -13983,6 +13989,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   })();
 </script>
 
-<script src="/wsbrand.js?v=8" defer></script>
+<script src="/wsbrand.js?v=9" defer></script>
 </body>
 </html>
