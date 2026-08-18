@@ -85,8 +85,17 @@
     'footer.sitefoot .fbrand{display:inline-flex;align-items:center;gap:6px;text-decoration:none}' +
     'footer.sitefoot .fbrand img{height:22px;width:auto;display:block}' +
     'footer.sitefoot .fbrand .fbrand-t{font-weight:500;letter-spacing:-.3px;font-size:17px;color:#14161f}' +
+    /* Resume-game strip — persistent black pill lets the user jump
+       back to a game they left running (localStorage wsActiveGame). */
+    'a.ts-resume{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));background:#16181f;color:#fff !important;text-decoration:none;padding:12px 22px;border-radius:99px;font-family:\'Hanken Grotesk\',\'Inter\',system-ui,sans-serif;font-weight:600;font-size:13.5px;z-index:150;display:flex;align-items:center;gap:10px;transition:background .12s;letter-spacing:-.1px;max-width:calc(100% - 32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    'a.ts-resume:hover{background:#2a2e42}' +
+    'a.ts-resume .ts-resume-dot{width:8px;height:8px;border-radius:50%;background:#ff3d5b;flex-shrink:0;animation:tsResumePulse 1.4s ease-in-out infinite}' +
+    'a.ts-resume .ts-resume-x{margin-left:6px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,.14);font-size:14px;line-height:1;color:#fff;flex-shrink:0}' +
+    'a.ts-resume .ts-resume-x:hover{background:rgba(255,255,255,.26)}' +
+    '@keyframes tsResumePulse{0%,100%{opacity:1}50%{opacity:.35}}' +
+    '@media(max-width:720px){a.ts-resume{bottom:calc(84px + env(safe-area-inset-bottom))}}' +
     /* opt-outs */
-    'body.embed nav.topnav,body.embed nav.msnav,body.embed footer.sitefoot,body.embed footer.ts-foot,body.embed footer.ts-sitefoot{display:none !important}';
+    'body.embed nav.topnav,body.embed nav.msnav,body.embed footer.sitefoot,body.embed footer.ts-foot,body.embed footer.ts-sitefoot,body.embed a.ts-resume{display:none !important}';
 
   var IG = '<svg viewBox="0 0 24 24"><path d="M12 2.2c2.7 0 3 0 4 .1 1 0 1.5.2 1.9.4a3.4 3.4 0 0 1 1.9 1.9c.2.4.3.9.4 1.9 0 1.1.1 1.4.1 4s0 3-.1 4c0 1-.2 1.5-.4 1.9a3.4 3.4 0 0 1-1.9 1.9c-.4.2-.9.3-1.9.4-1 0-1.3.1-4 .1s-3 0-4-.1c-1 0-1.5-.2-1.9-.4a3.4 3.4 0 0 1-1.9-1.9c-.2-.4-.3-.9-.4-1.9C2.2 15 2.2 14.7 2.2 12s0-3 .1-4c0-1 .2-1.5.4-1.9A3.4 3.4 0 0 1 4.6 4.2c.4-.2.9-.3 1.9-.4C7.4 3.7 7.7 3.7 12 3.7zm0-1.5c-2.7 0-3.1 0-4.1.1-1.1 0-1.9.2-2.5.5A4.9 4.9 0 0 0 3.3 5.4c-.3.6-.4 1.4-.5 2.5-.1 1-.1 1.4-.1 4.1s0 3.1.1 4.1c0 1.1.2 1.9.5 2.5a4.9 4.9 0 0 0 2.7 2.7c.6.3 1.4.4 2.5.5 1 .1 1.4.1 4.1.1s3.1 0 4.1-.1c1.1 0 1.9-.2 2.5-.5a4.9 4.9 0 0 0 2.7-2.7c.3-.6.4-1.4.5-2.5.1-1 .1-1.4.1-4.1s0-3.1-.1-4.1c0-1.1-.2-1.9-.5-2.5a4.9 4.9 0 0 0-2.7-2.7c-.6-.3-1.4-.4-2.5-.5-1-.1-1.4-.1-4.1-.1zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.3a3.3 3.3 0 1 1 0-6.6 3.3 3.3 0 0 1 0 6.6zM18.4 5.4a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>';
   var XI = '<svg viewBox="0 0 24 24"><path d="M18.9 3H22l-7.1 8.1L23 21h-6.6l-5.2-6.6L5 21H2l7.5-8.6L1.6 3h6.7l4.7 6zm-1.2 16.1h1.7L7 4.8H5.1z"/></svg>';
@@ -211,10 +220,47 @@
     document.body.appendChild(wrap.firstChild);
   }
 
+  // ── Resume-game strip: read wsActiveGame from localStorage and, if
+  // the user has an active game they're NOT currently on, drop a
+  // bottom-center pill that jumps them back. Owner ask 18 Aug 2026:
+  // "black stripe so people can join back the game while navigating".
+  function mountResumeStrip(){
+    try {
+      var raw = localStorage.getItem('wsActiveGame');
+      if (!raw) return;
+      var rec = JSON.parse(raw);
+      if (!rec || !rec.path || !rec.code) return;
+      var age = Date.now() - (rec.t || 0);
+      if (age > 6 * 60 * 60 * 1000) {
+        try { localStorage.removeItem('wsActiveGame'); } catch(e){}
+        return;
+      }
+      // If we're already on the game page itself, don't show the pill.
+      var hereGame = (location.pathname.split('/')[1] || '').toLowerCase();
+      if (hereGame === String(rec.game).toLowerCase()) return;
+      if (document.querySelector('a.ts-resume')) return;
+      var a = document.createElement('a');
+      a.className = 'ts-resume';
+      a.href = rec.path;
+      a.setAttribute('aria-label', 'Resume ' + (rec.title || 'game'));
+      a.innerHTML = '<span class="ts-resume-dot" aria-hidden="true"></span>' +
+        '<span>▶ Resume ' + String(rec.title || 'game').replace(/[<>]/g, '') + ' · ' + String(rec.code).replace(/[^A-Z0-9]/gi, '') + '</span>' +
+        '<span class="ts-resume-x" role="button" aria-label="Dismiss">×</span>';
+      // The little × dismisses locally without ending the room.
+      a.querySelector('.ts-resume-x').addEventListener('click', function(ev){
+        ev.preventDefault(); ev.stopPropagation();
+        var host = ev.currentTarget.parentNode;
+        if (host && host.parentNode) host.parentNode.removeChild(host);
+      });
+      document.body.appendChild(a);
+    } catch (e) {}
+  }
+
   function boot(){
     injectStyles();
     mountHeader();
     mountMobileNav();
+    mountResumeStrip();
     mountFooter();
   }
 
