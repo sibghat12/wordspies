@@ -64,8 +64,10 @@
       'body{padding-bottom:calc(72px + env(safe-area-inset-bottom)) !important}' +
     '}' +
     /* Hide the duplicated inner <header> some games ship (logo + community/all-games links)
-       — the topnav already provides all of that. */
-    '.wrap > header{display:none !important}' +
+       — the topnav already provides all of that. Scoped to UNCLASSED
+       <header> only so pages with real classed headers (party.phead
+       etc.) keep theirs. */
+    '.wrap > header:not([class]){display:none !important}' +
     /* footer — community sitefoot (white, 4-col) */
     'footer.sitefoot{margin:36px 0 0;padding:36px 12px 22px;background:#ffffff;color:#4a4d59;font-family:\'Hanken Grotesk\',\'Inter\',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:1px solid #e4e6ee;width:100%;box-sizing:border-box}' +
     '@media(min-width:769px){footer.sitefoot{padding:44px 48px 28px}}' +

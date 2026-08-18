@@ -714,7 +714,7 @@ body{background:var(--ts-ink);color:var(--ts-text);
 body.embed .ts-gametop{ display:none !important }
 </style>
 </head>
-<body>
+<body data-ts-no-header data-ts-no-footer>
 <script>if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed');</script>
 <!-- Shared slim top bar — hidden in embed mode (persistent game shell). -->
 <header class="ts-gametop" data-hide-embed>
