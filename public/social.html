@@ -3451,6 +3451,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    community wall — 20px mobile, 48px desktop — so nothing hugs the edge. */
 #tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats,#tabChat{padding:16px 20px;box-sizing:border-box;width:100%}
 @media(min-width:769px){#tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats,#tabChat{padding:20px 48px}}
+/* Mobile chat: cut outer padding down so bubbles + chat list use the
+   full width. Owner ask 18 Aug 2026 v2: "chat mobile left+right
+   space is a lot". */
+@media(max-width:640px){
+  #tabChats,#tabChat{padding-left:6px !important;padding-right:6px !important}
+}
 /* Desktop chat split-view: give the two columns a 42px side gutter so
    the total space from viewport edge is ~48px (the .wrap already adds
    6px), matching every other tab. Owner ask 17 Aug 2026. The topnav
@@ -3688,7 +3694,7 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
    big screens — 10px left/right so the avatar isn't glued to the
    card edge. Mobile keeps the original 0-side padding. */
 @media(min-width:900px){
-  .splitview .citem{ padding-left:10px; padding-right:10px }
+  .splitview .citem{ padding-left:3px; padding-right:3px }
 }
 .citem + .citem{ box-shadow:inset 0 1px 0 #f2f3f7 }
 .citem:hover{ background:#fafbff }
@@ -9999,7 +10005,7 @@ async function togglePush(){
     }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
-    const reg = await navigator.serviceWorker.register('/sw.js?v=11');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=12');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -10020,7 +10026,7 @@ async function enablePushQuietly(){
     if (Notification.permission !== 'granted') return;
     const { key } = await api('/push/key');
     if (!key) return;
-    const reg = await navigator.serviceWorker.register('/sw.js?v=11');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=12');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -13590,12 +13596,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
-<script src="/a2hs.js?v=11" defer></script>
+<script src="/a2hs.js?v=12" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=11').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=12').catch(() => {}));
   }
   const el = id => document.getElementById(id);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -13989,6 +13995,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   })();
 </script>
 
-<script src="/wsbrand.js?v=11" defer></script>
+<script src="/wsbrand.js?v=12" defer></script>
 </body>
 </html>
