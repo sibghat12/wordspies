@@ -109,7 +109,7 @@
     var on = function(slug){ return slug === t ? ' on' : ''; };
     return '<nav class="topnav">' +
       '<a class="tnlogo" href="/" aria-label="talksibi home">' +
-        '<img src="/logo.svg" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML=\'&lt;span style=&quot;font-family:Hanken Grotesk,Inter,sans-serif;font-weight:600;font-size:21px;color:#000&quot;&gt;talksibi&lt;/span&gt;\'">' +
+        '<img src="/logo.svg?v=22" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML=\'&lt;span style=&quot;font-family:Hanken Grotesk,Inter,sans-serif;font-weight:600;font-size:21px;color:#000&quot;&gt;talksibi&lt;/span&gt;\'">' +
       '</a>' +
       '<div class="tntabs" role="tablist">' +
         '<a class="tnt' + on('community') + '" href="/app/community">Community</a>' +
@@ -173,7 +173,7 @@
       '<div class="fsub">' +
         '<div class="fmeta">© ' + new Date().getFullYear() + ' talksibi — Connect · Learn · Play. Practise languages with real people.</div>' +
         '<a class="fbrand" href="/" aria-label="talksibi home">' +
-          '<img src="/mark.svg" alt="" onerror="this.style.display=\'none\'">' +
+          '<img src="/mark.svg?v=22" alt="" onerror="this.style.display=\'none\'">' +
           '<span class="fbrand-t">talksibi</span>' +
         '</a>' +
       '</div>' +

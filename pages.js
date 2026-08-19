@@ -89,7 +89,7 @@ ${GA}
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${SITE}${path}">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=22">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta property="og:site_name" content="talksibi"><meta property="og:locale" content="en_GB">
 <meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="website">
@@ -127,7 +127,7 @@ a{color:#14161f}
 <header class="sitehead"><div class="hwrap">
 <div class="top">
   <a class="ts-headbrand" href="/" aria-label="talksibi home">
-    <img src="/logo.svg" alt="talksibi" onerror="this.outerHTML='<span class=&quot;ts-wm&quot;>talksibi</span>'">
+    <img src="/logo.svg?v=22" alt="talksibi" onerror="this.outerHTML='<span class=&quot;ts-wm&quot;>talksibi</span>'">
   </a>
   <div class="navlinks">
     <a href="/" class="hideSm">Home</a>

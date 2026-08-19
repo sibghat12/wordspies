@@ -33,7 +33,7 @@
 <meta name="twitter:title" content="Codenames Online — Free with Friends">
 <meta name="twitter:description" content="Play Codenames online free. No sign-up — create a room and play with friends on any phone.">
 <meta name="twitter:image" content="https://talksibi.com/og-image.png">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=22">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="canonical" href="https://talksibi.com/codenames">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -649,7 +649,7 @@ body.embed .ts-gametop{ display:none !important }
     <span aria-hidden="true">←</span> Back
   </a>
   <a href="/" class="ts-gametop-brand" aria-label="talksibi home">
-    <img src="/logo.svg" alt="talksibi" onerror="this.style.display='none'">
+    <img src="/logo.svg?v=22" alt="talksibi" onerror="this.style.display='none'">
   </a>
   <span class="ts-gametop-spacer"></span>
 </header>
@@ -668,7 +668,7 @@ body.embed .ts-gametop{ display:none !important }
   <div class="wrap">
     <div class="home">
       <h1 class="logo ts-lockup" style="margin:0;cursor:pointer" onclick="location.href='/'" title="talksibi home">
-        <img class="ts-mark" src="/mark.svg" alt="" style="width:34px;height:34px" onerror="this.style.display='none'">
+        <img class="ts-mark" src="/mark.svg?v=22" alt="" style="width:34px;height:34px" onerror="this.style.display='none'">
         <span class="ts-wordmark" style="font-size:26px">talksibi</span>
       </h1>
       <p style="margin:6px 0 0;font-size:13.1px;font-weight:400;color:var(--muted)">The free online Codenames-style word game</p>
@@ -710,7 +710,7 @@ body.embed .ts-gametop{ display:none !important }
 <div id="app" class="hidden">
   <div class="wrap">
     <header>
-      <a class="logo" href="/" title="talksibi home" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit"><img src="/logo.svg" alt="talksibi" style="height:26px;width:auto;display:block" onerror="this.style.display='none'"></a>
+      <a class="logo" href="/" title="talksibi home" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit"><img src="/logo.svg?v=22" alt="talksibi" style="height:26px;width:auto;display:block" onerror="this.style.display='none'"></a>
       <div class="sp"></div>
       <!-- Owner ask 3 Aug 2026: 'less navigation back — let them go away
            from the app'. Quick exits back to the Community + game picker. -->
@@ -2446,7 +2446,7 @@ if (DEMO) {
 window.wsIsBusy = () => { try { return !!(S && S.state === 'playing'); } catch (e) { return false; } };
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=21').catch(() => {}));
+  addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=22').catch(() => {}));
 }
 
 /* Install prompts fully retired 1 Aug 2026 per owner ask
@@ -2462,17 +2462,17 @@ if (_instOv) _instOv.classList.add('hidden');
 
 </script>
 
-<script src="/a2hs.js?v=21" defer></script>
+<script src="/a2hs.js?v=22" defer></script>
 
 <!-- 'Back to Social' pill retired 1 Aug 2026 per owner ask: 'we keep
      the same header so no need it'. Shared wsbrand.js header provides
      the same navigation context, and the .gamebar pill on /social
      handles resume in the other direction. -->
 <script>window.WS_GAME = { slug: 'play', label: '🕵️ TalkSibi' };</script>
-<script src="/game-session.js?v=21" defer></script>
-<script src="/wsbrand.js?v=21" defer></script>
-<script src="/wswin.js?v=21" defer></script>
-<script src="/talksibi-chrome.js?v=21" defer></script>
+<script src="/game-session.js?v=22" defer></script>
+<script src="/wsbrand.js?v=22" defer></script>
+<script src="/wswin.js?v=22" defer></script>
+<script src="/talksibi-chrome.js?v=22" defer></script>
 
 </body>
 </html>
