@@ -976,11 +976,11 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ln-setup-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:13000;padding:16px}
 .ln-setup-bd.show{display:flex;animation:fsFade .2s ease-out}
 .ln-setup-card{background:#fff;width:100%;max-width:440px;max-height:92vh;border-radius:20px;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:fsPop .3s cubic-bezier(.16,1.11,.3,1.02);overflow:hidden}
-.ln-setup-head{padding:20px 22px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ln-setup-head{padding:16px 20px 6px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .ln-setup-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:17px;color:var(--ink);letter-spacing:-.2px}
-.ln-setup-body{padding:12px 22px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
-.ln-setup-q{margin:18px 0}
-.ln-setup-qlbl{font-size:10.5px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.ln-setup-body{padding:8px 20px 18px;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.ln-setup-q{margin:14px 0}
+.ln-setup-qlbl{font-size:10.5px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px}
 .ln-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .ln-opts-wrap{grid-template-columns:1fr 1fr}
 @media(min-width:520px){ .ln-opts-wrap{grid-template-columns:1fr 1fr 1fr} }
@@ -1028,7 +1028,7 @@ button.ln-method:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,
 .ln-method.soon .ln-method-s{font-style:italic}
 /* Language selects in the setup modal — big touch targets, real flag
    emoji in each option so users see what they picked. */
-.ln-select{width:100%;padding:12px 14px;border:1.5px solid var(--line,#e6e8ec);border-radius:12px;font-family:inherit;font-size:14.5px;background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='%235f6675'><path d='M6 8L0 0h12z'/></svg>") no-repeat right 14px center;background-size:10px;color:var(--ink);outline:none;transition:.14s;-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer}
+.ln-select{width:100%;padding:8px 12px;border:1.5px solid var(--line,#e6e8ec);border-radius:10px;font-family:inherit;font-size:13.5px;background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='%235f6675'><path d='M6 8L0 0h12z'/></svg>") no-repeat right 12px center;background-size:9px;color:var(--ink);outline:none;transition:.14s;-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer;height:36px;line-height:1.2}
 .ln-select:focus{border-color:#7c5cff;box-shadow:0 0 0 3px rgba(124,92,255,.14)}
 /* Speak button on lesson phrases — 🔊 in a soft circle. Owner ask
    13 Aug 2026: 'make it voice notes as well for each lesson in
@@ -10025,7 +10025,7 @@ async function togglePush(){
     }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
-    const reg = await navigator.serviceWorker.register('/sw.js?v=18');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=19');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -10046,7 +10046,7 @@ async function enablePushQuietly(){
     if (Notification.permission !== 'granted') return;
     const { key } = await api('/push/key');
     if (!key) return;
-    const reg = await navigator.serviceWorker.register('/sw.js?v=18');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=19');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -11807,7 +11807,17 @@ async function doTranslate(bub, mine, targetLang){
     const vbub = liveBub.querySelector('.vbub');
     const url = vbub && vbub.dataset && vbub.dataset.vurl;
     if (!url) { toast('Could not find the voice clip.'); return; }
-    xlatChipCache.set(msgId, { kind:'translate', mine, target: targetLang, text: 'Transcribing…', loading: true });
+    // Owner ask 19 Aug 2026: play the clip while we transcribe so the
+    // reader gets audible context immediately, even if STT is slow /
+    // errors out. Best-effort — a play-gesture rejection just falls
+    // through to the transcribe step.
+    try {
+      const playBtn = liveBub.querySelector('.vbub .vplay');
+      if (playBtn && typeof toggleVoicePlay === 'function' && !liveBub.querySelector('audio.playing')) {
+        playBtn.click();
+      }
+    } catch (e) {}
+    xlatChipCache.set(msgId, { kind:'translate', mine, target: targetLang, text: '▶ Playing & transcribing…', loading: true });
     renderXlatChip(msgId, xlatChipCache.get(msgId));
     try {
       if (voiceTranscriptCache.has(msgId)) {
@@ -11820,7 +11830,13 @@ async function doTranslate(bub, mine, targetLang){
         fd.append('clip', blob, 'voice.webm');
         const sr = await fetch('/api/social/ai/transcribe', { method:'POST', body: fd, credentials:'include' });
         const sj = await sr.json().catch(() => ({}));
-        if (!sr.ok || !sj.text) throw new Error(sj.error || 'Could not transcribe.');
+        if (!sr.ok || !sj.text) {
+          const msg = (sj.error || '').toLowerCase();
+          if (msg.indexOf('not configured') >= 0 || msg.indexOf('voice is off') >= 0) {
+            throw new Error('Voice translation is offline right now — play the clip to hear it.');
+          }
+          throw new Error(sj.error || 'Could not transcribe the voice note.');
+        }
         text = String(sj.text).trim();
         voiceTranscriptCache.set(msgId, text);
       }
@@ -13661,12 +13677,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
-<script src="/a2hs.js?v=18" defer></script>
+<script src="/a2hs.js?v=19" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=18').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=19').catch(() => {}));
   }
   const el = id => document.getElementById(id);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -14060,6 +14076,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   })();
 </script>
 
-<script src="/wsbrand.js?v=18" defer></script>
+<script src="/wsbrand.js?v=19" defer></script>
 </body>
 </html>
