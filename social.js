@@ -3377,7 +3377,13 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
         if (!upstream.ok) {
           const errBody = await upstream.text().catch(() => '');
           console.error('[scribe] ElevenLabs', upstream.status, errBody.slice(0, 200));
-          return res.status(upstream.status === 401 || upstream.status === 402 ? 503 : 502).json({ error: 'Transcription failed.' });
+          // Differentiate so the client can show something useful.
+          // 401 → key missing / invalid; 402/429 → out of credit or
+          // rate-limited; anything else → generic upstream error.
+          let msg = 'Voice transcription is temporarily unavailable — try again shortly.';
+          if (upstream.status === 401) msg = 'Voice transcription key needs a refresh — the site owner has been notified.';
+          else if (upstream.status === 402 || upstream.status === 429) msg = 'Voice transcription is over quota for today — try again tomorrow.';
+          return res.status(upstream.status === 401 || upstream.status === 402 ? 503 : 502).json({ error: msg });
         }
         const j = await upstream.json().catch(() => null);
         const text = (j && String(j.text || '').trim()) || '';
