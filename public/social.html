@@ -976,10 +976,10 @@ body.chatlock .topnav,#vApp.chatfull .topnav{display:none}
 .ln-setup-bd{position:fixed;inset:0;background:rgba(15,17,25,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:13000;padding:16px}
 .ln-setup-bd.show{display:flex;animation:fsFade .2s ease-out}
 .ln-setup-card{background:#fff;width:100%;max-width:440px;max-height:92vh;border-radius:20px;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:fsPop .3s cubic-bezier(.16,1.11,.3,1.02);overflow:hidden}
-.ln-setup-head{padding:14px 18px 4px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ln-setup-head{padding:20px 22px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .ln-setup-title{font-family:'Fredoka','Inter',system-ui,sans-serif;font-weight:700;font-size:17px;color:var(--ink);letter-spacing:-.2px}
-.ln-setup-body{padding:4px 18px 16px;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
-.ln-setup-q{margin:12px 0}
+.ln-setup-body{padding:12px 22px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.ln-setup-q{margin:18px 0}
 .ln-setup-qlbl{font-size:10.5px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
 .ln-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .ln-opts-wrap{grid-template-columns:1fr 1fr}
@@ -10025,7 +10025,7 @@ async function togglePush(){
     }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
-    const reg = await navigator.serviceWorker.register('/sw.js?v=17');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=18');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -10046,7 +10046,7 @@ async function enablePushQuietly(){
     if (Notification.permission !== 'granted') return;
     const { key } = await api('/push/key');
     if (!key) return;
-    const reg = await navigator.serviceWorker.register('/sw.js?v=17');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=18');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -13661,12 +13661,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
-<script src="/a2hs.js?v=17" defer></script>
+<script src="/a2hs.js?v=18" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=17').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=18').catch(() => {}));
   }
   const el = id => document.getElementById(id);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -14060,6 +14060,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   })();
 </script>
 
-<script src="/wsbrand.js?v=17" defer></script>
+<script src="/wsbrand.js?v=18" defer></script>
 </body>
 </html>
