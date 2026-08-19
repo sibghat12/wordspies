@@ -1,8 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 226 46" width="226" height="46">
-  
-  <path d="M9,0 H17 A9,9 0 0 1 26,9 V24 A2,2 0 0 1 24,26 H9 A9,9 0 0 1 0,17 V9 A9,9 0 0 1 9,0 Z" fill="#5B6CFF"></path>
-  <path d="M37,2 H37 A9,9 0 0 1 46,11 V11 A9,9 0 0 1 37,20 H30 A2,2 0 0 1 28,18 V11 A9,9 0 0 1 37,2 Z" fill="#FF7A59"></path>
-  <path d="M30,24 H41 A2,2 0 0 1 43,26 V37 A9,9 0 0 1 34,46 H30 A9,9 0 0 1 21,37 V33 A9,9 0 0 1 30,24 Z" fill="#1FB28A"></path>
-  <path d="M3.67,29 H9.5 A7.5,7.5 0 0 1 17,36.5 V36.5 A7.5,7.5 0 0 1 9.5,44 H9.5 A7.5,7.5 0 0 1 2,36.5 V30.67 A1.67,1.67 0 0 1 3.67,29 Z" fill="#FFC94D"></path>
-  <text x="51" y="23" dominant-baseline="central" font-family="&#39;Hanken Grotesk&#39;,&#39;Helvetica Neue&#39;,Arial,sans-serif" font-size="38" font-weight="600" letter-spacing="-0.5" fill="#000000">talksibi</text>
+  <!-- talksibi lockup v2 (Round 8a): 2-bubble mark + lowercase wordmark. -->
+  <path d="M10,0 L14,0 A10,10 0 0 1 24,10 L24,21 A3,3 0 0 1 21,24 L10,24 A10,10 0 0 1 0,14 L0,10 A10,10 0 0 1 10,0 Z" fill="#5B6CFF"/>
+  <path d="M32,22 L43,22 A3,3 0 0 1 46,25 L46,36 A10,10 0 0 1 36,46 L32,46 A10,10 0 0 1 22,36 L22,32 A10,10 0 0 1 32,22 Z" fill="#1FB28A"/>
+  <text x="56" y="23" dominant-baseline="central" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="34" font-weight="600" letter-spacing="-0.5" fill="#000000">talksibi</text>
 </svg>
