@@ -1,7 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46 46" width="46" height="46">
   <!-- talksibi mark v9c: single periwinkle chat bubble + 3 typing dots.
-       Also exported as public/talksibi-mark.svg for explicit v9c refs;
-       kept here so the many /mark.svg links across the site auto-update. -->
+       Corners 13/13/13/3 → small corner bottom-right forms the chat tail. -->
   <path d="M13,0 H33 A13,13 0 0 1 46,13 V30 A13,13 0 0 1 33,43 L11,46 A3,3 0 0 1 8,43 L8,42.6 A13,13 0 0 1 0,30 V13 A13,13 0 0 1 13,0 Z" fill="#5B6CFF"/>
   <circle cx="15" cy="21" r="3" fill="#ffffff"/>
   <circle cx="23" cy="21" r="3" fill="#ffffff"/>

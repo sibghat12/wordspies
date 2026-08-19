@@ -9,7 +9,7 @@
 <title>Games · talksibi</title>
 <meta name="description" content="Play language-learning games with real people. Codenames, Word Chain, Word Race, Guess the Word, Mind Meld & Who is the Spy — free, browser-based.">
 <meta name="theme-color" content="#5b6cff">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=22"><link rel="mask-icon" href="/favicon.svg?v=22" color="#5b6cff">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=23"><link rel="mask-icon" href="/favicon.svg?v=23" color="#5b6cff">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:title" content="talksibi Games — play + learn with real people">
 <meta property="og:description" content="Six language-learning games. Free, browser-based, no signup needed.">
@@ -53,14 +53,12 @@ a{color:inherit;text-decoration:none}
 .brand-mark{
   width:26px;height:26px;position:relative;flex:none;display:inline-block;
 }
-/* Round 8a mark: two bubbles only. Coral (b2) + gold (b4) hidden so
-   the existing 4-<i> HTML still works; only periwinkle + jade paint.
-   Owner ask 19 Aug 2026. */
-.brand-mark i{position:absolute;width:14px;height:14px;display:block}
-.brand-mark .b1{top:0;left:0;background:var(--peri);border-radius:5px 5px 2px 5px}
-.brand-mark .b2{display:none}
-.brand-mark .b3{bottom:0;right:0;background:var(--green);border-radius:5px 2px 5px 5px}
-.brand-mark .b4{display:none}
+/* v9c mark: single periwinkle chat bubble with 3 white typing dots.
+   The .brand-mark box shows /talksibi-mark.svg via a bg-image so the
+   existing 4-<i> HTML still validates without painting anything.
+   All four <i> children are hidden. Owner ask 19 Aug 2026. */
+.brand-mark{background:url('/talksibi-mark.svg?v=23') center/contain no-repeat}
+.brand-mark i{display:none}
 .top-nav{margin-left:auto;display:flex;align-items:center;gap:10px}
 .top-link{
   font-size:14px;font-weight:600;color:var(--sub);
@@ -271,7 +269,7 @@ body.embed .ts-gametop{ display:none !important }
     <span aria-hidden="true">←</span> Back
   </a>
   <a href="/" class="ts-gametop-brand" aria-label="talksibi home">
-    <img src="/logo.svg?v=22" alt="talksibi" onerror="this.style.display='none'">
+    <img src="/logo.svg?v=23" alt="talksibi" onerror="this.style.display='none'">
   </a>
   <span class="ts-gametop-spacer"></span>
 </header>
@@ -452,9 +450,9 @@ document.addEventListener('click', e => {
   openGameInfo(btn.dataset.info);
 });
 </script>
-<script src="/a2hs.js?v=22" defer></script>
-<script src="/wsbrand.js?v=22" defer></script>
-<script src="/talksibi-chrome.js?v=22" defer></script>
+<script src="/a2hs.js?v=23" defer></script>
+<script src="/wsbrand.js?v=23" defer></script>
+<script src="/talksibi-chrome.js?v=23" defer></script>
 
 </body>
 </html>

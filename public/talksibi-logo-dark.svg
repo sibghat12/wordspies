@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 46" width="240" height="46">
+  <!-- talksibi lockup v9c DARK: same mark, wordmark inverts to white for dark backgrounds. -->
+  <path d="M13,0 H33 A13,13 0 0 1 46,13 V30 A13,13 0 0 1 33,43 L11,46 A3,3 0 0 1 8,43 L8,42.6 A13,13 0 0 1 0,30 V13 A13,13 0 0 1 13,0 Z" fill="#5B6CFF"/>
+  <circle cx="15" cy="21" r="3" fill="#ffffff"/>
+  <circle cx="23" cy="21" r="3" fill="#ffffff"/>
+  <circle cx="31" cy="21" r="3" fill="#ffffff"/>
+  <text x="56" y="23" dominant-baseline="central" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="34" font-weight="600" letter-spacing="-0.6" fill="#ffffff">talksibi</text>
+</svg>

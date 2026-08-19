@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 46" width="240" height="46">
-  <!-- talksibi lockup v9c LIGHT: single periwinkle chat bubble mark +
-       lowercase "talksibi" wordmark (Hanken Grotesk 600, letter-spacing
-       -0.6, #101114). Kept here so every existing /logo.svg link
-       auto-picks up the new lockup — talksibi-logo-light.svg is the
-       explicit v9c reference. -->
+  <!-- talksibi lockup v9c LIGHT: bubble mark + wordmark on light backgrounds.
+       Wordmark: Hanken Grotesk 600, letter-spacing -0.6px, #101114. -->
   <path d="M13,0 H33 A13,13 0 0 1 46,13 V30 A13,13 0 0 1 33,43 L11,46 A3,3 0 0 1 8,43 L8,42.6 A13,13 0 0 1 0,30 V13 A13,13 0 0 1 13,0 Z" fill="#5B6CFF"/>
   <circle cx="15" cy="21" r="3" fill="#ffffff"/>
   <circle cx="23" cy="21" r="3" fill="#ffffff"/>

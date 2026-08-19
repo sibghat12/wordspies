@@ -294,19 +294,11 @@ module.exports.TS_FOOTER_TS = TS_FOOTER_TS;
 // so we can drop this into the nav (34px), hero (26px), and footer (30px)
 // without duplicating markup.
 function tsLogoMark(size) {
-  // Round 8a: two-bubble mark. Periwinkle top-left (chat-tail
-  // pointing bottom-right); jade bottom-right (chat-tail pointing
-  // top-right). Coral + sun stay in the palette for accents but not
-  // the logo. Scales from one size input. Owner ask 19 Aug 2026.
+  // v9c: single periwinkle chat bubble with three white typing dots.
+  // Uses the shared /talksibi-mark.svg so every mark surface stays in
+  // one place — no drift between inline copies and the SVG asset.
   const s = size;
-  const bub = Math.round(s * 0.52);   // each bubble ~52% of frame
-  const off = Math.round(s * 0.48);   // overlap start position
-  const bigR = Math.round(s * 0.22);  // rounded corners
-  const smR = Math.max(1, Math.round(s * 0.065)); // chat-tail corner
-  return `<div style="position:relative;width:${s}px;height:${s}px;flex-shrink:0" aria-hidden="true">
-    <div style="position:absolute;top:0;left:0;width:${bub}px;height:${bub}px;background:#5B6CFF;border-radius:${bigR}px ${bigR}px ${smR}px ${bigR}px"></div>
-    <div style="position:absolute;bottom:0;right:0;width:${bub}px;height:${bub}px;background:#1FB28A;border-radius:${bigR}px ${smR}px ${bigR}px ${bigR}px"></div>
-  </div>`;
+  return `<img src="/talksibi-mark.svg?v=23" alt="talksibi" width="${s}" height="${s}" style="width:${s}px;height:${s}px;display:block;flex-shrink:0" aria-hidden="true">`;
 }
 
 // Flag pill row + full flag list. First 12 render as pills in the hero
