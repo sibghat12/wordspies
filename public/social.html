@@ -10025,7 +10025,7 @@ async function togglePush(){
     }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
-    const reg = await navigator.serviceWorker.register('/sw.js?v=19');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=20');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -10046,7 +10046,7 @@ async function enablePushQuietly(){
     if (Notification.permission !== 'granted') return;
     const { key } = await api('/push/key');
     if (!key) return;
-    const reg = await navigator.serviceWorker.register('/sw.js?v=19');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=20');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -11807,17 +11807,10 @@ async function doTranslate(bub, mine, targetLang){
     const vbub = liveBub.querySelector('.vbub');
     const url = vbub && vbub.dataset && vbub.dataset.vurl;
     if (!url) { toast('Could not find the voice clip.'); return; }
-    // Owner ask 19 Aug 2026: play the clip while we transcribe so the
-    // reader gets audible context immediately, even if STT is slow /
-    // errors out. Best-effort — a play-gesture rejection just falls
-    // through to the transcribe step.
-    try {
-      const playBtn = liveBub.querySelector('.vbub .vplay');
-      if (playBtn && typeof toggleVoicePlay === 'function' && !liveBub.querySelector('audio.playing')) {
-        playBtn.click();
-      }
-    } catch (e) {}
-    xlatChipCache.set(msgId, { kind:'translate', mine, target: targetLang, text: '▶ Playing & transcribing…', loading: true });
+    // Owner ask 19 Aug 2026 v2: don't auto-play the clip on translate.
+    // Just transcribe silently → translate → show the translation in
+    // the chip, exactly like a text message.
+    xlatChipCache.set(msgId, { kind:'translate', mine, target: targetLang, text: 'Transcribing…', loading: true });
     renderXlatChip(msgId, xlatChipCache.get(msgId));
     try {
       if (voiceTranscriptCache.has(msgId)) {
@@ -13677,12 +13670,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
-<script src="/a2hs.js?v=19" defer></script>
+<script src="/a2hs.js?v=20" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=19').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=20').catch(() => {}));
   }
   const el = id => document.getElementById(id);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -14076,6 +14069,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   })();
 </script>
 
-<script src="/wsbrand.js?v=19" defer></script>
+<script src="/wsbrand.js?v=20" defer></script>
 </body>
 </html>
