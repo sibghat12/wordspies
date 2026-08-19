@@ -14,17 +14,41 @@ const _imgCache = {};
 function postImg(slug){
   if (_imgCache[slug]) return _imgCache[slug];
   const dir = path.join(__dirname, 'public', 'blog-img');
-  for (const ext of ['png', 'jpg']) {
+  // SVG preferred — every post ships one now (per-title AI portrait
+  // + v9c mark, generated 19 Aug 2026). PNG/JPG kept for the older
+  // hand-rendered banners that still exist for a handful of posts.
+  for (const ext of ['svg', 'png', 'jpg']) {
     if (fs.existsSync(path.join(dir, slug + '.' + ext))) {
       _imgCache[slug] = '/blog-img/' + slug + '.' + ext;
       return _imgCache[slug];
     }
   }
-  // Neither exists → use the site OG banner as a graceful fallback so
-  // the article + card still render.
   _imgCache[slug] = '/og-image.png';
   return _imgCache[slug];
 }
+// Derive SEO keywords for a post from its title + a slug-based bank of
+// topic tags. Not a magic ranking bullet (Google largely ignores meta
+// keywords) but Bing + some scraper indexes still weigh them, and it
+// gives us a single place to keep the topic taxonomy honest per slug.
+function postKeywords(slug, article){
+  const bank = [];
+  if (/codenames|spymaster|word.list/.test(slug)) bank.push('codenames online', 'word games', 'party games', 'free online games', 'games like codenames', 'team word game');
+  if (/language|learn|native.speakers|exchange|speaking|partner|voice.chat|grammar|ai|correction|practise|speak/.test(slug)) bank.push('language exchange', 'learn a language', 'free language learning', 'talk to native speakers', 'language practice online', 'ai language tutor');
+  if (/english/.test(slug)) bank.push('learn english', 'english speaking practice', 'english native speakers');
+  if (/spanish/.test(slug)) bank.push('learn spanish', 'spanish native speakers', 'practise spanish online');
+  if (/french/.test(slug)) bank.push('learn french', 'french native speakers');
+  if (/german/.test(slug)) bank.push('learn german', 'german language exchange');
+  if (/japanese/.test(slug)) bank.push('learn japanese', 'japanese language exchange');
+  if (/korean/.test(slug)) bank.push('learn korean', 'korean language partner');
+  if (/italian/.test(slug)) bank.push('learn italian', 'italian language exchange');
+  if (/zoom|video.call|remote|team|meeting/.test(slug)) bank.push('remote team games', 'virtual meeting games', 'zoom games');
+  if (/family|phone|icebreaker/.test(slug)) bank.push('family games', 'games for friends', 'party icebreakers');
+  if (/talksibi|the-app|chat-experts|party-games-shelf/.test(slug)) bank.push('talksibi', 'talksibi app', 'ai chat experts');
+  // Add slug-word ngrams as a safety net.
+  bank.push(...slug.split('-').filter(w => w.length > 2));
+  return Array.from(new Set(bank)).slice(0, 12).join(', ');
+}
+module.exports.postKeywords = postKeywords;
 
 const articles = {
   'games-like-codenames': {
@@ -916,7 +940,7 @@ const articles = {
   }
 };
 
-function layout(title, desc, body, path, banner, schema, image) {
+function layout(title, desc, body, path, banner, schema, image, keywords) {
   const ogimg = SITE + (image || '/og-image.png');
   return `<!DOCTYPE html>
 <html lang="en"><head>
@@ -924,9 +948,11 @@ ${GA}
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${title}</title>
 <meta name="description" content="${desc}">
+${keywords ? '<meta name="keywords" content="' + esc(keywords) + '">' : ''}
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#5b6cff">
 <link rel="canonical" href="${SITE}${path}">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=23">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta property="og:site_name" content="TalkSibi"><meta property="og:locale" content="en_GB">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
@@ -1053,7 +1079,7 @@ function articlePage(slug) {
 {"@type":"ListItem","position":2,"name":"Blog","item":"${SITE}/blog"},
 {"@type":"ListItem","position":3,"name":"${esc(a.title)}","item":"${SITE}/blog/${slug}"}]}
 ]}</script>`;
-  return layout(metaTitle, metaDesc, body, '/blog/' + slug, null, schema, img);
+  return layout(metaTitle, metaDesc, body, '/blog/' + slug, null, schema, img, postKeywords(slug, a));
 }
 
 // Categorise posts so the blog index can offer a simple filter row.

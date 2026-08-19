@@ -1,45 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#5b6cff"/>
-      <stop offset="55%" stop-color="#7857ff"/>
-      <stop offset="100%" stop-color="#9b6cff"/>
+      <stop offset="0%" stop-color="#FF7A59"/>
+      <stop offset="100%" stop-color="#e0553a"/>
     </linearGradient>
-    <radialGradient id="glow1" cx="20%" cy="85%" r="55%">
-      <stop offset="0%" stop-color="#14161f" stop-opacity="0.28"/>
-      <stop offset="100%" stop-color="#14161f" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="glow2" cx="90%" cy="12%" r="50%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
+    <clipPath id="pcirc"><circle cx="900" cy="315" r="180"/></clipPath>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#glow1)"/>
-  <rect width="1200" height="630" fill="url(#glow2)"/>
-  <g font-family="'Hanken Grotesk','Inter',system-ui,sans-serif">
-    <!-- eyebrow -->
-    <text x="80" y="150" font-size="20" font-weight="700" letter-spacing="6" fill="rgba(255,255,255,0.75)">
-      TALKSIBI · LANGUAGE EXCHANGE
-    </text>
-    <!-- headline -->
-    <text x="80" y="260" font-size="88" font-weight="700" fill="#ffffff" letter-spacing="-2">
-      Learn German
-    </text>
-    <text x="80" y="360" font-size="88" font-weight="700" fill="#ffffff" letter-spacing="-2">
-      with real people
-    </text>
-    <!-- greeting in target language -->
-    <text x="80" y="460" font-size="42" font-weight="600" fill="#14161f" opacity="0.95">
-      Hallo! Wie geht's?
-    </text>
-    <!-- CTA badge -->
-    <g transform="translate(80,510)">
-      <rect x="0" y="0" width="360" height="64" rx="32" fill="#ffffff"/>
-      <text x="180" y="42" font-size="20" font-weight="700" fill="#14161f" text-anchor="middle" letter-spacing="0">
-        talksibi.com  ·  free forever
-      </text>
-    </g>
+  <!-- Portrait ring + AI-generated photo -->
+  <circle cx="900" cy="315" r="192" fill="#ffffff" opacity="0.14"/>
+  <circle cx="900" cy="315" r="182" fill="#ffffff"/>
+  <image href="https://randomuser.me/api/portraits/women/96.jpg" x="720" y="135" width="360" height="360" clip-path="url(#pcirc)" preserveAspectRatio="xMidYMid slice"/>
+  <!-- Big topic emoji floating -->
+  <text x="920" y="530" text-anchor="middle" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif" font-size="72" fill="#ffffff">🇩🇪</text>
+  <!-- Copy stack -->
+  <g transform="translate(72,138)">
+    <text x="0" y="76" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-1.6" fill="#ffffff">Learn German Online — Free</text>
+    <text x="0" y="158" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-1.6" fill="#ffffff">Language Exchange With</text>
+    <text x="0" y="240" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-1.6" fill="#ffffff">Native Speakers</text>
+    <text x="0" y="310" font-family="'Hanken Grotesk',Arial,sans-serif" font-size="28" font-weight="500" fill="#ffffff" opacity="0.86">Read on talksibi</text>
+  </g>
+  <!-- talksibi 9c mark bottom-left -->
+  <g transform="translate(72,528) scale(1.65)">
+    <path d="M13,0 H33 A13,13 0 0 1 46,13 V30 A13,13 0 0 1 33,43 L11,46 A3,3 0 0 1 8,43 L8,42.6 A13,13 0 0 1 0,30 V13 A13,13 0 0 1 13,0 Z" fill="#5B6CFF"/><circle cx="15" cy="21" r="3" fill="#ffffff"/><circle cx="23" cy="21" r="3" fill="#ffffff"/><circle cx="31" cy="21" r="3" fill="#ffffff"/>
+    <text x="60" y="26" dominant-baseline="central" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="34" font-weight="600" letter-spacing="-0.6" fill="#ffffff">talksibi</text>
   </g>
 </svg>

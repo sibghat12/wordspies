@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FF7A59"/>
-      <stop offset="100%" stop-color="#e0553a"/>
+      <stop offset="0%" stop-color="#1FB28A"/>
+      <stop offset="100%" stop-color="#178c6b"/>
     </linearGradient>
     <clipPath id="pcirc"><circle cx="900" cy="315" r="180"/></clipPath>
   </defs>
@@ -10,14 +10,15 @@
   <!-- Portrait ring + AI-generated photo -->
   <circle cx="900" cy="315" r="192" fill="#ffffff" opacity="0.14"/>
   <circle cx="900" cy="315" r="182" fill="#ffffff"/>
-  <image href="https://randomuser.me/api/portraits/men/6.jpg" x="720" y="135" width="360" height="360" clip-path="url(#pcirc)" preserveAspectRatio="xMidYMid slice"/>
+  <image href="https://randomuser.me/api/portraits/men/60.jpg" x="720" y="135" width="360" height="360" clip-path="url(#pcirc)" preserveAspectRatio="xMidYMid slice"/>
   <!-- Big topic emoji floating -->
-  <text x="920" y="530" text-anchor="middle" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif" font-size="72" fill="#ffffff">🇮🇹</text>
+  <text x="920" y="530" text-anchor="middle" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif" font-size="72" fill="#ffffff">💬</text>
   <!-- Copy stack -->
   <g transform="translate(72,138)">
-    <text x="0" y="76" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-1.6" fill="#ffffff">Learn Italian Online With</text>
-    <text x="0" y="158" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-1.6" fill="#ffffff">Native Speakers — Free</text>
-    <text x="0" y="228" font-family="'Hanken Grotesk',Arial,sans-serif" font-size="28" font-weight="500" fill="#ffffff" opacity="0.86">Read on talksibi</text>
+    <text x="0" y="76" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-1.6" fill="#ffffff">How to Find a Language</text>
+    <text x="0" y="158" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-1.6" fill="#ffffff">Exchange Partner Online</text>
+    <text x="0" y="240" font-family="'Hanken Grotesk','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-1.6" fill="#ffffff">(Free, 2026)</text>
+    <text x="0" y="310" font-family="'Hanken Grotesk',Arial,sans-serif" font-size="28" font-weight="500" fill="#ffffff" opacity="0.86">Read on talksibi</text>
   </g>
   <!-- talksibi 9c mark bottom-left -->
   <g transform="translate(72,528) scale(1.65)">
