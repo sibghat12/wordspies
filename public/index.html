@@ -2446,7 +2446,7 @@ if (DEMO) {
 window.wsIsBusy = () => { try { return !!(S && S.state === 'playing'); } catch (e) { return false; } };
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=16').catch(() => {}));
+  addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=17').catch(() => {}));
 }
 
 /* Install prompts fully retired 1 Aug 2026 per owner ask
@@ -2462,17 +2462,17 @@ if (_instOv) _instOv.classList.add('hidden');
 
 </script>
 
-<script src="/a2hs.js?v=16" defer></script>
+<script src="/a2hs.js?v=17" defer></script>
 
 <!-- 'Back to Social' pill retired 1 Aug 2026 per owner ask: 'we keep
      the same header so no need it'. Shared wsbrand.js header provides
      the same navigation context, and the .gamebar pill on /social
      handles resume in the other direction. -->
 <script>window.WS_GAME = { slug: 'play', label: '🕵️ TalkSibi' };</script>
-<script src="/game-session.js?v=16" defer></script>
-<script src="/wsbrand.js?v=16" defer></script>
-<script src="/wswin.js?v=16" defer></script>
-<script src="/talksibi-chrome.js?v=16" defer></script>
+<script src="/game-session.js?v=17" defer></script>
+<script src="/wsbrand.js?v=17" defer></script>
+<script src="/wswin.js?v=17" defer></script>
+<script src="/talksibi-chrome.js?v=17" defer></script>
 
 </body>
 </html>
