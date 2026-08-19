@@ -3326,10 +3326,10 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
   // POST /api/social/ai/transcribe — accepts a short audio clip (same
   // format the DM voice-note recorder produces: opus/webm, ogg or m4a),
   // forwards it to ElevenLabs' Scribe speech-to-text and returns the
-  // transcript. Only used when the DM peer is an AI expert; a human
-  // never triggers a transcription request. Owner ask 4 Aug 2026:
-  // 'the user can speak to him like audio and he can listen to the
-  // voice note and answer'.
+  // transcript. Originally added for AI-expert chats (4 Aug 2026); as
+  // of 19 Aug 2026 also used by human voice-note translation — the
+  // receiver taps "translate voice" on a peer's clip and we STT + then
+  // pipe the transcript through /translate.
   const scribeUpload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 3 * 1024 * 1024, files: 1 }

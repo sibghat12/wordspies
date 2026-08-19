@@ -3453,9 +3453,20 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 @media(min-width:769px){#tabLive,#tabLearn,#tabGames,#tabMember,#tabParties,#tabMe,#tabChats,#tabChat{padding:20px 48px}}
 /* Mobile chat: cut outer padding down so bubbles + chat list use the
    full width. Owner ask 18 Aug 2026 v2: "chat mobile left+right
-   space is a lot". */
+   space is a lot". v3 (19 Aug 2026): drop the top gap too, tighten
+   .msgs side padding + .mb bubble padding, and shrink the composer
+   icons so the input area has more breathing room. */
 @media(max-width:640px){
-  #tabChats,#tabChat{padding-left:6px !important;padding-right:6px !important}
+  #tabChats,#tabChat{padding:2px 0 0 !important;box-sizing:border-box}
+  #tabChat .msgs{padding:2px 8px 140px}
+  .chatfull #tabChat .msgs{padding:2px 8px 12px}
+  #tabChat .mb{padding:7px 11px;font-size:14px;line-height:1.38}
+  #tabChat .composer{gap:5px;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  #tabChat .composer .cbtn,
+  #tabChat .composer .micrec{min-width:34px;width:34px;height:34px;font-size:17px}
+  #tabChat .composer .cbtn.send svg{width:13px;height:13px}
+  #tabChat .composer input,
+  #tabChat .composer textarea{padding:8px 12px;font-size:15px}
 }
 /* Desktop chat split-view: give the two columns a 42px side gutter so
    the total space from viewport edge is ~48px (the .wrap already adds
@@ -10266,8 +10277,9 @@ async function refreshChat(first){
         // bubble instead of a corner icon. Same click handler wires up
         // in wireBubbleGestures — class name kept as .mb-xlat-btn so
         // the existing selector still finds it.
-        const xlatBtn = (!mine && (m.k || 'text') === 'text' && !m.d)
-          ? `<button class="mb-xlat-btn mb-xlat-hint" type="button" aria-label="Tap to translate">tap to translate</button>`
+        const xlatKind = (m.k || 'text');
+        const xlatBtn = (!mine && !m.d && (xlatKind === 'text' || xlatKind === 'voice'))
+          ? `<button class="mb-xlat-btn mb-xlat-hint" type="button" aria-label="Tap to translate">${xlatKind === 'voice' ? 'tap to translate voice' : 'tap to translate'}</button>`
           : '';
         return sep + `
         <div class="mb ${side}${cont}${gone}" data-id="${idAttr}" data-mine="${mine ? 1 : 0}" data-k="${esc(m.k || 'text')}">
@@ -11035,7 +11047,7 @@ function voiceBubble(m){
   const url = String(m.x || '');
   const dur = m.vd ? fmtRecT(m.vd * 1000) : '0:00';
   const id = 'v' + (m.id || m.t);
-  return `<div class="vbub" data-vid="${esc(id)}">
+  return `<div class="vbub" data-vid="${esc(id)}" data-vurl="${esc(url)}">
     <button class="vplay" onclick="toggleVoicePlay(this, '${esc(url)}')" title="Play voice message" aria-label="Play">▶</button>
     <div class="vprog" onclick="scrubVoice(event, this)"></div>
     <span class="vdur">${esc(dur)}</span>
@@ -11732,6 +11744,10 @@ function closeXlatSetup(){
 // user clicks the cross'). We cache by message id, then re-attach any
 // live chips after every render in wireBubbleGestures().
 const xlatChipCache = new Map();  // msgId → { kind:'translate'|'correct', mine, target?, text, note? }
+// Cache STT transcripts per voice-note msgId so repeat translations
+// (e.g. peer asks for Spanish then French) don't re-hit ElevenLabs.
+// Survives thread re-renders because it lives at module scope.
+const voiceTranscriptCache = new Map();  // msgId → transcript text
 
 // Look up the LIVE .mb element for a message id — the reference held by
 // the click handler might be stale (a previous poll replaced innerHTML).
@@ -11770,9 +11786,49 @@ async function doTranslate(bub, mine, targetLang){
   // Snapshot the msg id up-front — the bub reference itself may become
   // detached mid-request when a background poll re-renders the thread.
   const msgId = bub && bub.dataset ? bub.dataset.id : null;
-  const clone = (bubForMsgId(msgId) || bub).cloneNode(true);
-  clone.querySelectorAll('.qref, .mtime, .rxrow, .mb-xlat-btn').forEach(x => x.remove());
-  const text = clone.textContent.trim();
+  const liveBub = bubForMsgId(msgId) || bub;
+  const isVoice = liveBub && liveBub.dataset && liveBub.dataset.k === 'voice';
+  let text = '';
+  if (isVoice) {
+    // Voice branch: transcribe the audio once (cache on the .vbub for
+    // repeat translations to different languages), then translate the
+    // transcript exactly like a text bubble.
+    if (!msgId) return;
+    const vbub = liveBub.querySelector('.vbub');
+    const url = vbub && vbub.dataset && vbub.dataset.vurl;
+    if (!url) { toast('Could not find the voice clip.'); return; }
+    xlatChipCache.set(msgId, { kind:'translate', mine, target: targetLang, text: 'Transcribing…', loading: true });
+    renderXlatChip(msgId, xlatChipCache.get(msgId));
+    try {
+      if (voiceTranscriptCache.has(msgId)) {
+        text = voiceTranscriptCache.get(msgId);
+      } else {
+        const audioRes = await fetch(url, { credentials: 'include' });
+        if (!audioRes.ok) throw new Error('Could not load the voice clip.');
+        const blob = await audioRes.blob();
+        const fd = new FormData();
+        fd.append('clip', blob, 'voice.webm');
+        const sr = await fetch('/api/social/ai/transcribe', { method:'POST', body: fd, credentials:'include' });
+        const sj = await sr.json().catch(() => ({}));
+        if (!sr.ok || !sj.text) throw new Error(sj.error || 'Could not transcribe.');
+        text = String(sj.text).trim();
+        voiceTranscriptCache.set(msgId, text);
+      }
+    } catch (e) {
+      xlatChipCache.delete(msgId);
+      const live = bubForMsgId(msgId);
+      const stale = live && live.nextElementSibling;
+      if (stale && stale.classList && stale.classList.contains('mb-xlat')) stale.remove();
+      toast(e.message || 'Could not transcribe the voice note.');
+      return;
+    }
+    xlatChipCache.set(msgId, { kind:'translate', mine, target: targetLang, text: 'Translating…', loading: true });
+    renderXlatChip(msgId, xlatChipCache.get(msgId));
+  } else {
+    const clone = liveBub.cloneNode(true);
+    clone.querySelectorAll('.qref, .mtime, .rxrow, .mb-xlat-btn').forEach(x => x.remove());
+    text = clone.textContent.trim();
+  }
   if (!text || !msgId) return;
   // Loading state → cache + render.
   xlatChipCache.set(msgId, { kind:'translate', mine, target: targetLang, text: 'Translating…', loading: true });
