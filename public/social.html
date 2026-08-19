@@ -3466,18 +3466,17 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   #tabChat .msgs{padding:2px 8px 140px}
   .chatfull #tabChat .msgs{padding:2px 8px 12px}
   #tabChat .mb{padding:7px 11px;font-size:14px;line-height:1.38}
-  /* Force the composer to flow at the bottom of #tabChat's flex column
-     so it doesn't float from position:fixed bottom:70px before
-     .chatfull activates — that was showing as "composer in middle of
-     screen, jumps to bottom on type". */
-  #tabChat{display:flex;flex-direction:column;min-height:calc(100vh - 60px)}
-  #tabChat .msgs{flex:1;overflow-y:auto;min-height:0}
-  #tabChat .composer{position:static !important;left:auto !important;transform:none !important;width:auto !important;max-width:none !important;margin:0;border-top:1px solid #eef0f4;background:#fff;gap:5px;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  #tabChat .composer{gap:5px;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
   #tabChat .composer .cbtn,
   #tabChat .composer .micrec{min-width:34px;width:34px;height:34px;font-size:17px}
   #tabChat .composer .cbtn.send svg{width:13px;height:13px}
   #tabChat .composer input,
   #tabChat .composer textarea{padding:8px 12px;font-size:15px}
+  /* Chat archive row internal padding — the ROW gets left/right
+     breathing room so the avatar doesn't sit on the card edge.
+     Owner ask 19 Aug 2026: "give internal space to the archive
+     list item not the whole page". */
+  #tabChats .citem{padding-left:10px !important;padding-right:10px !important}
 }
 /* Desktop chat split-view: give the two columns a 42px side gutter so
    the total space from viewport edge is ~48px (the .wrap already adds
@@ -10026,7 +10025,7 @@ async function togglePush(){
     }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
-    const reg = await navigator.serviceWorker.register('/sw.js?v=15');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=16');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -10047,7 +10046,7 @@ async function enablePushQuietly(){
     if (Notification.permission !== 'granted') return;
     const { key } = await api('/push/key');
     if (!key) return;
-    const reg = await navigator.serviceWorker.register('/sw.js?v=15');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=16');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -13662,12 +13661,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
-<script src="/a2hs.js?v=15" defer></script>
+<script src="/a2hs.js?v=16" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=15').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=16').catch(() => {}));
   }
   const el = id => document.getElementById(id);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -14061,6 +14060,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   })();
 </script>
 
-<script src="/wsbrand.js?v=15" defer></script>
+<script src="/wsbrand.js?v=16" defer></script>
 </body>
 </html>
