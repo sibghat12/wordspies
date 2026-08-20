@@ -179,121 +179,110 @@ module.exports.SITE_FOOTER = SITE_FOOTER;
 // header and footer into the blog archive and single pages".
 // -----------------------------------------------------------------------
 
-// Unified site chrome — same .topnav + .sitefoot the community app
-// (social.html) and the standalone game pages use, so landing / blog
-// / static / games / app all read as one site. Owner ask 20 Aug 2026.
 const TS_CHROME_CSS = `
-nav.topnav{position:sticky;top:0;background:#ffffff;z-index:200;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:12px 20px;min-height:60px;width:100%;margin:0;box-sizing:border-box;border-bottom:1px solid #e4e6ee;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;color:#16181f}
-@media(min-width:769px){nav.topnav{padding:12px 48px}}
-nav.topnav > *{min-width:0}
-nav.topnav .tnlogo{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-weight:600;font-size:22px;text-decoration:none;color:inherit;letter-spacing:-.3px;justify-self:start;display:inline-flex;align-items:center}
-nav.topnav .tntabs{display:flex;gap:4px;justify-self:center;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-nav.topnav .tntabs::-webkit-scrollbar{display:none}
-nav.topnav .tntabs .tnt{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;border-radius:99px;padding:8px 16px;font-family:inherit;font-size:14px;font-weight:500;color:#6b6e7a;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s;flex-shrink:0;letter-spacing:-.1px;text-decoration:none}
-nav.topnav .tntabs .tnt:hover{color:#16181f;background:#f4f5f7}
-nav.topnav .tntabs .tnt.on{color:#4a55c9;background:#f3f4fb}
-nav.topnav .tnright{display:flex;gap:8px;align-items:center;justify-self:end}
-nav.topnav .tnlink{color:#4a4d59;text-decoration:none;font-weight:600;font-size:13.5px;padding:8px 14px;border-radius:10px;transition:background .12s,color .12s;white-space:nowrap}
-nav.topnav .tnlink:hover{background:#f4f5f7;color:#16181f}
-nav.topnav .tnjoin{background:#16181f;color:#fff !important;padding:9px 18px;border-radius:99px;font-weight:500;transition:background .15s;text-decoration:none;white-space:nowrap;font-size:13.5px}
-nav.topnav .tnjoin:hover{background:#2a2e42}
-@media(max-width:720px){
-  nav.topnav{grid-template-columns:1fr auto;grid-template-areas:'logo right';padding:calc(12px + env(safe-area-inset-top)) 20px 12px}
-  nav.topnav .tnlogo{grid-area:logo;font-size:19px}
-  nav.topnav .tnright{grid-area:right}
-  nav.topnav .tntabs{display:none}
-  nav.topnav .tnlink{padding:6px 10px;font-size:12.5px}
-  nav.topnav .tnjoin{padding:7px 14px;font-size:12.5px}
+.ts-lockup{display:inline-flex;align-items:center;gap:8px}
+.ts-wordmark{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-weight:600;letter-spacing:-.3px;color:#16181f}
+.ts-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid #f0efec;position:sticky;top:0;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:50}
+.ts-navlinks{display:flex;align-items:center;gap:28px;font-size:15px;font-weight:500;color:#4a4d59}
+.ts-navlinks a{color:#4a4d59;transition:color .12s;text-decoration:none}
+.ts-navlinks a:hover{color:#16181f}
+.ts-navlinks .ts-navlogin{color:#16181f}
+.ts-navjoin{background:#16181f !important;color:#fff !important;padding:10px 22px;border-radius:99px;font-weight:500;transition:background .15s;text-decoration:none}
+.ts-navjoin:hover{background:#2a2e42 !important;color:#fff !important}
+@media(max-width:900px){
+  .ts-nav{padding:14px 20px}
+  .ts-navlinks{gap:14px;font-size:14px}
+  .ts-navlinks .ts-hide-sm{display:none}
 }
-footer.sitefoot{margin:36px 0 0;padding:36px 12px 22px;background:#ffffff;color:#4a4d59;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;font-size:13px;line-height:1.5;border-top:1px solid #e4e6ee;width:100%;box-sizing:border-box}
-@media(min-width:769px){footer.sitefoot{padding:44px 48px 28px}}
-footer.sitefoot .fwrap{max-width:1200px;margin:0 auto}
-footer.sitefoot .fmenu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px 28px;align-items:flex-start}
-@media(max-width:840px){footer.sitefoot .fmenu{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}}
-@media(max-width:420px){footer.sitefoot .fmenu{grid-template-columns:1fr;gap:24px}}
-footer.sitefoot .fcol h4{font-weight:700;font-size:14.5px;color:#14161f;letter-spacing:-.1px;margin:0 0 12px}
-footer.sitefoot .fcol a{display:block;color:#4a4d59;text-decoration:none;font-size:13px;font-weight:500;padding:5px 0;transition:color .12s}
-footer.sitefoot .fcol a:hover{color:#14161f}
-footer.sitefoot .fsocial-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;max-width:220px}
-footer.sitefoot .fsocial-grid a{padding:0;width:34px;height:34px;border-radius:50%;background:#f4f5f9;color:#4a4d59;border:1px solid #e4e6ee;display:inline-flex;align-items:center;justify-content:center;transition:.12s;flex:none}
-footer.sitefoot .fsocial-grid a:hover{background:#eef0f5;color:#14161f}
-footer.sitefoot .fsocial-grid svg{width:15px;height:15px;fill:currentColor;display:block}
-footer.sitefoot .fsub{margin-top:28px;padding-top:18px;border-top:1px solid #e4e6ee;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
-footer.sitefoot .fmeta{color:#8a8d99;font-size:11.5px;letter-spacing:.02em;line-height:1.55}
-footer.sitefoot .fbrand{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
-footer.sitefoot .fbrand img{height:22px;width:auto;display:block}
-footer.sitefoot .fbrand .fbrand-t{font-weight:500;letter-spacing:-.3px;font-size:17px;color:#14161f}
-/* Shared page padding token — every content area inherits. */
-:root{--page-pad-x:20px;--page-pad-y:16px}
-@media(min-width:769px){:root{--page-pad-x:48px;--page-pad-y:20px}}
+.ts-foot{border-top:1px solid #f0efec;background:#fafafa;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;color:#16181f}
+.ts-foot-inner{max-width:1240px;margin:0 auto;padding:56px 48px 28px;box-sizing:border-box}
+.ts-foot-cols{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;border-bottom:1px solid #ececea}
+.ts-foot-brand{display:flex;flex-direction:column;gap:14px}
+.ts-foot-blurb{font-size:14.5px;color:#6b6e7a;line-height:1.55;max-width:34ch}
+.ts-foot-socials{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap}
+.ts-foot-socials a{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e6e5e1;display:flex;align-items:center;justify-content:center;transition:border-color .12s;text-decoration:none}
+.ts-foot-socials a:hover{border-color:#5b6cff}
+.ts-foot-col{display:flex;flex-direction:column;gap:12px}
+.ts-foot-col-h{font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#9a9da8}
+.ts-foot-col a{color:#4a4d59;font-size:14.5px;font-weight:500;text-decoration:none}
+.ts-foot-col a:hover{color:#5b6cff}
+.ts-foot-sub{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding-top:22px}
+.ts-foot-meta{font-size:13.5px;color:#8a8d99}
+.ts-foot-flags{display:flex;align-items:center;gap:8px;font-size:17px;flex-wrap:wrap}
+.ts-foot-flags .plus{font-size:13px;font-weight:500;color:#5b6cff}
+@media(max-width:960px){ .ts-foot-inner{padding:44px 20px 24px} .ts-foot-cols{grid-template-columns:1fr 1fr;gap:28px} }
+@media(max-width:560px){ .ts-foot-cols{grid-template-columns:1fr} }
 `;
 
-const TS_NAV = `<nav class="topnav">
-  <a class="tnlogo" href="/" aria-label="talksibi home">
-    <img src="/logo.svg?v=24" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='<span style=&quot;font-family:Hanken Grotesk,Inter,sans-serif;font-weight:600;font-size:21px;color:#000&quot;>talksibi</span>'">
+const TS_NAV = `<nav class="ts-nav">
+  <a class="ts-lockup" href="/" aria-label="talksibi home" style="text-decoration:none">
+    <img src="/logo.svg?v=22" alt="talksibi" style="height:34px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:24px&quot;&gt;talksibi&lt;/span&gt;'">
   </a>
-  <div class="tntabs" role="tablist">
-    <a class="tnt" href="/app/community">Community</a>
-    <a class="tnt" href="/app/chats">Chats</a>
-    <a class="tnt" href="/app/parties">Social</a>
-    <a class="tnt" href="/app/learn">Learn</a>
-    <a class="tnt" href="/app/games">Games</a>
-  </div>
-  <div class="tnright">
-    <a class="tnlink" href="/app">Sign in</a>
-    <a class="tnjoin" href="/app">Join app</a>
+  <div class="ts-navlinks">
+    <a class="ts-hide-sm" href="/app">Community</a>
+    <a href="/games">Games</a>
+    <a class="ts-hide-sm" href="/app/learn">Learn</a>
+    <a class="ts-hide-sm" href="/blog">Blog</a>
+    <a class="ts-navlogin" href="/app">Sign in</a>
+    <a class="ts-navjoin" href="/app">Join app</a>
   </div>
 </nav>`;
 
-const TS_FOOTER_TS = `<footer class="sitefoot"><div class="fwrap">
-  <div class="fmenu">
-    <div class="fcol">
-      <h4>Product</h4>
-      <a href="/app">Community</a>
-      <a href="/games">Games</a>
-      <a href="/blog">Blog</a>
-      <a href="/how-to-play">FAQs</a>
-      <a href="/about">About us</a>
+const TS_FOOTER_TS = `<footer class="ts-foot">
+  <div class="ts-foot-inner">
+    <div class="ts-foot-cols">
+      <div class="ts-foot-brand">
+        <a class="ts-lockup" href="/" style="text-decoration:none">
+          <img src="/logo.svg?v=22" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px&quot;&gt;talksibi&lt;/span&gt;'">
+        </a>
+        <div class="ts-foot-blurb">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
+        <div class="ts-foot-socials">
+          <a href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg>
+          </a>
+          <a href="https://tiktok.com/@talksibi" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#4a4d59"><path d="M16.6 5.82C15.9 5.03 15.5 4 15.5 2.9h-3.1v12.4c0 1.4-1.14 2.54-2.55 2.54a2.55 2.55 0 0 1 0-5.1c.26 0 .52.04.76.12V9.7a5.7 5.7 0 0 0-.76-.05 5.66 5.66 0 1 0 5.66 5.66V9.64a7.2 7.2 0 0 0 4.19 1.34V7.9c-1.24 0-2.37-.5-3.1-2.08z"></path></svg>
+          </a>
+          <a href="https://youtube.com/@talksibi" target="_blank" rel="noopener" aria-label="YouTube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M23 7.5s-.23-1.63-.94-2.35c-.9-.94-1.9-.95-2.36-1C16.4 3.9 12 3.9 12 3.9h-.01s-4.4 0-7.7.25c-.46.05-1.46.06-2.36 1C1.22 5.87 1 7.5 1 7.5S.76 9.42.76 11.33v1.8C.76 15.05 1 16.96 1 16.96s.23 1.63.93 2.35c.9.94 2.08.9 2.6 1 1.89.18 7.47.24 7.47.24s4.4-.01 7.7-.25c.46-.06 1.46-.07 2.36-1.01.7-.72.94-2.35.94-2.35s.24-1.9.24-3.82v-1.8C23.24 9.42 23 7.5 23 7.5zM9.7 14.85V8.66l6.22 3.1-6.22 3.09z"></path></svg>
+          </a>
+          <a href="https://x.com/talksibi" target="_blank" rel="noopener" aria-label="X">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#4a4d59"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg>
+          </a>
+        </div>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Product</div>
+        <a href="/app">Community</a>
+        <a href="/games">Games</a>
+        <a href="/app/learn">AI lesson plans</a>
+        <a href="/app/learn">IELTS &amp; TOEFL prep</a>
+        <a href="/become-a-teacher">Become a teacher</a>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Support</div>
+        <a href="/how-to-play">Safety centre</a>
+        <a href="/how-to-play">Community guidelines</a>
+        <a href="mailto:feedback@talksibi.com?subject=talksibi%20—%20Report%20a%20problem">Report a problem</a>
+        <a href="mailto:contact@talksibi.com">Contact us</a>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Legal</div>
+        <a href="/terms">Terms &amp; conditions</a>
+        <a href="/privacy">Privacy policy</a>
+        <a href="/privacy">Cookie policy</a>
+        <a href="/child-safety">18+ policy</a>
+      </div>
     </div>
-    <div class="fcol">
-      <h4>Support</h4>
-      <a href="mailto:contact@talksibi.com?subject=talksibi%20—%20Bug%20report">Report a bug</a>
-      <a href="mailto:feedback@talksibi.com?subject=Feedback">Send feedback</a>
-      <a href="/become-a-teacher" style="color:#ffd166;font-weight:700">🎓 Become a teacher</a>
-      <a href="mailto:contact@talksibi.com">Contact us</a>
-    </div>
-    <div class="fcol">
-      <h4>Legal</h4>
-      <a href="/terms">Terms of Service</a>
-      <a href="/privacy">Privacy Policy</a>
-      <a href="/child-safety">Child Safety</a>
-    </div>
-    <div class="fcol">
-      <h4>Social</h4>
-      <div class="fsocial-grid">
-        <a href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">
-          <svg viewBox="0 0 24 24"><path d="M12 2.2c2.7 0 3 0 4 .1 1 0 1.5.2 1.9.4a3.4 3.4 0 0 1 1.9 1.9c.2.4.3.9.4 1.9 0 1.1.1 1.4.1 4s0 3-.1 4c0 1-.2 1.5-.4 1.9a3.4 3.4 0 0 1-1.9 1.9c-.4.2-.9.3-1.9.4-1 0-1.3.1-4 .1s-3 0-4-.1c-1 0-1.5-.2-1.9-.4a3.4 3.4 0 0 1-1.9-1.9c-.2-.4-.3-.9-.4-1.9C2.2 15 2.2 14.7 2.2 12s0-3 .1-4c0-1 .2-1.5.4-1.9A3.4 3.4 0 0 1 4.6 4.2c.4-.2.9-.3 1.9-.4C7.4 3.7 7.7 3.7 12 3.7zm0-1.5c-2.7 0-3.1 0-4.1.1-1.1 0-1.9.2-2.5.5A4.9 4.9 0 0 0 3.3 5.4c-.3.6-.4 1.4-.5 2.5-.1 1-.1 1.4-.1 4.1s0 3.1.1 4.1c0 1.1.2 1.9.5 2.5a4.9 4.9 0 0 0 2.7 2.7c.6.3 1.4.4 2.5.5 1 .1 1.4.1 4.1.1s3.1 0 4.1-.1c1.1 0 1.9-.2 2.5-.5a4.9 4.9 0 0 0 2.7-2.7c.3-.6.4-1.4.5-2.5.1-1 .1-1.4.1-4.1s0-3.1-.1-4.1c0-1.1-.2-1.9-.5-2.5a4.9 4.9 0 0 0-2.7-2.7c-.6-.3-1.4-.4-2.5-.5-1-.1-1.4-.1-4.1-.1zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.3a3.3 3.3 0 1 1 0-6.6 3.3 3.3 0 0 1 0 6.6zM18.4 5.4a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>
-        </a>
-        <a href="https://x.com/talksibi" target="_blank" rel="noopener" aria-label="X">
-          <svg viewBox="0 0 24 24"><path d="M18.9 3H22l-7.1 8.1L23 21h-6.6l-5.2-6.6L5 21H2l7.5-8.6L1.6 3h6.7l4.7 6zm-1.2 16.1h1.7L7 4.8H5.1z"/></svg>
-        </a>
-        <a href="https://tiktok.com/@talksibi" target="_blank" rel="noopener" aria-label="TikTok">
-          <svg viewBox="0 0 24 24"><path d="M17.4 3.4c-1.5 0-2.7-1.2-2.7-2.7v-.7h-3.3v14.6a2.7 2.7 0 1 1-2.7-2.7c.3 0 .5 0 .8.1V8.6h-.8a6 6 0 1 0 6 6V8.9a6 6 0 0 0 3.8 1.3V7c-.4 0-.7-.1-1.1-.2-.4-.1-.8-.2-1.1-.4a5.4 5.4 0 0 1-2.7-3z"/></svg>
-        </a>
-        <a href="https://youtube.com/@talksibi" target="_blank" rel="noopener" aria-label="YouTube">
-          <svg viewBox="0 0 24 24"><path d="M23.5 6.5a3 3 0 0 0-2.1-2.1C19.6 4 12 4 12 4s-7.6 0-9.4.4A3 3 0 0 0 .5 6.5C0 8.4 0 12 0 12s0 3.6.5 5.5a3 3 0 0 0 2.1 2.1C4.4 20 12 20 12 20s7.6 0 9.4-.4a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.5.5-5.5s0-3.6-.5-5.5zM9.6 15.6V8.4l6.4 3.6z"/></svg>
-        </a>
+    <div class="ts-foot-sub">
+      <div class="ts-foot-meta">© 2026 talksibi · Connect, Learn, Play</div>
+      <div class="ts-foot-flags">
+        <span>🇬🇧</span><span>🇪🇸</span><span>🇫🇷</span><span>🇩🇪</span><span>🇧🇷</span><span>🇯🇵</span><span>🇰🇷</span><span>🇸🇦</span><span>🇮🇳</span><span>🇨🇳</span><span>🇮🇹</span><span>🇹🇷</span>
+        <span class="plus">+ 28 more</span>
       </div>
     </div>
   </div>
-  <div class="fsub">
-    <div class="fmeta">© ${new Date().getFullYear()} talksibi — Connect · Learn · Play. Practise languages with real people.</div>
-    <a class="fbrand" href="/" aria-label="talksibi home">
-      <img src="/mark.svg?v=24" alt="" onerror="this.style.display='none'">
-      <span class="fbrand-t">talksibi</span>
-    </a>
-  </div>
-</div></footer>`;
+</footer>`;
 
 module.exports.TS_CHROME_CSS = TS_CHROME_CSS;
 module.exports.TS_NAV = TS_NAV;
@@ -661,15 +650,24 @@ a:hover{color:#4353e8}
   .ts-partypill{font-size:12px;padding:9px 14px}
   .ts-partypill .ts-avstk span{width:22px;height:22px;font-size:10px}
 }
-/* Shared community topnav + sitefoot CSS — same source as blog + static
-   + games so every surface reads as one site. Unified 20 Aug 2026. */
-${TS_CHROME_CSS}
 </style>
 </head>
 <body>
 
-<!-- Sticky nav — unified with community topnav 20 Aug 2026. -->
-${TS_NAV}
+<!-- Sticky nav -->
+<nav class="ts-nav">
+  <a class="ts-lockup" href="/" aria-label="talksibi home" style="text-decoration:none">
+    <img src="/logo.svg?v=22" alt="talksibi" style="height:34px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:24px&quot;&gt;talksibi&lt;/span&gt;'">
+  </a>
+  <div class="ts-navlinks">
+    <a class="ts-hide-sm" href="/app">Community</a>
+    <a href="#play">Games</a>
+    <a class="ts-hide-sm" href="/app#learn">Learn</a>
+    <a class="ts-hide-sm" href="/blog">Blog</a>
+    <a class="ts-navlogin" href="/app">Sign in</a>
+    <a class="ts-navjoin" href="/app">Join app</a>
+  </div>
+</nav>
 
 <!-- Hero -->
 <section class="ts-hero-band">
@@ -944,8 +942,65 @@ ${TS_NAV}
   </div>
 </section>
 
-<!-- Landing footer — unified with community sitefoot 20 Aug 2026. -->
-${TS_FOOTER_TS}
+<!-- Landing-native footer (per README §41) -->
+<footer class="ts-foot">
+  <div class="ts-foot-inner">
+    <div class="ts-foot-cols">
+      <div class="ts-foot-brand">
+        <a class="ts-lockup" href="/" style="text-decoration:none">
+          <img src="/logo.svg?v=22" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px&quot;&gt;talksibi&lt;/span&gt;'">
+        </a>
+        <div class="ts-foot-blurb">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
+        <div class="ts-foot-socials">
+          <a href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg>
+          </a>
+          <a href="https://tiktok.com/@talksibi" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#4a4d59"><path d="M16.6 5.82C15.9 5.03 15.5 4 15.5 2.9h-3.1v12.4c0 1.4-1.14 2.54-2.55 2.54a2.55 2.55 0 0 1 0-5.1c.26 0 .52.04.76.12V9.7a5.7 5.7 0 0 0-.76-.05 5.66 5.66 0 1 0 5.66 5.66V9.64a7.2 7.2 0 0 0 4.19 1.34V7.9c-1.24 0-2.37-.5-3.1-2.08z"></path></svg>
+          </a>
+          <a href="https://youtube.com/@talksibi" target="_blank" rel="noopener" aria-label="YouTube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M23 7.5s-.23-1.63-.94-2.35c-.9-.94-1.9-.95-2.36-1C16.4 3.9 12 3.9 12 3.9h-.01s-4.4 0-7.7.25c-.46.05-1.46.06-2.36 1C1.22 5.87 1 7.5 1 7.5S.76 9.42.76 11.33v1.8C.76 15.05 1 16.96 1 16.96s.23 1.63.93 2.35c.9.94 2.08.9 2.6 1 1.89.18 7.47.24 7.47.24s4.4-.01 7.7-.25c.46-.06 1.46-.07 2.36-1.01.7-.72.94-2.35.94-2.35s.24-1.9.24-3.82v-1.8C23.24 9.42 23 7.5 23 7.5zM9.7 14.85V8.66l6.22 3.1-6.22 3.09z"></path></svg>
+          </a>
+          <a href="https://x.com/talksibi" target="_blank" rel="noopener" aria-label="X">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#4a4d59"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg>
+          </a>
+          <a href="#" aria-label="Discord">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#4a4d59"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.89-1.52.07.07 0 0 0-.08.04c-.21.38-.44.87-.6 1.25a18.3 18.3 0 0 0-5.5 0 12.6 12.6 0 0 0-.61-1.25.08.08 0 0 0-.08-.04 19.74 19.74 0 0 0-4.88 1.52.07.07 0 0 0-.04.03C.53 9.05-.32 13.58.1 18.06c0 .02.01.04.03.05a19.9 19.9 0 0 0 6 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.22-2a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.9.08.08 0 0 1-.01-.13c.13-.09.25-.19.37-.29a.07.07 0 0 1 .08 0c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08 0c.12.1.25.2.37.3a.08.08 0 0 1-.01.12c-.6.35-1.22.64-1.87.9a.08.08 0 0 0-.04.1c.36.7.77 1.37 1.22 2a.08.08 0 0 0 .08.04 19.84 19.84 0 0 0 6.02-3.03.08.08 0 0 0 .03-.05c.5-5.18-.84-9.68-3.55-13.66a.06.06 0 0 0-.03-.03zM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42z"></path></svg>
+          </a>
+        </div>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Product</div>
+        <a href="#connect">Community</a>
+        <a href="#play">Games</a>
+        <a href="/app#learn">AI lesson plans</a>
+        <a href="/app#learn">IELTS &amp; TOEFL prep</a>
+        <a href="/become-a-teacher">Become a teacher</a>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Support</div>
+        <a href="/how-to-play">Safety centre</a>
+        <a href="/how-to-play">Community guidelines</a>
+        <a href="mailto:feedback@talksibi.com?subject=talksibi%20—%20Report%20a%20problem">Report a problem</a>
+        <a href="mailto:contact@talksibi.com">Contact us</a>
+      </div>
+      <div class="ts-foot-col">
+        <div class="ts-foot-col-h">Legal</div>
+        <a href="/terms">Terms &amp; conditions</a>
+        <a href="/privacy">Privacy policy</a>
+        <a href="/privacy">Cookie policy</a>
+        <a href="/child-safety">18+ policy</a>
+      </div>
+    </div>
+    <div class="ts-foot-sub">
+      <div class="ts-foot-meta">© 2026 talksibi · Connect, Learn, Play</div>
+      <div class="ts-foot-flags">
+        <span>🇬🇧</span><span>🇪🇸</span><span>🇫🇷</span><span>🇩🇪</span><span>🇧🇷</span><span>🇯🇵</span><span>🇰🇷</span><span>🇸🇦</span><span>🇮🇳</span><span>🇨🇳</span><span>🇮🇹</span><span>🇹🇷</span>
+        <span class="plus">+ 28 more</span>
+      </div>
+    </div>
+  </div>
+</footer>
 
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
