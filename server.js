@@ -34,6 +34,13 @@ app.use((req, res, next) => {
   res.set('X-Content-Type-Options', 'nosniff');
   res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.set('X-Frame-Options', 'SAMEORIGIN');
+  // Explicitly allow mic + camera + display-capture on our own origin so
+  // the TWA (Trusted Web Activity) gets Android's system-level mic prompt
+  // when a user joins a party or records a voice note. Without this
+  // header, some Chromium builds silently downgrade capability inside a
+  // TWA. Nothing else is granted — geolocation, USB, MIDI, etc. stay
+  // off. Owner ask 20 Aug 2026 (Android launch prep).
+  res.set('Permissions-Policy', 'microphone=(self), camera=(self), display-capture=(self), geolocation=()');
   next();
 });
 const landing = require('./landing');
@@ -141,6 +148,22 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', '.well-known', 'assetlinks.json'));
 });
 
+// Legal pages — clean URLs for Play Store submission (Privacy Policy is
+// mandatory, Terms + Child Safety expected). Static HTML lives in
+// public/; these routes give shorter shareable paths.
+app.get('/privacy', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+app.get('/terms', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'terms.html'));
+});
+app.get('/safety', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'safety.html'));
+});
+
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
   setHeaders(res, filePath) {
@@ -156,6 +179,9 @@ app.use(express.static(path.join(__dirname, 'public'), {
     // Service worker must NEVER be long-cached — Chrome revalidates it
     // on load but only if the cache header allows it.
     if (filePath.endsWith('/sw.js') || filePath.endsWith('\\sw.js')) res.setHeader('Cache-Control', 'no-cache');
+    // Manifest same story — if we bump the PWA name/icon/shortcuts we
+    // want browsers to see it immediately, not on next-week's revalidate.
+    if (filePath.endsWith('manifest.webmanifest')) res.setHeader('Cache-Control', 'no-cache');
   }
 }));
 app.get('/healthz', (req, res) => res.send('ok'));
