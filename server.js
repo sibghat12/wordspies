@@ -144,7 +144,18 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
   setHeaders(res, filePath) {
-    if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
+    // Owner ask 20 Aug 2026 — "every page I need to refresh so I can
+    // see the footer / games". Root cause: express.static was caching
+    // ALL .html for 7 days (only index.html was exempt), so game pages
+    // held the old chrome / footer / cache-bust version until a hard
+    // reload. Every HTML file now gets no-cache so browsers revalidate
+    // on each load — the underlying content is still on 7-day cache
+    // for images/fonts/etc, but the HTML pointing at cache-busted
+    // scripts is always fresh.
+    if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+    // Service worker must NEVER be long-cached — Chrome revalidates it
+    // on load but only if the cache header allows it.
+    if (filePath.endsWith('/sw.js') || filePath.endsWith('\\sw.js')) res.setHeader('Cache-Control', 'no-cache');
   }
 }));
 app.get('/healthz', (req, res) => res.send('ok'));

@@ -937,6 +937,226 @@ const articles = {
 <p>Italian is famously musical. Ten minutes in an Italian voice party trains your ear for its rhythm and intonation better than any listening exercise. Speak when you're ready.</p>
 <h2>Games in Italian</h2>
 <p>Play word games with an Italian partner. You'll pick up conversational vocabulary faster than any flashcard app. <a href="/app">Try TalkSibi free</a> — no sign-up needed to open a room.</p>`
+  },
+
+  // ─── 20 Aug 2026: long-tail per-language + comparison posts ──────
+  // These sit under the /learn-{lang} landing pages in the funnel —
+  // blog answers a specific question, landing converts. Every post
+  // links to its matching /learn-{slug} landing.
+  'how-to-learn-japanese-fast': {
+    title: 'How to Learn Japanese Fast — A 30-Day Speaking Plan (Free)',
+    desc: 'A realistic 30-day plan to actually speak Japanese, using native speaker chat, voice notes, and AI grammar corrections. No paid apps, no textbook fluff.',
+    date: '2026-08-20',
+    html: `
+<p>"How long to learn Japanese?" is the wrong question. The right one is: <strong>how many hours will you actually speak it this month?</strong> Every honest answer to "how to learn Japanese fast" boils down to speaking hours, not study hours. Here's a 30-day plan that gets you into real conversations from day one.</p>
+<h2>Week 1 — Hiragana + 10 phrases</h2>
+<p>Learn hiragana in a weekend (Tofugu's guide is free). Then memorise 10 self-intro phrases: <em>watashi wa … desu</em>, <em>Amerika kara desu</em>, etc. That's your speaking kit — enough to hold a two-minute chat.</p>
+<h2>Week 2 — Start speaking (badly)</h2>
+<p>Open <a href="/app">TalkSibi</a>, set your learning language to Japanese, and message five people learning your native language. Use your 10 phrases. When you don't know a word, type it in English and use the built-in <a href="/blog/ai-corrections-for-language-learning">AI corrector</a> — it rewrites your Japanese with proper particles and grammar. You learn from every message.</p>
+<h2>Week 3 — Voice notes</h2>
+<p>Speaking out loud is where the real gains start. Send voice notes instead of text — ten seconds each. Your Japanese partner will do the same. You'll be surprised how much your ear tunes in.</p>
+<h2>Week 4 — Live voice</h2>
+<p>Jump into a Japanese <a href="/blog/practise-speaking-a-language-online">voice party</a> — you don't need to talk, just listen for ten minutes. When you're ready, unmute and try one sentence. The confidence unlock from that first live exchange is enormous.</p>
+<h2>Why speed matters</h2>
+<p>Japanese has a reputation as slow because most learners spend their first six months on kanji instead of talking. Flip that. Talk from day 8; layer kanji on top later. The path to fluency is measured in conversations, not chapters.</p>
+<p>Ready to start? <a href="/learn-japanese">Full Japanese landing page</a> · <a href="/app">Sign up free</a> · <a href="/blog/learn-japanese-native-speakers-online-free">More on Japanese speakers online</a>.</p>`
+  },
+
+  'how-to-learn-spanish-fast': {
+    title: 'How to Learn Spanish Fast — Speaking-First in 30 Days (Free)',
+    desc: 'The fastest way to learn Spanish is to speak it from day one. This 30-day plan uses free native-speaker chat, voice notes, and AI corrections. No paid apps, no fluff.',
+    date: '2026-08-20',
+    html: `
+<p>The "how to learn Spanish fast" search returns 400 articles that all tell you to install Duolingo. Duolingo teaches you to translate sentences. It doesn't teach you to <strong>speak</strong>. Here's what does, in 30 days, free.</p>
+<h2>Week 1 — 20 verbs + 30 nouns</h2>
+<p>Spanish rewards you fast because 500 million people speak it and most vocab is regular. Learn 20 common verbs (ser, estar, tener, ir, querer…) and 30 daily nouns. That's enough to build hundreds of real sentences.</p>
+<h2>Week 2 — Speak on paper first</h2>
+<p>Open <a href="/app">TalkSibi</a> and text five Spanish speakers learning English. Every message is a speaking rep in slow motion. Use the built-in <a href="/blog/ai-grammar-correction-spanish">AI grammar correction</a> to fix ser/estar mistakes and verb agreement — you learn faster from a diff than from a lesson.</p>
+<h2>Week 3 — Voice notes both ways</h2>
+<p>Switch from typing to voice notes. Ten seconds each. Your ear starts locking onto the rhythm of Spanish — the trilled R, the fast vowels — in a way no podcast can match.</p>
+<h2>Week 4 — Live voice + games</h2>
+<p>Join a Spanish <a href="/blog/practise-speaking-a-language-online">voice party</a>. Lurk for ten minutes, then unmute. Play <a href="/blog/games-to-learn-a-language">word games</a> in Spanish with a partner — Codenames or Word Race — vocabulary sticks better when it's a game.</p>
+<h2>Latin vs Spain — pick and move on</h2>
+<p>Both are Spanish. Mexican and Spaniard understand each other. Filter the community by country in TalkSibi if you want to focus on one accent. Don't overthink it — start talking.</p>
+<p><a href="/learn-spanish">Full Spanish landing page</a> · <a href="/app">Sign up free</a> · <a href="/blog/learn-spanish-online-native-speakers">More on Spanish native speakers</a>.</p>`
+  },
+
+  'learn-portuguese-native-speakers-online-free': {
+    title: 'Learn Portuguese Online With Native Speakers — Free (Brazilian & European)',
+    desc: 'Practise Portuguese with real native speakers from Brazil, Portugal, Angola and Mozambique. Free chat, voice, AI grammar correction, and word games.',
+    date: '2026-08-20',
+    html: `
+<p>Portuguese is one of the world's most-spoken languages (260M+) and one of the least-served by learning apps. Duolingo has one course. Babbel has two. There aren't many good options — which is why finding a real Brazilian or Portuguese friend to chat with is the shortcut most learners never try.</p>
+<h2>Brazilian vs European Portuguese</h2>
+<p>Same written language, different rhythm and vocab. Brazilian is more open-vowelled, softer, and much more common online (200M+ speakers vs 10M in Portugal). European is what you'd hear in Lisbon or Porto. Both are fully mutually intelligible; pick based on where you're headed.</p>
+<h2>Meet Portuguese speakers on TalkSibi</h2>
+<p><a href="/app">TalkSibi</a> is a free language-exchange app. Set Portuguese as your learning language and native speakers from Brazil, Portugal, Angola and Mozambique appear in your feed. Filter by country in the community tab to target a specific accent.</p>
+<h2>Speak Portuguese without embarrassment</h2>
+<p>Everything you write in Portuguese can be quietly rewritten by the <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> — verb conjugations, gender agreement, contractions (de + o = do). Your partner never has to interrupt to correct you.</p>
+<h2>Voice notes for pronunciation</h2>
+<p>Portuguese has nasal vowels and shushing consonants that no textbook prepares you for. Trade voice notes with a native speaker — ten seconds each — and your ear tunes in fast.</p>
+<h2>Start free</h2>
+<p><a href="/learn-portuguese">Full Portuguese landing page</a> · <a href="/app">Sign up free</a> — no card, no premium tier.</p>`
+  },
+
+  'ielts-speaking-practice-free-native-speakers': {
+    title: 'IELTS Speaking Practice with Real Native Speakers — Free',
+    desc: 'The IELTS speaking section rewards natural conversation, not memorised answers. Practise free with real English native speakers on TalkSibi — chat, voice, AI corrections.',
+    date: '2026-08-20',
+    html: `
+<p>The IELTS speaking test is 11 to 14 minutes with an examiner. Preparing for it by memorising 50 answers is the trap that keeps most candidates stuck at 6.5. Examiners can spot recital in under 30 seconds. What lifts your score is <strong>real conversation practice</strong> — the kind you can only get from talking to actual English speakers, often.</p>
+<h2>What examiners actually reward</h2>
+<p>Fluency and coherence, lexical resource, grammar, pronunciation. Notice what's not on the list: perfect grammar. A test-taker who speaks confidently with a couple of mistakes beats one who's flawless but robotic. Every marker on the planet wants to hear real conversation.</p>
+<h2>Free IELTS speaking practice — how</h2>
+<p><a href="/app">TalkSibi</a> is a free language-exchange app. Set English as your learning language and you'll find British, American, Canadian, Australian and Irish native speakers online right now. Message a few, explain you're prepping for IELTS, and ask if they'll do a mock Part 2 (one-minute monologue). Most say yes — it's a low-lift favour, and they might want the same for their target language.</p>
+<h2>Use AI to spot your gaps</h2>
+<p>Between real practice sessions, use the built-in <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> on your text chats. It highlights the patterns you keep getting wrong — tense mix-ups, article usage — and those are exactly the things examiners note down.</p>
+<h2>Part 3 — the discussion</h2>
+<p>Part 3 is the abstract-topic discussion where most candidates freeze. The fix is <strong>practice</strong>, on abstract topics, with people who'll push back. Join a <a href="/blog/practise-speaking-a-language-online">voice party</a> on TalkSibi where the theme is "current events" or "opinions on tech" and you're doing free Part 3 prep with an audience.</p>
+<h2>Cost comparison</h2>
+<p>An IELTS speaking tutor costs £30–£60 per session. TalkSibi's free. Use both if you can, but if you can't, real conversation with native speakers gets you 80% of the way there.</p>
+<p><a href="/learn-english">Full English landing page</a> · <a href="/app">Sign up free</a>.</p>`
+  },
+
+  'talksibi-vs-tandem': {
+    title: 'TalkSibi vs Tandem — Which Free Language Exchange App Is Better in 2026?',
+    desc: 'Both let you chat with native speakers. TalkSibi is fully free with AI grammar correction and word games; Tandem charges for filters. Honest comparison.',
+    date: '2026-08-20',
+    html: `
+<p>Tandem was the original language-exchange app. It's still popular. But in 2026 it's not the only option, and its free tier has thinned to the point where a serious learner will hit paid features fast. TalkSibi is a newer, fully free alternative — here's the honest comparison.</p>
+<h2>What's free on each app</h2>
+<ul>
+<li><strong>Tandem free:</strong> match with speakers, text chat, some voice. Filters (by city, level, gender) mostly locked behind Tandem Pro (~£7/month).</li>
+<li><strong>TalkSibi free:</strong> match with speakers, text chat, voice notes, live voice parties, AI grammar corrections on every message, and word games in your target language. No paid tier.</li>
+</ul>
+<h2>Native-speaker pool</h2>
+<p>Tandem is bigger — years of head start. TalkSibi's community is smaller but growing fast, active across every major language, and no paywall means everyone can message everyone.</p>
+<h2>AI features</h2>
+<p>Tandem's AI helper is a Pro feature. TalkSibi's <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> is free and works on every message — you tap a wand, it rewrites your target-language message correctly, and shows what changed.</p>
+<h2>What's actually different</h2>
+<p>TalkSibi added <a href="/blog/games-to-learn-a-language">word games</a> — Codenames, Word Race, Guess Word — so vocab practice feels like play. Tandem doesn't have these. TalkSibi also has live voice parties where you drop in on a public room; Tandem is 1-to-1 only.</p>
+<h2>Safety + community</h2>
+<p>Both moderate. Both let you report and block. TalkSibi is 18+ verified; Tandem is 18+ too, and both have community guidelines.</p>
+<h2>The honest verdict</h2>
+<p>If you want the biggest possible pool and are willing to pay: Tandem. If you want everything free forever, plus AI corrections and games: TalkSibi. Try both — it's a five-minute signup each.</p>
+<p><a href="/app">Try TalkSibi free</a> · <a href="/learn-japanese">Or start with Japanese</a>.</p>`
+  },
+
+  'talksibi-vs-hellotalk': {
+    title: 'TalkSibi vs HelloTalk — Free Language Exchange Compared (2026)',
+    desc: 'HelloTalk pioneered language exchange chat. TalkSibi adds AI grammar correction, live voice parties, and word games — all free. Real comparison.',
+    date: '2026-08-20',
+    html: `
+<p>HelloTalk is one of the biggest names in language exchange — 40 million users and years of head start. TalkSibi is smaller, newer, and free-to-the-bone. If you're deciding which to spend your time on, here's the honest breakdown.</p>
+<h2>What each app is really for</h2>
+<p><strong>HelloTalk:</strong> massive worldwide community, moments (like a language-exchange twitter), text + voice chat. Some features (transcription, translation limits) are gated behind HelloTalk VIP.</p>
+<p><strong>TalkSibi:</strong> chat with native speakers, live audio parties, AI grammar corrections on every message, and word games in your target language. All free — no VIP tier.</p>
+<h2>AI correction</h2>
+<p>HelloTalk lets you correct text (or be corrected) by other users — but the AI-assisted rewrite is a premium feature. TalkSibi has <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> built in, one tap, free.</p>
+<h2>Games and parties</h2>
+<p>HelloTalk doesn't have language games or public audio parties. TalkSibi has both — six live games (Codenames, Word Race, Guess Word, Meld, Wordchain, Spy) plus <a href="/blog/practise-speaking-a-language-online">voice parties</a> where you can lurk before you speak.</p>
+<h2>Native-speaker pool</h2>
+<p>HelloTalk is bigger. TalkSibi is more active in Europe + Latin America + East Asia, with a smaller but engaged community. If your target is Chinese specifically, HelloTalk still leads. For Spanish, French, German, Italian, Japanese, Korean, Portuguese: TalkSibi is competitive.</p>
+<h2>Ads</h2>
+<p>HelloTalk shows ads on free. TalkSibi does not.</p>
+<h2>Bottom line</h2>
+<p>If your target is Chinese or you want the biggest existing pool, start with HelloTalk. If you want AI corrections, games, and voice parties without ever paying: TalkSibi. Signup on TalkSibi is 60 seconds.</p>
+<p><a href="/app">Try TalkSibi free</a> · <a href="/learn-korean">Or start with Korean</a>.</p>`
+  },
+
+  'how-to-find-a-language-partner-that-replies': {
+    title: 'How to Find a Language Partner That Actually Replies',
+    desc: 'The problem isn\'t finding a language partner — it\'s finding one who replies. 7 things to do differently so your messages land and your exchanges last.',
+    date: '2026-08-20',
+    html: `
+<p>Anyone can send 20 "hey!" messages to native speakers. The problem is the reply rate — it's rough, usually under 10%. Here's what actually gets you a partner who sticks.</p>
+<h2>1. Fill out your profile — both languages</h2>
+<p>A profile with "learning Japanese, native English, love travel and cooking" outperforms "hi" by 10x. People decide in three seconds whether to reply. Give them a reason.</p>
+<h2>2. Message people learning YOUR native language</h2>
+<p>Reply rates on TalkSibi jump when there's a two-way exchange on the table. A Japanese speaker who's learning English will reply to an English speaker learning Japanese. Both of you get something from the conversation — nobody feels like a free tutor.</p>
+<h2>3. Skip "hey!" — open with something specific</h2>
+<p>"Hi, I'm learning Japanese for a trip to Kyoto next spring — what area would you recommend?" gets a reply. "Hi!" doesn't. Pick something from their profile and open on it.</p>
+<h2>4. Say the exchange rules up front</h2>
+<p>"I can help you with English casual writing if you help me with Japanese daily phrases — 10 min each, when we can?" is a clear offer. Most people say yes.</p>
+<h2>5. Voice notes, not walls of text</h2>
+<p>Ten-second voice notes get answered faster than 200-word paragraphs. And they're better speaking practice anyway.</p>
+<h2>6. Reply within 24 hours</h2>
+<p>Exchange partnerships die on lag. If you can, reply the same day. If you can't, at least send a "will answer tonight" holder.</p>
+<h2>7. Message 5 people, not 20</h2>
+<p>You need one good ongoing partner, not twenty half-conversations. Pick five profiles that actually match your interests + language and put effort into each. Better hit rate, better exchanges.</p>
+<p>Ready to try? <a href="/app">Sign up for TalkSibi free</a> · <a href="/blog/find-a-language-exchange-partner">More on finding partners</a>.</p>`
+  },
+
+  'overcome-fear-of-speaking-a-new-language': {
+    title: 'How to Get Over the Fear of Speaking a New Language',
+    desc: 'The biggest barrier to language fluency isn\'t grammar — it\'s the fear of speaking. 6 practical fixes that work, based on what actually helps beginners break through.',
+    date: '2026-08-20',
+    html: `
+<p>You've been "learning" a language for two years and still can't hold a two-minute conversation. Sound familiar? The issue is almost never grammar or vocab — it's the fear of opening your mouth. Here's how to fix that, with things you can start today.</p>
+<h2>1. Understand why the fear is loud</h2>
+<p>Your adult brain hates sounding stupid. That's why speaking a second language feels so exposing — you feel like a child, and no adult wants that. Naming the fear takes the edge off. Everyone learning a language feels it.</p>
+<h2>2. Text-chat first, voice second</h2>
+<p>Typing in your target language builds confidence without the pronunciation panic. Try <a href="/app">TalkSibi</a> — text-chat with real native speakers, use the <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> as a safety net. When you've had 20 successful text exchanges, voice feels less scary.</p>
+<h2>3. Voice notes before live calls</h2>
+<p>Voice notes are speaking practice without the fear of freezing. Record ten seconds, listen back, re-record if you want, send. You control the timing. This one habit shifts most beginners from "can't speak" to "can speak" in three weeks.</p>
+<h2>4. Lurk in a voice party</h2>
+<p>Voice parties on TalkSibi are live audio rooms in your target language. You can join and listen for ten minutes without unmuting. Everyone else in the room started exactly where you are. Take the mic when you feel ready — no one will judge.</p>
+<h2>5. Perfectionism is the enemy</h2>
+<p>Speak badly, faster. Every time you don't say the sentence because you're not sure of the grammar, you lose the rep. Say it wrong. Your partner will gently correct or the AI will. That's how it clicks.</p>
+<h2>6. Play a game together</h2>
+<p>Word games with a partner in your target language take the pressure off "correct sentences" and put it on "getting through the round." You end up speaking twice as much without noticing. <a href="/blog/games-to-learn-a-language">More on language games</a>.</p>
+<p><a href="/app">Start free on TalkSibi</a> — no card, no premium tier.</p>`
+  },
+
+  'best-way-to-practice-speaking-a-language-at-home': {
+    title: 'The Best Way to Practice Speaking a Language at Home in 2026',
+    desc: 'You don\'t need to move abroad to become fluent. The best home practice combines native speaker chat, voice notes, AI corrections, and daily short sessions. Here\'s how.',
+    date: '2026-08-20',
+    html: `
+<p>The travel-to-fluency myth was true when finding native speakers was hard. In 2026 you can meet 100 Japanese speakers online in an afternoon. What matters now is the <strong>quality</strong> of your at-home practice. Here's the stack that works.</p>
+<h2>Two 10-minute sessions beat one 60-minute session</h2>
+<p>Language learning is a muscle. Two short daily sessions build it faster than one long weekly one. Twenty minutes a day, split, is the target.</p>
+<h2>Session A — text-chat with native speakers</h2>
+<p>Open <a href="/app">TalkSibi</a>, message 2-3 native speakers of your target language, send them a real message. Use the <a href="/blog/ai-corrections-for-language-learning">AI grammar correction</a> when you're not sure. Ten minutes.</p>
+<h2>Session B — voice notes</h2>
+<p>Same or different partner. Send ten-second voice notes back and forth. Your speaking muscle and your ear both level up. Ten minutes.</p>
+<h2>Once a week — live voice</h2>
+<p>Join a <a href="/blog/practise-speaking-a-language-online">voice party</a> in your target language. Lurk first if you need to. Take the mic for one sentence. Confidence unlocks.</p>
+<h2>Add games</h2>
+<p>Play a <a href="/blog/games-to-learn-a-language">word game</a> in your target language with a partner. Codenames or Word Race. You'll pick up vocab twice as fast because you're using it under real pressure.</p>
+<h2>Measure with a real conversation</h2>
+<p>Every 30 days, do a 15-minute live voice call in your target language. Track whether it's easier than last month. It always is.</p>
+<h2>What you don't need</h2>
+<p>You don't need a textbook. You don't need a paid tutor. You don't need to move to Tokyo. You need reps + real speakers + a way to see your mistakes. That's what this stack gives you, for free.</p>
+<p><a href="/app">Try TalkSibi free</a> · Pick a language: <a href="/learn-spanish">Spanish</a> · <a href="/learn-french">French</a> · <a href="/learn-japanese">Japanese</a> · <a href="/learn-korean">Korean</a>.</p>`
+  },
+
+  'language-exchange-vs-tutor-which-is-better': {
+    title: 'Language Exchange vs Tutor — Which Actually Gets You Fluent?',
+    desc: 'Paid tutors give you structure. Free language exchanges give you real conversation. Which actually makes you fluent — and can you do both without going broke?',
+    date: '2026-08-20',
+    html: `
+<p>You've hit the wall past which apps don't help. Two paths open up: hire a tutor on iTalki (~£15-30/hour) or find a language exchange partner (free). Which actually gets you fluent?</p>
+<h2>What tutors give you</h2>
+<p>Structure. A lesson plan. Someone whose job is to fix your grammar and push you outside your comfort zone. Good tutors run drills, correct pronunciation, and hold you accountable. Bad ones just chat with you for £20.</p>
+<h2>What exchanges give you</h2>
+<p>Volume of real conversation. Cultural intuition. The slang, jokes, hesitations, and everyday phrasings tutors don't teach. And they're free — 5 exchange partners is 5 hours a week of practice with people who actually speak the language.</p>
+<h2>What each is bad at</h2>
+<p>Tutors are expensive and often over-formal. Exchange partners can flake, chat in English by default, or want to trade tutoring time for their own study — not exchange.</p>
+<h2>The hybrid that actually works</h2>
+<p>Do both. 1 tutor session a week for structure and formal correction. 4-5 exchange sessions for volume and real usage. That's £15-30 a week for a full immersion diet.</p>
+<h2>How to make exchanges actually work</h2>
+<p>Most exchange partnerships die because there's no structure. Fix it with three rules:</p>
+<ul>
+<li><strong>Split time evenly.</strong> 15 minutes your language, 15 minutes theirs. Timer.</li>
+<li><strong>Correct each other.</strong> Ask for corrections. Give them. Don't just "have a nice chat."</li>
+<li><strong>Reply within 24 hours.</strong> Lag kills exchanges.</li>
+</ul>
+<h2>Where to find exchange partners</h2>
+<p><a href="/app">TalkSibi</a> is free, has native speakers of every major language, and includes AI grammar correction so you learn even from messages sent between exchange sessions. <a href="/blog/how-to-find-a-language-partner-that-replies">More on finding partners</a>.</p>
+<h2>The verdict</h2>
+<p>Tutor alone: slow and expensive to fluency. Exchange alone: fast but structureless. Both: the fastest, cheapest path to real fluency ever available.</p>
+<p><a href="/app">Sign up for TalkSibi free</a>.</p>`
   }
 };
 
