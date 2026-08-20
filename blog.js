@@ -14,16 +14,18 @@ const _imgCache = {};
 function postImg(slug){
   if (_imgCache[slug]) return _imgCache[slug];
   const dir = path.join(__dirname, 'public', 'blog-img');
-  // SVG preferred — every post ships one now (per-title AI portrait
-  // + v9c mark, generated 19 Aug 2026). PNG/JPG kept for the older
-  // hand-rendered banners that still exist for a handful of posts.
-  for (const ext of ['svg', 'png', 'jpg']) {
+  // Owner ask 20 Aug 2026: designer shipped a fresh set of 1200×630
+  // JPG covers for 35 posts (design_handoff .../blog-covers). JPG now
+  // wins over the older generated SVGs so those covers show up
+  // everywhere. SVG kept as fallback for any slug the designer didn't
+  // cover; PNG is legacy.
+  for (const ext of ['jpg', 'svg', 'png']) {
     if (fs.existsSync(path.join(dir, slug + '.' + ext))) {
       _imgCache[slug] = '/blog-img/' + slug + '.' + ext;
       return _imgCache[slug];
     }
   }
-  _imgCache[slug] = '/og-image.png';
+  _imgCache[slug] = '/og-image.png?v=2';
   return _imgCache[slug];
 }
 // Derive SEO keywords for a post from its title + a slug-based bank of
@@ -1161,7 +1163,7 @@ const articles = {
 };
 
 function layout(title, desc, body, path, banner, schema, image, keywords) {
-  const ogimg = SITE + (image || '/og-image.png');
+  const ogimg = SITE + (image || '/og-image.png?v=2');
   return `<!DOCTYPE html>
 <html lang="en"><head>
 ${GA}

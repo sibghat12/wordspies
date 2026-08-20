@@ -353,8 +353,8 @@ ${GA}
      og:image so older scrapers + Twitter fall back cleanly if they
      don't accept SVG. Regenerate og-image.png from og-image.svg
      when you can (any online SVG→PNG at 1200×630 works). -->
-<meta property="og:image" content="${SITE}/og-image.svg">
-<meta property="og:image" content="${SITE}/og-image.png">
+<meta property="og:image" content="${SITE}/og-image.svg?v=2">
+<meta property="og:image" content="${SITE}/og-image.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="talksibi — connect, learn, play with real language partners">
@@ -364,7 +364,7 @@ ${GA}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="talksibi — Practise languages with real people">
 <meta name="twitter:description" content="Chat with native speakers, play games together, join live parties. Free forever.">
-<meta name="twitter:image" content="${SITE}/og-image.png">
+<meta name="twitter:image" content="${SITE}/og-image.png?v=2">
 <meta name="twitter:image:alt" content="talksibi — connect, learn, play">
 
 <!-- Icons / PWA -->

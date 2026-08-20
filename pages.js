@@ -93,7 +93,7 @@ ${GA}
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta property="og:site_name" content="talksibi"><meta property="og:locale" content="en_GB">
 <meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="website">
-<meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${SITE}/og-image.svg"><meta property="og:image" content="${SITE}/og-image.png">
+<meta property="og:url" content="${SITE}${path}"><meta property="og:image" content="${SITE}/og-image.svg?v=2"><meta property="og:image" content="${SITE}/og-image.png?v=2">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
