@@ -21,7 +21,7 @@
 <meta charset="UTF-8">
 <!-- maximum-scale=1 is what stops iOS zooming the whole layout every time a
      search box or message field gets focus; pinch-zoom still works. -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TalkSibi — Practise languages with real people</title>
 <meta name="description" content="Meet real people to practise languages with. Create your profile, follow language partners, and chat any time — free and browser-based.">
 <meta name="theme-color" content="#fafafa">
@@ -4701,11 +4701,15 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
       #tabMember .pm2-rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:start}
     }
     @media(max-width:719px){
-      #tabMember .pm2-hero{height:150px}
+      /* Mobile: shorter hero, avatar sits FULLY BELOW the map (no
+         overlap). Owner ask 20 Aug 2026 — "on mobile the picture
+         becomes under the map, half looks cut off". Overlap was
+         -44px; now 14px positive gap so the whole face shows. */
+      #tabMember .pm2-hero{height:130px}
       #tabMember .pm2-back{left:16px;padding:7px 12px;font-size:12.5px}
       #tabMember .pm2-loc-pill{display:none}
-      #tabMember .pm2-id{margin-top:-44px;padding:0 16px}
-      #tabMember .pm2-ph{width:88px;height:88px;font-size:32px}
+      #tabMember .pm2-id{margin-top:14px;padding:0 16px}
+      #tabMember .pm2-ph{width:96px;height:96px;font-size:34px}
       #tabMember .pm2-name{font-size:22px}
       #tabMember .pm2-btn{padding:11px 18px;font-size:13.5px}
       #tabMember .pm2-wrap{padding:20px 16px 96px;gap:12px}
