@@ -1330,7 +1330,6 @@ function indexPage() {
     return `<a class="pcard" href="/blog/${slug}">
       <div class="pcard-thumb">
         <img src="${postImg(slug)}" alt="${esc(a.title)}" loading="lazy" width="1200" height="630">
-        <span class="pcard-badge">${catLabel(cat)}</span>
       </div>
       <div class="pcard-body">
         <h2>${a.title}</h2>
