@@ -1,9 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JTH809Z8NH');gtag('config','AW-638211258');</script>
+<!-- Consent-gated Google Analytics + Ads. Mirrors landing.js/pages.js so
+     the app matches the marketing site's GDPR posture. NOTHING loads
+     until the user taps "Accept all" in the cookie modal below. Choice
+     is remembered in localStorage.ws_cc_v1. Owner ask 20 Aug 2026 —
+     make it 100% ready for Play Store review. -->
+<script>
+(function(){
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  window.wsLoadAnalytics = function(){
+    if (window._wsGaLoaded) return; window._wsGaLoaded = true;
+    var s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=G-JTH809Z8NH';
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', 'G-JTH809Z8NH', { anonymize_ip: true });
+    gtag('config', 'AW-638211258');
+  };
+  window.wsLoadAds = function(){ if (window._wsAdsLoaded) return; window._wsAdsLoaded = true; };
+  try { var c = localStorage.getItem('ws_cc_v1'); if (c === 'accept') { wsLoadAnalytics(); wsLoadAds(); } } catch(e){}
+})();
+</script>
 <!-- Referral capture (owner ask 14 Aug 2026 — "invite your friends").
      If the visitor lands with ?ref=<CODE> in the URL, stash it in a
      30-day cookie AND localStorage so signup completion can credit the
@@ -14142,5 +14161,40 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 </script>
 
 <script src="/wsbrand.js?v=24" defer></script>
+
+<!-- Cookie consent modal — GDPR. Mirrors landing.js CONSENT_MODAL so the
+     app matches the marketing site. Only appears on first visit (nothing
+     saved in localStorage.ws_cc_v1). Auto-dismisses after choice. -->
+<style>
+.ws-cc{position:fixed;inset:0;background:rgba(15,17,25,.6);display:none;align-items:center;justify-content:center;z-index:100000;padding:20px;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif}
+.ws-cc.on{display:flex;animation:wsccFade .2s ease}
+@keyframes wsccFade{from{opacity:0}to{opacity:1}}
+.ws-cc-card{background:#fff;border-radius:20px;max-width:440px;width:100%;padding:26px 24px 22px;box-shadow:0 24px 60px rgba(0,0,0,.32)}
+.ws-cc-card h3{font-weight:600;font-size:20px;margin:0 0 8px;color:#16181f}
+.ws-cc-card p{font-size:14px;line-height:1.55;color:#4a4d59;margin:0 0 16px}
+.ws-cc-card p a{color:#5b6cff;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.ws-cc-actions{display:flex;flex-direction:column;gap:8px}
+.ws-cc-actions button{border:0;border-radius:12px;padding:12px;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit}
+.ws-cc-actions .ws-cc-accept{background:#5b6cff;color:#fff}
+.ws-cc-actions .ws-cc-reject{background:#f3f4f6;color:#16181f}
+</style>
+<div class="ws-cc" id="wsCcBd" role="dialog" aria-modal="true"><div class="ws-cc-card">
+  <h3>🍪 Cookies on TalkSibi</h3>
+  <p>We use essential cookies to sign you in. With your permission we'd also use analytics + advertising cookies to improve the app. <a href="/privacy">Read the full policy</a>.</p>
+  <div class="ws-cc-actions">
+    <button class="ws-cc-accept" onclick="wsCcSet('accept')">Accept all</button>
+    <button class="ws-cc-reject" onclick="wsCcSet('reject')">Reject all</button>
+  </div>
+</div></div>
+<script>
+(function(){
+  window.wsCcSet = function(c){
+    try { localStorage.setItem('ws_cc_v1', c); } catch(e){}
+    var el = document.getElementById('wsCcBd'); if (el) el.classList.remove('on');
+    if (c === 'accept') { try { wsLoadAnalytics(); wsLoadAds(); } catch(e){} }
+  };
+  try { if (!localStorage.getItem('ws_cc_v1')) setTimeout(function(){ var e=document.getElementById('wsCcBd'); if(e)e.classList.add('on'); }, 350); } catch(e){}
+})();
+</script>
 </body>
 </html>

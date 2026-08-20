@@ -159,9 +159,17 @@ app.get('/terms', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public', 'terms.html'));
 });
-app.get('/safety', (req, res) => {
+app.get(['/safety', '/child-safety'], (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public', 'safety.html'));
+});
+// Play Store REQUIRES a public account-deletion URL for any app that
+// collects user data. In-app deletion exists too (Profile → Settings →
+// Delete account) — this page mirrors that flow with an email fallback
+// for users who've lost access. Owner ask 20 Aug 2026 (Play Store prep).
+app.get('/delete-account', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'delete-account.html'));
 });
 
 app.use(express.static(path.join(__dirname, 'public'), {
