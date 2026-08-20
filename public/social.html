@@ -4640,130 +4640,166 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
 
   <!-- member profile — Speaky-style two-column layout on desktop, stacked
        on mobile. Left = photo + meta + actions. Right = content cards. -->
+  <!-- ═══ Profile v2 (owner ask 20 Aug 2026 — match profile-standalone
+       reference: map hero flush at top, centered avatar overlapping,
+       Message · Follow · Call actions, main + 300px rail). Scoped to
+       #tabMember; /me untouched until slice 2. All existing IDs kept
+       so paintMember(), toggleFollow, loadReferences, initProfileMap
+       etc. write into the new shell without changes. ══════════════ -->
+  <style>
+    #tabMember{padding:0 !important;background:#fbfbfd}
+    #tabMember .pm2-hero{position:relative;height:216px;overflow:hidden;background:#dfeef2;border-bottom:1px solid #eef0f4;margin:0}
+    #tabMember .pm2-map{position:absolute;inset:0}
+    #tabMember .pm2-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(251,251,253,0) 55%,rgba(251,251,253,.9));pointer-events:none}
+    #tabMember .pm2-back{position:absolute;top:14px;left:20px;z-index:3;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #e4e6ee;border-radius:99px;padding:8px 15px;font-size:13px;font-weight:600;color:#4a4d59;min-height:38px;cursor:pointer;font-family:inherit;line-height:1}
+    #tabMember .pm2-back:hover{color:#14161f}
+    #tabMember .pm2-loc-pill{position:absolute;top:14px;right:20px;z-index:3;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #e4e6ee;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#4a4d59;display:inline-flex;align-items:center;gap:6px;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 14px rgba(22,24,31,.08)}
+    #tabMember .pm2-loc-pill.hidden{display:none}
+    #tabMember .pm2-id{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin-top:-52px;padding:0 24px}
+    #tabMember .pm2-ava{position:relative}
+    #tabMember .pm2-ph{display:flex;width:104px;height:104px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;align-items:center;justify-content:center;font-size:38px;font-weight:700;border:4px solid #fff;box-shadow:0 10px 30px rgba(22,24,31,.14)}
+    #tabMember .pm2-ph img,#tabMember .pm2-ph .av{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+    #tabMember .pm2-name{margin:12px 0 4px;font-size:26px;font-weight:700;letter-spacing:-.4px;color:#14161f;display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;line-height:1.15}
+    #tabMember .pm2-meta{font-size:14px;color:#8a8d99;line-height:1.6;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;max-width:100%}
+    #tabMember .pm2-meta > span{display:inline-flex;align-items:center;gap:6px;justify-content:center}
+    #tabMember .pm2-meta:empty,#tabMember .pm2-meta > span:empty{display:none}
+    #tabMember .pm2-meta .mp-ico-svg{width:14px;height:14px;flex-shrink:0}
+    #tabMember .pm2-active{font-size:13.5px;color:#8a8d99;margin-top:2px;min-height:20px}
+    #tabMember .pm2-counts{display:flex;justify-content:center;gap:22px;margin-top:8px;font-size:13.5px;color:#8a8d99;flex-wrap:wrap}
+    #tabMember .pm2-counts b{color:#14161f;font-weight:700;margin-right:3px}
+    #tabMember .pm2-actions{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+    #tabMember .pm2-btn{font-family:inherit;font-size:14px;font-weight:600;padding:12px 22px;border-radius:99px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:.12s;border:0;line-height:1}
+    #tabMember .pm2-btn-primary{background:#5b6cff;color:#fff;box-shadow:0 6px 18px rgba(91,108,255,.3)}
+    #tabMember .pm2-btn-primary:hover{background:#4353e8}
+    #tabMember .pm2-btn-out{background:#fff;border:1px solid #e4e6ee;color:#14161f}
+    #tabMember .pm2-btn-out:hover{border-color:#d4d7e2}
+    #tabMember .pm2-btn-out.on{background:#f2f8f5;border-color:#c9e6d8;color:#2d7a62}
+    #tabMember .pm2-wrap{display:grid;grid-template-columns:1fr 300px;gap:22px;max-width:1240px;margin:0 auto;padding:26px 24px 96px;width:100%;box-sizing:border-box}
+    #tabMember .pm2-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+    #tabMember .pm2-rail{display:flex;flex-direction:column;gap:14px}
+    #tabMember .pm2-card{background:#fff;border:1px solid #eceef4;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(22,24,31,.05)}
+    #tabMember .pm2-card > h2,#tabMember .pm2-card > .pm2-refs-head > h2{margin:0 0 12px;font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a8d99}
+    #tabMember .pm2-card.hidden{display:none}
+    #tabMember .pm2-body{margin:0;font-size:14.5px;color:#4a4d59;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+    #tabMember .pm2-body.pm2-empty,#tabMember .pm2-body.mp-empty{color:#8a8d99;font-style:italic}
+    #tabMember .pm2-langs{display:flex;flex-direction:column}
+    #tabMember .pm2-langs .mp-lang{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 0}
+    #tabMember .pm2-langs .mp-lang+.mp-lang{border-top:1px solid #eef0f4}
+    #tabMember .pm2-langs .mp-lang-flag{font-size:22px;text-align:center}
+    #tabMember .pm2-langs .mp-lang-name{font-size:14.5px;font-weight:600;color:#14161f;letter-spacing:0}
+    #tabMember .pm2-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    #tabMember .pm2-photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;cursor:pointer;transition:transform .15s;border:1px solid #eceef4}
+    #tabMember .pm2-photos img:hover{transform:scale(1.02)}
+    #tabMember .pm2-chips{display:flex;flex-wrap:wrap;gap:7px}
+    #tabMember .pm2-chips .mp-chip{background:#fafafa;border:1px solid #e8e6e0;color:#6b6e7a;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:99px;display:inline-block}
+    #tabMember .pm2-refs-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+    #tabMember .pm2-refs-count{color:#14161f;font-weight:700;background:#f3f4fb;padding:2px 8px;border-radius:99px;font-size:12px;letter-spacing:0;text-transform:none;margin-left:6px}
+    #tabMember .pm2-refs-write{background:#fff;border:1px solid #e4e6ee;color:#14161f;font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:99px;cursor:pointer}
+    #tabMember .pm2-refs-write:hover{border-color:#5b6cff;color:#5b6cff}
+    @media(max-width:1020px){
+      #tabMember .pm2-wrap{grid-template-columns:1fr}
+      #tabMember .pm2-rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:start}
+    }
+    @media(max-width:719px){
+      #tabMember .pm2-hero{height:150px}
+      #tabMember .pm2-back{left:16px;padding:7px 12px;font-size:12.5px}
+      #tabMember .pm2-loc-pill{display:none}
+      #tabMember .pm2-id{margin-top:-44px;padding:0 16px}
+      #tabMember .pm2-ph{width:88px;height:88px;font-size:32px}
+      #tabMember .pm2-name{font-size:22px}
+      #tabMember .pm2-btn{padding:11px 18px;font-size:13.5px}
+      #tabMember .pm2-wrap{padding:20px 16px 96px;gap:12px}
+      #tabMember .pm2-rail{grid-template-columns:1fr}
+      #tabMember .pm2-counts{gap:14px}
+    }
+  </style>
   <div id="tabMember" class="hidden">
-    <div class="mp-hero">
-      <div class="mp-map" id="memberMap"></div>
-      <div class="mp-loc-pill hidden" id="memberLocPill"><span>📍</span><span id="memberLocPillTxt"></span></div>
-      <button class="mp-back" onclick="showTab('wall')">←</button>
+    <div class="pm2-hero">
+      <div class="pm2-map" id="memberMap"></div>
+      <button type="button" class="pm2-back" onclick="showTab('wall')">← Community</button>
+      <div class="pm2-loc-pill hidden" id="memberLocPill"><span>📍</span><span id="memberLocPillTxt"></span></div>
     </div>
-    <div class="mp-grid">
-      <!-- LEFT COLUMN: photo, name, meta, counts, actions -->
-      <aside class="mp-side">
-        <div class="mp-photo" id="mAv"></div>
-        <div class="mp-meta">
-          <h1 class="mp-name"><span id="mName"></span></h1>
-          <div class="mp-active" id="mActive"></div>
-          <!-- Owner ask 4 Aug 2026: dropped the 📍 pin and @ icons on
-               these rows — the label was doing all the work anyway,
-               the icons just added visual noise. -->
-          <div class="mp-info-row"><span id="mLoc"></span></div>
-          <div class="mp-info-row"><span id="mLocalTime"></span></div>
-          <div class="mp-info-row"><span id="mHandle"></span></div>
-          <div class="mp-counts hidden">
-            <div><b id="mFollowers">0</b><span>Followers</span></div>
-            <div><b id="mFollowing">0</b><span>Following</span></div>
-            <div><b id="mRecCount">0</b><span>Recommendations</span></div>
-          </div>
-          <!-- Owner ask 4 Aug 2026: 'make the chat and follow two
-               buttons in the top right after the image and also add
-               the other one call' — Chat + Follow + Call, side by
-               side. The ⋯ more menu (Report + Block) was retired
-               from this surface per owner ask; the same actions
-               still live on the wall card kebab. -->
-          <div class="mp-actions">
-            <button type="button" class="mp-iact" onclick="openChatWith(curMember)" aria-label="Chat">
-              <span class="mp-iact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5A8 8 0 1 1 21 12z"/></svg></span>
-              <span class="mp-iact-lbl">Chat</span>
-            </button>
-            <button type="button" class="mp-iact" id="followBtn" onclick="toggleFollow()" aria-label="Follow">
-              <span class="mp-iact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
-              <span class="mp-iact-lbl" id="followBtnLbl">Follow</span>
-            </button>
-            <button type="button" class="mp-iact" onclick="startCallWithCurMember()" aria-label="Call">
-              <span class="mp-iact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.1-1.2a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg></span>
-              <span class="mp-iact-lbl">Call</span>
-            </button>
-          </div>
-          <!-- Legacy stat targets kept as hidden shells so old JS writes
-               don't error even though the block itself is retired. -->
-          <span id="mGames" class="hidden"></span><span id="mWins" class="hidden"></span>
-          <span id="mRate" class="hidden"></span><span id="mSince" class="hidden"></span>
-          <span id="mBio" class="hidden"></span>
-        </div>
-      </aside>
-
-      <!-- RIGHT COLUMN: content cards -->
-      <main class="mp-main">
-        <!-- Tandem-style 'About [Name]' intro card. Owner ask 1 Aug 2026
-             (they shared the exact HTML class-name from Tandem's page).
-             Title h3 is dynamic — 'About Nina' / 'About Sibi' etc. so
-             each profile feels personal, not template-y. Hidden when
-             there's no bio to show. -->
-        <section class="mp-card hidden" id="mAboutCard">
-          <h3 id="mAboutTitle">About</h3>
-          <p id="mAbout"></p>
+    <section class="pm2-id">
+      <span class="pm2-ava"><span class="pm2-ph" id="mAv"></span></span>
+      <h1 class="pm2-name" id="mName"></h1>
+      <!-- paintMember writes into these 3 rows (mLoc / mLocalTime /
+           mHandle). Each row self-hides when its span is empty. -->
+      <div class="pm2-meta"><span id="mLoc"></span></div>
+      <div class="pm2-meta"><span id="mLocalTime"></span></div>
+      <div class="pm2-meta"><span id="mHandle"></span></div>
+      <div class="pm2-active" id="mActive"></div>
+      <div class="pm2-counts">
+        <span><b id="mFollowers">—</b>followers</span>
+        <span><b id="mFollowing">—</b>following</span>
+        <span><b id="mRecCount">0</b>references</span>
+      </div>
+      <div class="pm2-actions">
+        <button type="button" class="pm2-btn pm2-btn-primary" onclick="openChatWith(curMember)">💬 Message</button>
+        <button type="button" class="pm2-btn pm2-btn-out" id="followBtn" onclick="toggleFollow()"><span id="followBtnLbl">+ Follow</span></button>
+        <button type="button" class="pm2-btn pm2-btn-out" onclick="startCallWithCurMember()">📞 Call</button>
+      </div>
+    </section>
+    <div class="pm2-wrap">
+      <main class="pm2-main">
+        <!-- Personalised About (h2 title = 'About [First]'). Self-hides
+             if no bio + no talkAbout. -->
+        <section class="pm2-card hidden" id="mAboutCard">
+          <h2 id="mAboutTitle">About</h2>
+          <p class="pm2-body" id="mAbout"></p>
         </section>
-        <section class="mp-card mp-narrow hidden" id="mQuoteCard">
-          <h3>What they like to talk about</h3>
-          <p id="mQuote"></p>
+        <section class="pm2-card hidden" id="mQuoteCard">
+          <h2>What they like to talk about</h2>
+          <p class="pm2-body" id="mQuote"></p>
         </section>
-        <!-- New free-text prompts (owner ask 2 Aug 2026 v7). -->
-        <section class="mp-card hidden" id="mPurposeCard">
-          <h3>Their purpose here</h3>
-          <p id="mPurpose"></p>
+        <section class="pm2-card hidden" id="mPurposeCard">
+          <h2>Their purpose here</h2>
+          <p class="pm2-body" id="mPurpose"></p>
         </section>
-        <section class="mp-card hidden" id="mPartnerCard">
-          <h3>The kind of partner they're looking for</h3>
-          <p id="mPartner"></p>
+        <section class="pm2-card hidden" id="mPartnerCard">
+          <h2>The kind of partner they're looking for</h2>
+          <p class="pm2-body" id="mPartner"></p>
         </section>
-
-        <!-- Languages: Speaks + Learns as two flag-row cards. -->
-        <section class="mp-card hidden" id="mSpeaksBox">
-          <h3>Speaks</h3>
-          <div class="mp-langs" id="mSpeaks"></div>
+        <section class="pm2-card hidden" id="mSpeaksBox">
+          <h2>Speaks</h2>
+          <div class="pm2-langs" id="mSpeaks"></div>
         </section>
-        <section class="mp-card hidden" id="mLearnsBox">
-          <h3>Learning</h3>
-          <div class="mp-langs" id="mLearns"></div>
+        <section class="pm2-card hidden" id="mLearnsBox">
+          <h2>Learning</h2>
+          <div class="pm2-langs" id="mLearns"></div>
         </section>
-
-        <!-- Interests + Goals kept for legacy display only (users can no
-             longer edit them per owner v7); hidden if empty. -->
-        <div class="mp-2col">
-          <section class="mp-card hidden" id="mInterestsBox">
-            <h3>Interests</h3>
-            <div class="mp-chips" id="mInterests"></div>
-          </section>
-          <section class="mp-card hidden" id="mGoalsBox">
-            <h3>Goals</h3>
-            <div class="mp-chips" id="mGoals"></div>
-          </section>
-        </div>
-
-        <!-- References — Tandem-style written testimonials from other
-             members. Anyone (except me) can write one; the recipient
-             can't edit or delete (that would defeat the trust signal).
-             Owner ask 1 Aug 2026. -->
-        <section class="mp-card" id="mRefsCard">
-          <div class="mp-refs-head">
-            <h3><span id="mRefsTitle">References</span> <span class="mp-refs-count" id="mRefsCount"></span></h3>
-            <button class="mp-refs-write" id="mRefsWriteBtn" onclick="openRefComposer()">✎ Write a reference</button>
+        <section class="pm2-card hidden" id="mPhotosCard">
+          <h2>Photos</h2>
+          <div class="pm2-photos" id="mPhotos"></div>
+        </section>
+        <section class="pm2-card" id="mRefsCard">
+          <div class="pm2-refs-head">
+            <h2><span id="mRefsTitle">References</span><span class="pm2-refs-count" id="mRefsCount"></span></h2>
+            <button type="button" class="pm2-refs-write" id="mRefsWriteBtn" onclick="openRefComposer()">✎ Write a reference</button>
           </div>
           <div class="mp-refs-list" id="mRefsList"></div>
-          <p class="mp-empty" id="mRefsEmpty" style="display:none">No references yet. Be the first to leave one.</p>
-        </section>
-
-        <section class="mp-card">
-          <h3>Recommendations</h3>
-          <p class="mp-empty" id="mRecs">This user doesn't have any recommendations yet</p>
-        </section>
-
-        <section class="mp-card hidden" id="mPhotosCard">
-          <h3>Photos</h3>
-          <div class="mp-photos" id="mPhotos"></div>
+          <p class="pm2-body pm2-empty" id="mRefsEmpty" style="display:none">No references yet. Be the first to leave one.</p>
         </section>
       </main>
+      <aside class="pm2-rail">
+        <section class="pm2-card">
+          <h2>Recommendations</h2>
+          <p class="pm2-body" id="mRecs">This user doesn't have any recommendations yet</p>
+        </section>
+        <section class="pm2-card hidden" id="mInterestsBox">
+          <h2>Interests</h2>
+          <div class="pm2-chips" id="mInterests"></div>
+        </section>
+        <section class="pm2-card hidden" id="mGoalsBox">
+          <h2>Goals</h2>
+          <div class="pm2-chips" id="mGoals"></div>
+        </section>
+      </aside>
     </div>
+    <!-- Legacy hidden shells so paintMember writes don't error even
+         though the block itself is retired. -->
+    <span id="mGames" class="hidden"></span><span id="mWins" class="hidden"></span>
+    <span id="mRate" class="hidden"></span><span id="mSince" class="hidden"></span>
+    <span id="mBio" class="hidden"></span>
   </div>
 
   <!-- ═══ SOCIAL — Language Parties + Language Clubs (owner ask 10 Aug

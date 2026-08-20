@@ -11,7 +11,7 @@
 // cache on activate — needed after the 18 Aug rebrand pass so users
 // stop seeing stale chrome/nav/footer. Bump this on any breaking
 // static-asset change.
-const CACHE = 'talksibi-static-v6';
+const CACHE = 'talksibi-static-v7';
 const STATIC = ['/icon-192.png', '/icon-512.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', e => {
