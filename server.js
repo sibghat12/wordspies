@@ -131,6 +131,16 @@ app.get('/codenames', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Digital Asset Links — proves talksibi.com owns the Android TWA package
+// (app.talksibi.twa). Without this, the TWA falls back to showing a
+// Chrome URL bar at the top of the app. express.static ignores dotfiles
+// by default so we serve it explicitly before the static middleware.
+app.get('/.well-known/assetlinks.json', (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(path.join(__dirname, 'public', '.well-known', 'assetlinks.json'));
+});
+
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
   setHeaders(res, filePath) {
@@ -179,6 +189,15 @@ app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage()));
 app.get('/terms', (req, res) => res.type('html').send(pages.termsPage()));
 app.get('/child-safety', (req, res) => res.type('html').send(pages.childSafetyPage()));
 app.get('/become-a-teacher', (req, res) => res.type('html').send(pages.becomeTeacherPage()));
+
+// Per-language SEO landing pages — /learn-spanish, /learn-japanese, etc.
+// Owner ask 20 Aug 2026: a dedicated landing page per language with
+// heavy keyword targeting + Course/FAQPage JSON-LD. See landing-lang.js
+// for the catalogue; add a language there → new route + sitemap entry.
+const langLanding = require('./landing-lang');
+langLanding.SLUGS.forEach(slug => {
+  app.get('/learn-' + slug, (req, res) => res.type('html').send(langLanding.page(slug)));
+});
 
 // Teacher applications — public form (no login required). Rate-limited
 // per-IP so a bot can't dump the Redis list. Owner ask 13 Aug 2026:
