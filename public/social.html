@@ -25,7 +25,7 @@
 <title>TalkSibi — Practise languages with real people</title>
 <meta name="description" content="Meet real people to practise languages with. Create your profile, follow language partners, and chat any time — free and browser-based.">
 <meta name="theme-color" content="#fafafa">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=24">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=25">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-192.png">
@@ -3923,7 +3923,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
 <!-- ============ AUTH ============ -->
 <div id="vAuth" class="auth hidden">
   <div class="logo" style="display:flex;flex-direction:column;align-items:center;gap:10px">
-    <img src="/logo.svg?v=24" alt="talksibi" style="height:44px;width:auto;display:block" onerror="this.style.display='none'">
+    <img src="/logo.svg?v=25" alt="talksibi" style="height:44px;width:auto;display:block" onerror="this.style.display='none'">
     <div class="ts-tagline">CONNECT<span class="d1">·</span>LEARN<span class="d2">·</span>PLAY</div>
   </div>
   <h1 id="authTitle">Say hi to the world <span aria-hidden="true">👋</span></h1>
@@ -4191,7 +4191,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
        is no longer a per-tab afterthought. -->
   <nav class="topnav">
     <a class="tnlogo" href="/" aria-label="talksibi home" style="text-decoration:none;display:inline-flex;align-items:center">
-      <img src="/logo.svg?v=24" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px;font-family:var(--brand-font);font-weight:600;letter-spacing:-.3px;color:#000&quot;&gt;talksibi&lt;/span&gt;'">
+      <img src="/logo.svg?v=25" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px;font-family:var(--brand-font);font-weight:600;letter-spacing:-.3px;color:#000&quot;&gt;talksibi&lt;/span&gt;'">
     </a>
     <div class="tntabs" role="tablist">
       <!-- Chats + Community use monochrome SVG line icons — clean,
@@ -5330,7 +5330,7 @@ body.authmodal footer.sitefoot{ display:none }
   <div class="fsub">
     <div class="fmeta">© 2026 talksibi — Connect · Learn · Play. Practise languages with real people.</div>
     <a class="fbrand" href="/" aria-label="talksibi home">
-      <img src="/mark.svg?v=24" alt="" onerror="this.style.display='none'">
+      <img src="/mark.svg?v=25" alt="" onerror="this.style.display='none'">
       <span class="fbrand-t">talksibi</span>
     </a>
   </div>
@@ -10025,7 +10025,7 @@ async function togglePush(){
     }
     const { key } = await api('/push/key');
     if (!key) { toast('Push isn\'t set up yet.'); return paintPush(); }
-    const reg = await navigator.serviceWorker.register('/sw.js?v=24');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=25');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -10046,7 +10046,7 @@ async function enablePushQuietly(){
     if (Notification.permission !== 'granted') return;
     const { key } = await api('/push/key');
     if (!key) return;
-    const reg = await navigator.serviceWorker.register('/sw.js?v=24');
+    const reg = await navigator.serviceWorker.register('/sw.js?v=25');
     await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(key) });
     await api('/push/subscribe', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -13670,12 +13670,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     <button class="btn btn-dark" onclick="document.getElementById('a2hsSteps').classList.add('hidden')">Got it</button>
   </div>
 </div>
-<script src="/a2hs.js?v=24" defer></script>
+<script src="/a2hs.js?v=25" defer></script>
 <script>
 (function(){
   // Registering the worker is what makes a browser treat this as installable.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=24').catch(() => {}));
+    addEventListener('load', () => navigator.serviceWorker.register('/sw.js?v=25').catch(() => {}));
   }
   const el = id => document.getElementById(id);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -14101,6 +14101,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   })();
 </script>
 
-<script src="/wsbrand.js?v=24" defer></script>
+<script src="/wsbrand.js?v=25" defer></script>
 </body>
 </html>

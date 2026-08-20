@@ -1,6 +1,6 @@
 // Static info pages for TalkSibi — About, Privacy Policy, Terms.
 // Required for ad-network (AdSense) approval and general trust/SEO.
-const { SITE_FOOTER } = require('./landing.js');
+const { SITE_FOOTER, TS_NAV, TS_FOOTER_TS, TS_CHROME_CSS } = require('./landing.js');
 const SITE = 'https://talksibi.com';
 const GA_ID = 'G-JTH809Z8NH';
 const ADS_ID = 'AW-638211258';   // Google Ads conversion tag
@@ -99,21 +99,10 @@ ${GA}
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-/* Owner ask v32: same header + footer as the landing page. Body
-   zero padding, full-bleed surfaces. Hanken Grotesk brand font. */
 body{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;background:#ffffff;color:#14161f;margin:0;padding:0}
-.sitehead{background:#ffffff;border-bottom:1px solid #e4e6ee;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(15,17,25,.04)}
-.hwrap{max-width:1200px;margin:0 auto;padding:0 48px}
-@media(max-width:520px){.hwrap{padding:0 20px}}
-.top{display:flex;align-items:center;justify-content:space-between;padding:22px 0 32px}
-.ts-headbrand{display:inline-flex;align-items:center;gap:8px;text-decoration:none}
-.ts-headbrand img{height:30px;width:auto;display:block}
-.ts-headbrand .ts-wm{font-family:'Hanken Grotesk',sans-serif;font-weight:500;font-size:22px;letter-spacing:-.4px;color:#14161f}
-.navlinks{display:flex;gap:22px;align-items:center;font-weight:600;font-size:14.5px;color:#4a4d59}
-.navlinks a{color:#4a4d59;text-decoration:none}.navlinks a:hover{color:#14161f}
-.navlinks .open{color:#fff;background:#5b6cff;padding:9px 18px;border-radius:99px;font-weight:700;box-shadow:0 4px 12px rgba(91,108,255,.28)}
-.navlinks .open:hover{background:#4353e8}
-@media(max-width:600px){.navlinks{gap:14px;font-size:13.5px}.navlinks a.hideSm{display:none}}
+/* Shared community topnav + sitefoot — one chrome for the whole site.
+   Unified 20 Aug 2026. */
+${TS_CHROME_CSS}
 .wrap{max-width:760px;margin:0 auto;padding:40px 24px 70px}
 h1{font-size:34px;line-height:1.2;letter-spacing:-.6px;margin:0 0 6px;font-weight:700}
 .updated{color:#6b7280;font-size:14px;margin-bottom:28px}
@@ -121,25 +110,13 @@ h2{font-size:22px;margin:32px 0 10px;font-weight:700;letter-spacing:-.2px}
 p,li{font-size:16.5px;line-height:1.75;color:#242628}
 ul{padding-left:22px}li{margin-bottom:6px}
 a{color:#14161f}
-/* Site footer CSS lives inside SITE_FOOTER (landing.js). */
 </style></head>
 <body>
-<header class="sitehead"><div class="hwrap">
-<div class="top">
-  <a class="ts-headbrand" href="/" aria-label="talksibi home">
-    <img src="/logo.svg?v=22" alt="talksibi" onerror="this.outerHTML='<span class=&quot;ts-wm&quot;>talksibi</span>'">
-  </a>
-  <div class="navlinks">
-    <a href="/" class="hideSm">Home</a>
-    <a href="/blog" class="hideSm">Blog</a>
-    <a class="open" href="/app">Open app</a>
-  </div>
-</div>
-</div></header>
+${TS_NAV}
 <div class="wrap">
 ${body}
 </div>
-${SITE_FOOTER}
+${TS_FOOTER_TS}
 </body></html>`;
 }
 
