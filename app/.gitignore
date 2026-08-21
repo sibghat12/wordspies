@@ -1,0 +1,35 @@
+# NEVER commit these — keystore = signing key, losing it = never being able
+# to update the app on Play Store ever again. Back it up outside the repo
+# (1Password / Google Drive / iCloud) and store the password separately.
+android.keystore
+*.keystore
+*.jks
+keystore.properties
+signing-key.properties
+
+# Bubblewrap outputs (rebuilt on demand)
+app-release-bundle.aab
+app-release-signed.apk
+app-release-unsigned.apk
+build/
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+gradle.properties
+app/
+build.gradle
+settings.gradle
+proguard-rules.pro
+proguard-android.txt
+proguard-android-optimize.txt
+target/
+
+# Node / bubblewrap CLI cache
+node_modules/
+.bubblewrap/
+
+# OS + editor cruft
+.DS_Store
+Thumbs.db
+*.swp

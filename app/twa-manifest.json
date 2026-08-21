@@ -1,0 +1,76 @@
+{
+  "packageId": "app.talksibi.twa",
+  "host": "talksibi.com",
+  "name": "TalkSibi",
+  "launcherName": "TalkSibi",
+  "display": "standalone",
+  "themeColor": "#5B6CFF",
+  "themeColorDark": "#14161F",
+  "navigationColor": "#5B6CFF",
+  "navigationColorDark": "#14161F",
+  "navigationDividerColor": "#5B6CFF",
+  "navigationDividerColorDark": "#14161F",
+  "backgroundColor": "#f7f8fb",
+  "enableNotifications": true,
+  "startUrl": "/app?src=twa",
+  "iconUrl": "https://talksibi.com/icon-512.png",
+  "maskableIconUrl": "https://talksibi.com/icon-512.png",
+  "monochromeIconUrl": "https://talksibi.com/icon-512.png",
+  "shortcuts": [
+    {
+      "name": "Community",
+      "shortName": "People",
+      "url": "/app/community",
+      "chosenIconUrl": "https://talksibi.com/icon-192.png"
+    },
+    {
+      "name": "Chats",
+      "shortName": "Chats",
+      "url": "/app/chats",
+      "chosenIconUrl": "https://talksibi.com/icon-192.png"
+    },
+    {
+      "name": "Games",
+      "shortName": "Play",
+      "url": "/app/games",
+      "chosenIconUrl": "https://talksibi.com/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://talksibi.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "playBilling": {
+      "enabled": false
+    },
+    "locationDelegation": {
+      "enabled": true
+    },
+    "appsFlyer": {
+      "enabled": false
+    },
+    "firstRunFlag": {
+      "enabled": false
+    },
+    "chromeOsOnly": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersionName": "1.0.0",
+  "appVersion": 1,
+  "minSdkVersion": 23,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  }
+}
