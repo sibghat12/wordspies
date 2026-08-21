@@ -368,7 +368,7 @@ ${GA}
 <meta name="twitter:image:alt" content="talksibi — connect, learn, play">
 
 <!-- Icons / PWA -->
-<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=22">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=25">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">

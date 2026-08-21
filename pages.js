@@ -94,7 +94,7 @@ ${GA}
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0f7500">
 <link rel="canonical" href="${SITE}${path}">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=22">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=25">
 <link rel="icon" type="image/png" href="/icon-192.png">
 <meta property="og:site_name" content="talksibi"><meta property="og:locale" content="en_GB">
 <meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="website">

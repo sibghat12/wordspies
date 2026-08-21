@@ -1,7 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46 46" width="46" height="46">
-  <!-- talksibi favicon v9c: single periwinkle chat bubble + 3 typing dots. -->
-  <path d="M13,0 H33 A13,13 0 0 1 46,13 V30 A13,13 0 0 1 33,43 L11,46 A3,3 0 0 1 8,43 L8,42.6 A13,13 0 0 1 0,30 V13 A13,13 0 0 1 13,0 Z" fill="#5B6CFF"/>
-  <circle cx="15" cy="21" r="3" fill="#ffffff"/>
-  <circle cx="23" cy="21" r="3" fill="#ffffff"/>
-  <circle cx="31" cy="21" r="3" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- talksibi favicon v10 — two chat bubbles, matches the app icon.
+       Periwinkle rounded square background + white bubble with typing
+       dots + coral second bubble. Owner ask 21 Aug 2026: fix the
+       favicon still showing the old design. -->
+  <rect width="48" height="48" rx="11" fill="#5B6CFF"/>
+  <path d="M11,11 H30 A5,5 0 0 1 35,16 V24 A5,5 0 0 1 30,29 H16 L11,32 V29 A5,5 0 0 1 6,24 V16 A5,5 0 0 1 11,11 Z" fill="#ffffff"/>
+  <circle cx="14" cy="20" r="1.7" fill="#5B6CFF"/>
+  <circle cx="20.5" cy="20" r="1.7" fill="#5B6CFF" opacity="0.55"/>
+  <circle cx="27" cy="20" r="1.7" fill="#5B6CFF" opacity="0.35"/>
+  <path d="M24,28 H38 A4,4 0 0 1 42,32 V37 A4,4 0 0 1 38,41 H24 A4,4 0 0 1 20,37 V32 A4,4 0 0 1 24,28 Z" fill="#FF7A59"/>
 </svg>
