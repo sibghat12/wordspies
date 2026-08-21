@@ -10049,6 +10049,31 @@ async function togglePush(){
     const st = await pushState();
     if (st === 'unsupported') return;
     if (st === 'blocked') { s.classList.remove('on'); toast(BLOCKED_HINT); return; }
+    // App-scoped push only — when a user opts in from an installed TWA
+    // or PWA, Android shows the app name ('TalkSibi') on notifications
+    // instead of the domain ('talksibi.com'). Opting in from a plain
+    // browser tab creates a browser-scoped subscription that Android
+    // labels with the domain — which is what owner asked us to fix.
+    // Only enforce for phones (the desktop web experience keeps browser
+    // push as a fallback since desktop users can't install the TWA).
+    // Owner ask 21 Aug 2026: 'if someone has app installed it never
+    // goes to the web'.
+    if (st === 'off') {
+      const standalone = matchMedia('(display-mode: standalone)').matches
+                      || matchMedia('(display-mode: fullscreen)').matches
+                      || navigator.standalone === true
+                      || (document.referrer || '').startsWith('android-app://');
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile && !standalone) {
+        // Show the mobile-only install gate we already built for parties
+        // (same modal). Users who install the app + come back get the
+        // clean 'TalkSibi'-branded push. Owner never sees 'talksibi.com'
+        // on Play Store users' notifications again.
+        if (typeof showPartyInstallGate === 'function') showPartyInstallGate();
+        else toast('Install TalkSibi from Play Store first for the best notifications.');
+        return paintPush();
+      }
+    }
     // In-page notifications only (no Push API here) — flick off is just
     // a client-side hint; the browser holds the real permission.
     if (st === 'inpage-on') {
