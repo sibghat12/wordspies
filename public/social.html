@@ -5196,6 +5196,22 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
         <div class="sc"><b>Push notifications</b><span id="pushWhy">Get told even when TalkSibi is closed.</span></div>
         <button class="sw" id="swPush" onclick="togglePush()" aria-label="Push notifications"></button>
       </div>
+      <!-- Auto-translate chat messages into a chosen language. Owner ask
+           21 Aug 2026: 'can we make it autotranslate based on the user
+           selected language' + 'give user option to choose many more
+           languages from the list, make a dropdown'. When ON, every
+           new peer message gets translated as soon as it renders — no
+           tap-to-translate needed. OFF (default) keeps the manual tap
+           workflow. The dropdown pulls from the full LANGS list (65+
+           languages) rather than only the pinned xlatLangs. -->
+      <div class="setrow">
+        <div class="sc"><b>Auto-translate chat</b><span id="autoXlatWhy">Translate every peer message into your chosen language automatically.</span></div>
+        <button class="sw" id="swAutoXlat" onclick="toggleAutoXlat()" aria-label="Auto-translate chat"></button>
+      </div>
+      <div class="setrow hidden" id="autoXlatLangRow" style="align-items:center">
+        <div class="sc" style="flex:1"><b>Translate into</b><span>Chat messages will be translated into this language automatically.</span></div>
+        <select id="autoXlatLang" onchange="setAutoXlatLang(this.value)" style="flex:0 0 auto;min-width:160px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer"></select>
+      </div>
     </div>
     <!-- 📲 The install offer used to float over the tab bar, on top of the
          Community button. It lives here now — a settings row you come to when
@@ -7461,7 +7477,7 @@ function showTab(t){
     chatTimer = setInterval(() => { refreshChat(); refreshChats(); }, 3500);
   } else if (t === 'chats') { refreshChats(); chatTimer = setInterval(refreshChats, 5000); askNotify(); }
   else if (t === 'chat') { refreshChat(true); chatTimer = setInterval(refreshChat, 3000); }
-  if (t === 'me') { paintSound(); paintPush(); }
+  if (t === 'me') { paintSound(); paintPush(); paintAutoXlat(); }
   if (t === 'learn') { try { loadLearnPlan(); } catch(e){} }
   // Watching a list of live games only works if it's actually live: five
   // seconds while you're looking at it, and the slower background tick below
@@ -9987,6 +10003,76 @@ function chime(notes){
 const soundMsg    = () => chime([[880, 0, 0.22], [660, 0.11, 0.34]]);
 const soundFollow = () => chime([[587.33, 0, 0.18], [739.99, 0.09, 0.18], [987.77, 0.18, 0.42]]);
 function paintSound(){ $('swSound').classList.toggle('on', soundOn); }
+
+// ── Auto-translate chat (Tandem-style) ──────────────────────────────────
+// When ON, every incoming peer message renders with an automatic
+// translation chip in the user's chosen language — no tap-to-translate
+// needed. Bilingual view: original message on top, translated below.
+// Owner ask 21 Aug 2026: 'can we make it auto-translate based on the
+// user selected language' + 'make it in a way that tandem do'.
+let autoXlatOn   = false;
+let autoXlatLang = 'English';
+try {
+  autoXlatOn   = localStorage.getItem('ws_autoxlat') === 'on';
+  autoXlatLang = localStorage.getItem('ws_autoxlat_lang') || 'English';
+} catch(e){}
+function populateAutoXlatDropdown(){
+  const sel = document.getElementById('autoXlatLang');
+  if (!sel || sel.dataset.ready) return;
+  // Use the full LANGS list — 65+ languages. English pinned first.
+  const langs = (typeof LANGS !== 'undefined') ? LANGS.slice() : [];
+  langs.sort((a, b) => a.n === 'English' ? -1 : b.n === 'English' ? 1 : a.n.localeCompare(b.n));
+  sel.innerHTML = langs.map(l => '<option value="' + l.n + '">' + l.f + ' ' + l.n + '</option>').join('');
+  sel.value = autoXlatLang;
+  sel.dataset.ready = '1';
+}
+function paintAutoXlat(){
+  const btn = document.getElementById('swAutoXlat');
+  const row = document.getElementById('autoXlatLangRow');
+  if (btn) btn.classList.toggle('on', autoXlatOn);
+  if (row) row.classList.toggle('hidden', !autoXlatOn);
+  populateAutoXlatDropdown();
+}
+function toggleAutoXlat(){
+  autoXlatOn = !autoXlatOn;
+  try { localStorage.setItem('ws_autoxlat', autoXlatOn ? 'on' : 'off'); } catch(e){}
+  paintAutoXlat();
+  if (autoXlatOn) {
+    toast('Auto-translate on — new messages will translate to ' + autoXlatLang + '.');
+    // Fire translation on the current thread's peer messages so the user
+    // sees the effect immediately, not just for the next incoming message.
+    if (typeof runAutoXlatForVisibleThread === 'function') runAutoXlatForVisibleThread();
+  } else {
+    toast('Auto-translate off.');
+  }
+}
+function setAutoXlatLang(name){
+  autoXlatLang = String(name || 'English');
+  try { localStorage.setItem('ws_autoxlat_lang', autoXlatLang); } catch(e){}
+  toast('Auto-translate → ' + autoXlatLang);
+  if (autoXlatOn && typeof runAutoXlatForVisibleThread === 'function') runAutoXlatForVisibleThread();
+}
+// Called after every chat render (from refreshChat's wireBubbleGestures
+// tail). Walks visible peer bubbles and auto-translates the ones that
+// haven't been translated yet. Cheap because doTranslate short-circuits
+// on cached results, and we cap at the last 20 messages to avoid a
+// storm of API calls on first open.
+async function runAutoXlatForVisibleThread(){
+  if (!autoXlatOn) return;
+  if (!autoXlatLang) return;
+  const bubbles = Array.from(document.querySelectorAll('#msgs .mb[data-mine="0"][data-k="text"]:not(.gone)'));
+  const recent = bubbles.slice(-20);
+  for (const bub of recent) {
+    const msgId = bub.dataset && bub.dataset.id;
+    if (!msgId) continue;
+    if (typeof xlatChipCache !== 'undefined' && xlatChipCache.has(msgId)) continue;
+    // Skip if this bubble already has a translation chip attached.
+    const next = bub.nextElementSibling;
+    if (next && next.classList && next.classList.contains('mb-xlat')) continue;
+    try { await doTranslate(bub, false, autoXlatLang); } catch (e) {}
+  }
+}
+
 function toggleSound(){
   soundOn = !soundOn;
   try { localStorage.setItem('ws_sound', soundOn ? 'on' : 'off'); } catch(e){}
@@ -10401,6 +10487,10 @@ async function refreshChat(first){
       lastChatJ = j;
       refreshAutocomplete(j);
       wireBubbleGestures();
+      // Auto-translate hook — if the user has auto-xlat on, fire
+      // doTranslate() for any visible peer message that hasn't been
+      // translated yet. Tandem-style bilingual view. Owner ask 21 Aug.
+      if (typeof runAutoXlatForVisibleThread === 'function') runAutoXlatForVisibleThread();
     }
     checkChallenges();   // flip any "waiting…" cards whose friend has sat down
   } catch(e){}
