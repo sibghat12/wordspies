@@ -19,7 +19,7 @@
   AGORA_APP_CERTIFICATE=<your certificate>
   AGORA_ENABLED=true
   ```
-- [ ] Restart `wsdeploy` service so new env vars load
+- [ ] Restart the service so new env vars load: `sudo systemctl restart wordspies` (the systemd unit is `wordspies.service`, WorkingDirectory=/opt/wordspies, EnvironmentFile=/etc/wordspies.env)
 - [ ] Verify env via `cat /proc/$(pgrep -f 'node.*server.js')/environ | tr '\0' '\n' | grep AGORA`
 
 ## Phase 1 — Server: token generation (coder, 1 hour)
@@ -169,8 +169,8 @@ This is a natural consequence of using Agora — mute state is authoritative bec
 The `AGORA_ENABLED` env var + feature flag pattern in Phase 2 = **instant rollback**. If any critical bug emerges after v1.1.0 goes live:
 
 1. SSH to droplet
-2. Edit `/etc/wordspies.env` → `AGORA_ENABLED=false`
-3. Restart service
+2. `sudo sed -i 's/AGORA_ENABLED=true/AGORA_ENABLED=false/' /etc/wordspies.env`
+3. `sudo systemctl restart wordspies`
 4. Every future page load falls back to Cloudflare Realtime SFU
 5. Debug + fix + re-enable
 

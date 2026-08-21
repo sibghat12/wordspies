@@ -315,10 +315,26 @@ app.get('/how-to-play', (req, res) => res.type('html').send(pages.howToPlayPage(
 // page instead of a silent no-op scroll.
 app.get('/how', (req, res) => res.redirect(301, '/how-to-play'));
 
-// Standalone party room page (own URL so links share cleanly).
+// Standalone party room page (own URL so links share cleanly). Injects
+// window.AGORA_ENABLED=true into the head when the party module reports
+// Agora Voice is enabled — client boot picks agora-voice.js instead of
+// voice.js in that case. Coder handoff 21 Aug 2026.
+let _partyShell = '';
+try { _partyShell = fs.readFileSync(path.join(__dirname, 'public', 'party.html'), 'utf8'); }
+catch (e) { console.error('[party] could not preload party.html:', e.message); }
 app.get('/party', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public', 'party.html'));
+  try {
+    let html = _partyShell;
+    if (!html) html = fs.readFileSync(path.join(__dirname, 'public', 'party.html'), 'utf8');
+    if (partyMod && typeof partyMod.agoraEnabled === 'function' && partyMod.agoraEnabled()) {
+      html = html.replace('</head>', '<script>window.AGORA_ENABLED=true;</script></head>');
+    }
+    res.type('html').send(html);
+  } catch (e) {
+    console.error('[party] serve failed:', e.message);
+    res.status(500).send('Party page failed to load.');
+  }
 });
 // 1-on-1 voice call — WhatsApp-style minimal UI. Same socket + SFU as
 // party, different chrome.

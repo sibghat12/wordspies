@@ -21,6 +21,33 @@
 
 const crypto = require('crypto');
 
+// Agora Voice migration (Path B, coder session handoff 21 Aug 2026).
+// Server mints short-lived RTC tokens per user per room. Gated by
+// AGORA_ENABLED env var so the code can ship dark and the migration
+// flips live only when we're ready. Cloudflare Realtime SFU (voice.js)
+// stays as the fallback — see app/AGORA_MIGRATION.md.
+let RtcTokenBuilder = null, RtcRole = null;
+try {
+  const at = require('agora-token');
+  RtcTokenBuilder = at.RtcTokenBuilder;
+  RtcRole = at.RtcRole;
+} catch (e) { /* agora-token not installed — Agora path stays disabled */ }
+function agoraEnabled() {
+  return process.env.AGORA_ENABLED === 'true'
+    && !!process.env.AGORA_APP_ID
+    && !!process.env.AGORA_APP_CERTIFICATE
+    && !!RtcTokenBuilder;
+}
+// Stable numeric UID for Agora (SDK accepts strings but numbers reconnect
+// cleaner). Deterministic so a user's browser refresh keeps the same UID
+// and peer subscription state doesn't have to rebuild.
+function agoraUidFromString(s) {
+  let h = 0;
+  const str = String(s || '');
+  for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
+  return Math.abs(h) || 1;
+}
+
 const CAP = 20;                          // max people per party
 const MSG_MAX = 500;                     // text length cap
 const LISTENER_MSG_LIMIT = 2;            // rationed chat for listeners
@@ -240,6 +267,51 @@ function mount(app, io, options = {}) {
     res.json({ room: publicView(r) });
   });
 
+  // Agora Voice — mint a short-lived RTC token so the client can join the
+  // party's channel. Only callable by a joined member. Role is decided
+  // server-side (host/speaker = publisher, listener = subscriber) so a
+  // demoted user can't rejoin as publisher by asking twice. Owner adds
+  // AGORA_APP_ID + AGORA_APP_CERTIFICATE to /etc/wordspies.env and flips
+  // AGORA_ENABLED=true when the migration ships as v1.1.0. Until then
+  // this returns 503 and the client falls back to Cloudflare Realtime
+  // SFU (voice.js). Coder session handoff 21 Aug 2026.
+  app.post('/api/parties/:code/agora-token', jsonBody, async (req, res) => {
+    if (!agoraEnabled()) return res.status(503).json({ error: 'Agora Voice is not enabled.' });
+    const uid = options.uidFromReq ? await options.uidFromReq(req) : null;
+    if (!uid) return res.status(401).json({ error: 'Log in first.' });
+    const code = String(req.params.code || '').trim().toUpperCase();
+    const room = rooms.get(code);
+    if (!room) return res.status(404).json({ error: 'No such party.' });
+    const member = Array.from(room.members.values()).find(m => m.uid === uid);
+    if (!member) return res.status(403).json({ error: 'Join the party first.' });
+    const isPublisher = member.role === 'host' || member.role === 'speaker';
+    const role = isPublisher ? RtcRole.PUBLISHER : RtcRole.SUBSCRIBER;
+    const numericUid = agoraUidFromString(uid);
+    const channel = 'ts-' + code.toLowerCase();
+    const nowSec = Math.floor(Date.now() / 1000);
+    const expireSec = 3600;
+    let token;
+    try {
+      token = RtcTokenBuilder.buildTokenWithUid(
+        process.env.AGORA_APP_ID,
+        process.env.AGORA_APP_CERTIFICATE,
+        channel, numericUid, role,
+        nowSec + expireSec, nowSec + expireSec
+      );
+    } catch (e) {
+      // Deliberately do NOT surface e.message — stack frames from
+      // agora-token can echo the certificate. Log a scrubbed line.
+      console.error('[party] agora token build failed for code=' + code);
+      return res.status(500).json({ error: 'Could not mint voice token.' });
+    }
+    res.json({
+      appId: process.env.AGORA_APP_ID,
+      channel, token, uid: numericUid,
+      role: isPublisher ? 'publisher' : 'subscriber',
+      expiresAt: Date.now() + (expireSec * 1000)
+    });
+  });
+
   // ── Sockets ────────────────────────────────────────────────────────
   nsp.on('connection', (socket) => {
     socket.profile = null;
@@ -421,6 +493,13 @@ function mount(app, io, options = {}) {
       // On promotion, listener chat cap converts to unlimited (server also
       // stops rejecting their messages when role !== 'listener').
       broadcast(room);
+      // Agora Voice: tell the promoted client to re-fetch a token as
+      // PUBLISHER and setClientRole('host') without rejoining the channel.
+      // Coder handoff 21 Aug 2026.
+      if (agoraEnabled()) {
+        const tsock = nsp.sockets.get(target.id);
+        if (tsock) { try { tsock.emit('agora-role', { role: 'publisher' }); } catch (e) {} }
+      }
     });
     socket.on('demote', (data) => {
       if (!room || !iAmHost()) return;
@@ -449,6 +528,13 @@ function mount(app, io, options = {}) {
       target.role = 'listener';
       target.handRaised = false;
       broadcast(room);
+      // Agora Voice: tell the demoted client to re-fetch a token as
+      // SUBSCRIBER and setClientRole('audience'). Their next mic tap
+      // will bounce until a host re-promotes them.
+      if (agoraEnabled()) {
+        const tsock2 = nsp.sockets.get(target.id);
+        if (tsock2) { try { tsock2.emit('agora-role', { role: 'subscriber' }); } catch (e) {} }
+      }
     });
 
     // Listener raises hand — flag flips, host sees a queue.
@@ -477,6 +563,10 @@ function mount(app, io, options = {}) {
         room.hostId = socket.id;
         console.log('[party] reclaimHost', room.code, 'uid=' + uid.slice(0, 8));
         broadcast(room);
+        // Agora Voice: the reclaimed host needs a publisher token now.
+        if (agoraEnabled()) {
+          try { socket.emit('agora-role', { role: 'publisher' }); } catch (e) {}
+        }
       }
     });
 
@@ -707,7 +797,7 @@ function mount(app, io, options = {}) {
   }, 60 * 1000).unref?.();
 
   console.log('party module: mounted');
-  return { rooms, live: () => {
+  return { rooms, agoraEnabled, live: () => {
     // Presence on the Live tab: only public parties, only those with a
     // signed-in speaker (a party of ghosts isn't a party).
     const out = [];
