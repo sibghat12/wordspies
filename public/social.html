@@ -7355,7 +7355,38 @@ function paintTabs(){
 let chatTimer = null, curChat = null, curMember = null, lastUnread = 0, lastMsgCount = 0, lastTheirRead = 0, replyingTo = null, editingMsg = null;
 let liveTimer = null;
 
+// Party is mobile-app-only. Owner ask 21 Aug 2026: 'let the party
+// should be only join and started from the mobile only not from the
+// browser ok only from the Android app'. Detects PWA/TWA install by
+// display-mode + referrer + iOS standalone hint. Falls open on error
+// so we never accidentally block a legit user.
+function isInstalledApp(){
+  try {
+    if (matchMedia('(display-mode: standalone)').matches) return true;
+    if (matchMedia('(display-mode: fullscreen)').matches) return true;
+    if (navigator.standalone === true) return true;
+    if ((document.referrer || '').startsWith('android-app://')) return true;
+    return false;
+  } catch (e) { return true; }
+}
+const PLAY_STORE_URL = 'https://play.google.com/apps/internaltest/4701374205039690803';
+function showPartyInstallGate(){
+  const bd = document.getElementById('ptInstallGate');
+  if (bd) bd.classList.add('on');
+}
+function hidePartyInstallGate(){
+  const bd = document.getElementById('ptInstallGate');
+  if (bd) bd.classList.remove('on');
+}
+
 function showTab(t){
+  // Party features are mobile-app-only — bail early with an install
+  // prompt if the user isn't in the installed TWA/PWA. Owner ask
+  // 21 Aug 2026.
+  if ((t === 'parties' || t === 'party') && !isInstalledApp()) {
+    showPartyInstallGate();
+    return;
+  }
   if (GUEST && (t === 'chats' || t === 'chat' || t === 'me')) {
     requireLogin('👋 Log in to chat and make your own profile');
     return;
@@ -14137,6 +14168,39 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 </script>
 
 <script src="/wsbrand.js?v=24" defer></script>
+
+<!-- Party install gate — parties are mobile-app-only per owner ask
+     21 Aug 2026. If the user tries to open Parties tab (or a party
+     link) from a browser instead of the installed TWA/PWA, show this
+     modal with a Play Store install button. Detection lives in
+     isInstalledApp() near the top of the script section. -->
+<style>
+.pt-install-gate{position:fixed;inset:0;background:rgba(15,17,25,.65);display:none;align-items:center;justify-content:center;z-index:99999;padding:20px calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));font-family:'Hanken Grotesk','Inter',system-ui,sans-serif}
+.pt-install-gate.on{display:flex;animation:ptInstFade .2s ease}
+@keyframes ptInstFade{from{opacity:0}to{opacity:1}}
+.pt-install-card{background:#fff;border-radius:24px;max-width:420px;width:100%;padding:36px 28px 24px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.45)}
+.pt-install-icon{width:76px;height:76px;margin:0 auto 16px;border-radius:22px;background:linear-gradient(135deg,#5B6CFF,#7c8bff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 8px 26px rgba(91,108,255,.4)}
+.pt-install-card h2{font-size:22px;font-weight:800;color:#14161F;margin:0 0 10px;letter-spacing:-.3px;line-height:1.25}
+.pt-install-card p{font-family:'Inter',system-ui,sans-serif;font-size:14.5px;color:#5A5F72;line-height:1.55;margin:0 0 22px}
+.pt-install-cta{display:block;background:#5B6CFF;color:#fff !important;padding:14px 20px;border-radius:14px;font-family:inherit;font-weight:700;font-size:15px;text-decoration:none;margin:0 0 8px;transition:background .15s}
+.pt-install-cta:hover{background:#4353e8}
+.pt-install-close{background:transparent;border:0;color:#5A5F72;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:12px 20px;width:100%;line-height:1}
+.pt-install-close:hover{color:#14161F}
+.pt-install-why{font-family:'Inter',system-ui,sans-serif;font-size:12.5px;color:#8a8d99;margin:0 0 20px;line-height:1.55;text-align:left;background:#f7f8fb;border-radius:12px;padding:12px 14px}
+.pt-install-why b{color:#14161F;font-weight:700}
+</style>
+<div class="pt-install-gate" id="ptInstallGate" onclick="if(event.target===this)hidePartyInstallGate()">
+  <div class="pt-install-card" role="dialog" aria-modal="true">
+    <div class="pt-install-icon" aria-hidden="true">🎙️</div>
+    <h2>Voice parties live in the app</h2>
+    <p>For the best voice quality, reliable connections, and full mic control — parties are only available in the TalkSibi Android app.</p>
+    <div class="pt-install-why">
+      <b>Why?</b> The app handles voice better than a browser can — no dropped calls when you switch tabs, no muted mics after screen lock, no lost audio when the phone sleeps.
+    </div>
+    <a class="pt-install-cta" href="https://play.google.com/apps/internaltest/4701374205039690803" target="_blank" rel="noopener">📱 Get the app on Google Play</a>
+    <button type="button" class="pt-install-close" onclick="hidePartyInstallGate()">Not now</button>
+  </div>
+</div>
 
 <!-- Cookie consent modal — GDPR. Mirrors landing.js CONSENT_MODAL so the
      app matches the marketing site. Only appears on first visit (nothing

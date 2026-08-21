@@ -43,6 +43,39 @@ function makeUniqueCode(rooms) {
 }
 const cleanText = (s, cap) => String(s || '').trim().replace(/\s+/g, ' ').slice(0, cap);
 
+// Party title moderation. Owner ask 21 Aug 2026: 'no bad or prohibited
+// racist words in the party title'. Play Store child-safety review will
+// flag any surfaced content with slurs / CSAM markers, so we reject
+// server-side before the room exists. This is a first-pass filter — it
+// blocks the obvious 90% (unambiguous slurs + CSAM markers). Casual
+// swearing (damn, hell) is intentionally allowed. Leetspeak is
+// normalized so 'n1gg3r' / 'p3d0' still trip it.
+function normalizeForFilter(s) {
+  return String(s || '').toLowerCase()
+    .replace(/[0]/g, 'o').replace(/[1!]/g, 'i').replace(/[3]/g, 'e')
+    .replace(/[4@]/g, 'a').replace(/[5$]/g, 's').replace(/[7]/g, 't')
+    .replace(/[^a-z]/g, '');
+}
+const BLOCKED_TERMS = [
+  // Racial slurs
+  'nigger', 'nigga', 'chink', 'gook', 'spic', 'kike',
+  'towelhead', 'sandnigger', 'raghead', 'coon', 'jigaboo', 'wetback',
+  // Homophobic / transphobic slurs
+  'faggot', 'faggit', 'fagot', 'tranny', 'dyke',
+  // CSAM markers — Play Store zero tolerance
+  'pedo', 'pedophile', 'pedofile', 'paedo', 'loli', 'shota',
+  'childporn', 'childsex', 'underagesex', 'kidporn', 'kidsex',
+  // Extreme sexual/violent
+  'rapist', 'incest', 'bestiality'
+];
+function containsBlockedTerm(input) {
+  const norm = normalizeForFilter(input);
+  return BLOCKED_TERMS.some(t => norm.includes(t));
+}
+function partyTextBlocked(...fields) {
+  return fields.some(f => containsBlockedTerm(f));
+}
+
 function mount(app, io, options = {}) {
   const identify = typeof options.identify === 'function' ? options.identify : null;
   const nsp = io.of('/party');
@@ -175,6 +208,15 @@ function mount(app, io, options = {}) {
     const langs = (Array.isArray((req.body || {}).langs) ? (req.body || {}).langs : [])
       .map(s => String(s || '').trim().slice(0, 40))
       .filter(Boolean).slice(0, 6);
+    // Moderation gate: reject slurs, hate speech, CSAM markers in any
+    // visible field. Play Store review will flag them; user reports would
+    // too. See BLOCKED_TERMS above for scope.
+    if (partyTextBlocked(title, subtitle, langs.join(' '))) {
+      console.log('[party] blocked title/subtitle — uid=' + uid.slice(0, 8));
+      return res.status(400).json({
+        error: 'Please pick a different title — that word isn\'t allowed here.'
+      });
+    }
     const code = makeUniqueCode(rooms);
     console.log('[party] create', code, 'vis=' + vis, 'host=' + uid.slice(0, 8), 'title=' + title.slice(0, 40));
     const room = {

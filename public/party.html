@@ -716,6 +716,28 @@ body.embed .ts-gametop{ display:none !important }
 </head>
 <body data-ts-no-header data-ts-no-footer>
 <script>if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed');</script>
+<script>
+// Party mobile-app-only gate. Owner ask 21 Aug 2026: 'let the party
+// should be only join and started from the mobile only not from the
+// browser'. Runs BEFORE any voice / socket init so a browser visitor
+// never accidentally acquires a mic or connects to the SFU. Embed mode
+// (inside the app's game shell) is exempt — that's a legit TWA path.
+(function(){
+  try {
+    if (document.body.classList.contains('embed')) return;
+    const installed = matchMedia('(display-mode: standalone)').matches
+                    || matchMedia('(display-mode: fullscreen)').matches
+                    || navigator.standalone === true
+                    || (document.referrer || '').startsWith('android-app://');
+    if (installed) return;
+    // Redirect to the app parties tab with a gate flag — social.html
+    // reads the flag on boot and opens the install modal automatically.
+    var qs = location.search || '';
+    var sep = qs ? '&' : '?';
+    location.replace('/app/parties' + qs + sep + 'gate=install');
+  } catch (e) { /* fail open — never block a legit user due to detection bug */ }
+})();
+</script>
 <!-- Shared slim top bar — hidden in embed mode (persistent game shell). -->
 <header class="ts-gametop" data-hide-embed>
   <a href="/app" class="ts-gametop-back" aria-label="Back to talksibi">
