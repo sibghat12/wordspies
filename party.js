@@ -500,6 +500,20 @@ function mount(app, io, options = {}) {
         const tsock = nsp.sockets.get(target.id);
         if (tsock) { try { tsock.emit('agora-role', { role: 'publisher' }); } catch (e) {} }
       }
+      // Push to the newly-promoted listener so they don't miss the mic
+      // if they'd tabbed away. sendPush() skips foregrounded devices
+      // internally, so a listener actively watching the party won't
+      // get a duplicate ping. Owner ask 21 Aug 2026.
+      if (options.sendPush && target.uid) {
+        try {
+          options.sendPush(
+            target.uid, 'party-mic',
+            to === 'host' ? '👑 You are a host now' : '🎤 You have the mic',
+            'Tap to speak in ' + (room.title || 'the party'),
+            '/party?room=' + room.code
+          );
+        } catch (e) {}
+      }
     });
     socket.on('demote', (data) => {
       if (!room || !iAmHost()) return;
@@ -544,6 +558,21 @@ function mount(app, io, options = {}) {
       me.handRaised = true;
       me.handAt = Date.now();
       broadcast(room);
+      // Push notification to the host. Fixes the "host has the party
+      // backgrounded and doesn't see listener wants to speak" case that
+      // stalled every busy party. Rate-limited server-side by sendPush's
+      // per-device foregrounded check — a host with the app in the
+      // foreground won't get a duplicate ping. Owner ask 21 Aug 2026.
+      if (options.sendPush && room.hostUid && room.hostUid !== me.uid) {
+        try {
+          options.sendPush(
+            room.hostUid, 'party-hand',
+            '✋ Hand raised in your party',
+            (me.name || 'Someone') + ' wants to speak in ' + (room.title || 'your party'),
+            '/party?room=' + room.code
+          );
+        } catch (e) {}
+      }
     });
     socket.on('lowerHand', () => {
       if (!room || !me) return;

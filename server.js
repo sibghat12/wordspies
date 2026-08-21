@@ -904,6 +904,11 @@ try {
     // For private-party gating: social module tells us who's in the host's
     // circle (follows / followers / recent chats).
     socialCircle: social && social.inviteCircle ? social.inviteCircle : null,
+    // Party push notifications — fires on raiseHand (to host) and on
+    // promote (to the promoted listener). sendPush skips foregrounded
+    // devices internally so an already-watching user won't be pinged.
+    // Owner ask 21 Aug 2026. Silent no-op if social module didn't load.
+    sendPush: social && social.sendPush ? social.sendPush : null,
     // When a call room ends, drop a system message into the DM chat so both
     // sides see "📞 Call · 1:24" (or "Missed call") in the thread. Handled
     // by social.postCallLog when available; silent no-op otherwise.
