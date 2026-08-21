@@ -882,6 +882,13 @@ body.embed .ts-gametop{ display:none !important }
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/voice.js"></script>
+<!-- Agora Voice SDK — loaded conditionally, and only "wakes up" if the
+     server injected window.AGORA_ENABLED=true into <head> (party module
+     agoraEnabled() returned true). If loaded but AGORA_ENABLED is false,
+     agora-voice.js exits immediately and voice.js (Cloudflare Realtime
+     SFU) remains authoritative. Coder handoff 21 Aug 2026. -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
+<script src="/agora-voice.js"></script>
 <script src="/emoji-fly.js"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -1048,7 +1055,7 @@ function conn(){
     if (window.wsVoice) {
       wsVoice.setMyId(myId);
       wsVoice.setCanPublish(myRole === 'host' || myRole === 'speaker');
-      wsVoice.init({ socket, myId, canPublish: (myRole === 'host' || myRole === 'speaker') });
+      wsVoice.init({ socket, myId, canPublish: (myRole === 'host' || myRole === 'speaker'), roomCode: CODE });
       wsVoice.on('mic', () => paint());       // avatar ring reflects mic state
       // Loud publish-failure feedback: if the Cloudflare push silently fails
       // the user thinks they're speaking but the room hears nothing. Toast +
