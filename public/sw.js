@@ -83,27 +83,71 @@ self.addEventListener('push', e => {
     const title = (n && n.title) || 'TalkSibi';
     const body  = (n && n.body)  || 'You have something new to check.';
     const url   = (n && n.url)   || '/app';
+    const kind  = (n && n.kind)  || 'ts';
+    // WhatsApp-style icon layering:
+    //   badge = small silhouette in the status-bar strip (always the
+    //           TalkSibi mark — the tiny icon at the top of the screen).
+    //   icon  = the large icon on the notification card. For DMs this
+    //           is the SENDER's photo so you see WHO messaged you at a
+    //           glance; for everything else it's the TalkSibi mark.
+    // Owner ask 21 Aug 2026: 'show the user picture as well who send
+    // you a message like WhatsApp notification'.
+    const icon  = (n && n.photo) ? n.photo : '/icon-192.png';
+    const badge = '/icon-192.png';
+    // Inline actions on message pushes — WhatsApp pattern. Rest of the
+    // events (follow, reference, party) get single-tap notifications.
+    const actions = kind === 'msg'
+      ? [{ action: 'open', title: 'Open' }, { action: 'dismiss', title: 'Dismiss' }]
+      : undefined;
     await self.registration.showNotification(title, {
       body,
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
-      tag: (n && n.kind) || 'ts',        // a second message replaces the first rather than stacking
+      icon,
+      badge,
+      tag: kind,                          // a second message replaces the first rather than stacking
       renotify: true,
-      data: { url }
+      data: { url },
+      vibrate: kind === 'party-hand' || kind === 'party-mic' ? [100, 40, 100] : [80],
+      actions
     });
   })());
 });
 
 // Tapping the notification lands on the right screen and reuses an
-// already-open tab where possible.
+// already-open TalkSibi window where possible. Prefers a standalone
+// (TWA/PWA) client over any browser tab — when the app is installed,
+// the notification should ALWAYS open the app, not a Chrome tab.
+// Owner ask 21 Aug 2026: 'if someone has app installed it never goes
+// to the web'.
 self.addEventListener('notificationclick', e => {
   e.notification.close();
+  // Dismiss action just closes the notification — no window open.
+  if (e.action === 'dismiss') return;
   const url = (e.notification.data && e.notification.data.url) || '/app';
   e.waitUntil((async () => {
     const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    // First pass: prefer clients that are top-level TalkSibi windows
+    // (the TWA + installed PWA both report frameType === 'top-level').
+    // A browser tab that navigated here reports the same, so this
+    // primarily filters out iframes.
+    let target = null;
     for (const c of all) {
-      if (c.url.includes('/app')) { await c.focus(); if ('navigate' in c) await c.navigate(url).catch(() => {}); return; }
+      if (!c.url) continue;
+      // Talksibi origin only — never accidentally focus a wordspies.co.uk
+      // tab or an about:blank leftover.
+      if (!c.url.includes(location.host)) continue;
+      // Prefer clients already on an /app or /party path — they're the
+      // TalkSibi surfaces the notification is trying to reach.
+      if (/\/(app|party|call)(\b|\?|#|\/)/.test(c.url)) { target = c; break; }
+      target = target || c;   // fallback: any TalkSibi client
     }
+    if (target) {
+      try { await target.focus(); } catch (e) {}
+      if ('navigate' in target) { try { await target.navigate(url); } catch (e) {} }
+      return;
+    }
+    // No client open — openWindow lets Android/Chrome decide. If the
+    // TWA is installed and assetlinks.json verifies talksibi.com, this
+    // opens directly in the app. Otherwise it opens Chrome.
     await self.clients.openWindow(url);
   })());
 });

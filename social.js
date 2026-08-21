@@ -569,7 +569,7 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
   // while the page is genuinely on screen.
   const epKey = ep => 'soc:at:' + crypto.createHash('sha1').update(ep).digest('hex').slice(0, 20);
 
-  async function sendPush(uid, kind, title, body, url) {
+  async function sendPush(uid, kind, title, body, url, photo) {
     try {
       const eps = await db.smembers('soc:push:' + uid);
       if (!eps.length) return;
@@ -577,8 +577,13 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
       for (const ep of eps) if (!(await db.exists(epKey(ep)))) live.push(ep);
       if (!live.length) return;   // every screen they own is already in front of them
       const v = await vapidKeys();
-      // what the knock was about — the worker collects this in a moment
-      await db.set('soc:pushq:' + uid, JSON.stringify({ kind, title, body, url }), 600);
+      // what the knock was about — the worker collects this in a moment.
+      // photo (optional) is the SENDER's avatar URL for WhatsApp-style
+      // notifications: the SW uses it as the large icon so users see
+      // WHO the notification is from at a glance. Owner ask 21 Aug 2026:
+      // 'show the user picture as well who send you a message like
+      // WhatsApp notification'.
+      await db.set('soc:pushq:' + uid, JSON.stringify({ kind, title, body, url, photo: photo || null }), 600);
       for (const ep of live) {
         try {
           const r = await fetch(ep, {
@@ -1832,12 +1837,16 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
         }));
       // sendPush decides per device: whichever screen they're actually looking
       // at stays quiet, every other one buzzes
+      // The 6th sendPush arg (added 21 Aug 2026) is the sender's photo URL
+      // — the SW uses it as the large icon so users see WHO sent the
+      // message before opening. WhatsApp-style push.
       sendPush(to, 'msg', 'New message from ' + me.name,
         kind === 'text' ? text.slice(0, 120)
           : kind === 'gif' ? 'Sent a GIF'
-          : kind === 'voice' ? '🎤 Sent a voice message'
+          : kind === 'voice' ? 'Sent a voice message'
           : 'Sent you something',
-        '/social#chat=' + me.id);
+        '/app/chats?open=' + encodeURIComponent(String(me.id || '')),
+        me.photo || null);
       // Fire-and-forget streak bump on any sent DM (text/gif/voice/image).
       bumpStreak(me.id).catch(() => {});
       res.json({ ok: true, msg });
