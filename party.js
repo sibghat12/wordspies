@@ -284,7 +284,13 @@ function mount(app, io, options = {}) {
     if (!room) return res.status(404).json({ error: 'No such party.' });
     const member = Array.from(room.members.values()).find(m => m.uid === uid);
     if (!member) return res.status(403).json({ error: 'Join the party first.' });
-    const isPublisher = member.role === 'host' || member.role === 'speaker';
+    // 1-on-1 calls: both parties always publish. The isCall flag is set
+    // on room creation (see /api/call/start etc.) so the token endpoint
+    // can mint a PUBLISHER token for both sides regardless of role.
+    // Owner ask 21 Aug 2026 — extend Agora Voice from parties to calls.
+    const isPublisher = room.isCall
+      ? true
+      : (member.role === 'host' || member.role === 'speaker');
     const role = isPublisher ? RtcRole.PUBLISHER : RtcRole.SUBSCRIBER;
     const numericUid = agoraUidFromString(uid);
     const channel = 'ts-' + code.toLowerCase();

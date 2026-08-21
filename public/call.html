@@ -115,6 +115,13 @@ body.connected .avring::before,body.connected .avring::after{animation:none;opac
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/voice.js"></script>
+<!-- Agora Voice SDK — same conditional load as party.html. Only wakes
+     up when server injected window.AGORA_ENABLED=true into <head>;
+     otherwise agora-voice.js exits and voice.js (Cloudflare) stays
+     authoritative. Owner ask 21 Aug 2026 — extend Agora reliability
+     from parties to 1-on-1 calls. -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
+<script src="/agora-voice.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -205,7 +212,7 @@ function conn(){
     if (window.wsVoice) {
       wsVoice.setMyId(myId);
       wsVoice.setCanPublish(true);
-      wsVoice.init({ socket, myId, canPublish: true });
+      wsVoice.init({ socket, myId, canPublish: true, roomCode: CODE });
       wsVoice.on('mic', () => paintMic());
       wsVoice.on('local-level', (lvl) => {
         // Pulse my own avatar? Nah — WhatsApp shows the OTHER person's

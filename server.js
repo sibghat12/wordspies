@@ -337,10 +337,26 @@ app.get('/party', (req, res) => {
   }
 });
 // 1-on-1 voice call — WhatsApp-style minimal UI. Same socket + SFU as
-// party, different chrome.
+// party, different chrome. Injects window.AGORA_ENABLED=true when the
+// party module reports Agora Voice is enabled — call.html then picks
+// agora-voice.js instead of voice.js for the same reliability wins
+// parties got. Owner ask 21 Aug 2026.
+let _callShell = '';
+try { _callShell = fs.readFileSync(path.join(__dirname, 'public', 'call.html'), 'utf8'); }
+catch (e) { console.error('[call] could not preload call.html:', e.message); }
 app.get('/call', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public', 'call.html'));
+  try {
+    let html = _callShell;
+    if (!html) html = fs.readFileSync(path.join(__dirname, 'public', 'call.html'), 'utf8');
+    if (partyMod && typeof partyMod.agoraEnabled === 'function' && partyMod.agoraEnabled()) {
+      html = html.replace('</head>', '<script>window.AGORA_ENABLED=true;</script></head>');
+    }
+    res.type('html').send(html);
+  } catch (e) {
+    console.error('[call] serve failed:', e.message);
+    res.status(500).send('Call page failed to load.');
+  }
 });
 
 // ── Cloudflare Realtime broker ─────────────────────────────────────────
