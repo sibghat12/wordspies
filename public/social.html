@@ -120,19 +120,21 @@ input,textarea{font-family:inherit;outline:none}
    CARD floating in the middle. Text inside is centered. Owner-visible
    bug fixes: was see-through ("mirror") because the child .auth /
    .authcol selectors didn't match, and text was left-aligned inside. */
-body.authmodal::before{content:'';position:fixed;inset:0;z-index:79;background:rgba(15,17,25,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-/* Override .auth's fullscreen defaults (min-height:100vh, padding:
-   52px 28px 40px) that were forcing the modal card to be full-height
-   and pushing content oddly. Higher specificity + !important on
-   min-height so nothing wins. */
-body.authmodal #vAuth{position:fixed !important;top:50% !important;left:50% !important;transform:translate(-50%,-50%) !important;z-index:80;background:#fff !important;max-width:420px !important;width:calc(100% - 24px) !important;min-height:0 !important;max-height:90vh;overflow-y:auto;border-radius:22px !important;padding:32px 22px 24px !important;box-shadow:0 24px 70px rgba(0,0,0,.32);text-align:center;animation:crfade .2s ease-out;margin:0 !important;display:block !important}
+/* z-index bumped 79/80/81 → 9999/10000/10001 on 2026-08-21 — the
+   profile hero Leaflet map paints markers at z-index 600 (leaflet's
+   default marker-pane), which was punching through the modal backdrop
+   when auth-modal opened on top of a profile view. Also cap the map's
+   own containers below the modal as a belt-and-braces defence. */
+body.authmodal::before{content:'';position:fixed;inset:0;z-index:9999;background:rgba(15,17,25,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+body.authmodal #vAuth{position:fixed !important;top:50% !important;left:50% !important;transform:translate(-50%,-50%) !important;z-index:10000;background:#fff !important;max-width:420px !important;width:calc(100% - 24px) !important;min-height:0 !important;max-height:90vh;overflow-y:auto;border-radius:22px !important;padding:32px 22px 24px !important;box-shadow:0 24px 70px rgba(0,0,0,.32);text-align:center;animation:crfade .2s ease-out;margin:0 !important;display:block !important}
 body.authmodal #vAuth .logo,body.authmodal #vAuth h1,body.authmodal #vAuth .sub,body.authmodal #vAuth .tag{text-align:center}
 body.authmodal #vAuth #chooser,body.authmodal #vAuth #emailForm{display:flex;flex-direction:column;align-items:center}
 body.authmodal #vAuth .authcol{width:100%}
-/* Close button attached to the TOP-RIGHT of the modal itself so it
-   reads as part of the card, not a floating viewport control. Owner
-   ask 1 Aug 2026 as part of a wider 'align the design' polish. */
-body.authmodal #authClose{position:absolute;top:10px;right:10px;left:auto;z-index:81;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:800;line-height:1;cursor:pointer;color:var(--sub);transition:background .12s,color .12s;padding:0;display:inline-flex;align-items:center;justify-content:center}
+/* When the auth modal is open, force the Leaflet map to hide entirely
+   (belt-and-braces: even if a browser doesn't respect our z-index
+   above, this ensures the map can't leak through). */
+body.authmodal .leaflet-container{visibility:hidden !important}
+body.authmodal #authClose{position:absolute;top:10px;right:10px;left:auto;z-index:10001;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:800;line-height:1;cursor:pointer;color:var(--sub);transition:background .12s,color .12s;padding:0;display:inline-flex;align-items:center;justify-content:center}
 body.authmodal #authClose:hover{background:var(--hover,#f1f3f4);color:var(--ink)}
 body.authmodal{overflow:hidden}
 
