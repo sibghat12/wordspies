@@ -498,7 +498,7 @@ function sendEntry(){
 }
 
 $('rematchBtn').onclick = () => socket.emit('rematch');
-$('homeBtn').onclick = () => location.href = '/games';
+$('homeBtn').onclick = () => location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games';
 
 socket.on('err', ({ msg }) => toast(msg || 'Something went wrong.'));
 socket.on('kicked', () => { toast('You were removed from the room.'); setTimeout(() => location.reload(), 900); });

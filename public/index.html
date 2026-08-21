@@ -1693,14 +1693,14 @@ $('newGameBtn').onclick = () => {
     // game started please'. A quiet toast, not a modal — the room
     // code appears in the header as soon as the server responds.
     try { toast('🎮 New game started'); } catch(e){}
-  } else location.href = '/play';
+  } else location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games';
 };
 $('leaveBtn').onclick = () => {
   if (!confirmLeave()) return;
   try { localStorage.removeItem('ws_sess'); } catch(e){}
   clearLiveGame();
   socket.emit('leaveRoom');
-  location.href = '/play';
+  location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games';
 };
 function confirmLeave(){
   return window.confirm('Are you sure you want to leave this game?' + (S && S.state === 'playing' ? ' Your team keeps playing without you.' : ''));

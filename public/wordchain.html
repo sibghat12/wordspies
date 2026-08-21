@@ -425,7 +425,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeHowto(); }
     <div class="actions">
       <button class="btn btn-brand" id="winRematch">🔁 Play again</button>
       <button class="btn btn-line" onclick="closeWinOv()">See the chain</button>
-      <button class="btn btn-line" onclick="location.href='/games'">Back home</button>
+      <button class="btn btn-line" onclick="location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games'">Back home</button>
     </div>
   </div>
 </div>
@@ -553,7 +553,7 @@ $('wordBtn').onclick = () => {
 $('wordIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('wordBtn').click(); });
 
 $('rematchBtn').onclick = () => socket.emit('rematch');
-$('homeBtn').onclick = () => location.href = '/games';
+$('homeBtn').onclick = () => location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games';
 
 socket.on('err', ({ msg }) => toast(msg || 'Something went wrong.'));
 socket.on('kicked', () => { toast('You were removed from the room.'); setTimeout(() => location.reload(), 900); });

@@ -269,7 +269,7 @@ if (/[?&]embed=1(&|$)/.test(location.search)) document.body.classList.add('embed
     </div>
     <div class="board" id="endBoard"></div>
     <div class="row" style="margin-top:14px">
-      <button class="btn btn-line" onclick="location.href='/games'" style="flex:0 0 auto;width:auto;padding:0 16px">Home</button>
+      <button class="btn btn-line" onclick="location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games'" style="flex:0 0 auto;width:auto;padding:0 16px">Home</button>
       <button class="btn btn-brand" id="btnAgain">Play again →</button>
     </div>
   </div>
@@ -351,7 +351,7 @@ socket.on('replaced', () => {
 });
 socket.on('roomClosed', () => {
   try { localStorage.removeItem('wr_sess'); } catch(e){}
-  toast('Host closed the room.'); setTimeout(()=>location.href='/games', 1200);
+  toast('Host closed the room.'); setTimeout(()=>location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games', 1200);
 });
 socket.on('accepted', ({ word }) => {
   $('wordIn').value = '';
@@ -384,7 +384,7 @@ function tryJoin(){
   });
 }
 $('btnStart').onclick = () => socket.emit('start');
-$('btnLeave').onclick = () => { try { socket.emit('leave'); } catch(e){} try { localStorage.removeItem('wr_sess'); } catch(e){} location.href = '/games'; };
+$('btnLeave').onclick = () => { try { socket.emit('leave'); } catch(e){} try { localStorage.removeItem('wr_sess'); } catch(e){} location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games'; };
 $('btnAgain').onclick = () => socket.emit('again');
 $('btnSubmit').onclick = () => submitWord();
 $('wordIn').addEventListener('keydown', ev => { if (ev.key === 'Enter') submitWord(); });

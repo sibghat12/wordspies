@@ -589,7 +589,7 @@ $('clueIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('clueBtn
 
 $('nextRoundBtn').onclick = () => socket.emit('nextRound');
 $('rematchBtn').onclick = () => socket.emit('rematch');
-$('homeBtn').onclick = () => location.href = '/games';
+$('homeBtn').onclick = () => location.href = document.body.classList.contains('embed') ? '/games?embed=1' : '/games';
 
 // ── secret-word tap-to-reveal (protects you if someone leans over) ────
 document.getElementById('viewSecret').addEventListener('click', () => {
