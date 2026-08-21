@@ -359,6 +359,18 @@ app.get('/call', (req, res) => {
   }
 });
 
+// Standalone games hub — /games serves the game-picker page. Used as the
+// exit destination from every game (Codenames, Word Race, etc.) so the
+// user lands somewhere sensible after tapping "Exit game". When called
+// with ?embed=1 (from inside the app's game host iframe) the page hides
+// its own header so it doesn't stack under the /app topnav. Owner ask
+// 21 Aug 2026: '/games not working' — before this route, /games returned
+// 404 because express.static only served /games.html.
+app.get('/games', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'games.html'));
+});
+
 // ── Cloudflare Realtime broker ─────────────────────────────────────────
 // Voice runs on Cloudflare's SFU when the two env vars are set; otherwise
 // clients fall back to the peer-to-peer STUN path baked into /voice.js.
