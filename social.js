@@ -1007,7 +1007,7 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
             btn: 'See it', btnUrl: SITE + '/social',
             note: 'We only send these when you\'re not already in the app.'
           }));
-        sendPush(targetId, 'ref', '✍️ New reference', me.name + ' wrote a reference for you', '/social');
+        sendPush(targetId, 'ref', 'New reference', me.name + ' wrote a reference for you.', '/app');
       } catch (e) { /* notify never blocks the write */ }
       res.json({ ok: true, ref: entry });
     } catch (e) { console.error('reference:', e.message); res.status(500).json({ error: 'Something went wrong.' }); }
@@ -1600,7 +1600,7 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
             btn: 'See who it is', btnUrl: SITE + '/social',
             note: 'We only send these when you\'re not already in the app.'
           }));
-        sendPush(id, 'follow', '👋 New follower', me.name + ' started following you', '/social');
+        sendPush(id, 'follow', 'New follower', me.name + ' started following you.', '/app');
       }
       res.json({ ok: true, followers: await db.scard('soc:followers:' + id) });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
@@ -1750,8 +1750,8 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
             btn: 'Join the game', btnUrl: link,
             note: 'We only send these when you\'re not already in the app.'
           }));
-        sendPush(to, 'invite', g.icon + ' ' + me.name + ' invited you',
-          'Tap to join ' + g.label, g.path + '?room=' + code);
+        sendPush(to, 'invite', 'Game invite',
+          me.name + ' invited you to ' + g.label + '.', g.path + '?room=' + code);
         sent.push(to);
       }
       res.json({ ok: true, sent: sent.length, ids: sent });
@@ -1832,7 +1832,7 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
         }));
       // sendPush decides per device: whichever screen they're actually looking
       // at stays quiet, every other one buzzes
-      sendPush(to, 'msg', '💬 ' + me.name,
+      sendPush(to, 'msg', 'New message from ' + me.name,
         kind === 'text' ? text.slice(0, 120)
           : kind === 'gif' ? 'Sent a GIF'
           : kind === 'voice' ? '🎤 Sent a voice message'

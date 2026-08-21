@@ -10,7 +10,7 @@
 
 // Cache-name change forces every installed SW to invalidate its old
 // cache on activate. Bump this on any static-asset change.
-const CACHE = 'talksibi-static-v8';
+const CACHE = 'talksibi-static-v9';
 const STATIC = [
   '/icon-192.png',
   '/icon-512.png',
@@ -81,7 +81,7 @@ self.addEventListener('push', e => {
       if (r.ok) n = (await r.json()).n;
     } catch (err) {}
     const title = (n && n.title) || 'TalkSibi';
-    const body  = (n && n.body)  || 'You have something new.';
+    const body  = (n && n.body)  || 'You have something new to check.';
     const url   = (n && n.url)   || '/app';
     await self.registration.showNotification(title, {
       body,

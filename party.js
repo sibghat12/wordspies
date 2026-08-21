@@ -514,8 +514,8 @@ function mount(app, io, options = {}) {
         try {
           options.sendPush(
             target.uid, 'party-mic',
-            to === 'host' ? '👑 You are a host now' : '🎤 You have the mic',
-            'Tap to speak in ' + (room.title || 'the party'),
+            to === 'host' ? 'You are now a host' : 'You have the mic',
+            'Tap to speak in ' + (room.title || 'the party') + '.',
             '/party?room=' + room.code
           );
         } catch (e) {}
@@ -573,8 +573,8 @@ function mount(app, io, options = {}) {
         try {
           options.sendPush(
             room.hostUid, 'party-hand',
-            '✋ Hand raised in your party',
-            (me.name || 'Someone') + ' wants to speak in ' + (room.title || 'your party'),
+            'Hand raised in your party',
+            (me.name || 'Someone') + ' wants to speak in ' + (room.title || 'your party') + '.',
             '/party?room=' + room.code
           );
         } catch (e) {}
