@@ -382,7 +382,7 @@ ${GA}
 {"@type":"Organization","@id":"${SITE}/#org","name":"talksibi","url":"${SITE}/","logo":"${SITE}/icon-512.png","slogan":"Connect · Learn · Play","sameAs":["https://instagram.com/talksibi","https://tiktok.com/@talksibi","https://youtube.com/@talksibi","https://x.com/talksibi"]},
 {"@type":"WebApplication","name":"talksibi","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"description":"Language exchange community: chat with native speakers, play word games, join live voice parties, and build AI lesson plans. 18+, free forever.","publisher":{"@id":"${SITE}/#org"}},
 {"@type":"FAQPage","mainEntity":[
-{"@type":"Question","name":"Is talksibi free?","acceptedAnswer":{"@type":"Answer","text":"Yes — talksibi is free forever. Inviting 5 friends unlocks a bonus premium year."}},
+{"@type":"Question","name":"Is talksibi free?","acceptedAnswer":{"@type":"Answer","text":"Yes — talksibi runs in your browser without an install. Inviting friends helps the community grow."}},
 {"@type":"Question","name":"How does talksibi work?","acceptedAnswer":{"@type":"Answer","text":"Create a free profile, pick the languages you speak and the ones you're learning, then chat with native speakers, play word games together, or join live voice parties. AI experts are available 24/7 when no partner is online."}},
 {"@type":"Question","name":"Do I need to install anything?","acceptedAnswer":{"@type":"Answer","text":"No — talksibi runs in your browser on phone and desktop. You can add it to your home screen like an app."}}
 ]}
@@ -919,8 +919,8 @@ a:hover{color:#4353e8}
   <div class="ts-refsafe-grid">
     <div class="ts-refcard">
       <div class="eb">👑 Invite &amp; win</div>
-      <div class="h">Bring 5 friends, unlock 1 year free.</div>
-      <p>Everything is free to use — referrals unlock the premium year as a thank-you for growing the community.</p>
+      <div class="h">Invite friends — grow the community.</div>
+      <p>Every conversation gets better when more real people join. Share TalkSibi with someone you'd love to practise with.</p>
     </div>
     <div class="ts-safecard">
       <div class="eb">Safe by design</div>

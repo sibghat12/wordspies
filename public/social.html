@@ -4370,7 +4370,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
           <!-- 👑 Invite pill (owner ask 14 Aug 2026). Hidden by default;
                refUpdatePill() reveals it once ME is loaded + hides it
                again if the user already earned the crown. -->
-          <button type="button" class="rfpill hidden" id="rfWallPill" onclick="openReferModal()" aria-label="Invite friends and win 1 year free">
+          <button type="button" class="rfpill hidden" id="rfWallPill" onclick="openReferModal()" aria-label="Invite friends and unlock Founder status">
             <span aria-hidden="true">👑</span><span>Invite &amp; win 1yr free</span>
           </button>
         </div>
@@ -5118,7 +5118,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
           <span class="rf-metile-crown" aria-hidden="true">👑</span>
           <div class="rf-metile-mid">
             <div class="rf-metile-title" id="rfMeTileTitle">Your referrals: 0 / 5</div>
-            <div class="rf-metile-sub" id="rfMeTileSub">Bring 5 friends, unlock 1 year free.</div>
+            <div class="rf-metile-sub" id="rfMeTileSub">Bring 5 friends, unlock Founder status.</div>
           </div>
           <span class="rf-metile-cta" id="rfMeTileCta">Invite →</span>
         </div>
@@ -12924,11 +12924,11 @@ async function refPaintMeTile(){
       ? new Date(s.founderUntil).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
       : null;
     if (titleEl) titleEl.textContent = "You're a founder";
-    if (subEl) subEl.textContent = untilD ? '1 year free — until ' + untilD : '1 year free — unlocked.';
+    if (subEl) subEl.textContent = untilD ? 'Founder status — active until ' + untilD : 'Founder status — unlocked.';
     if (ctaEl) ctaEl.textContent = 'Share more →';
   } else {
     if (titleEl) titleEl.textContent = 'Your referrals: ' + (s.count || 0) + ' / ' + s.goal;
-    if (subEl) subEl.textContent = 'Bring ' + Math.max(0, s.goal - s.count) + ' more, unlock 1 year free.';
+    if (subEl) subEl.textContent = 'Bring ' + Math.max(0, s.goal - s.count) + ' more to unlock Founder status.';
     if (ctaEl) ctaEl.textContent = 'Invite →';
   }
 }
@@ -13012,7 +13012,7 @@ function refPaintModal(){
   } else {
     // Progress state — 0..4/5.
     body.innerHTML = `
-      <h3 class="rftitle" id="rfTitle">Win 1 year free 👑</h3>
+      <h3 class="rftitle" id="rfTitle">Unlock Founder status 👑</h3>
       <p class="rfsub">TalkSibi is new. Bring <b>5 friends</b> and unlock a <b>founder crown</b> + <b>1 year of everything free</b>. Share your link — no catch.</p>
       <div class="rfprog" aria-label="Referral progress">
         <div class="rfbar"><div class="rfbar-fill" style="width:${pct}%"></div></div>
