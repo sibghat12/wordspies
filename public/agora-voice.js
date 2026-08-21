@@ -69,7 +69,6 @@
   var tokenRenewTimer = null;
   var listeners = {};
   var remoteUsers = new Map();    // uid → { user, audioTrack }
-  var qualityPollTimer = null;
   var lastQualityBucket = 'good';
   var _micBusy = null;
 
@@ -158,9 +157,50 @@
     client.on('user-left', (user) => {
       remoteUsers.delete(user.uid);
     });
-    // Surface connection-state transitions for debugging + future UI.
+    // Surface connection state to the UI. Agora reports 'DISCONNECTED',
+    // 'CONNECTING', 'CONNECTED', 'RECONNECTING', 'DISCONNECTING'. Party UI
+    // can show a "Reconnecting…" banner during transient network drops.
     client.on('connection-state-change', (cur, prev) => {
-      // console.debug('[agora-voice] state:', prev, '→', cur);
+      emit('connection', { state: cur, previous: prev });
+      if (cur === 'RECONNECTING') {
+        // Uplink drops during reconnect — flag it visibly so listeners
+        // don't wait silently for audio that isn't arriving.
+        try { socket.emit('v-quality', { bucket: 'bad' }); } catch (e) {}
+        lastQualityBucket = 'bad';
+      } else if (cur === 'CONNECTED' && prev === 'RECONNECTING') {
+        // Recovered — reset quality to good so the signal chip vanishes.
+        try { socket.emit('v-quality', { bucket: 'good' }); } catch (e) {}
+        lastQualityBucket = 'good';
+      }
+    });
+    // Agora's own quality event — fires every 2 seconds. Uses ints 0-6:
+    // 0=unknown, 1=excellent, 2=good, 3=fair, 4=poor, 5=bad, 6=very bad.
+    // More accurate than parsing getRTCStats() ourselves.
+    client.on('network-quality', (q) => {
+      var up = q.uplinkNetworkQuality || 0;
+      var bucket;
+      if (up <= 2) bucket = 'good';
+      else if (up <= 4) bucket = 'weak';
+      else bucket = 'bad';
+      if (bucket !== lastQualityBucket) {
+        lastQualityBucket = bucket;
+        // Only emit when the mic is actually publishing — a silent
+        // listener with a bad uplink doesn't need a chip on their avatar.
+        if (micOn) { try { socket.emit('v-quality', { bucket: bucket }); } catch (e) {} }
+      }
+    });
+    // Agora warns us ~30 s before the token dies. Belt + suspenders on
+    // top of our own 5-min renewal timer.
+    client.on('token-privilege-will-expire', async () => {
+      try {
+        var t = await fetchToken(roomCode);
+        await client.renewToken(t.token);
+        currentToken = t.token;
+        tokenExpiresAt = t.expiresAt;
+        scheduleTokenRenewal();
+      } catch (e) {
+        console.warn('[agora-voice] emergency token renewal failed:', e.message);
+      }
     });
     await client.join(t.appId, t.channel, t.token, t.uid);
     scheduleTokenRenewal();
@@ -243,41 +283,25 @@
     finally { _micBusy = null; }
   }
 
-  // ── quality polling — outbound (my mic → SFU) ───────────────────────
+  // ── quality polling ────────────────────────────────────────────────
   //
-  // Agora exposes getRTCStats() on the mic track. Bucket into good/weak/
-  // bad using packet-loss + RTT, same thresholds as voice.js. Emit
-  // v-quality to server so remote UIs render a signal chip on my avatar.
-  function startOutboundQualityPoll() {
-    if (qualityPollTimer) return;
-    lastQualityBucket = 'good';
-    qualityPollTimer = setInterval(() => {
-      try {
-        if (!micTrack) return;
-        // Agora >=4.x: track stats + client.getRTCStats().
-        var stats = client.getRTCStats && client.getRTCStats();
-        if (!stats) return;
-        var rtt = stats.RTT || 0;
-        var loss = stats.OutgoingAvailableBandwidth ? 0 : 0;   // placeholder
-        // Simple bucketing — refine when we have real data.
-        var b = (rtt > 500) ? 'bad' : (rtt > 250) ? 'weak' : 'good';
-        if (b !== lastQualityBucket) {
-          lastQualityBucket = b;
-          try { socket.emit('v-quality', { bucket: b }); } catch (e) {}
-        }
-      } catch (e) {}
-    }, 6000);
-  }
+  // Agora's own 'network-quality' event (wired in joinChannel above)
+  // fires every 2 s with an accurate uplink bucket and emits v-quality
+  // to the server whenever it changes. That's more precise than our
+  // manual getRTCStats() poll would be, so these functions are just
+  // interface-parity shims for party.js — no ticker needed. The mic-on
+  // gate lives inside the network-quality handler.
+  function startOutboundQualityPoll() { /* handled by network-quality event */ }
   function stopOutboundQualityPoll() {
-    if (qualityPollTimer) { clearInterval(qualityPollTimer); qualityPollTimer = null; }
+    // On mute we still want to reset the remote chip to 'good' — the
+    // network-quality event will stop emitting because we gate on
+    // micOn, so nothing else will do it.
     if (lastQualityBucket !== 'good') {
       lastQualityBucket = 'good';
       try { socket.emit('v-quality', { bucket: 'good' }); } catch (e) {}
     }
   }
-  // Inbound quality poll: Agora handles remote-quality events natively
-  // via 'network-quality'. Wire up in v2 if useful — for now a no-op.
-  function startQualityPoll() { /* handled by Agora internally */ }
+  function startQualityPoll() { /* remote quality handled by Agora */ }
   function stopQualityPoll() {}
 
   // ── init / destroy ─────────────────────────────────────────────────
