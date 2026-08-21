@@ -3845,28 +3845,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
 /* Auth in modal form still gets the periwinkle CTA. */
 body.authmodal #vAuth #authGo{ border-radius:99px !important }
 
-/* ── 1f Profile Me — spec §39 ══
-   Purple gradient chrome band sits ON TOP of the existing hero (the
-   Leaflet city map stays — owner ask 16 Aug 2026). Adds an overlay
-   header row with "Me" label + Edit chip, and a soft top-fade so the
-   map reads as a bg photo behind a gradient banner.
-   No DOM change — we use pseudo-elements + a small chrome node added
-   below via CSS content. */
-#tabMe .mp-hero{ background:linear-gradient(135deg,#5b6cff,#9b6cff); min-height:172px }
-/* Hide the leaflet map on the Me hero — the purple gradient IS the hero
-   now. On the Member view the map still paints as before. */
-#tabMe .mp-hero .mp-map{ display:none !important }
-#tabMe .mp-hero::before{
-  content:''; position:absolute; inset:0 0 auto 0; height:72px;
-  background:linear-gradient(180deg, rgba(91,108,255,.72), rgba(155,108,255,0));
-  z-index:2; pointer-events:none;
-}
-#tabMe .mp-hero::after{
-  content:'Me'; position:absolute; top:22px; left:20px; z-index:3;
-  color:#ffffff; font-family:var(--brand-font); font-weight:600; font-size:16px;
-  text-shadow:0 1px 8px rgba(22,24,31,.18); pointer-events:none;
-}
-/* Back button already lives top-left — bump z-index above the fade. */
+/* Profile Me hero (owner ask 21 Aug 2026: "make the map correct, make
+   sure it works"). Restored the real Leaflet city map — the purple
+   gradient overlay + "Me" label were hiding the map completely on /me
+   even though initProfileMap('meMap', ...) was still being called. Now
+   the map paints on /me the same way it does on tabMember. Back button
+   and location pill still float on top via z-index. */
+#tabMe .mp-hero{ background:#dfeef2; min-height:172px }
 #tabMe .mp-hero .mp-back{ z-index:4 }
 #tabMe .mp-hero .mp-loc-pill{ z-index:4 }
 
@@ -5102,25 +5087,14 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
 
       <!-- RIGHT: editable cards, same visual as tabMember. -->
       <main class="mp-main">
-        <!-- Follows / Followers / Blocked stats row — clickable, each
-             opens the 3-tab drawer at the matching tab. Tandem pattern:
-             one screen, three tabs. Owner ask 13 Aug 2026. -->
-        <section class="mp-card mp-stats">
-          <div class="me-stats-row">
-            <button type="button" class="me-stat" onclick="openFollowsSheet('following')">
-              <span class="me-stat-n" id="meNFollowing">—</span>
-              <span class="me-stat-lbl">Following</span>
-            </button>
-            <button type="button" class="me-stat" onclick="openFollowsSheet('followers')">
-              <span class="me-stat-n" id="meNFollowers">—</span>
-              <span class="me-stat-lbl">Followers</span>
-            </button>
-            <button type="button" class="me-stat hidden" onclick="openFollowsSheet('blocked')">
-              <span class="me-stat-n" id="meNBlocked">—</span>
-              <span class="me-stat-lbl">Blocked</span>
-            </button>
-          </div>
-        </section>
+        <!-- Follows / Followers / Blocked counts removed 21 Aug 2026 per
+             owner ask ("remove the following and followers from the user
+             profile the one he logged in"). The 3-tab drawer still opens
+             from other surfaces (avatar menu / member view). Hidden shells
+             kept so setN('meNFollowing') etc don't error in refreshFS(). -->
+        <span id="meNFollowing" class="hidden"></span>
+        <span id="meNFollowers" class="hidden"></span>
+        <span id="meNBlocked" class="hidden"></span>
 
         <!-- Recent visitors (owner ask 13 Aug 2026 — Tandem-style, but
              free for everyone). Renders as a horizontal strip of avatar
