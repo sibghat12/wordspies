@@ -11833,6 +11833,32 @@ function openXlatPicker(bub, mine){
     b.onclick = () => { closeXlatPicker(); doTranslate(bub, mine, name); };
     list.appendChild(b);
   });
+  // Owner ask 21 Aug 2026 — 'make the list of the languages a dropdown
+  // list'. Full 65+ language dropdown BELOW the pinned quick-picks so
+  // users can translate into any language without opening the setup
+  // modal + toggling chips. Pinned languages stay as fast one-tap
+  // chips at the top.
+  const all = (typeof LANGS !== 'undefined') ? LANGS.slice() : [];
+  if (all.length) {
+    const pinned = new Set(langs.map(l => String(l).toLowerCase()));
+    const rest = all
+      .filter(l => !pinned.has(l.n.toLowerCase()))
+      .sort((a, b) => a.n === 'English' ? -1 : b.n === 'English' ? 1 : a.n.localeCompare(b.n));
+    if (rest.length) {
+      const sel = document.createElement('select');
+      sel.className = 'xlat-opt-select';
+      sel.style.cssText = 'width:100%;margin-top:4px;padding:9px 12px;border:1px solid var(--line);border-radius:14px;background:#f5f5f7;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer';
+      sel.innerHTML = '<option value="">Choose another language…</option>'
+        + rest.map(l => '<option value="' + escapeHtml(l.n) + '">' + l.f + ' ' + escapeHtml(l.n) + '</option>').join('');
+      sel.onchange = () => {
+        const v = sel.value;
+        if (!v) return;
+        closeXlatPicker();
+        doTranslate(bub, mine, v);
+      };
+      list.appendChild(sel);
+    }
+  }
   const manage = document.getElementById('xlatManage');
   manage.onclick = () => {
     closeXlatPicker();
