@@ -4653,78 +4653,87 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
        so paintMember(), toggleFollow, loadReferences, initProfileMap
        etc. write into the new shell without changes. ══════════════ -->
   <style>
-    #tabMember{padding:0 !important;background:#fbfbfd}
-    #tabMember .pm2-hero{position:relative;height:216px;overflow:hidden;background:#dfeef2;border-bottom:1px solid #eef0f4;margin:0}
-    #tabMember .pm2-map{position:absolute;inset:0}
-    #tabMember .pm2-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(251,251,253,0) 55%,rgba(251,251,253,.9));pointer-events:none}
-    #tabMember .pm2-back{position:absolute;top:14px;left:20px;z-index:3;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #e4e6ee;border-radius:99px;padding:8px 15px;font-size:13px;font-weight:600;color:#4a4d59;min-height:38px;cursor:pointer;font-family:inherit;line-height:1}
-    #tabMember .pm2-back:hover{color:#14161f}
-    #tabMember .pm2-loc-pill{position:absolute;top:14px;right:20px;z-index:3;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #e4e6ee;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#4a4d59;display:inline-flex;align-items:center;gap:6px;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 14px rgba(22,24,31,.08)}
-    #tabMember .pm2-loc-pill.hidden{display:none}
-    #tabMember .pm2-id{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin-top:-52px;padding:0 24px}
-    #tabMember .pm2-ava{position:relative}
-    #tabMember .pm2-ph{display:flex;width:104px;height:104px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;align-items:center;justify-content:center;font-size:38px;font-weight:700;border:4px solid #fff;box-shadow:0 10px 30px rgba(22,24,31,.14)}
-    #tabMember .pm2-ph img,#tabMember .pm2-ph .av{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
-    #tabMember .pm2-name{margin:12px 0 4px;font-size:26px;font-weight:700;letter-spacing:-.4px;color:#14161f;display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;line-height:1.15}
+    :is(#tabMember,#tabMe){padding:0 !important;background:#fbfbfd}
+    /* Own-profile-specific tweaks — camera button lives INSIDE the
+       pm2-ava avatar circle. Owner ask 21 Aug 2026: align tabMe with
+       tabMember. tabMember doesn't have an upload button; tabMe does,
+       so we position it as a floating badge on the avatar. */
+    #tabMe .pm2-ava{cursor:pointer;display:inline-block}
+    #tabMe .pm2-ava .me-upl{position:absolute;bottom:-2px;right:-4px;width:34px;height:34px;background:#5B6CFF;color:#fff;border:2px solid #fff;border-radius:50%;font-size:14px;cursor:pointer;box-shadow:0 4px 12px rgba(91,108,255,.38);padding:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;z-index:2}
+    #tabMe .pm2-ava .me-upl:hover{background:#4353e8}
+    #tabMe .me-addbio{margin-top:6px;background:transparent;border:1px dashed #5B6CFF;color:#5B6CFF;padding:8px 14px;border-radius:99px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+    #tabMe .me-addbio:hover{background:#eef1ff}
+    :is(#tabMember,#tabMe) .pm2-hero{position:relative;height:216px;overflow:hidden;background:#dfeef2;border-bottom:1px solid #eef0f4;margin:0}
+    :is(#tabMember,#tabMe) .pm2-map{position:absolute;inset:0}
+    :is(#tabMember,#tabMe) .pm2-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(251,251,253,0) 55%,rgba(251,251,253,.9));pointer-events:none}
+    :is(#tabMember,#tabMe) .pm2-back{position:absolute;top:14px;left:20px;z-index:3;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #e4e6ee;border-radius:99px;padding:8px 15px;font-size:13px;font-weight:600;color:#4a4d59;min-height:38px;cursor:pointer;font-family:inherit;line-height:1}
+    :is(#tabMember,#tabMe) .pm2-back:hover{color:#14161f}
+    :is(#tabMember,#tabMe) .pm2-loc-pill{position:absolute;top:14px;right:20px;z-index:3;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #e4e6ee;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#4a4d59;display:inline-flex;align-items:center;gap:6px;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 14px rgba(22,24,31,.08)}
+    :is(#tabMember,#tabMe) .pm2-loc-pill.hidden{display:none}
+    :is(#tabMember,#tabMe) .pm2-id{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin-top:-52px;padding:0 24px}
+    :is(#tabMember,#tabMe) .pm2-ava{position:relative}
+    :is(#tabMember,#tabMe) .pm2-ph{display:flex;width:104px;height:104px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;align-items:center;justify-content:center;font-size:38px;font-weight:700;border:4px solid #fff;box-shadow:0 10px 30px rgba(22,24,31,.14)}
+    :is(#tabMember,#tabMe) .pm2-ph img,:is(#tabMember,#tabMe) .pm2-ph .av{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+    :is(#tabMember,#tabMe) .pm2-name{margin:12px 0 4px;font-size:26px;font-weight:700;letter-spacing:-.4px;color:#14161f;display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;line-height:1.15}
     /* Meta rows darker + a touch bigger — owner ask 21 Aug 2026:
        'make it black maybe the font size'. Was #8a8d99 14px, felt washed
        out at a glance next to the name. Now near-ink 14.5px, still
        lighter than the name so hierarchy stays clear. */
-    #tabMember .pm2-meta{font-size:14.5px;color:#3a3d47;line-height:1.55;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;max-width:100%}
-    #tabMember .pm2-meta > span{display:inline-flex;align-items:center;gap:6px;justify-content:center}
-    #tabMember .pm2-meta:empty,#tabMember .pm2-meta > span:empty{display:none}
-    #tabMember .pm2-meta .mp-ico-svg{width:14px;height:14px;flex-shrink:0}
-    #tabMember .pm2-active{font-size:14px;color:#3a3d47;margin-top:4px;min-height:20px}
-    #tabMember .pm2-counts{display:flex;justify-content:center;gap:24px;margin-top:10px;font-size:14px;color:#3a3d47;flex-wrap:wrap}
-    #tabMember .pm2-counts b{color:#14161f;font-weight:800;margin-right:4px;font-size:15px}
-    #tabMember .pm2-actions{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
-    #tabMember .pm2-btn{font-family:inherit;font-size:14px;font-weight:600;padding:12px 22px;border-radius:99px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:.12s;border:0;line-height:1}
-    #tabMember .pm2-btn-primary{background:#5b6cff;color:#fff;box-shadow:0 6px 18px rgba(91,108,255,.3)}
-    #tabMember .pm2-btn-primary:hover{background:#4353e8}
-    #tabMember .pm2-btn-out{background:#fff;border:1px solid #e4e6ee;color:#14161f}
-    #tabMember .pm2-btn-out:hover{border-color:#d4d7e2}
-    #tabMember .pm2-btn-out.on{background:#f2f8f5;border-color:#c9e6d8;color:#2d7a62}
-    #tabMember .pm2-wrap{display:grid;grid-template-columns:1fr 300px;gap:22px;max-width:1240px;margin:0 auto;padding:26px 24px 96px;width:100%;box-sizing:border-box}
-    #tabMember .pm2-main{display:flex;flex-direction:column;gap:14px;min-width:0}
-    #tabMember .pm2-rail{display:flex;flex-direction:column;gap:14px}
-    #tabMember .pm2-card{background:#fff;border:1px solid #eceef4;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(22,24,31,.05)}
-    #tabMember .pm2-card > h2,#tabMember .pm2-card > .pm2-refs-head > h2{margin:0 0 12px;font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a8d99}
-    #tabMember .pm2-card.hidden{display:none}
-    #tabMember .pm2-body{margin:0;font-size:14.5px;color:#4a4d59;line-height:1.55;white-space:pre-wrap;word-break:break-word}
-    #tabMember .pm2-body.pm2-empty,#tabMember .pm2-body.mp-empty{color:#8a8d99;font-style:italic}
-    #tabMember .pm2-langs{display:flex;flex-direction:column}
-    #tabMember .pm2-langs .mp-lang{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 0}
-    #tabMember .pm2-langs .mp-lang+.mp-lang{border-top:1px solid #eef0f4}
-    #tabMember .pm2-langs .mp-lang-flag{font-size:22px;text-align:center}
-    #tabMember .pm2-langs .mp-lang-name{font-size:14.5px;font-weight:600;color:#14161f;letter-spacing:0}
-    #tabMember .pm2-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    #tabMember .pm2-photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;cursor:pointer;transition:transform .15s;border:1px solid #eceef4}
-    #tabMember .pm2-photos img:hover{transform:scale(1.02)}
-    #tabMember .pm2-chips{display:flex;flex-wrap:wrap;gap:7px}
-    #tabMember .pm2-chips .mp-chip{background:#fafafa;border:1px solid #e8e6e0;color:#6b6e7a;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:99px;display:inline-block}
-    #tabMember .pm2-refs-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
-    #tabMember .pm2-refs-count{color:#14161f;font-weight:700;background:#f3f4fb;padding:2px 8px;border-radius:99px;font-size:12px;letter-spacing:0;text-transform:none;margin-left:6px}
-    #tabMember .pm2-refs-write{background:#fff;border:1px solid #e4e6ee;color:#14161f;font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:99px;cursor:pointer}
-    #tabMember .pm2-refs-write:hover{border-color:#5b6cff;color:#5b6cff}
+    :is(#tabMember,#tabMe) .pm2-meta{font-size:14.5px;color:#3a3d47;line-height:1.55;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;max-width:100%}
+    :is(#tabMember,#tabMe) .pm2-meta > span{display:inline-flex;align-items:center;gap:6px;justify-content:center}
+    :is(#tabMember,#tabMe) .pm2-meta:empty,:is(#tabMember,#tabMe) .pm2-meta > span:empty{display:none}
+    :is(#tabMember,#tabMe) .pm2-meta .mp-ico-svg{width:14px;height:14px;flex-shrink:0}
+    :is(#tabMember,#tabMe) .pm2-active{font-size:14px;color:#3a3d47;margin-top:4px;min-height:20px}
+    :is(#tabMember,#tabMe) .pm2-counts{display:flex;justify-content:center;gap:24px;margin-top:10px;font-size:14px;color:#3a3d47;flex-wrap:wrap}
+    :is(#tabMember,#tabMe) .pm2-counts b{color:#14161f;font-weight:800;margin-right:4px;font-size:15px}
+    :is(#tabMember,#tabMe) .pm2-actions{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+    :is(#tabMember,#tabMe) .pm2-btn{font-family:inherit;font-size:14px;font-weight:600;padding:12px 22px;border-radius:99px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:.12s;border:0;line-height:1}
+    :is(#tabMember,#tabMe) .pm2-btn-primary{background:#5b6cff;color:#fff;box-shadow:0 6px 18px rgba(91,108,255,.3)}
+    :is(#tabMember,#tabMe) .pm2-btn-primary:hover{background:#4353e8}
+    :is(#tabMember,#tabMe) .pm2-btn-out{background:#fff;border:1px solid #e4e6ee;color:#14161f}
+    :is(#tabMember,#tabMe) .pm2-btn-out:hover{border-color:#d4d7e2}
+    :is(#tabMember,#tabMe) .pm2-btn-out.on{background:#f2f8f5;border-color:#c9e6d8;color:#2d7a62}
+    :is(#tabMember,#tabMe) .pm2-wrap{display:grid;grid-template-columns:1fr 300px;gap:22px;max-width:1240px;margin:0 auto;padding:26px 24px 96px;width:100%;box-sizing:border-box}
+    :is(#tabMember,#tabMe) .pm2-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+    :is(#tabMember,#tabMe) .pm2-rail{display:flex;flex-direction:column;gap:14px}
+    :is(#tabMember,#tabMe) .pm2-card{background:#fff;border:1px solid #eceef4;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(22,24,31,.05)}
+    :is(#tabMember,#tabMe) .pm2-card > h2,:is(#tabMember,#tabMe) .pm2-card > .pm2-refs-head > h2{margin:0 0 12px;font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8a8d99}
+    :is(#tabMember,#tabMe) .pm2-card.hidden{display:none}
+    :is(#tabMember,#tabMe) .pm2-body{margin:0;font-size:14.5px;color:#4a4d59;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+    :is(#tabMember,#tabMe) .pm2-body.pm2-empty,:is(#tabMember,#tabMe) .pm2-body.mp-empty{color:#8a8d99;font-style:italic}
+    :is(#tabMember,#tabMe) .pm2-langs{display:flex;flex-direction:column}
+    :is(#tabMember,#tabMe) .pm2-langs .mp-lang{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 0}
+    :is(#tabMember,#tabMe) .pm2-langs .mp-lang+.mp-lang{border-top:1px solid #eef0f4}
+    :is(#tabMember,#tabMe) .pm2-langs .mp-lang-flag{font-size:22px;text-align:center}
+    :is(#tabMember,#tabMe) .pm2-langs .mp-lang-name{font-size:14.5px;font-weight:600;color:#14161f;letter-spacing:0}
+    :is(#tabMember,#tabMe) .pm2-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    :is(#tabMember,#tabMe) .pm2-photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;cursor:pointer;transition:transform .15s;border:1px solid #eceef4}
+    :is(#tabMember,#tabMe) .pm2-photos img:hover{transform:scale(1.02)}
+    :is(#tabMember,#tabMe) .pm2-chips{display:flex;flex-wrap:wrap;gap:7px}
+    :is(#tabMember,#tabMe) .pm2-chips .mp-chip{background:#fafafa;border:1px solid #e8e6e0;color:#6b6e7a;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:99px;display:inline-block}
+    :is(#tabMember,#tabMe) .pm2-refs-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+    :is(#tabMember,#tabMe) .pm2-refs-count{color:#14161f;font-weight:700;background:#f3f4fb;padding:2px 8px;border-radius:99px;font-size:12px;letter-spacing:0;text-transform:none;margin-left:6px}
+    :is(#tabMember,#tabMe) .pm2-refs-write{background:#fff;border:1px solid #e4e6ee;color:#14161f;font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:99px;cursor:pointer}
+    :is(#tabMember,#tabMe) .pm2-refs-write:hover{border-color:#5b6cff;color:#5b6cff}
     @media(max-width:1020px){
-      #tabMember .pm2-wrap{grid-template-columns:1fr}
-      #tabMember .pm2-rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:start}
+      :is(#tabMember,#tabMe) .pm2-wrap{grid-template-columns:1fr}
+      :is(#tabMember,#tabMe) .pm2-rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:start}
     }
     @media(max-width:719px){
       /* Mobile: shorter hero, avatar sits FULLY BELOW the map (no
          overlap). Owner ask 20 Aug 2026 — "on mobile the picture
          becomes under the map, half looks cut off". Overlap was
          -44px; now 14px positive gap so the whole face shows. */
-      #tabMember .pm2-hero{height:130px}
-      #tabMember .pm2-back{left:16px;padding:7px 12px;font-size:12.5px}
-      #tabMember .pm2-loc-pill{display:none}
-      #tabMember .pm2-id{margin-top:14px;padding:0 16px}
-      #tabMember .pm2-ph{width:96px;height:96px;font-size:34px}
-      #tabMember .pm2-name{font-size:22px}
-      #tabMember .pm2-btn{padding:11px 18px;font-size:13.5px}
-      #tabMember .pm2-wrap{padding:20px 16px 96px;gap:12px}
-      #tabMember .pm2-rail{grid-template-columns:1fr}
-      #tabMember .pm2-counts{gap:14px}
+      :is(#tabMember,#tabMe) .pm2-hero{height:130px}
+      :is(#tabMember,#tabMe) .pm2-back{left:16px;padding:7px 12px;font-size:12.5px}
+      :is(#tabMember,#tabMe) .pm2-loc-pill{display:none}
+      :is(#tabMember,#tabMe) .pm2-id{margin-top:14px;padding:0 16px}
+      :is(#tabMember,#tabMe) .pm2-ph{width:96px;height:96px;font-size:34px}
+      :is(#tabMember,#tabMe) .pm2-name{font-size:22px}
+      :is(#tabMember,#tabMe) .pm2-btn{padding:11px 18px;font-size:13.5px}
+      :is(#tabMember,#tabMe) .pm2-wrap{padding:20px 16px 96px;gap:12px}
+      :is(#tabMember,#tabMe) .pm2-rail{grid-template-columns:1fr}
+      :is(#tabMember,#tabMe) .pm2-counts{gap:14px}
     }
   </style>
   <div id="tabMember" class="hidden">
@@ -5041,81 +5050,67 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
        existing JS (saveProfile, chip pickers, upload, settings) keeps
        working without changes. -->
   <div id="tabMe" class="hidden">
-    <div class="mp-hero">
-      <div class="mp-map" id="meMap"></div>
-      <div class="mp-loc-pill hidden" id="meLocPill"><span>📍</span><span id="meLocPillTxt"></span></div>
-      <button class="mp-back" onclick="showTab('wall')">←</button>
+    <!-- Own profile v2 — matches tabMember's pm2 layout exactly (owner
+         ask 21 Aug 2026: 'make the logged in user and logged in user
+         profile page same layout please'). Every field is still
+         editable in place; the section headings + card visuals mirror
+         the peer-view design so 'this is what everyone sees'
+         genuinely matches. All IDs preserved: paintMe, saveProfile,
+         chip pickers, upload, referral tile, visitors card, follows
+         counters all keep working without a JS change. -->
+    <div class="pm2-hero">
+      <div class="pm2-map" id="meMap"></div>
+      <button type="button" class="pm2-back" onclick="showTab('wall')">← Community</button>
+      <div class="pm2-loc-pill hidden" id="meLocPill"><span>📍</span><span id="meLocPillTxt"></span></div>
     </div>
-    <div class="mp-grid">
-      <!-- LEFT: photo (with upload), name, meta, save/logout. -->
-      <aside class="mp-side">
-        <div class="mp-photo me-photo-edit" onclick="$('photoIn').click()" title="Change photo">
-          <span id="myAv"></span>
-          <button class="me-upl" onclick="$('photoIn').click()" title="Change photo">📷</button>
-        </div>
-        <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" class="hidden">
-        <!-- Extra profile photos (owner ask 10 Aug 2026). Up to 6.
-             Tap ＋ to add, × on any tile to remove. -->
-        <div class="me-gallery">
-          <div class="me-glabel">More photos</div>
+    <section class="pm2-id">
+      <span class="pm2-ava me-photo-edit" onclick="$('photoIn').click()" title="Change photo">
+        <span class="pm2-ph" id="myAv"></span>
+        <button class="me-upl" type="button" onclick="event.stopPropagation();$('photoIn').click()" title="Change photo">📷</button>
+      </span>
+      <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" class="hidden">
+      <h1 class="pm2-name"><span id="myName"></span></h1>
+      <div class="pm2-meta"><span id="myLoc"></span></div>
+      <div class="pm2-meta"><span id="myLocalTime"></span></div>
+      <div class="pm2-meta"><span id="myHandle"></span></div>
+      <div class="pm2-active">This is your public profile</div>
+      <button type="button" class="me-addbio hidden" id="myAddBioChip" onclick="focusBioEditor()">+ Add a bio</button>
+      <div class="pm2-actions">
+        <button type="button" class="pm2-btn pm2-btn-out" onclick="logout()">Log out</button>
+      </div>
+      <!-- Legacy hidden shells so paintMe() writes don't error even
+           though the block is retired. -->
+      <span id="myGames" class="hidden"></span><span id="myWins" class="hidden"></span>
+      <span id="myRate" class="hidden"></span><span id="mySince" class="hidden"></span>
+      <div id="myQuote" class="hidden"></div>
+      <!-- Follows / Followers / Blocked counters removed 21 Aug 2026
+           per owner ask; the 3-tab drawer still opens from other
+           surfaces. Hidden shells kept so setN('meNFollowing') etc
+           don't crash in refreshFS(). -->
+      <span id="meNFollowing" class="hidden"></span>
+      <span id="meNFollowers" class="hidden"></span>
+      <span id="meNBlocked" class="hidden"></span>
+    </section>
+
+    <div class="pm2-wrap">
+      <main class="pm2-main">
+        <!-- Extra photos gallery — first card so the whole strip is
+             above the fold, matching tabMember's Photos card. -->
+        <section class="pm2-card">
+          <h2>More photos</h2>
           <div class="me-gtiles" id="mePhotoStrip"></div>
           <input type="file" id="mePhotoAddIn" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="mePhotoAdd()">
-        </div>
-        <div class="mp-meta">
-          <h1 class="mp-name"><span id="myName"></span></h1>
-          <div class="mp-active">This is your public profile</div>
-          <!-- Tandem-style header rows on your own profile too — location,
-               local time, and @handle — same three lines as tabMember so
-               'this is what everyone sees' actually matches. Icons: pin
-               + clock SVG (see infoIconPin / infoIconClock helpers). -->
-          <div class="mp-info-row"><span id="myLoc"></span></div>
-          <div class="mp-info-row"><span id="myLocalTime"></span></div>
-          <div class="mp-info-row"><span id="myHandle"></span></div>
-          <!-- Owner ask 14 Aug 2026: if you haven't written a bio yet,
-               show a small tappable "+ Add a bio" chip that scrolls the
-               editor into view — instead of nothing (or worse, the
-               seeded 'Hey! I'm really into languages…' placeholder we
-               used to fall back to). -->
-          <button type="button" class="me-addbio hidden" id="myAddBioChip" onclick="focusBioEditor()">+ Add a bio</button>
-          <!-- Save + Log out moved out of the top-of-profile slot (owner
-               ask 16 Aug 2026: 'remove the save button, put it at the
-               bottom'). Log out kept here as a small ghost link so it
-               isn't buried. Save lives in the floating bar below. -->
-          <div class="mp-actions mp-actions-tight">
-            <button class="mp-btn line small" onclick="logout()">Log out</button>
-          </div>
-          <!-- Legacy hidden shells so paintMe() writes don't error. -->
-          <span id="myGames" class="hidden"></span><span id="myWins" class="hidden"></span>
-          <span id="myRate" class="hidden"></span><span id="mySince" class="hidden"></span>
-          <div id="myQuote" class="hidden"></div>
-        </div>
-      </aside>
+        </section>
 
-      <!-- RIGHT: editable cards, same visual as tabMember. -->
-      <main class="mp-main">
-        <!-- Follows / Followers / Blocked counts removed 21 Aug 2026 per
-             owner ask ("remove the following and followers from the user
-             profile the one he logged in"). The 3-tab drawer still opens
-             from other surfaces (avatar menu / member view). Hidden shells
-             kept so setN('meNFollowing') etc don't error in refreshFS(). -->
-        <span id="meNFollowing" class="hidden"></span>
-        <span id="meNFollowers" class="hidden"></span>
-        <span id="meNBlocked" class="hidden"></span>
-
-        <!-- Recent visitors (owner ask 13 Aug 2026 — Tandem-style, but
-             free for everyone). Renders as a horizontal strip of avatar
-             cards with name + relative time. Populated by loadMyVisitors()
-             from /api/social/visits. Self-hides when no visitors. -->
-        <section class="mp-card mp-visitors hidden" id="meVisitorsCard">
-          <h3>👀 Who visited your profile</h3>
+        <!-- Recent visitors (owner ask 13 Aug 2026 — Tandem-style, free
+             for everyone). Populated by loadMyVisitors() from
+             /api/social/visits. Self-hides when no visitors. -->
+        <section class="pm2-card hidden" id="meVisitorsCard">
+          <h2>👀 Who visited your profile</h2>
           <div class="me-vis-strip" id="meVisitorsStrip"></div>
         </section>
 
-        <!-- 👑 Your referrals tile (owner ask 14 Aug 2026). Subtle
-             counter — tap opens the invite modal. Painted by
-             refPaintMeTile() on every paintMe(). Self-hides for AI /
-             guest and swaps to a "Founder — 1 year free unlocked" cell
-             once the crown is earned. -->
+        <!-- 👑 Referrals tile (owner ask 14 Aug 2026). -->
         <div class="rf-metile hidden" id="rfMeTile" role="button" tabindex="0"
              onclick="openReferModal()"
              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openReferModal()}">
@@ -5127,66 +5122,61 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
           <span class="rf-metile-cta" id="rfMeTileCta">Invite →</span>
         </div>
 
-        <section class="mp-card">
-          <h3>Your name</h3>
+        <!-- Editable field cards — each wrapped in pm2-card so the
+             visuals match tabMember. All input IDs unchanged so
+             saveProfile() + chip pickers keep working. -->
+        <section class="pm2-card">
+          <h2>Your name</h2>
           <input class="me-input" id="fMyName" maxlength="15" placeholder="Your name" autocomplete="off">
           <div class="me-help">This is the name everyone sees, in games and on the wall.</div>
         </section>
 
-        <div class="mp-2col">
-          <section class="mp-card">
-            <h3>Date of birth</h3>
-            <input class="me-input" id="fBirth" type="date">
-            <div class="me-help">TalkSibi is 18+ — Save will confirm you meet the age requirement.</div>
-          </section>
-          <section class="mp-card">
-            <h3>City</h3>
-            <input class="me-input" id="fLoc" maxlength="40" placeholder="Your city">
-            <div class="me-help">Where you're based. Used on your profile hero.</div>
-          </section>
-        </div>
+        <section class="pm2-card">
+          <h2>Date of birth</h2>
+          <input class="me-input" id="fBirth" type="date">
+          <div class="me-help">TalkSibi is 18+ — Save will confirm you meet the age requirement.</div>
+        </section>
 
-        <!-- Owner ask 2 Aug 2026 v7: retire the Interests + Goals
-             chip pickers, add free-text prompts, and drop the
-             level pill from the language chips ('so boring and
-             difficult'). Order matches what people actually want
-             to read first: what you like to talk about, then why
-             you're here, then who you're looking for. -->
-        <section class="mp-card mp-narrow">
-          <h3>What do you like to talk about?</h3>
+        <section class="pm2-card">
+          <h2>City</h2>
+          <input class="me-input" id="fLoc" maxlength="40" placeholder="Your city">
+          <div class="me-help">Where you're based. Shows on your profile hero.</div>
+        </section>
+
+        <section class="pm2-card">
+          <h2>What do you like to talk about?</h2>
           <textarea class="me-input me-area" id="fTalk" maxlength="500" rows="2" placeholder="Books, films, weekend plans, travel stories, cooking…"></textarea>
         </section>
 
-        <section class="mp-card">
-          <h3>What's your purpose or goal here?</h3>
+        <section class="pm2-card">
+          <h2>What's your purpose or goal here?</h2>
           <textarea class="me-input me-area" id="fPurpose" maxlength="500" rows="2" placeholder="e.g. Practise my English for a job move, or just enjoy chatting."></textarea>
         </section>
 
-        <section class="mp-card">
-          <h3>What kind of language partner are you looking for?</h3>
+        <section class="pm2-card">
+          <h2>What kind of language partner are you looking for?</h2>
           <textarea class="me-input me-area" id="fPartner" maxlength="500" rows="2" placeholder="e.g. Someone patient who's also learning, happy to switch languages half-half."></textarea>
         </section>
 
-        <div class="mp-2col" id="pfLangSection">
-          <section class="mp-card">
-            <h3>Languages you speak</h3>
-            <div class="chiprow" id="fSpeaksChips"></div>
-            <button type="button" class="chipadd" onclick="openLangPicker('speaks')">+ Add a language</button>
-          </section>
-          <section class="mp-card">
-            <h3>Languages you're learning</h3>
-            <div class="chiprow" id="fLearnsChips"></div>
-            <button type="button" class="chipadd" onclick="openLangPicker('learns')">+ Add a language</button>
-          </section>
-        </div>
+        <section class="pm2-card" id="pfLangSection">
+          <h2>Languages you speak</h2>
+          <div class="chiprow" id="fSpeaksChips"></div>
+          <button type="button" class="chipadd" onclick="openLangPicker('speaks')">+ Add a language</button>
+        </section>
 
-        <section class="mp-card">
-          <h3>About you</h3>
+        <section class="pm2-card">
+          <h2>Languages you're learning</h2>
+          <div class="chiprow" id="fLearnsChips"></div>
+          <button type="button" class="chipadd" onclick="openLangPicker('learns')">+ Add a language</button>
+        </section>
+
+        <section class="pm2-card">
+          <h2>About you</h2>
           <textarea class="me-input me-area" id="fBio" maxlength="200" rows="3" placeholder="Say something about yourself…"></textarea>
         </section>
 
-        <section class="mp-card">
-          <h3>Recommendations</h3>
+        <section class="pm2-card">
+          <h2>Recommendations</h2>
           <textarea class="me-input me-area" id="fRecs" maxlength="500" rows="3" placeholder="Books, films, songs, apps — things you'd recommend."></textarea>
         </section>
       </main>
