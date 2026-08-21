@@ -709,55 +709,51 @@
      if (want && !canPublish) throw new Error('Watchers cannot speak — only players can open the microphone.');
      if (_micBusy) { try { await _micBusy; } catch (e) {} }
      if (!!want === !!micOn) return micOn;
+     // OPTIMISTIC UI — flip local mic flag + emit v-mic to peers + emit
+     // local 'mic' event to update the mic button IMMEDIATELY, before any
+     // async work. Feels Tandem-instant. If openMic/publish fails below,
+     // we revert both the local flag and the peer chip. Owner ask
+     // 21 Aug 2026: 'if I mute my mic it should be so fast and if unmute
+     // it should be so fast and all speakers can see it right same like
+     // the Tandem'.
+     micOn = !!want;
+     try { socket.emit('v-mic', { on: micOn }); } catch (e) {}
+     emit('mic', { on: micOn });
      _micBusy = (async () => {
        await activate();
        if (want) {
          try { await openMic(); }
-         catch (e) { emit('mic', { on: false, err: e.message || 'Microphone permission denied.' }); throw e; }
-         micOn = true;
-         // Announce mic-on to the room BEFORE the Cloudflare publish round-trip
-         // so peers' mic chips flip the instant we unmute. The v-tracks event
-         // that fires after publishTrack() is authoritative for audio routing
-         // (subscribers use trackNames), but it can take 300-800ms and it
-         // never fires at all if publishTrack throws — leaving remote UIs
-         // stuck showing us as muted. Owner bug 2026-08-14: 'I speak, mic
-         // is on for me but others can't see my mic is on'.
-         try { socket.emit('v-mic', { on: true }); } catch (e) {}
-         // If the CF publish path throws, we CANNOT leave the mic chip
-         // green — listeners will see us as unmuted but hear nothing (there
-         // are no CF track names for them to subscribe to). Roll back:
-         // close the mic, flip micOn=false, emit v-mic{on:false}, and
-         // surface an error so the UI can toast the speaker.
-         // Owner bug 2026-08-15: "I'm speaking, mic shows on, but she
-         // can't hear me or anything." Root cause identified: publishLocal
-         // was silently swallowing failures.
+         catch (e) {
+           // Permission denied / hardware failure — revert optimistic state.
+           micOn = false;
+           try { socket.emit('v-mic', { on: false }); } catch (e2) {}
+           emit('mic', { on: false, err: e.message || 'Microphone permission denied.' });
+           throw e;
+         }
+         // Publish to the SFU. If CF rejects, revert to muted so listeners
+         // don't see a green chip they can't hear. Owner bug 2026-08-15.
          if (activePath.publishLocal) {
            try {
              await activePath.publishLocal();
-             // Sanity check — did we actually end up with a track name
-             // registered on the SFU? If not, treat as failure.
              if (activePath === sfu && !sfu.localTrackNames.length) {
                throw new Error('Cloudflare accepted no tracks — publish silently failed.');
              }
            } catch (e) {
              try { console && console.warn && console.warn('[voice] publish failed, rolling back mic:', e); } catch (e2) {}
-             try { socket.emit('v-mic', { on: false }); } catch (e2) {}
              try { if (activePath && activePath.unpublishLocal) await activePath.unpublishLocal(); } catch (e2) {}
              closeMic();
              micOn = false;
+             try { socket.emit('v-mic', { on: false }); } catch (e2) {}
              emit('mic', { on: false, err: (e && e.message) || 'Voice publish failed — tap the mic again.' });
              throw e;
            }
          }
        } else {
-         // Announce mic-off up-front so peers' chips flip immediately, before
-         // the unpublish round-trip. Same reasoning as the mic-on branch.
-         try { socket.emit('v-mic', { on: false }); } catch (e) {}
+         // Peer chip already flipped optimistically. Tear down the local
+         // publish quietly in the background so audio actually stops.
          if (activePath && activePath.unpublishLocal) { try { await activePath.unpublishLocal(); } catch (e) {} }
          closeMic();
-         micOn = false;
        }
-       emit('mic', { on: micOn });
        return micOn;
      })();
      try { return await _micBusy; }
