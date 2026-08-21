@@ -140,12 +140,28 @@ app.get('/codenames', (req, res) => {
 
 // Digital Asset Links — proves talksibi.com owns the Android TWA package
 // (app.talksibi.twa). Without this, the TWA falls back to showing a
-// Chrome URL bar at the top of the app. express.static ignores dotfiles
-// by default so we serve it explicitly before the static middleware.
+// Chrome URL bar at the top of the app. Served INLINE from code (not a
+// file) because the deploy pipeline drops dotfile directories like
+// `public/.well-known/` — so relying on the file 404'd in production.
+// The SHA-256 fingerprint is read from TWA_SHA256 env var if set,
+// otherwise the placeholder ships (fine for pre-launch — TWA just shows
+// a URL bar until the real fingerprint is wired in).
 app.get('/.well-known/assetlinks.json', (req, res) => {
   res.setHeader('Cache-Control', 'public, max-age=3600');
   res.setHeader('Content-Type', 'application/json');
-  res.sendFile(path.join(__dirname, 'public', '.well-known', 'assetlinks.json'));
+  res.json([{
+    relation: ['delegate_permission/common.handle_all_urls'],
+    target: {
+      namespace: 'android_app',
+      package_name: 'app.talksibi.twa',
+      sha256_cert_fingerprints: [
+        // Signing key fingerprint from Bubblewrap init on 21 Aug 2026 —
+        // baked into the released TWA (app.talksibi.twa). The env var
+        // override stays as an escape hatch if we ever need to rotate.
+        process.env.TWA_SHA256 || '06:07:53:EE:76:2A:35:24:CF:03:A1:6F:27:7B:55:0A:EB:24:C3:20:4E:2E:AC:0B:18:77:42:79:80:9F:C3:07'
+      ]
+    }
+  }]);
 });
 
 // Legal pages — clean URLs for Play Store submission (Privacy Policy is
