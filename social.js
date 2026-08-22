@@ -337,6 +337,7 @@ function mount(app, redis) {
   const OB_ALLOW = new Set([
     '/profile', '/photo', '/account/pending',
     '/push/subscribe', '/push/unsubscribe',
+    '/push/fcm-register', '/push/fcm-unregister',
     '/deleteAccount', '/me',
     // Un-onboarded users must still be able to report abuse — a
     // victim mid-signup should not be gagged. Audit fix 2 Aug v8.
@@ -569,7 +570,86 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
   // while the page is genuinely on screen.
   const epKey = ep => 'soc:at:' + crypto.createHash('sha1').update(ep).digest('hex').slice(0, 20);
 
+  // ── Native FCM push (Capacitor v2.0.0+) ─────────────────────────────
+  // sendPush() splices sendFcm() alongside the existing Web Push path
+  // so users running the Capacitor build get native notifications
+  // (icon + app name from manifest, NO 'talksibi.com' shown), while
+  // TWA / browser users keep the Web Push path they already had. Gated
+  // by FCM_ENABLED env var + presence of firebase-admin — nothing loads
+  // or runs on the current droplet until the owner flips the flag.
+  // Owner ask 22 Aug 2026: 'start Capacitor now' — Phase C server side.
+  let _fcmAdmin = null;
+  function fcmReady() {
+    if (process.env.FCM_ENABLED !== 'true') return false;
+    if (!process.env.FCM_PROJECT_ID) return false;
+    if (!process.env.FCM_CLIENT_EMAIL) return false;
+    if (!process.env.FCM_PRIVATE_KEY) return false;
+    if (_fcmAdmin) return true;
+    try {
+      const admin = require('firebase-admin');
+      if (!admin.apps.length) {
+        admin.initializeApp({
+          credential: admin.credential.cert({
+            projectId:   process.env.FCM_PROJECT_ID,
+            clientEmail: process.env.FCM_CLIENT_EMAIL,
+            // Newline-escaped in env → real newlines in the string
+            privateKey:  process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n')
+          })
+        });
+      }
+      _fcmAdmin = admin;
+      return true;
+    } catch (e) {
+      // No credential logging — private key can end up in the stack.
+      console.error('[fcm] init failed');
+      return false;
+    }
+  }
+  async function sendFcm(uid, title, body, url, photo) {
+    if (!fcmReady()) return;
+    try {
+      const tokens = await db.smembers('soc:fcm:' + uid);
+      if (!tokens || !tokens.length) return;
+      const message = {
+        notification: { title: title || 'TalkSibi', body: body || '' },
+        data: { url: url || '/app' },
+        android: {
+          priority: 'high',
+          notification: {
+            icon: 'ic_notification',
+            color: '#5B6CFF',
+            imageUrl: photo || undefined,
+            channelId: 'talksibi_default'
+          }
+        },
+        tokens
+      };
+      const resp = await _fcmAdmin.messaging().sendEachForMulticast(message);
+      if (resp && resp.responses) {
+        for (let i = 0; i < resp.responses.length; i++) {
+          const r = resp.responses[i];
+          if (r && !r.success && r.error) {
+            const code = r.error.code || '';
+            if (code === 'messaging/registration-token-not-registered'
+             || code === 'messaging/invalid-registration-token'
+             || code === 'messaging/invalid-argument') {
+              try { await db.srem('soc:fcm:' + uid, tokens[i]); } catch (e) {}
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[fcm] send failed');   // no e.message — could leak key
+    }
+  }
+
   async function sendPush(uid, kind, title, body, url, photo) {
+    // Native FCM fires first — best-effort, silent on failure. Users
+    // on the Capacitor build get the polished native notification;
+    // Web Push still fires below for TWA/browser users (same person
+    // with both installs sees ONE notification because Android
+    // dedupes by tag).
+    sendFcm(uid, title, body, url, photo).catch(() => {});
     try {
       const eps = await db.smembers('soc:push:' + uid);
       if (!eps.length) return;
@@ -617,6 +697,35 @@ TalkSibi · <a href="${SITE}" style="color:#9aa0ab;text-decoration:none">talksib
       const u = await userFromReq(req);
       if (!u) return res.status(401).json({ error: 'Please log in.' });
       await db.srem('soc:push:' + u.id, String((req.body || {}).endpoint || ''));
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+  // ── Native FCM token registration (Capacitor v2.0.0+) ──────────────
+  // Client-side capacitor-push.js POSTs the FCM token here after
+  // getting it back from PushNotifications.register(). Stored in a
+  // set per user so we can push to every device the user has
+  // installed. Invalidated tokens are pruned automatically inside
+  // sendFcm() when Firebase reports them dead. Owner ask 22 Aug 2026
+  // 'start Capacitor now' — Phase C server side.
+  api.post('/push/fcm-register', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      const token = String((req.body || {}).token || '');
+      // FCM tokens are 100-300 char base64ish blobs; reject anything
+      // obviously malformed so we don't waste Redis space.
+      if (!/^[A-Za-z0-9:_\-]{80,400}$/.test(token)) {
+        return res.status(400).json({ error: 'Bad token.' });
+      }
+      await db.sadd('soc:fcm:' + u.id, token);
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
+  });
+  api.post('/push/fcm-unregister', async (req, res) => {
+    try {
+      const u = await userFromReq(req);
+      if (!u) return res.status(401).json({ error: 'Please log in.' });
+      await db.srem('soc:fcm:' + u.id, String((req.body || {}).token || ''));
       res.json({ ok: true });
     } catch (e) { res.status(500).json({ error: 'Something went wrong.' }); }
   });

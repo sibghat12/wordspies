@@ -13,3 +13,20 @@
 
 # node
 node_modules/
+
+# Capacitor (v2.0.0 native shell migration) — build artifacts + secrets.
+# The /android project scaffold IS committed so builds are reproducible;
+# only per-machine build output + credentials are ignored here.
+android/build/
+android/.gradle/
+android/app/build/
+android/app/release/
+android/app/google-services.json
+android/app/talksibi.keystore
+android/local.properties
+android/keystore.properties
+android/gradle.properties
+android/capacitor-cordova-android-plugins/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/assets/public/
