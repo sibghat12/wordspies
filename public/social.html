@@ -2809,6 +2809,25 @@ body.chatlock{overflow:hidden;overflow-x:hidden !important;height:100%;position:
 /* Chatfull mode: neutralise .wrap's 6px side padding so the chat can
    sit flush edge-to-edge and its 100dvh height maths line up. */
 #vApp.chatfull.wrap{padding-left:0 !important;padding-right:0 !important}
+/* Bulletproof horizontal-overflow guard for iPhone Safari (screenshot
+   06:43 22 Aug 2026: "Hi" bubble + send button both cut off at right
+   edge). Every level in the chat DOM chain is forced to viewport width
+   with box-sizing:border-box + overflow-x:hidden so nothing can lean
+   right of the viewport regardless of parent width miscalculations. */
+#vApp.chatfull,
+#vApp.chatfull #tabChat,
+.chatfull .chathead,
+.chatfull .msgs,
+.chatfull .composer{
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+  overflow-x:hidden !important;
+}
+/* Ensure the composer's last child (send button) can never spill past
+   the container's right edge even if intermediate flex maths drifts. */
+.chatfull .composer > *:last-child{margin-right:0 !important}
+.chatfull .composer .cbtn.send{flex-shrink:0}
 /* Composer — modernised 6 Aug 2026 (owner ask). WhatsApp / Telegram
    idiom: a big pill-shaped input takes almost the whole row, small
    flat glyph buttons (emoji, camera) sit on either side, and one
