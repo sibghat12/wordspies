@@ -2016,13 +2016,16 @@ body.authmodal .fab-create{display:none !important}
 /* z-index 250 (was 200) so it stacks above .ob-wizard which shares
    200 — fixes BUG-020 (party modal + wizard collide if signup is
    somehow interrupted mid-flow). Still below .sesskick (400). */
-.pt-modal{position:fixed;inset:0;background:rgba(15,17,25,.68);z-index:250;display:flex;align-items:center;justify-content:center;padding:16px}
-.pt-msheet{position:relative;background:#fff;border-radius:22px;padding:26px 24px 22px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.32);animation:ptmodal .22s cubic-bezier(.2,1.1,.4,1)}
+/* Backdrop softened + sheet stretched to 98% viewport (owner ask
+   22 Aug 2026: "the party popup seems like a black background and
+   make the party popup 98%"). Was rgba(15,17,25,.68) + max-width 420. */
+.pt-modal{position:fixed;inset:0;background:rgba(15,17,25,.28);z-index:250;display:flex;align-items:center;justify-content:center;padding:8px}
+.pt-msheet{position:relative;background:#fff;border-radius:22px;padding:26px 24px 22px;max-width:98%;width:98%;box-shadow:0 24px 60px rgba(0,0,0,.28);animation:ptmodal .22s cubic-bezier(.2,1.1,.4,1)}
 /* Big variant used by the party-creation dialog (owner ask 10 Aug
    2026 — 'make it big popup'). Wider, taller, chip grid for flags. */
 /* Party create sheet — extra breathing room top/bottom + wider side
    padding + more space between fields (owner ask 14 Aug 2026). */
-.pt-msheet-big{max-width:520px;padding:34px 32px 30px;max-height:90vh;overflow-y:auto}
+.pt-msheet-big{max-width:98%;width:98%;padding:34px 32px 30px;max-height:90vh;overflow-y:auto}
 .pt-msheet-big .pt-flabel{margin:20px 0 8px}
 .pt-msheet-big .pt-flabel:first-of-type{margin-top:22px}
 .pt-msheet-big .pt-finput,
