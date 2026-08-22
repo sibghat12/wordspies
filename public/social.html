@@ -2799,15 +2799,23 @@ body:has(.partybar:not(.hidden)) .gamebar{bottom:calc(78px + env(safe-area-inset
 /* "↓ New messages" pill retired per owner ask — was reappearing even
    after fixes and cluttering the chat. Users can scroll manually. */
 .jumpnew{display:none !important}
-/* stop the page itself moving while you're inside a chat on a phone */
-body.chatlock{overflow:hidden;height:100%;position:relative;overscroll-behavior:none}
+/* stop the page itself moving while you're inside a chat on a phone.
+   Owner ask 22 Aug 2026: on iPhone Safari the chat page was scrolling
+   both vertically AND horizontally, and the composer was misaligned.
+   Root causes: composer had width:100% + padding without box-sizing,
+   #vApp.wrap had 6px side padding pushing chat content off-alignment,
+   and body had no horizontal-overflow guard. All three fixed here. */
+body.chatlock{overflow:hidden;overflow-x:hidden !important;height:100%;position:relative;overscroll-behavior:none}
+/* Chatfull mode: neutralise .wrap's 6px side padding so the chat can
+   sit flush edge-to-edge and its 100dvh height maths line up. */
+#vApp.chatfull.wrap{padding-left:0 !important;padding-right:0 !important}
 /* Composer — modernised 6 Aug 2026 (owner ask). WhatsApp / Telegram
    idiom: a big pill-shaped input takes almost the whole row, small
    flat glyph buttons (emoji, camera) sit on either side, and one
    filled circular action button on the right swaps between mic and
    send depending on whether there's text. No borders on the glyphs
    themselves — they read as touchable icons, not chrome. */
-.composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:12;align-items:center}
+.composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;box-sizing:border-box;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:12;align-items:center}
 @media(min-width:700px){.composer{bottom:0}}
 .composer input,.composer textarea{flex:1;background:#fff;border:1px solid var(--line);border-radius:22px;padding:11px 18px;font-size:16px;min-width:0}
 .composer textarea{resize:none;font-family:inherit;line-height:1.4;min-height:44px;max-height:130px;overflow-y:auto}
