@@ -1,4 +1,4 @@
-// Static info pages for TalkSibi — About, Privacy Policy, Terms.
+// Static info pages for TalkSibi - About, Privacy Policy, Terms.
 // Required for ad-network (AdSense) approval and general trust/SEO.
 // Chrome unified 20 Aug 2026: static pages (about / privacy / terms /
 // child-safety / how-to-play / become-a-teacher) now share the same
@@ -28,7 +28,7 @@ const GA = `<script>
   };
   window.wsLoadAds = function(){
     if (window._wsAdsLoaded) return; window._wsAdsLoaded = true;
-    // AdSense loader intentionally left as a hook — inject the
+    // AdSense loader intentionally left as a hook - inject the
     // pagead2 script here once the publisher ID is set.
   };
   try {
@@ -37,7 +37,7 @@ const GA = `<script>
   } catch(e){}
 })();
 </script>`;
-// Cookie consent modal — appended into every public layout. Shows
+// Cookie consent modal - appended into every public layout. Shows
 // once, remembers choice, dismisses cleanly. Two buttons: Accept all
 // (loads analytics + ads) and Reject all (essential cookies only).
 const CONSENT_MODAL = `
@@ -111,7 +111,7 @@ a{color:inherit}
    "become-a-teacher and some other pages had a different header +
    footer, make them like the landing page". */
 ${TS_CHROME_CSS}
-/* Article body — narrow reading column, generous spacing. */
+/* Article body - narrow reading column, generous spacing. */
 .wrap{max-width:760px;margin:0 auto;padding:40px 24px 70px}
 h1{font-size:34px;line-height:1.2;letter-spacing:-.6px;margin:0 0 6px;font-weight:700}
 .updated{color:#6b7280;font-size:14px;margin-bottom:28px}
@@ -134,16 +134,16 @@ function aboutPage() {
 <div class="updated">Get to know the game and the people behind it.</div>
 <p>TalkSibi is a free online word game for friends and families, inspired by the much-loved hidden-word party game format. Two teams race to identify their secret words from one-word clues given by their spymasters, while carefully avoiding the hidden assassin word. It plays in any web browser, on any phone or laptop, with no sign-up and no download.</p>
 <h2>Why we built it</h2>
-<p>We wanted a version of the word-guessing party game that anyone could start in ten seconds and play with friends anywhere — around a table, or spread across a video call. No accounts, no app store, no cost. Just type a name, share a four-letter code, and play.</p>
+<p>We wanted a version of the word-guessing party game that anyone could start in ten seconds and play with friends anywhere - around a table, or spread across a video call. No accounts, no app store, no cost. Just type a name, share a four-letter code, and play.</p>
 <h2>How it works</h2>
-<p>One player creates a room and shares the code or invite link. Friends join from their own devices and split into two teams. Each team's spymaster gives one-word clues with a number, and teammates discuss and tap the words they think match. The first team to find all of their words wins — unless someone taps the assassin, which ends the game instantly.</p>
+<p>One player creates a room and shares the code or invite link. Friends join from their own devices and split into two teams. Each team's spymaster gives one-word clues with a number, and teammates discuss and tap the words they think match. The first team to find all of their words wins - unless someone taps the assassin, which ends the game instantly.</p>
 <h2>Who makes TalkSibi</h2>
 <p>TalkSibi is an independent project built and maintained by a small team. We play, test and improve it continuously, and we genuinely read the feedback players send in.</p>
 <h2>Get in touch</h2>
 <p>Ideas, bug reports and kind words are all welcome at <a href="mailto:contact@talksibi.com">contact@talksibi.com</a>.</p>
 <h2>A note on trademarks</h2>
 <p>TalkSibi is an independent game and is not affiliated with, endorsed by, or connected to Codenames or Czech Games Edition. Any references to Codenames on this site are for descriptive comparison only, to help players understand the style of game TalkSibi is.</p>`;
-  return layout('About TalkSibi — The Free Online Word Game', 'Learn about TalkSibi, the free online Codenames-style word game for friends and families. How it works, who makes it, and how to get in touch.', '/about', body);
+  return layout('About TalkSibi - The Free Online Word Game', 'Learn about TalkSibi, the free online Codenames-style word game for friends and families. How it works, who makes it, and how to get in touch.', '/about', body);
 }
 
 function privacyPage() {
@@ -155,13 +155,13 @@ function privacyPage() {
 <p>TalkSibi is an independent language-exchange community based in the United Kingdom. Contact: <a href="mailto:contact@talksibi.com">contact@talksibi.com</a>.</p>
 <h2>What we collect</h2>
 <ul>
-<li><strong>Account information</strong> — display name, email address, date of birth (used for the 18+ age check — required, we store the date you gave), and a bcrypt hash of your password. If you sign in with Google, we receive your Google name, email and profile photo, and you provide your date of birth to us the first time you sign in.</li>
-<li><strong>Profile content</strong> — the profile photo, city, and short bio you choose to add.</li>
-<li><strong>Messages, voice messages and party audio</strong> — direct messages (text, GIF selections, voice notes) are stored on our servers to deliver them. Live party audio is relayed in real time and is not recorded by us.</li>
-<li><strong>Follows and social graph</strong> — who you follow and who follows you.</li>
-<li><strong>Approximate location</strong> — derived from your IP address at sign-up to suggest your city. We do not collect precise GPS location.</li>
-<li><strong>Technical logs</strong> — IP address, browser type, device type, and page requests for security and abuse prevention. Session cookies keep you signed in.</li>
-<li><strong>Push notification identifiers</strong> — if you opt in to push notifications, we store the endpoint your browser gives us so we can deliver them.</li>
+<li><strong>Account information</strong> - display name, email address, date of birth (used for the 18+ age check - required, we store the date you gave), and a bcrypt hash of your password. If you sign in with Google, we receive your Google name, email and profile photo, and you provide your date of birth to us the first time you sign in.</li>
+<li><strong>Profile content</strong> - the profile photo, city, and short bio you choose to add.</li>
+<li><strong>Messages, voice messages and party audio</strong> - direct messages (text, GIF selections, voice notes) are stored on our servers to deliver them. Live party audio is relayed in real time and is not recorded by us.</li>
+<li><strong>Follows and social graph</strong> - who you follow and who follows you.</li>
+<li><strong>Approximate location</strong> - derived from your IP address at sign-up to suggest your city. We do not collect precise GPS location.</li>
+<li><strong>Technical logs</strong> - IP address, browser type, device type, and page requests for security and abuse prevention. Session cookies keep you signed in.</li>
+<li><strong>Push notification identifiers</strong> - if you opt in to push notifications, we store the endpoint your browser gives us so we can deliver them.</li>
 </ul>
 <h2>How we use it</h2>
 <ul>
@@ -173,21 +173,21 @@ function privacyPage() {
 <p>We do not sell your personal information. We do not use your messages or photos to train AI models.</p>
 <h2>Who processes data on our behalf</h2>
 <ul>
-<li><strong>Google Sign-In</strong> (Google LLC) — authentication if you use "Sign in with Google".</li>
-<li><strong>Cloudflare Realtime SFU</strong> (Cloudflare Inc.) — relays live party audio in real time. No recordings.</li>
-<li><strong>Brevo</strong> (Sendinblue SAS) — transactional email (invites, password resets, notifications).</li>
-<li><strong>DigitalOcean</strong> — server hosting (London, UK).</li>
-<li><strong>Google Analytics</strong> — anonymised usage statistics.</li>
-<li><strong>Google AdSense &amp; advertising partners</strong> — if enabled, may display ads on pages such as the homepage and blog. Ad partners (Google and its network) may use cookies to serve ads based on your prior visits and interests. You can opt out of personalised ads at <a href="https://adssettings.google.com" rel="noopener" target="_blank">adssettings.google.com</a>. Ads are never shown on the community, chat, party, or game pages.</li>
+<li><strong>Google Sign-In</strong> (Google LLC) - authentication if you use "Sign in with Google".</li>
+<li><strong>Cloudflare Realtime SFU</strong> (Cloudflare Inc.) - relays live party audio in real time. No recordings.</li>
+<li><strong>Brevo</strong> (Sendinblue SAS) - transactional email (invites, password resets, notifications).</li>
+<li><strong>DigitalOcean</strong> - server hosting (London, UK).</li>
+<li><strong>Google Analytics</strong> - anonymised usage statistics.</li>
+<li><strong>Google AdSense &amp; advertising partners</strong> - if enabled, may display ads on pages such as the homepage and blog. Ad partners (Google and its network) may use cookies to serve ads based on your prior visits and interests. You can opt out of personalised ads at <a href="https://adssettings.google.com" rel="noopener" target="_blank">adssettings.google.com</a>. Ads are never shown on the community, chat, party, or game pages.</li>
 </ul>
 <h2>Cookies &amp; consent</h2>
 <p>We use three kinds of cookies:</p>
 <ul>
-<li><strong>Essential</strong> — session cookies that keep you signed in and remember which chat / party you were in. These load without asking because the site cannot work without them.</li>
-<li><strong>Analytics</strong> — anonymised page-view counts via Google Analytics. Only loaded after you accept cookies.</li>
-<li><strong>Advertising</strong> — cookies set by Google AdSense and its partners to serve ads on marketing pages (home, blog). Only loaded after you accept cookies.</li>
+<li><strong>Essential</strong> - session cookies that keep you signed in and remember which chat / party you were in. These load without asking because the site cannot work without them.</li>
+<li><strong>Analytics</strong> - anonymised page-view counts via Google Analytics. Only loaded after you accept cookies.</li>
+<li><strong>Advertising</strong> - cookies set by Google AdSense and its partners to serve ads on marketing pages (home, blog). Only loaded after you accept cookies.</li>
 </ul>
-<p>The first time you visit we ask you to <strong>Accept all</strong> or <strong>Reject all</strong>. If you reject, analytics and advertising cookies never load — you can still use the whole site. You can change your choice any time by clearing site data in your browser settings and reloading.</p>
+<p>The first time you visit we ask you to <strong>Accept all</strong> or <strong>Reject all</strong>. If you reject, analytics and advertising cookies never load - you can still use the whole site. You can change your choice any time by clearing site data in your browser settings and reloading.</p>
 <h2>Retention</h2>
 <p>Account data is kept while your account is active. When you delete your account (Me → Delete account) we remove your profile, photo, messages, follows, and session tokens immediately. Server logs are kept for up to 30 days for abuse investigation.</p>
 <h2>Your rights (UK/EU GDPR)</h2>
@@ -197,7 +197,7 @@ function privacyPage() {
 <p>To keep our community safe we may, in future, ask you to complete a one-time identity or age verification via a trusted third-party provider (for example a selfie-plus-ID-document check, or an email-verification step). We will not do this without notice, and we will not share any documents you provide with anyone other than the verification provider strictly to complete the check.</p>
 <h2>Changes</h2>
 <p>We may update this policy. Material changes will be reflected by the "Last updated" date above.</p>`;
-  return layout('Privacy Policy — TalkSibi', 'How TalkSibi handles data: accounts, messages, party audio, and the third parties who process data on our behalf.', '/privacy', body);
+  return layout('Privacy Policy - TalkSibi', 'How TalkSibi handles data: accounts, messages, party audio, and the third parties who process data on our behalf.', '/privacy', body);
 }
 
 function termsPage() {
@@ -239,11 +239,11 @@ function termsPage() {
 <p>General questions: <a href="mailto:contact@talksibi.com">contact@talksibi.com</a><br>Safety reports: <a href="mailto:safety@talksibi.com">safety@talksibi.com</a></p>
 <h2>Changes</h2>
 <p>We may update these terms. Continued use after changes means you accept the updated terms.</p>`;
-  return layout('Terms of Use — TalkSibi', 'The rules for using TalkSibi: acceptable use, zero-tolerance content, reporting, and account termination.', '/terms', body);
+  return layout('Terms of Use - TalkSibi', 'The rules for using TalkSibi: acceptable use, zero-tolerance content, reporting, and account termination.', '/terms', body);
 }
 
 // Google Play requires a publicly reachable Child Safety Standards page
-// for any app in the Social category — regardless of whether the app
+// for any app in the Social category - regardless of whether the app
 // actually has child users. Must name the app and the developer, and
 // list our position and controls.
 function childSafetyPage() {
@@ -261,9 +261,9 @@ function childSafetyPage() {
 <ul>
 <li><strong>Self-declared date of birth</strong> at account creation, verified on the server.</li>
 <li><strong>Email cool-down</strong> for 24 hours after any under-18 signup attempt on the same email address.</li>
-<li><strong>Photo verification</strong> — every new profile photo is checked (server-side face detection) before it is public. Cartoon avatars, clearly non-adult photos, and photos flagged as underage-appearing are rejected.</li>
-<li><strong>Reactive removal</strong> — any account suspected to belong to a minor is suspended pending review.</li>
-<li><strong>Highly effective age assurance</strong> — where we detect elevated risk we may require third-party age verification (for example, a photo-plus-ID document check by a verified provider). Refusal will result in suspension.</li>
+<li><strong>Photo verification</strong> - every new profile photo is checked (server-side face detection) before it is public. Cartoon avatars, clearly non-adult photos, and photos flagged as underage-appearing are rejected.</li>
+<li><strong>Reactive removal</strong> - any account suspected to belong to a minor is suspended pending review.</li>
+<li><strong>Highly effective age assurance</strong> - where we detect elevated risk we may require third-party age verification (for example, a photo-plus-ID document check by a verified provider). Refusal will result in suspension.</li>
 </ul>
 
 <h2>Content moderation</h2>
@@ -273,7 +273,7 @@ function childSafetyPage() {
 <li>Server-side profanity and slur filtering on text messages.</li>
 <li>Human review of reports within 24 hours of receipt.</li>
 <li>Removal of offending content and termination of offending accounts.</li>
-<li>No unmoderated broadcast surface — live voice parties always have a host with mute / kick powers, and the party audio stream is subject to the same reporting flow as text.</li>
+<li>No unmoderated broadcast surface - live voice parties always have a host with mute / kick powers, and the party audio stream is subject to the same reporting flow as text.</li>
 </ul>
 
 <h2>Reporting child safety concerns</h2>
@@ -290,70 +290,70 @@ function childSafetyPage() {
 
 <h2>Compliance references</h2>
 <ul>
-<li><strong>UK Online Safety Act 2023</strong> — we are a user-to-user service under the Act. Our duties on illegal harms and children include those described above. Ofcom is the regulator; complaints can be made at <a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a> (data) or <a href="https://ofcom.org.uk" rel="noopener" target="_blank">ofcom.org.uk</a> (content).</li>
-<li><strong>ICO Children's Code (Age Appropriate Design Code)</strong> — TalkSibi is not directed at children; we apply the strictest privacy defaults to all accounts.</li>
-<li><strong>US COPPA</strong> — we do not knowingly collect personal information from anyone under 13.</li>
-<li><strong>Google Play Child Safety Standards</strong> and <strong>Apple App Store</strong> safety requirements — this page + the moderation controls above satisfy the disclosures required for social apps in both stores.</li>
+<li><strong>UK Online Safety Act 2023</strong> - we are a user-to-user service under the Act. Our duties on illegal harms and children include those described above. Ofcom is the regulator; complaints can be made at <a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a> (data) or <a href="https://ofcom.org.uk" rel="noopener" target="_blank">ofcom.org.uk</a> (content).</li>
+<li><strong>ICO Children's Code (Age Appropriate Design Code)</strong> - TalkSibi is not directed at children; we apply the strictest privacy defaults to all accounts.</li>
+<li><strong>US COPPA</strong> - we do not knowingly collect personal information from anyone under 13.</li>
+<li><strong>Google Play Child Safety Standards</strong> and <strong>Apple App Store</strong> safety requirements - this page + the moderation controls above satisfy the disclosures required for social apps in both stores.</li>
 </ul>
 
 <h2>About us</h2>
 <p>TalkSibi is an independent language-exchange community, based in the United Kingdom, reachable at <a href="mailto:contact@talksibi.com">contact@talksibi.com</a>.</p>`;
-  return layout('Child Safety Standards — TalkSibi', 'Our standards for protecting minors: 18+ age gate, photo verification, reporting, moderation, and the designated CSAM contact.', '/child-safety', body);
+  return layout('Child Safety Standards - TalkSibi', 'Our standards for protecting minors: 18+ age gate, photo verification, reporting, moderation, and the designated CSAM contact.', '/child-safety', body);
 }
 
 // A canonical URL for "how to play". The old shared nav pointed at `/#how`,
-// but `/` now serves the community app which has no such anchor — so every
+// but `/` now serves the community app which has no such anchor - so every
 // header link on the marketing / about / blog pages was dead-ending on a
 // scroll that never happened. A real page also earns its own SEO.
 function howToPlayPage() {
   const body = `
 <h1>How to play TalkSibi</h1>
-<div class="updated">The free online Codenames-style word game — for 4 to 10+ friends, in about ten minutes.</div>
-<p>TalkSibi is a free online word game inspired by the party classic Codenames. Two teams — <b style="color:#ff4d6b">Red</b> and <b style="color:#3d7bff">Blue</b> — race to find their secret words on a five-by-five grid, using one-word clues from their spymasters, while carefully avoiding the assassin. Everyone plays from their own phone or laptop, so it works around a table or over a video call.</p>
+<div class="updated">The free online Codenames-style word game - for 4 to 10+ friends, in about ten minutes.</div>
+<p>TalkSibi is a free online word game inspired by the party classic Codenames. Two teams - <b style="color:#ff4d6b">Red</b> and <b style="color:#3d7bff">Blue</b> - race to find their secret words on a five-by-five grid, using one-word clues from their spymasters, while carefully avoiding the assassin. Everyone plays from their own phone or laptop, so it works around a table or over a video call.</p>
 <h2>What you need</h2>
 <ul>
   <li>At least 4 players (2 per team). The sweet spot is 6–10.</li>
-  <li>Each player on their own device — phone, tablet or laptop.</li>
+  <li>Each player on their own device - phone, tablet or laptop.</li>
   <li>No accounts, no downloads. Open the site and share a 4-letter code.</li>
 </ul>
 <h2>The five-step round</h2>
 <ol>
   <li><b>Create a room.</b> Tap <a href="/play">▶ Play Codenames</a>, enter your name, and you'll get a four-letter code and shareable link. Send it to your friends.</li>
-  <li><b>Split into teams.</b> Everyone joins Red or Blue. Each team picks one <b>Spymaster</b> — they see which words on the grid belong to which team. Everyone else is a <b>Guesser</b> and sees only the words.</li>
+  <li><b>Split into teams.</b> Everyone joins Red or Blue. Each team picks one <b>Spymaster</b> - they see which words on the grid belong to which team. Everyone else is a <b>Guesser</b> and sees only the words.</li>
   <li><b>Spymaster gives a clue.</b> One word plus a number, like <b>OCEAN · 2</b>, linking two of your team's words. Clues must be single words unrelated to any word on the board.</li>
-  <li><b>Guessers discuss and tap.</b> Guessers tap the words they think match the clue. Right answer? Keep going, up to the number given plus one. Wrong answer? Your turn ends — worse if you hit the other team's word, or a neutral one.</li>
-  <li><b>First team to find all their words wins.</b> But watch out for the <b>assassin</b> — tap it by accident and your team loses instantly.</li>
+  <li><b>Guessers discuss and tap.</b> Guessers tap the words they think match the clue. Right answer? Keep going, up to the number given plus one. Wrong answer? Your turn ends - worse if you hit the other team's word, or a neutral one.</li>
+  <li><b>First team to find all their words wins.</b> But watch out for the <b>assassin</b> - tap it by accident and your team loses instantly.</li>
 </ol>
 <h2>Tips for great clues</h2>
 <ul>
   <li>Numbers matter. "OCEAN · 3" is bold; "OCEAN · 1" is safe. Bigger risks turn tighter games.</li>
   <li>Themes usually beat single connections. "SPORT · 2" for TENNIS and BASEBALL is stronger than a fragile pun.</li>
-  <li>Avoid words that touch the assassin — a great clue that lands on it costs you the game.</li>
+  <li>Avoid words that touch the assassin - a great clue that lands on it costs you the game.</li>
   <li>Guessers should think out loud. Half the fun is the arguments before the tap.</li>
 </ul>
 <h2>Playing remotely on a video call</h2>
-<p>Keep your Zoom, Meet or FaceTime call running. Everyone opens TalkSibi on their phone. Debates happen live on the call; the tapping happens on the phones. It's the same game — just louder.</p>
+<p>Keep your Zoom, Meet or FaceTime call running. Everyone opens TalkSibi on their phone. Debates happen live on the call; the tapping happens on the phones. It's the same game - just louder.</p>
 <h2>Frequently asked</h2>
 <p><b>Is TalkSibi really free?</b> Yes. No sign-up, no download, no ads on the game screen.</p>
 <p><b>Can we play with 2 or 3?</b> Technically yes, but 4+ makes the game come alive. With just 2, our <a href="/meld">🧠 Mind Meld</a> is a better fit.</p>
-<p><b>What happens if my phone drops the connection?</b> Rejoin from the same link — the game reseats you.</p>
+<p><b>What happens if my phone drops the connection?</b> Rejoin from the same link - the game reseats you.</p>
 <p><b>Is this Codenames?</b> TalkSibi is inspired by Codenames but is its own independent game, not affiliated with Codenames or Czech Games Edition.</p>
 <div style="margin-top:32px;text-align:center">
-  <a class="play" href="/play" style="display:inline-block">${'▶'} Start a game — takes ten seconds</a>
+  <a class="play" href="/play" style="display:inline-block">${'▶'} Start a game - takes ten seconds</a>
 </div>`;
   return layout(
-    'How to play TalkSibi — A quick guide to the free Codenames-style word game',
-    'A short, clear guide to playing TalkSibi: teams, spymasters, clues, and how to win — plus tips for playing over video calls with friends.',
+    'How to play TalkSibi - A quick guide to the free Codenames-style word game',
+    'A short, clear guide to playing TalkSibi: teams, spymasters, clues, and how to win - plus tips for playing over video calls with friends.',
     '/how-to-play',
     body
   );
 }
 
-// "Become a Teacher" — public application form. Owner ask 13 Aug 2026:
+// "Become a Teacher" - public application form. Owner ask 13 Aug 2026:
 // first slice of the Teacher role from the full vision doc. Anyone
 // (signed in or not) can submit their credentials + rate + bio; the
 // application lands in Redis for the owner to review manually. No
-// verification / payment / booking yet — this only opens the pipe.
+// verification / payment / booking yet - this only opens the pipe.
 function becomeTeacherPage() {
   const body = `
 <style>
@@ -432,7 +432,7 @@ function becomeTeacherPage() {
   </div>
   <div class="bt-row">
     <label class="bt-lbl" for="btQuals">Qualifications &amp; certifications</label>
-    <textarea class="bt-area" id="btQuals" name="quals" maxlength="400" rows="3" placeholder="e.g. CELTA (2022), DELE examiner, MA Applied Linguistics — University of Barcelona"></textarea>
+    <textarea class="bt-area" id="btQuals" name="quals" maxlength="400" rows="3" placeholder="e.g. CELTA (2022), DELE examiner, MA Applied Linguistics - University of Barcelona"></textarea>
     <div class="bt-hint">Formal certifications, degrees, examiner status. Optional but strengthens your application.</div>
   </div>
   <div class="bt-row">
@@ -463,7 +463,7 @@ function becomeTeacherPage() {
 <div class="bt-thanks" id="btThanks">
   <div class="bt-thanks-emoji">🎉</div>
   <h2>Application received</h2>
-  <p>Thanks — we'll review it and get in touch by email. Meanwhile, join the community and see how TalkSibi works.</p>
+  <p>Thanks - we'll review it and get in touch by email. Meanwhile, join the community and see how TalkSibi works.</p>
   <p style="margin-top:20px"><a href="/social" style="background:#0d6f3a;color:#fff;padding:12px 24px;border-radius:99px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">← Back to community</a></p>
 </div>
 
@@ -502,7 +502,7 @@ async function btSubmit(ev){
 }
 </script>`;
   return layout(
-    'Teach on TalkSibi — become a language teacher',
+    'Teach on TalkSibi - become a language teacher',
     'Apply to teach on TalkSibi. Set your own rate, teach live from the browser, reach students worldwide.',
     '/become-a-teacher', body);
 }

@@ -1,12 +1,12 @@
-// TalkSibi marketing landing page — server-rendered at "/".
+// TalkSibi marketing landing page - server-rendered at "/".
 // Rebuilt 16 Aug 2026 from design_handoff_talksibi_rebrand 2/landing-standalone.html
 // + README.md spec. Design tokens, colors, radii, animations, section order,
 // and copy all match the DC handoff. GA, CONSENT_MODAL, and SITE_FOOTER blocks
-// are preserved unchanged — they're consumed by blog.js and pages.js.
+// are preserved unchanged - they're consumed by blog.js and pages.js.
 const SITE = 'https://talksibi.com';
 const GA_ID = 'G-JTH809Z8NH';
 const ADS_ID = 'AW-638211258';   // Google Ads conversion tag
-// Consent-gated GA — mirrors pages.js. No analytics/ads cookies until
+// Consent-gated GA - mirrors pages.js. No analytics/ads cookies until
 // the user taps 'Accept all' in the cookie modal (localStorage.ws_cc_v1).
 const GA = `<script>
 (function(){
@@ -61,7 +61,7 @@ module.exports.GA = GA;
 module.exports.GA_ID = GA_ID;
 module.exports.CONSENT_MODAL = CONSENT_MODAL;
 
-// SITE_FOOTER — the single rich footer used on every public marketing
+// SITE_FOOTER - the single rich footer used on every public marketing
 // / info page (home, about, privacy, terms, blog list, blog posts,
 // become-a-teacher, etc.). Owner ask 13 Aug 2026: 'make footer same
 // across all the pages please, everywhere.' Self-contained: includes
@@ -109,8 +109,8 @@ footer.sitefoot .fbrand em{font-style:normal;color:#5b6cff}
     <div class="fcol">
       <h4>Useful Information</h4>
       <a href="/become-a-teacher" style="color:#ffd166;font-weight:700">🎓 Become a teacher</a>
-      <a href="mailto:contact@talksibi.com?subject=talksibi%20—%20Bug%20report">Report a bug</a>
-      <a href="mailto:contact@talksibi.com?subject=talksibi%20—%20Feature%20request">Request a feature</a>
+      <a href="mailto:contact@talksibi.com?subject=talksibi%20-%20Bug%20report">Report a bug</a>
+      <a href="mailto:contact@talksibi.com?subject=talksibi%20-%20Feature%20request">Request a feature</a>
       <a href="/how-to-play">FAQs</a>
       <a href="mailto:contact@talksibi.com">Contact us</a>
       <a href="/about">About us</a>
@@ -163,7 +163,7 @@ footer.sitefoot .fbrand em{font-style:normal;color:#5b6cff}
     </div>
   </div>
   <div class="fsub">
-    <div class="fmeta">© 2026 talksibi — Practise languages with real people.<br>Independent language-exchange community, based in the United Kingdom.</div>
+    <div class="fmeta">© 2026 talksibi - Practise languages with real people.<br>Independent language-exchange community, based in the United Kingdom.</div>
     <a class="fbrand ts-lockup" href="/" style="color:#14161f;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
       <img class="ts-mark" src="/mark.svg?v=22" alt="" style="width:24px;height:24px" onerror="this.style.display='none'">
       <span class="ts-wordmark" style="font-size:18px;color:#14161f">talksibi</span>
@@ -172,10 +172,10 @@ footer.sitefoot .fbrand em{font-style:normal;color:#5b6cff}
 </div></footer>`;
 module.exports.SITE_FOOTER = SITE_FOOTER;
 
-// ── Shared TalkSibi chrome (ts-nav + ts-foot) — exported so blog.js,
+// ── Shared TalkSibi chrome (ts-nav + ts-foot) - exported so blog.js,
 // static pages etc. can drop the landing's exact header + footer in
 // with two template strings + one <style> block. Owner ask 17 Aug 2026:
-// "the blog page has not same header as the landing page — copy the
+// "the blog page has not same header as the landing page - copy the
 // header and footer into the blog archive and single pages".
 // -----------------------------------------------------------------------
 
@@ -235,7 +235,7 @@ const TS_FOOTER_TS = `<footer class="ts-foot">
         <a class="ts-lockup" href="/" style="text-decoration:none">
           <img src="/logo.svg?v=22" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px&quot;&gt;talksibi&lt;/span&gt;'">
         </a>
-        <div class="ts-foot-blurb">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
+        <div class="ts-foot-blurb">Practise languages with real people - chat, play games, and learn together. Free, in your browser.</div>
         <div class="ts-foot-socials">
           <a href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg>
@@ -263,7 +263,7 @@ const TS_FOOTER_TS = `<footer class="ts-foot">
         <div class="ts-foot-col-h">Support</div>
         <a href="/how-to-play">Safety centre</a>
         <a href="/how-to-play">Community guidelines</a>
-        <a href="mailto:feedback@talksibi.com?subject=talksibi%20—%20Report%20a%20problem">Report a problem</a>
+        <a href="mailto:feedback@talksibi.com?subject=talksibi%20-%20Report%20a%20problem">Report a problem</a>
         <a href="mailto:contact@talksibi.com">Contact us</a>
       </div>
       <div class="ts-foot-col">
@@ -296,7 +296,7 @@ module.exports.TS_FOOTER_TS = TS_FOOTER_TS;
 function tsLogoMark(size) {
   // v9c: single periwinkle chat bubble with three white typing dots.
   // Uses the shared /talksibi-mark.svg so every mark surface stays in
-  // one place — no drift between inline copies and the SVG asset.
+  // one place - no drift between inline copies and the SVG asset.
   const s = size;
   return `<img src="/talksibi-mark.svg?v=23" alt="talksibi" width="${s}" height="${s}" style="width:${s}px;height:${s}px;display:block;flex-shrink:0" aria-hidden="true">`;
 }
@@ -309,7 +309,7 @@ const HERO_FLAGS = [
   ['🇮🇳','Hindi'], ['🇨🇳','Chinese'], ['🇮🇹','Italian'], ['🇹🇷','Turkish'],
 ];
 
-// Games band — six cards. Colored top-border per README §1d.
+// Games band - six cards. Colored top-border per README §1d.
 const GAME_CARDS = [
   { icon: '🕵️', name: 'Codenames',      line: 'Two teams, secret words, one wrong guess.', bar: '#5b6cff', href: '/play' },
   { icon: '🎭', name: 'Who is the Spy?', line: 'Find the imposter in the room.',             bar: '#ff7a59', href: '/spy'  },
@@ -336,7 +336,7 @@ function page() {
 ${GA}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>talksibi — Practise languages with real people</title>
+<title>talksibi - Practise languages with real people</title>
 <meta name="description" content="Chat with native speakers, play word games together, and join live language parties. Free forever, in your browser. Connect · Learn · Play.">
 <link rel="canonical" href="${SITE}/">
 <meta name="theme-color" content="#5b6cff">
@@ -345,7 +345,7 @@ ${GA}
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="talksibi">
-<meta property="og:title" content="talksibi — Practise languages with real people">
+<meta property="og:title" content="talksibi - Practise languages with real people">
 <meta property="og:description" content="Chat with native speakers, play games together, join live parties. Free forever. Connect · Learn · Play.">
 <meta property="og:url" content="${SITE}/">
 <!-- Owner ask v25: SVG-first for modern crawlers (FB/Slack/WhatsApp/
@@ -357,15 +357,15 @@ ${GA}
 <meta property="og:image" content="${SITE}/og-image.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="talksibi — connect, learn, play with real language partners">
+<meta property="og:image:alt" content="talksibi - connect, learn, play with real language partners">
 <meta property="og:locale" content="en_GB">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="talksibi — Practise languages with real people">
+<meta name="twitter:title" content="talksibi - Practise languages with real people">
 <meta name="twitter:description" content="Chat with native speakers, play games together, join live parties. Free forever.">
 <meta name="twitter:image" content="${SITE}/og-image.png?v=2">
-<meta name="twitter:image:alt" content="talksibi — connect, learn, play">
+<meta name="twitter:image:alt" content="talksibi - connect, learn, play">
 
 <!-- Icons / PWA -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=25">
@@ -382,9 +382,9 @@ ${GA}
 {"@type":"Organization","@id":"${SITE}/#org","name":"talksibi","url":"${SITE}/","logo":"${SITE}/icon-512.png","slogan":"Connect · Learn · Play","sameAs":["https://instagram.com/talksibi","https://tiktok.com/@talksibi","https://youtube.com/@talksibi","https://x.com/talksibi"]},
 {"@type":"WebApplication","name":"talksibi","url":"${SITE}/","applicationCategory":"EducationalApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"},"description":"Language exchange community: chat with native speakers, play word games, join live voice parties, and build AI lesson plans. 18+, free forever.","publisher":{"@id":"${SITE}/#org"}},
 {"@type":"FAQPage","mainEntity":[
-{"@type":"Question","name":"Is talksibi free?","acceptedAnswer":{"@type":"Answer","text":"Yes — talksibi runs in your browser without an install. Inviting friends helps the community grow."}},
+{"@type":"Question","name":"Is talksibi free?","acceptedAnswer":{"@type":"Answer","text":"Yes - talksibi runs in your browser without an install. Inviting friends helps the community grow."}},
 {"@type":"Question","name":"How does talksibi work?","acceptedAnswer":{"@type":"Answer","text":"Create a free profile, pick the languages you speak and the ones you're learning, then chat with native speakers, play word games together, or join live voice parties. AI experts are available 24/7 when no partner is online."}},
-{"@type":"Question","name":"Do I need to install anything?","acceptedAnswer":{"@type":"Answer","text":"No — talksibi runs in your browser on phone and desktop. You can add it to your home screen like an app."}}
+{"@type":"Question","name":"Do I need to install anything?","acceptedAnswer":{"@type":"Answer","text":"No - talksibi runs in your browser on phone and desktop. You can add it to your home screen like an app."}}
 ]}
 ]}</script>
 
@@ -680,16 +680,16 @@ a:hover{color:#4353e8}
     <div class="ts-hero-txt">
       <div class="ts-livepill">
         <span class="ts-livedot"></span>
-        Live now — join a language party
+        Live now - join a language party
       </div>
       <h1 class="ts-h1">Practise languages with <span class="ts-accent">real people</span>.</h1>
-      <p class="ts-hero-sub">Create your profile, follow language partners, and chat any time. Play games together, join live parties, and build an AI learning plan — free, in your browser.</p>
+      <p class="ts-hero-sub">Create your profile, follow language partners, and chat any time. Play games together, join live parties, and build an AI learning plan - free, in your browser.</p>
       <div class="ts-hero-ctas">
-        <a class="ts-cta-primary" href="/app">Start free — 30 seconds</a>
+        <a class="ts-cta-primary" href="/app">Start free - 30 seconds</a>
         <a class="ts-cta-ghost" href="/app#wall">Explore Community →</a>
       </div>
       <div class="ts-hero-meta">
-        <span>Free forever</span><span class="ts-sep">·</span><span>No install — runs in the browser</span><span class="ts-sep">·</span><span>18+ community</span>
+        <span>Free forever</span><span class="ts-sep">·</span><span>No install - runs in the browser</span><span class="ts-sep">·</span><span>18+ community</span>
       </div>
     </div>
 
@@ -712,7 +712,7 @@ a:hover{color:#4353e8}
         </div>
         <div class="ts-chatcard-body">
           <div class="ts-msg recv">¡Hola! ¿Cómo estás? 😊</div>
-          <div class="ts-msg-hint">Hi! How are you? — tap to translate</div>
+          <div class="ts-msg-hint">Hi! How are you? - tap to translate</div>
           <div class="ts-msg sent">¡Muy bien! Word Race? 🏁</div>
           <div class="ts-msg typing"><span></span><span style="animation-delay:.15s"></span><span style="animation-delay:.3s"></span></div>
         </div>
@@ -770,7 +770,7 @@ a:hover{color:#4353e8}
   <div class="ts-sec-hd">
     <div class="ts-eyebrow" style="color:#5b6cff">Connect</div>
     <h2 class="ts-h2">A community, not a classroom.</h2>
-    <p class="ts-sec-lead">Find partners who speak what you're learning — and are learning what you speak. Follow the ones you click with and talk whenever you're both around.</p>
+    <p class="ts-sec-lead">Find partners who speak what you're learning - and are learning what you speak. Follow the ones you click with and talk whenever you're both around.</p>
   </div>
   <div class="ts-grid3">
     <div class="ts-tintcard periwinkle">
@@ -781,7 +781,7 @@ a:hover{color:#4353e8}
     <div class="ts-tintcard jade">
       <div class="ts-tintbadge" style="box-shadow:0 3px 10px rgba(31,178,138,.18)"><div class="ts-b" style="background:#1fb28a;border-radius:50%"></div></div>
       <h3>Live language parties</h3>
-      <p>Group voice rooms around a language or a topic. Public or private — host one or drop into what's live.</p>
+      <p>Group voice rooms around a language or a topic. Public or private - host one or drop into what's live.</p>
     </div>
     <div class="ts-tintcard sun">
       <div class="ts-tintbadge" style="box-shadow:0 3px 10px rgba(255,178,45,.22)"><div class="ts-b" style="background:#ffc94d;border-radius:2px 6px 6px 6px"></div></div>
@@ -815,7 +815,7 @@ a:hover{color:#4353e8}
         </div>
         <div class="ts-partymeta">🎙 12 talking · 34 listening</div>
       </div>
-      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Group voice rooms around a language or a topic — public or private. Host your own or take a free seat.</div>
+      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Group voice rooms around a language or a topic - public or private. Host your own or take a free seat.</div>
     </div>
 
     <div class="ts-alwayscard jade">
@@ -837,7 +837,7 @@ a:hover{color:#4353e8}
           <span class="ts-clubjoin">Join</span>
         </div>
       </div>
-      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Find your people around what you love — every club meets in chat and live rooms.</div>
+      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Find your people around what you love - every club meets in chat and live rooms.</div>
     </div>
 
     <div class="ts-alwayscard periwinkle">
@@ -850,11 +850,11 @@ a:hover{color:#4353e8}
           <div class="ts-aiav">✦</div>
           <div><div class="ts-partyline">Sofía · AI conversation coach</div><div style="font-size:12px;color:#1fb28a;font-weight:500">● always online</div></div>
         </div>
-        <div class="ts-aimsg recv">Let's warm up — order a coffee in Spanish ☕</div>
+        <div class="ts-aimsg recv">Let's warm up - order a coffee in Spanish ☕</div>
         <div class="ts-aimsg sent">Un café con leche, por favor…</div>
         <div class="ts-aimsg ok">✓ Perfect! Now ask for the bill.</div>
       </div>
-      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Nobody around? Practise with AI experts — instant corrections, zero judgement, any topic.</div>
+      <div style="font-size:14.5px;color:#4a4d59;line-height:1.55">Nobody around? Practise with AI experts - instant corrections, zero judgement, any topic.</div>
     </div>
 
   </div>
@@ -878,7 +878,7 @@ a:hover{color:#4353e8}
     <div class="ts-learn-txt">
       <div class="ts-eyebrow" style="color:#1fb28a">Learn</div>
       <h2 class="ts-h2">Your plan, built in seconds.</h2>
-      <p class="ts-sec-lead" style="max-width:none">Tell us what you speak, what you're learning, and the minutes you can spare — the AI builds a personalised lesson plan. Free forever. Prepping for IELTS or TOEFL? There's a dedicated track with hand-picked resources and real test dates.</p>
+      <p class="ts-sec-lead" style="max-width:none">Tell us what you speak, what you're learning, and the minutes you can spare - the AI builds a personalised lesson plan. Free forever. Prepping for IELTS or TOEFL? There's a dedicated track with hand-picked resources and real test dates.</p>
       <div class="ts-learn-tags">
         <span class="ts-learn-tag">✨ AI lesson plans</span>
         <span class="ts-learn-tag">📝 IELTS &amp; TOEFL prep</span>
@@ -896,7 +896,7 @@ a:hover{color:#4353e8}
         <span class="ts-chip off">✈️ Travel</span>
         <span class="ts-chip off">15 min/day</span>
       </div>
-      <div class="ts-planner-cta">✨ Build my plan — about 5 seconds</div>
+      <div class="ts-planner-cta">✨ Build my plan - about 5 seconds</div>
     </div>
   </div>
 </section>
@@ -910,7 +910,7 @@ a:hover{color:#4353e8}
     <div class="ts-teach-txt">
       <div class="ts-teach-eb">Teach on talksibi</div>
       <div class="ts-teach-h">Fluent in something? <span class="hl">Get paid to teach it.</span></div>
-      <div class="ts-teach-sub">Host lessons and conversation sessions, build your student circle, and earn from the languages you already speak — right inside talksibi.</div>
+      <div class="ts-teach-sub">Host lessons and conversation sessions, build your student circle, and earn from the languages you already speak - right inside talksibi.</div>
       <div class="ts-teach-facts">
         <span>💸 Set your own rate</span><span>🗓 Your schedule</span><span>🌍 Students worldwide</span>
       </div>
@@ -924,13 +924,13 @@ a:hover{color:#4353e8}
   <div class="ts-refsafe-grid">
     <div class="ts-refcard">
       <div class="eb">👑 Invite &amp; win</div>
-      <div class="h">Invite friends — grow the community.</div>
+      <div class="h">Invite friends - grow the community.</div>
       <p>Every conversation gets better when more real people join. Share TalkSibi with someone you'd love to practise with.</p>
     </div>
     <div class="ts-safecard">
       <div class="eb">Safe by design</div>
       <div class="h">18+, verified, moderated.</div>
-      <p>Every profile is reviewed within a day. Report and Block sit on every profile — reports are handled within 24 hours.</p>
+      <p>Every profile is reviewed within a day. Report and Block sit on every profile - reports are handled within 24 hours.</p>
     </div>
   </div>
 </section>
@@ -941,8 +941,8 @@ a:hover{color:#4353e8}
     <div class="ts-join-blob1"></div>
     <div class="ts-join-blob2"></div>
     <h2 class="ts-join-h">Your first conversation is a game away.</h2>
-    <p class="ts-join-sub">Join app, set your languages, and say hi — someone on the other side of the world is waiting to practise with you.</p>
-    <a class="ts-join-cta" href="/app">Create my profile — free</a>
+    <p class="ts-join-sub">Join app, set your languages, and say hi - someone on the other side of the world is waiting to practise with you.</p>
+    <a class="ts-join-cta" href="/app">Create my profile - free</a>
     <div class="ts-join-fine">No credit card · No install · 18+</div>
   </div>
 </section>
@@ -955,7 +955,7 @@ a:hover{color:#4353e8}
         <a class="ts-lockup" href="/" style="text-decoration:none">
           <img src="/logo.svg?v=22" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px&quot;&gt;talksibi&lt;/span&gt;'">
         </a>
-        <div class="ts-foot-blurb">Practise languages with real people — chat, play games, and learn together. Free, in your browser.</div>
+        <div class="ts-foot-blurb">Practise languages with real people - chat, play games, and learn together. Free, in your browser.</div>
         <div class="ts-foot-socials">
           <a href="https://instagram.com/talksibi" target="_blank" rel="noopener" aria-label="Instagram">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a4d59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.5" fill="#4a4d59"></circle></svg>
@@ -986,7 +986,7 @@ a:hover{color:#4353e8}
         <div class="ts-foot-col-h">Support</div>
         <a href="/how-to-play">Safety centre</a>
         <a href="/how-to-play">Community guidelines</a>
-        <a href="mailto:feedback@talksibi.com?subject=talksibi%20—%20Report%20a%20problem">Report a problem</a>
+        <a href="mailto:feedback@talksibi.com?subject=talksibi%20-%20Report%20a%20problem">Report a problem</a>
         <a href="mailto:contact@talksibi.com">Contact us</a>
       </div>
       <div class="ts-foot-col">

@@ -1,9 +1,9 @@
-// Per-language SEO landing pages — /learn-{slug}
+// Per-language SEO landing pages - /learn-{slug}
 // Owner ask 20 Aug 2026: dedicated landing page for every language we
 // want to rank for, with heavy keyword targeting around "learn X online
 // free with native speakers", "language exchange {lang}", "{lang}
 // conversation partner", "practice {lang} speaking". Blog posts already
-// cover /blog/learn-{lang}-* — these are the *canonical* landing pages
+// cover /blog/learn-{lang}-* - these are the *canonical* landing pages
 // that convert the click into a signup, wired to /app.
 //
 // Shares landing.js chrome (TS_NAV + TS_FOOTER_TS + TS_CHROME_CSS + GA)
@@ -23,47 +23,47 @@ const LANGS = {
   spanish: {
     name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', code: 'es',
     speakers: '500 million',
-    hero: 'From Madrid to Mexico City — practise real Spanish with the people who speak it every day.',
+    hero: 'From Madrid to Mexico City - practise real Spanish with the people who speak it every day.',
     good: 'Great for: travel, work in the US or Latin America, DELE prep, or just watching La Casa de Papel without subtitles.',
     faq: [
       { q: 'Is TalkSibi really free for learning Spanish?', a: 'Yes. You can chat with Spanish native speakers, get AI grammar corrections, and play Spanish language games without paying. No trial, no card.' },
-      { q: 'Can I learn both Spain Spanish and Latin American Spanish?', a: 'Yes — the community includes native speakers from Spain, Mexico, Argentina, Colombia, Peru, Chile, and beyond. Filter by country in the community tab.' },
-      { q: 'How is TalkSibi different from Duolingo for Spanish?', a: 'Duolingo teaches you to translate sentences alone. TalkSibi puts you in real conversation with Spanish speakers, so you actually practise speaking and get corrected by a human — plus AI backup.' },
-      { q: 'Do I need to be advanced to use it?', a: 'No. Beginners are welcome — most Spanish speakers on TalkSibi are learning English too, so they\'re patient and will meet you halfway.' }
+      { q: 'Can I learn both Spain Spanish and Latin American Spanish?', a: 'Yes - the community includes native speakers from Spain, Mexico, Argentina, Colombia, Peru, Chile, and beyond. Filter by country in the community tab.' },
+      { q: 'How is TalkSibi different from Duolingo for Spanish?', a: 'Duolingo teaches you to translate sentences alone. TalkSibi puts you in real conversation with Spanish speakers, so you actually practise speaking and get corrected by a human - plus AI backup.' },
+      { q: 'Do I need to be advanced to use it?', a: 'No. Beginners are welcome - most Spanish speakers on TalkSibi are learning English too, so they\'re patient and will meet you halfway.' }
     ]
   },
   french: {
     name: 'French', nativeName: 'Français', flag: '🇫🇷', code: 'fr',
     speakers: '300 million',
-    hero: 'Practise real French with people from Paris, Lyon, Montréal, Dakar, or Brussels — free, on your phone.',
+    hero: 'Practise real French with people from Paris, Lyon, Montréal, Dakar, or Brussels - free, on your phone.',
     good: 'Great for: travel, DELF/DALF prep, business French, or finally reading Camus in the original.',
     faq: [
-      { q: 'Can I learn French with real French people for free?', a: 'Yes — TalkSibi is a free language-exchange app. Match with French native speakers, chat in text or voice, and get AI corrections when you make a mistake.' },
+      { q: 'Can I learn French with real French people for free?', a: 'Yes - TalkSibi is a free language-exchange app. Match with French native speakers, chat in text or voice, and get AI corrections when you make a mistake.' },
       { q: 'Do you have Canadian French speakers too?', a: 'Yes. The community includes speakers from France, Québec, Belgium, Switzerland, and French-speaking Africa.' },
-      { q: 'How do you correct grammar in my French messages?', a: 'Tap the AI wand under any of your messages — it rewrites your French with proper grammar, gender agreement, and vocabulary, and shows you what changed.' },
-      { q: 'What if I only know basic French?', a: 'Perfect starting point. Most French speakers on TalkSibi are learning another language too — many welcome absolute beginners and will switch to English when you\'re stuck.' }
+      { q: 'How do you correct grammar in my French messages?', a: 'Tap the AI wand under any of your messages - it rewrites your French with proper grammar, gender agreement, and vocabulary, and shows you what changed.' },
+      { q: 'What if I only know basic French?', a: 'Perfect starting point. Most French speakers on TalkSibi are learning another language too - many welcome absolute beginners and will switch to English when you\'re stuck.' }
     ]
   },
   german: {
     name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', code: 'de',
     speakers: '135 million',
-    hero: 'Practise real German with speakers from Germany, Austria, and Switzerland — Hochdeutsch or Dialekt, your call.',
+    hero: 'Practise real German with speakers from Germany, Austria, and Switzerland - Hochdeutsch or Dialekt, your call.',
     good: 'Great for: moving to Berlin, university (TestDaF), engineering jobs, or beating cases + der/die/das forever.',
     faq: [
-      { q: 'Is this a free way to learn German?', a: 'Yes. TalkSibi is a free language-exchange community. Practise German with native speakers, get AI grammar corrections, and play word games — no paywall.' },
-      { q: 'Can I practise German cases with real speakers?', a: 'Yes — and most native speakers will correct your Akkusativ vs Dativ vs Genitiv patiently, because they\'re usually learning English at the same time.' },
+      { q: 'Is this a free way to learn German?', a: 'Yes. TalkSibi is a free language-exchange community. Practise German with native speakers, get AI grammar corrections, and play word games - no paywall.' },
+      { q: 'Can I practise German cases with real speakers?', a: 'Yes - and most native speakers will correct your Akkusativ vs Dativ vs Genitiv patiently, because they\'re usually learning English at the same time.' },
       { q: 'Do Austrian and Swiss speakers count?', a: 'Yes. Filter by country in the community tab if you want specifically Berlin German, Viennese, or Swiss High German.' },
-      { q: 'How does AI correction help my German?', a: 'One tap rewrites your message with correct case endings, verb position, and vocabulary — and highlights what changed so you actually learn from it.' }
+      { q: 'How does AI correction help my German?', a: 'One tap rewrites your message with correct case endings, verb position, and vocabulary - and highlights what changed so you actually learn from it.' }
     ]
   },
   italian: {
     name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹', code: 'it',
     speakers: '65 million',
-    hero: 'Practise real Italian with speakers from Rome, Milan, Naples, or Palermo — beyond duolingo, into a real conversation.',
+    hero: 'Practise real Italian with speakers from Rome, Milan, Naples, or Palermo - beyond duolingo, into a real conversation.',
     good: 'Great for: travel, learning to cook properly, opera nerds, or moving to Italy for a slower life.',
     faq: [
       { q: 'Where can I learn Italian free with native speakers?', a: 'On TalkSibi. It\'s a free language-exchange app where you match with Italian speakers and practise real conversation, with AI grammar corrections built in.' },
-      { q: 'Can I learn regional Italian slang and expressions?', a: 'Yes — because you\'re talking to real people, you pick up the phrases that never make it into textbooks.' },
+      { q: 'Can I learn regional Italian slang and expressions?', a: 'Yes - because you\'re talking to real people, you pick up the phrases that never make it into textbooks.' },
       { q: 'Do I need to know some Italian first?', a: 'No. Beginners are welcome. Many Italian speakers are learning English too, so they\'ll switch back and forth to help you.' },
       { q: 'Can I practise Italian voice conversation?', a: 'Yes. Send voice notes or start a live voice call once you\'re comfortable. The AI can also transcribe and translate voice notes.' }
     ]
@@ -71,49 +71,49 @@ const LANGS = {
   japanese: {
     name: 'Japanese', nativeName: '日本語', flag: '🇯🇵', code: 'ja',
     speakers: '125 million',
-    hero: 'Practise real Japanese with speakers from Tokyo, Osaka, Kyoto, and Fukuoka — hiragana to keigo, at your own pace.',
+    hero: 'Practise real Japanese with speakers from Tokyo, Osaka, Kyoto, and Fukuoka - hiragana to keigo, at your own pace.',
     good: 'Great for: JLPT prep, anime + manga, working in Japan, or a Golden Week trip that goes beyond konnichiwa.',
     faq: [
       { q: 'Can I learn Japanese free with real native speakers?', a: 'Yes. TalkSibi is a free language-exchange app that matches you with Japanese native speakers for text and voice conversation. AI grammar corrections included.' },
       { q: 'Will AI corrections help with kanji + politeness levels?', a: 'Yes. The AI rewrites your Japanese with correct particles, verb conjugations, and appropriate politeness (keigo / teineigo), and shows you what changed.' },
-      { q: 'How do I get Japanese speakers to reply?', a: 'Fill out your profile in both languages, mention what you love about Japan, and message people learning your native language — you\'re trading their time for yours, so both sides win.' },
+      { q: 'How do I get Japanese speakers to reply?', a: 'Fill out your profile in both languages, mention what you love about Japan, and message people learning your native language - you\'re trading their time for yours, so both sides win.' },
       { q: 'Is this useful for JLPT prep?', a: 'Real conversation practice is exactly what JLPT-N3 and above rewards. Combine TalkSibi chat with a textbook and you\'ll close the speaking gap that most JLPT prep ignores.' }
     ]
   },
   korean: {
     name: 'Korean', nativeName: '한국어', flag: '🇰🇷', code: 'ko',
     speakers: '80 million',
-    hero: 'Practise real Korean with native speakers from Seoul, Busan, and beyond — hangul to honorifics, at your speed.',
+    hero: 'Practise real Korean with native speakers from Seoul, Busan, and beyond - hangul to honorifics, at your speed.',
     good: 'Great for: TOPIK prep, K-drama fluency, working in Korea, or just having a real conversation with your bias\'s language.',
     faq: [
       { q: 'Can I learn Korean free with real native speakers?', a: 'Yes. TalkSibi matches you with Korean native speakers for chat and voice practice. AI grammar corrections are included at no cost.' },
       { q: 'How do you handle Korean honorifics + polite forms?', a: 'The AI rewrite understands 반말 vs 존댓말 and will nudge you toward the right level for who you\'re talking to.' },
-      { q: 'Do I need to know hangul first?', a: 'Learning hangul is the fastest single win in Korean — a weekend of practice. After that, TalkSibi\'s chat, voice notes, and games start clicking.' },
-      { q: 'Can I practise Korean with the K-drama vocab I already know?', a: 'Yes — real speakers love when you know current phrases. Bring your K-drama vocab, they\'ll bring their English list, everybody wins.' }
+      { q: 'Do I need to know hangul first?', a: 'Learning hangul is the fastest single win in Korean - a weekend of practice. After that, TalkSibi\'s chat, voice notes, and games start clicking.' },
+      { q: 'Can I practise Korean with the K-drama vocab I already know?', a: 'Yes - real speakers love when you know current phrases. Bring your K-drama vocab, they\'ll bring their English list, everybody wins.' }
     ]
   },
   english: {
     name: 'English', nativeName: 'English', flag: '🇬🇧', code: 'en',
     speakers: '1.5 billion',
-    hero: 'Practise real English with speakers from the UK, US, Canada, Ireland, and Australia — accents, slang, everyday phrases, all in one app.',
+    hero: 'Practise real English with speakers from the UK, US, Canada, Ireland, and Australia - accents, slang, everyday phrases, all in one app.',
     good: 'Great for: IELTS / TOEFL prep, work interviews, moving abroad, or finally understanding what your favourite YouTubers actually said.',
     faq: [
-      { q: 'Is this a free way to practise English speaking?', a: 'Yes. TalkSibi is a free language-exchange app. Practise English with native speakers via text, voice notes, or live voice calls — plus AI corrections.' },
+      { q: 'Is this a free way to practise English speaking?', a: 'Yes. TalkSibi is a free language-exchange app. Practise English with native speakers via text, voice notes, or live voice calls - plus AI corrections.' },
       { q: 'Which English accent will I hear?', a: 'All of them. Filter the community by country to focus on British, American, Australian, Irish, or Canadian speakers.' },
-      { q: 'Can AI help me sound more natural in English?', a: 'Yes. Tap the wand under any message and the AI rewrites your English to sound more natural — plus explains what changed and why.' },
+      { q: 'Can AI help me sound more natural in English?', a: 'Yes. Tap the wand under any message and the AI rewrites your English to sound more natural - plus explains what changed and why.' },
       { q: 'Is TalkSibi good for IELTS or TOEFL prep?', a: 'Live conversation is exactly what the speaking section rewards. Combine TalkSibi practice with mock tests to close the speaking gap.' }
     ]
   },
   portuguese: {
     name: 'Portuguese', nativeName: 'Português', flag: '🇵🇹', code: 'pt',
     speakers: '260 million',
-    hero: 'Practise real Portuguese with speakers from Brazil, Portugal, Angola, and Mozambique — everyday, unfiltered.',
+    hero: 'Practise real Portuguese with speakers from Brazil, Portugal, Angola, and Mozambique - everyday, unfiltered.',
     good: 'Great for: moving to Lisbon, Brazilian samba culture, understanding bossa nova lyrics, or working in Latin America.',
     faq: [
       { q: 'Can I learn Portuguese free with native speakers?', a: 'Yes. TalkSibi is a free language-exchange community. Match with Portuguese native speakers, chat in text or voice, and get AI corrections.' },
-      { q: 'European vs Brazilian Portuguese — can I pick?', a: 'Yes. Filter the community by country. Brazilian Portuguese has the biggest speaker community, but Portugal, Angola, and Mozambique are all represented.' },
-      { q: 'Do I need to know some Portuguese first?', a: 'No. Beginners welcome. Portuguese speakers on TalkSibi are often learning English, Spanish, or French — so many are patient with beginners.' },
-      { q: 'How does AI grammar correction work for Portuguese?', a: 'One tap rewrites your Portuguese with correct verb conjugations, gender agreement, and vocabulary — with a diff showing what changed.' }
+      { q: 'European vs Brazilian Portuguese - can I pick?', a: 'Yes. Filter the community by country. Brazilian Portuguese has the biggest speaker community, but Portugal, Angola, and Mozambique are all represented.' },
+      { q: 'Do I need to know some Portuguese first?', a: 'No. Beginners welcome. Portuguese speakers on TalkSibi are often learning English, Spanish, or French - so many are patient with beginners.' },
+      { q: 'How does AI grammar correction work for Portuguese?', a: 'One tap rewrites your Portuguese with correct verb conjugations, gender agreement, and vocabulary - with a diff showing what changed.' }
     ]
   }
 };
@@ -126,8 +126,8 @@ function page(slug) {
   if (!L) return notFound();
   const url = `${SITE}/learn-${slug}`;
   const title = `Learn ${L.name} Online Free with Native Speakers · TalkSibi`;
-  const desc = `Practise ${L.name} with real native speakers from around the world. Free language exchange, AI grammar corrections, and word games — all in one app. Join TalkSibi.`;
-  // Broad keyword sweep — every phrase people actually search for around
+  const desc = `Practise ${L.name} with real native speakers from around the world. Free language exchange, AI grammar corrections, and word games - all in one app. Join TalkSibi.`;
+  // Broad keyword sweep - every phrase people actually search for around
   // "learn X". Google barely uses <meta name=keywords> for ranking any
   // more but the phrase list still helps our internal search + is a
   // useful pointer for the LLM ranking layer that reads llms.txt.
@@ -151,7 +151,7 @@ function page(slug) {
     `talk to ${L.name.toLowerCase()} people online`,
     `AI ${L.name.toLowerCase()} tutor`
   ].join(', ');
-  // JSON-LD: Course + FAQPage + WebApplication — three schema types
+  // JSON-LD: Course + FAQPage + WebApplication - three schema types
   // Google actually shows rich snippets for on language landings.
   const schema = `
 <script type="application/ld+json">${JSON.stringify({
@@ -287,10 +287,10 @@ ${TS_NAV}
 <section class="ll-hero">
   <div class="ll-hero-inner">
     <span class="ll-badge"><span class="fl">${L.flag}</span> ${L.name} · ${esc(L.nativeName)}</span>
-    <h1>Learn ${L.name} online — free, with real native speakers</h1>
+    <h1>Learn ${L.name} online - free, with real native speakers</h1>
     <p class="sub">${esc(L.hero)}</p>
     <p class="good">${esc(L.good)}</p>
-    <a class="ll-cta" href="/app">Start practising ${L.name} — it's free →</a>
+    <a class="ll-cta" href="/app">Start practising ${L.name} - it's free →</a>
     <div class="ll-cta-sub">No card required · 18+ · Sign up in 60 seconds</div>
     <div class="ll-stats">
       <div class="ll-stat"><b>${L.speakers}</b><span>${L.name} speakers worldwide</span></div>
@@ -307,17 +307,17 @@ ${TS_NAV}
     <div class="ll-pillar">
       <div class="ic">💬</div>
       <h3>Chat with native ${L.name} speakers</h3>
-      <p>Match with real people who speak ${L.name} every day. Text, voice notes, or live voice calls — you pick the pace.</p>
+      <p>Match with real people who speak ${L.name} every day. Text, voice notes, or live voice calls - you pick the pace.</p>
     </div>
     <div class="ll-pillar">
       <div class="ic">✨</div>
       <h3>AI ${L.name} grammar corrections</h3>
-      <p>Tap the wand under any of your messages. The AI rewrites your ${L.name} with correct grammar and shows what changed — so you actually learn from every mistake.</p>
+      <p>Tap the wand under any of your messages. The AI rewrites your ${L.name} with correct grammar and shows what changed - so you actually learn from every mistake.</p>
     </div>
     <div class="ll-pillar">
       <div class="ic">🎮</div>
       <h3>${L.name} word games</h3>
-      <p>Word Race, Word Chain, Codenames, Guess Word — six live games designed to sharpen ${L.name} vocab without feeling like homework.</p>
+      <p>Word Race, Word Chain, Codenames, Guess Word - six live games designed to sharpen ${L.name} vocab without feeling like homework.</p>
     </div>
   </div>
 </section>
@@ -329,7 +329,7 @@ ${TS_NAV}
     <div class="ll-steps">
       <div class="ll-step">
         <h3>Sign up in seconds</h3>
-        <p>Name, date of birth, the languages you speak + the languages you're learning. That's it — no card, no long form.</p>
+        <p>Name, date of birth, the languages you speak + the languages you're learning. That's it - no card, no long form.</p>
       </div>
       <div class="ll-step">
         <h3>Meet ${L.name} speakers</h3>
@@ -344,12 +344,12 @@ ${TS_NAV}
 </section>
 
 <section class="ll-faq">
-  <h2>Learning ${L.name} on TalkSibi — FAQ</h2>
+  <h2>Learning ${L.name} on TalkSibi - FAQ</h2>
   ${L.faq.map(f => `<details class="ll-q"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}
 </section>
 
 <section class="ll-cta-band">
-  <h2>Start learning ${L.name} now — free</h2>
+  <h2>Start learning ${L.name} now - free</h2>
   <p>Real ${L.name} speakers. AI corrections. Word games. All in one app, all free.</p>
   <a href="/app">Sign up in 60 seconds →</a>
 </section>
