@@ -7638,7 +7638,65 @@ function showTab(t){
   if (t === 'wall' || t === 'games' || t === 'live') refreshLive();
   if (t === 'parties') { refreshParties(); if (!window.__ptTimer) window.__ptTimer = setInterval(() => { if (!document.hidden && !$('tabParties').classList.contains('hidden')) refreshParties(); }, 8000); }
   window.scrollTo(0,0);
+  // Push a history state on every tab change so the Android back
+  // button (and TWA back gesture) navigates through the tab stack
+  // instead of closing the app. Beta tester ".elyn" reported 22 Aug
+  // 2026: "when I press back it will always close the app even when
+  // I'm on chat room". Root cause: SPA had no history entries, so
+  // TWA/Chrome exited the WebView on first back press. See
+  // bindBackNav() below for the popstate handler.
+  try {
+    if (window.__lastPushedTab !== t) {
+      history.pushState({ tab: t }, '', '');
+      window.__lastPushedTab = t;
+    }
+  } catch(e){}
 }
+// Wire the Android back button once — popstate fires on both the
+// physical/gesture back AND on Chrome's swipe-back. If the state carries
+// a tab, jump to it. If we're at the root of our own history, allow the
+// exit but with a friendly "double-tap to close" idiom so accidental
+// swipes don't kill an active chat.
+(function bindBackNav(){
+  let _armedExit = 0;
+  window.addEventListener('popstate', (ev) => {
+    // If a modal / overlay is open, close it first instead of walking
+    // the tab stack. Priority order matches how they stack visually.
+    const closers = [
+      ['plusMenu',      () => { if (typeof closePlusMenu === 'function') closePlusMenu(); }],
+      ['msAct',         () => { if (typeof closeMsAct === 'function') closeMsAct(); }],
+      ['wsCcBd',        () => { const el = document.getElementById('wsCcBd'); if (el) el.classList.remove('on'); }],
+      ['refModal',      () => { if (typeof closeRefComposer === 'function') closeRefComposer(); }],
+      ['ptCreate',      () => { if (typeof closeCreateParty === 'function') closeCreateParty(); }],
+      ['imgZoomEl',     () => { if (typeof closeImgZoom === 'function') closeImgZoom(); }],
+      ['langPicker',    () => { if (typeof closeLangPicker === 'function') closeLangPicker(); }],
+      ['followsSheet',  () => { if (typeof closeFollowsSheet === 'function') closeFollowsSheet(); }]
+    ];
+    for (const [id, fn] of closers) {
+      const el = document.getElementById(id);
+      if (el && (el.classList.contains('show') || el.classList.contains('on') || !el.classList.contains('hidden'))) {
+        try { fn(); history.pushState({ tab: window.__lastPushedTab }, '', ''); } catch(e){}
+        return;
+      }
+    }
+    // Sensible fall-throughs from deep tabs to their parent tab.
+    const st = ev.state || {};
+    const cur = document.body.dataset.tab || '';
+    if (cur === 'chat')   { showTab('chats');   return; }
+    if (cur === 'member') { showTab('wall');    return; }
+    if (cur === 'chats' || cur === 'games' || cur === 'parties' || cur === 'learn' || cur === 'me' || cur === 'member') {
+      showTab('wall');
+      return;
+    }
+    // On Community root — double-back to exit so a stray swipe doesn't
+    // kill an active party or chat by accident.
+    const now = Date.now();
+    if (now - _armedExit < 2000) return;  // let the exit proceed
+    _armedExit = now;
+    try { history.pushState({ tab: 'wall' }, '', ''); } catch(e){}
+    try { if (typeof toast === 'function') toast('Press back again to exit'); } catch(e){}
+  });
+})();
 
 // ---------- 🎉 parties ----------
 async function refreshParties(){
@@ -14481,6 +14539,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 </script>
 
 <script src="/wsbrand.js?v=24" defer></script>
+<!-- Capacitor native FCM push adapter (v2.0.0+). No-op unless the page
+     is running inside a Capacitor-built Android app. TWA + browser
+     users are unaffected. See public/capacitor-push.js + the migration
+     spec in app/CAPACITOR_MIGRATION.md. -->
+<script src="/capacitor-push.js?v=1" defer></script>
 
 <!-- Party install gate — parties are mobile-app-only per owner ask
      21 Aug 2026. If the user tries to open Parties tab (or a party
