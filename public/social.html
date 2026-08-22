@@ -6997,10 +6997,31 @@ async function initProfileMap(elId, pillId, pillTxtId, locationStr, cc, country)
   L.marker(coords).addTo(map);
   el._leafletMap = map;
   // Leaflet needs a size recalc after the container becomes visible
-  // (the tab was display:none when we init'd). One rAF is usually
-  // enough; a 250ms backstop covers slow tab transitions.
-  requestAnimationFrame(() => { try { map.invalidateSize(); } catch(e){} });
-  setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 250);
+  // (the tab was display:none when we init'd), and again if the
+  // container's width changes (e.g. desktop 100vw breakout applies
+  // late, or the user rotates their phone). Owner ask 22 Aug 2026:
+  // /me hero was showing tiles only on the far left because the
+  // container measured narrow at init and Leaflet never re-fetched.
+  const kick = () => { try { map.invalidateSize(); } catch(e){} };
+  requestAnimationFrame(kick);
+  setTimeout(kick, 250);
+  setTimeout(kick, 800);
+  setTimeout(kick, 1600);
+  // ResizeObserver catches every future size change of the container
+  // (media-query flips, sidebar toggles, phone rotation, iOS URL bar
+  // collapse). Idempotent + cheap - Leaflet debounces internally.
+  try {
+    if (window.ResizeObserver && !el._leafletRO) {
+      el._leafletRO = new ResizeObserver(() => kick());
+      el._leafletRO.observe(el);
+    }
+  } catch(e){}
+  // Also kick on window resize as a belt + braces fallback for
+  // browsers where ResizeObserver isn't wired to the parent chain.
+  if (!el._leafletWinResize) {
+    el._leafletWinResize = () => kick();
+    window.addEventListener('resize', el._leafletWinResize, { passive: true });
+  }
 }
 // Short "3d ago" / "just now" / "5h ago" strings for the visitors
 // strip.  Anything older than 30 days falls back to a date so the
