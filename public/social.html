@@ -2825,7 +2825,7 @@ body.chatlock{overflow:hidden;overflow-x:hidden !important;height:100%;position:
 .composer{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:100%;max-width:520px;box-sizing:border-box;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line);z-index:12;align-items:center}
 @media(min-width:700px){.composer{bottom:0}}
 .composer input,.composer textarea{flex:1;background:#fff;border:1px solid var(--line);border-radius:22px;padding:11px 18px;font-size:16px;min-width:0}
-.composer textarea{resize:none;font-family:inherit;line-height:1.4;min-height:44px;max-height:130px;overflow-y:auto}
+.composer textarea{resize:none;font-family:inherit;line-height:1.35;min-height:40px;max-height:130px;overflow-y:auto}
 /* + menu — floats above the composer (owner ask 9 Aug 2026 v7). */
 .plusmenu{position:fixed;left:14px;bottom:calc(70px + 62px + env(safe-area-inset-bottom));background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06);z-index:14;display:none;flex-direction:column;min-width:180px}
 .plusmenu.show{display:flex;animation:pcinfoFade .14s ease-out}
@@ -3510,9 +3510,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
      auto-zooms into any <input>/<textarea> with font-size<16px on
      focus, which magnifies the field and pushes the send button off
      the right of the viewport. Was 15px until 22 Aug 2026 (owner
-     screenshot showed the exact zoom-push bug). */
+     screenshot showed the exact zoom-push bug).
+     Height trimmed 22 Aug 2026 — owner ask: "input field shows a bit
+     fat, can we make it a little less". padding 7px + line-height
+     1.35 + min-height 36px on the textarea below. */
   #tabChat .composer input,
-  #tabChat .composer textarea{padding:8px 12px;font-size:16px}
+  #tabChat .composer textarea{padding:7px 14px;font-size:16px}
+  #tabChat .composer textarea{min-height:36px;line-height:1.35}
   /* Chat archive row internal padding — the ROW gets left/right
      breathing room so the avatar doesn't sit on the card edge.
      Owner ask 19 Aug 2026: "give internal space to the archive
