@@ -104,6 +104,7 @@ ${GA}
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100vw}
 body{font-family:'Hanken Grotesk','Inter',system-ui,sans-serif;background:#fbfbfd;color:#14161f;margin:0;padding:0;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 /* Landing-page chrome (ts-nav + ts-foot). Owner ask 20 Aug 2026 —

@@ -391,6 +391,11 @@ ${GA}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* Owner ask 22 Aug 2026: "make sure on no device the page is
+   scrollable [horizontally] in the browser". Global hard guard so
+   anything overflowing (wide hero, unbreakable URLs, absolute-positioned
+   glows) can't push the page wider than the viewport. */
+html,body{overflow-x:hidden;max-width:100vw}
 body{background:#ffffff;font-family:'Hanken Grotesk','Inter',system-ui,-apple-system,sans-serif;color:#16181f;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 a{color:#5b6cff;text-decoration:none}
 a:hover{color:#4353e8}
