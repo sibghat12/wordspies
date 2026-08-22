@@ -10079,6 +10079,15 @@ window.addEventListener('message', (ev) => {
     if (host && !host.classList.contains('hidden') && !host.classList.contains('fs')) {
       try { if (typeof togglePartyExpand === 'function') togglePartyExpand(); } catch(e){}
     }
+  } else if (d.type === 'party:open-chat') {
+    // Owner ask 22 Aug 2026 v4 - party member sheet "Message" button.
+    // Minimise the party (keeps mic/audio alive) then jump to that
+    // chat in the community app.
+    if (typeof minimizePartyInApp === 'function') try { minimizePartyInApp(); } catch(e){}
+    if (d.uid) try { openChatWith(String(d.uid)); } catch(e){}
+  } else if (d.type === 'party:open-profile') {
+    if (typeof minimizePartyInApp === 'function') try { minimizePartyInApp(); } catch(e){}
+    if (d.uid) try { openMemberById(String(d.uid)); } catch(e){}
   }
 });
 

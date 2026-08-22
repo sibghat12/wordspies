@@ -213,9 +213,18 @@ a{color:inherit;text-decoration:none}
 /* Mic chip: tucked bottom-right of the avatar circle. Soft grey when
    muted (WhatsApp-style, no alarming red), green when live. Present on
    every speaker + host — tap the avatar to toggle your own. */
-.pav .micchip{position:absolute;bottom:34px;right:calc(50% - 34px);background:#6b7280;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:background .18s,transform .1s;padding:4px}
+/* Muted = white chip with grey icon; unmuted = green (.on) chip with
+   white icon. Owner ask 22 Aug 2026: "white is mute and the coloured
+   is not mute". Was grey #6b7280 muted, now white with grey icon so
+   the state reads at a glance. */
+.pav .micchip{position:absolute;bottom:34px;right:calc(50% - 34px);background:#ffffff;color:#6b7280;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,.24);transition:background .18s,color .18s,transform .1s;padding:4px}
 .pav .micchip svg{width:100%;height:100%;display:block}
-.pav .micchip.on{background:linear-gradient(135deg,#22c07a,#159f5d)}
+.pav .micchip.on{background:linear-gradient(135deg,#22c07a,#159f5d);color:#ffffff}
+/* Owner ask 22 Aug 2026 v4 - host gets a distinct Tandem-style
+   golden ring on top of the existing green tint so hosts stand out
+   from speakers at a glance. Speakers keep their green outline. */
+.pav.host .circ{outline-color:#ffc94d !important;background:linear-gradient(135deg,#ffb020,#ff7a59) !important}
+.pav.host .circ::after{content:"👑";position:absolute;top:-6px;right:-4px;font-size:16px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
 /* Mic chip is a status indicator only — never a tap target. The
    dedicated .micbtn owns the mic toggle. */
 .pav .micchip{pointer-events:none}
@@ -736,6 +745,41 @@ body.embed .ts-gametop{ display:none !important }
 .pav.me .circ{transition:box-shadow .12s}
 .pav.me:hover .circ{box-shadow:0 0 0 3px rgba(91,108,255,.28)}
 .pav.me:active .circ{transform:scale(.96)}
+/* Member bottom sheet (owner ask 22 Aug 2026 v4) - tap any speaker
+   or listener to open a half-height sheet from the bottom with the
+   person's photo, basic info, language chips, and role-appropriate
+   actions (Follow, Message, Invite as speaker / co-host, Move to
+   listener, Remove). Tandem-style feel. */
+.mms-back{position:fixed;inset:0;background:rgba(15,17,25,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9997;display:none;animation:rivFade .18s ease-out}
+.mms-back.on{display:block}
+.mms-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9998;background:#ffffff;color:#14161f;border-radius:22px 22px 0 0;padding:14px 0 calc(20px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,1.1,.28,1);box-shadow:0 -18px 40px rgba(0,0,0,.32);font-family:'Hanken Grotesk','Inter',system-ui,sans-serif}
+.mms-back.on ~ .mms-sheet,.mms-back.on + .mms-sheet{transform:translateY(0)}
+.mms-sheet.on{transform:translateY(0)}
+.mms-grip{width:38px;height:4px;background:#d4d7e2;border-radius:99px;margin:0 auto 12px}
+.mms-hero{display:flex;align-items:center;gap:14px;padding:2px 22px 12px}
+.mms-ph{width:64px;height:64px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5b6cff,#9b6cff);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;flex-shrink:0}
+.mms-ph img{width:100%;height:100%;object-fit:cover}
+.mms-who{min-width:0;flex:1}
+.mms-name{font-size:19px;font-weight:700;letter-spacing:-.3px;line-height:1.15;color:#14161f;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mms-role{font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:#f3f4fb;color:#4a55c9}
+.mms-role.host{background:#fff6df;color:#7a5b0e}
+.mms-role.speaker{background:#f2f8f5;color:#2d7a62}
+.mms-meta{font-size:13px;color:#6b6e7a;margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mms-langs{display:flex;flex-wrap:wrap;gap:6px;padding:0 22px 12px}
+.mms-lchip{background:#f4f5f9;color:#4a4d59;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:99px;display:inline-flex;align-items:center;gap:6px}
+.mms-bio{padding:0 22px 16px;font-size:14px;line-height:1.55;color:#4a4d59}
+.mms-bio:empty{display:none}
+.mms-actions{display:flex;flex-direction:column;gap:8px;padding:6px 22px 4px}
+.mms-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#f4f5f9;color:#14161f;border:0;border-radius:99px;padding:13px 20px;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;transition:.12s;width:100%}
+.mms-btn:hover{background:#e9ecf3}
+.mms-btn.primary{background:#5b6cff;color:#fff;box-shadow:0 6px 18px rgba(91,108,255,.28)}
+.mms-btn.primary:hover{background:#4353e8}
+.mms-btn.gold{background:#fff6df;color:#7a5b0e}
+.mms-btn.gold:hover{background:#f9e9be}
+.mms-btn.danger{background:#fff5f5;color:#c92a2a}
+.mms-btn.danger:hover{background:#ffe4e4}
+.mms-close{position:absolute;top:12px;right:14px;width:32px;height:32px;background:#f4f5f9;color:#4a4d59;border:0;border-radius:50%;font-size:16px;font-weight:700;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.mms-close:hover{background:#e9ecf3;color:#14161f}
 </style>
 </head>
 <body data-ts-no-header data-ts-no-footer>
@@ -926,6 +970,23 @@ body.embed .ts-gametop{ display:none !important }
 .riv-decline:hover{background:#e6e8ef}
 .riv-timer{font-size:12px;color:#8a8d99;margin-top:10px;font-weight:500}
 </style>
+<!-- Member profile bottom sheet (owner ask 22 Aug 2026 v4) -->
+<div class="mms-back" id="mmsBack" onclick="closeMemberSheet()"></div>
+<div class="mms-sheet" id="mmsSheet" role="dialog" aria-modal="true" aria-labelledby="mmsName">
+  <button class="mms-close" onclick="closeMemberSheet()" aria-label="Close">✕</button>
+  <div class="mms-grip"></div>
+  <div class="mms-hero">
+    <div class="mms-ph" id="mmsPh"></div>
+    <div class="mms-who">
+      <div class="mms-name" id="mmsName"></div>
+      <div class="mms-meta" id="mmsMeta"></div>
+    </div>
+  </div>
+  <div class="mms-langs" id="mmsLangs"></div>
+  <div class="mms-bio" id="mmsBio"></div>
+  <div class="mms-actions" id="mmsActions"></div>
+</div>
+
 <div class="riv-back" id="rivBack" role="dialog" aria-modal="true" aria-labelledby="rivTitle">
   <div class="riv-card">
     <div class="riv-icon" id="rivIcon">🎙️</div>
@@ -1771,14 +1832,15 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
   //     the mute/unmute affordance). Only meaningful when I'm a
   //     speaker or host; toggleMyMic() itself already guards against
   //     listeners trying to unmute.
-  //   • Host viewing someone else's avatar → open the host menu
-  //     (promote / demote / kick).
-  //   • Everyone else → no click handler; the avatar is a display only.
+  //   • Anyone tapping someone else's avatar → half-height bottom sheet
+  //     with photo, meta, langs, Follow/Message, plus host actions
+  //     (Invite as speaker/co-host, Move to listener, Remove).
+  //     Owner ask 22 Aug 2026 v4.
   let onclick = '';
   if (isMe && (myRole === 'host' || myRole === 'speaker')) {
     onclick = `onclick="event.stopPropagation();toggleMyMic()"`;
-  } else if (iAmHost && !isMe && !(isHost && m.uid === room.hostUid)) {
-    onclick = `onclick="event.stopPropagation();selectMember('${esc(m.id)}')"`;
+  } else if (!isMe) {
+    onclick = `onclick="event.stopPropagation();openMemberSheet('${esc(m.id)}')"`;
   }
 
   return `<div class="${cls.join(' ')}" data-id="${esc(m.id)}" ${onclick}>
@@ -1834,8 +1896,112 @@ function addMsg(m){
 }
 
 // Host actions
-function promoteMember(id, role){ socket && socket.emit('promote', { id, role }); selectedMemberId = null; }
-function demoteMember(id){ socket && socket.emit('demote', { id }); selectedMemberId = null; }
+function promoteMember(id, role){ socket && socket.emit('promote', { id, role }); selectedMemberId = null; closeMemberSheet(); }
+function demoteMember(id){ socket && socket.emit('demote', { id }); selectedMemberId = null; closeMemberSheet(); }
+
+// ── Member profile bottom sheet (owner ask 22 Aug 2026 v4) ─────────
+// Tap any speaker or listener (not yourself) - opens a half-height
+// sheet with the target's photo, name, native/learning languages,
+// short bio, and role-appropriate action buttons. Fetched from
+// /api/social/user/:uid on open; degrades gracefully if the fetch
+// fails (just shows name + role, no meta).
+let _mmsCurTarget = null;
+function openMemberSheet(memberId){
+  const member = room && Array.isArray(room.members)
+    ? room.members.find(x => x.id === memberId)
+    : null;
+  if (!member) return;
+  _mmsCurTarget = { id: memberId, uid: member.uid, name: member.name, role: member.role, photo: member.photo };
+  // Photo + name up front so the sheet feels instant.
+  const ph = document.getElementById('mmsPh');
+  const nm = document.getElementById('mmsName');
+  const mt = document.getElementById('mmsMeta');
+  const lg = document.getElementById('mmsLangs');
+  const bio = document.getElementById('mmsBio');
+  ph.innerHTML = member.photo
+    ? `<img src="${esc(member.photo)}" alt="">`
+    : esc((member.name || '?').charAt(0).toUpperCase());
+  const roleTag = member.role === 'host'
+    ? '<span class="mms-role host">👑 Host</span>'
+    : member.role === 'speaker'
+      ? '<span class="mms-role speaker">🎙 Speaker</span>'
+      : '<span class="mms-role">🎧 Listener</span>';
+  nm.innerHTML = esc(member.name || '?') + ' ' + roleTag;
+  mt.textContent = '';
+  lg.innerHTML = '';
+  bio.textContent = '';
+  document.getElementById('mmsBack').classList.add('on');
+  document.getElementById('mmsSheet').classList.add('on');
+  _mmsPaintActions(member);
+  // Fetch full profile for meta + langs + bio. Best-effort.
+  if (member.uid) {
+    fetch('/api/social/user/' + encodeURIComponent(member.uid), { credentials: 'same-origin' })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => {
+        if (!j || !j.user || !_mmsCurTarget || _mmsCurTarget.id !== memberId) return;
+        const u = j.user;
+        const parts = [];
+        if (u.location) parts.push('📍 ' + u.location);
+        if (typeof u.age === 'number' && u.age > 0) parts.push(u.age + ' yrs');
+        mt.textContent = parts.join(' · ');
+        const chips = [];
+        (u.speaks || []).forEach(s => {
+          const c = typeof s === 'string' ? s : (s.c || '');
+          if (c) chips.push('<span class="mms-lchip">🗣️ ' + esc(_langName(c)) + '</span>');
+        });
+        (u.learns || []).forEach(s => {
+          const c = typeof s === 'string' ? s : (s.c || '');
+          if (c) chips.push('<span class="mms-lchip">📖 ' + esc(_langName(c)) + '</span>');
+        });
+        lg.innerHTML = chips.join('');
+        const short = String(u.bio || '').trim().slice(0, 220);
+        bio.textContent = short;
+      })
+      .catch(() => {});
+  }
+}
+function _mmsPaintActions(member){
+  const box = document.getElementById('mmsActions');
+  const iAmHost = myRole === 'host';
+  const targetIsHost = member.role === 'host';
+  const targetIsSpeaker = member.role === 'speaker';
+  const targetIsListener = member.role === 'listener';
+  const rows = [];
+  // Everyone can Message / Follow (host actions come first for hosts).
+  if (iAmHost && targetIsListener) {
+    rows.push(`<button class="mms-btn primary" onclick="promoteMember('${esc(member.id)}','speaker')">🎙 Invite as speaker</button>`);
+  }
+  if (iAmHost && targetIsSpeaker) {
+    rows.push(`<button class="mms-btn gold" onclick="promoteMember('${esc(member.id)}','host')">👑 Invite as co-host</button>`);
+    rows.push(`<button class="mms-btn" onclick="demoteMember('${esc(member.id)}')">↓ Move to listener</button>`);
+  }
+  if (iAmHost && !targetIsHost) {
+    rows.push(`<button class="mms-btn danger" onclick="kickMember('${esc(member.id)}');closeMemberSheet()">Remove from party</button>`);
+  }
+  rows.push(`<button class="mms-btn" onclick="mmsMessage('${esc(member.uid || '')}');closeMemberSheet()">💬 Message</button>`);
+  rows.push(`<button class="mms-btn" onclick="mmsOpenProfile('${esc(member.uid || '')}');closeMemberSheet()">Open profile</button>`);
+  box.innerHTML = rows.join('');
+}
+function closeMemberSheet(){
+  document.getElementById('mmsBack').classList.remove('on');
+  document.getElementById('mmsSheet').classList.remove('on');
+  _mmsCurTarget = null;
+}
+function mmsMessage(uid){
+  if (!uid) return;
+  if (EMBED) { postToParent({ type: 'party:open-chat', uid }); return; }
+  location.href = '/social?chat=' + encodeURIComponent(uid);
+}
+function mmsOpenProfile(uid){
+  if (!uid) return;
+  if (EMBED) { postToParent({ type: 'party:open-profile', uid }); return; }
+  location.href = '/social?u=' + encodeURIComponent(uid);
+}
+// Cheap language name lookup - falls back to the ISO code if unknown.
+function _langName(code){
+  const map = { en:'English', es:'Spanish', fr:'French', de:'German', it:'Italian', ja:'Japanese', ko:'Korean', pt:'Portuguese', zh:'Chinese', ar:'Arabic', ru:'Russian', hi:'Hindi', tr:'Turkish', id:'Indonesian', vi:'Vietnamese', th:'Thai', nl:'Dutch', pl:'Polish', sv:'Swedish', no:'Norwegian', fi:'Finnish', da:'Danish', el:'Greek', he:'Hebrew', cs:'Czech', ro:'Romanian', hu:'Hungarian', uk:'Ukrainian' };
+  return map[String(code || '').toLowerCase()] || String(code || '');
+}
 
 // ── Role-invite modal (owner ask 22 Aug 2026) ─────────────────────
 // Target sees a warm popup when the host invites them as speaker or
