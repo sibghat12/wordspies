@@ -458,51 +458,17 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
 .topnav .tnlink{color:var(--sub);text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;transition:background .12s,color .12s;white-space:nowrap}
 .topnav .tnlink:hover{background:#f4f5f7;color:var(--ink)}
 .topnav .mechip{border:1px solid var(--line);flex-shrink:0}
-/* Default (desktop): mobile-title element stays out of view - the logo
-   + tabs + right chrome own the header. */
+/* Mobile-only title element is unused now that the whole top bar is
+   hidden on phones. Keeping the selector as a no-op so the id-based
+   JS (setTopnavTitle) can still write to it without erroring. */
 .tn-mtitle{display:none}
-/* Mobile top nav - TWO ROWS (WhatsApp-style, owner ask 22 Aug 2026):
-     row 1 = tab title CENTER, avatar RIGHT (logo hidden)
-     row 2 = tab bar full-width underneath
-   Old layout showed the logo in the top-left which felt website-y on
-   phones; native apps use a big centered title with just the avatar in
-   the corner. Logo is preserved on desktop for brand recognition. */
+/* Owner ask 22 Aug 2026 v7: the mobile top bar was rendering messy
+   after coming back from a game (duplicate chrome from the game shell,
+   'Community' title floating on the right). Bottom nav already owns
+   navigation and now includes 'Me' - so kill the top bar entirely on
+   phones. Desktop keeps the logo + tab pills exactly as before.  */
 @media(max-width:640px){
-  .topnav{
-    /* Symmetric 3-column row 1 so the title sits DEAD CENTER between
-       an empty left spacer and the avatar on the right. Spacer width
-       matches the avatar (~40px) so the geometry balances even though
-       the left cell is empty. */
-    grid-template-columns:40px 1fr 40px;
-    grid-template-areas:
-      'lspacer title right'
-      'tabs    tabs  tabs';
-    padding:calc(12px + env(safe-area-inset-top)) 20px 12px;
-    gap:8px 10px;
-    min-height:0;
-    align-items:center;
-  }
-  /* Logo hidden on mobile per owner ask - avatar-only right side is
-     enough branding once the user is inside the app. */
-  .topnav .tnlogo{display:none}
-  .topnav .tn-mtitle{
-    grid-area:title;
-    display:block;
-    justify-self:center;
-    text-align:center;
-    font-family:'Fredoka','Inter',system-ui,sans-serif;
-    font-size:19px;
-    font-weight:600;
-    letter-spacing:-.3px;
-    color:#14161f;
-    line-height:1.1;
-    min-width:0;
-    max-width:100%;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  .topnav .tnright{grid-area:right;gap:8px;justify-self:end}
+  .topnav{ display:none !important }
   .topnav .tntabs{
     grid-area:tabs;
     /* justify-self:stretch alone wasn't reliably filling the grid
@@ -5262,7 +5228,8 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
     #tabMe .mep-row.avatar-row{padding:20px 18px}
     #tabMe .mep-row.avatar-row .mep-avatar{width:56px;height:56px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5b6cff,#9b6cff);color:#fff;font-size:22px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;box-shadow:0 2px 8px rgba(20,22,31,.08)}
     #tabMe .mep-row.avatar-row .mep-avatar img{width:100%;height:100%;object-fit:cover}
-    #tabMe .mep-row.avatar-row .mep-avatar::after{content:"";position:absolute;bottom:0;right:0;width:16px;height:16px;background:#ff3d5b;border-radius:50%;border:2.5px solid #fff}
+    /* Red dot removed 22 Aug 2026 v7: on the 56px "About me" avatar tile
+       it read as an unread-notification bump and confused the eye. */
     #tabMe .mep-row.destructive .mep-ic,#tabMe .mep-row.destructive .mep-txt b{color:#ff3d5b}
     #tabMe .mep-row.danger .mep-txt b{color:#c92a2a}
     /* Toggle switch (matches Tandem's teal). */
@@ -5313,11 +5280,6 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
         <button type="button" class="mep-row avatar-row" onclick="openMeEditSheet()">
           <span class="mep-avatar" id="myAv"></span>
           <div class="mep-txt"><b>About me</b><span>Your photo, name, languages and bio</span></div>
-          <span class="mep-chev">›</span>
-        </button>
-        <button type="button" class="mep-row" onclick="openMemberById(ME&&ME.id)">
-          <span class="mep-ic">👤</span>
-          <div class="mep-txt"><b>Preview profile</b><span>See how others view your profile</span></div>
           <span class="mep-chev">›</span>
         </button>
         <button type="button" class="mep-row" onclick="shareMyProfile()">
@@ -5659,6 +5621,14 @@ footer.sitefoot .fbrand .fbrand-t{font-family:var(--brand-font);font-weight:500;
 body.in-party footer.sitefoot,
 body.chatlock footer.sitefoot,
 body.authmodal footer.sitefoot{ display:none }
+/* Owner ask 22 Aug 2026 v7: the marketing footer at the bottom of
+   /me looked website-y - address / social columns / brand row don't
+   belong under a Tandem-style profile. Hide it entirely on the Me
+   tab and on mobile (< 720 px) where users expect app chrome, not
+   marketing chrome. Desktop keeps the footer on Community + Games
+   for SEO / discovery reasons. */
+body[data-tab="me"] footer.sitefoot{ display:none }
+@media(max-width:720px){ footer.sitefoot{ display:none !important } }
 </style>
 <footer class="sitefoot"><div class="fwrap">
   <div class="fmenu">
@@ -5826,10 +5796,11 @@ body.authmodal footer.sitefoot{ display:none }
 </div>
 
 <!-- ═══ Mobile bottom nav (README §42-43 / screen 2a) ═══════════════
-     4 main tabs — Community · Play · Talk · Learn. Only visible under
-     720px. Every click routes through selectMainTab() which delegates
-     to the existing showTab() + remembers the last sub-tab per main
-     in localStorage. Active state = periwinkle label + 16×3px dot. -->
+     5 main tabs — Community · Play · Talk · Learn · Me. Only visible
+     under 720px. Every click routes through selectMainTab() which
+     delegates to the existing showTab() + remembers the last sub-tab
+     per main in localStorage. "Me" added 22 Aug 2026 v7 so the mobile
+     top bar can be hidden without losing profile access. -->
 <nav class="msnav" id="msNav" role="navigation" aria-label="Primary">
   <button type="button" class="msnav-btn" data-msnav="community" onclick="selectMainTab('community')">
     <span class="msnav-ico" aria-hidden="true">🌍</span>
@@ -5846,6 +5817,10 @@ body.authmodal footer.sitefoot{ display:none }
   <button type="button" class="msnav-btn" data-msnav="learn" onclick="selectMainTab('learn')">
     <span class="msnav-ico" aria-hidden="true">🎓</span>
     <span class="msnav-lbl">Learn</span>
+  </button>
+  <button type="button" class="msnav-btn" data-msnav="me" onclick="selectMainTab('me')">
+    <span class="msnav-ico" aria-hidden="true">👤</span>
+    <span class="msnav-lbl">Me</span>
   </button>
 </nav>
 
@@ -14339,17 +14314,19 @@ async function openClubFromDeepLinkParam() {
    no new state, no server changes. Desktop layout is untouched. */
 .msnav,.msubbar{display:none}
 @media(max-width:720px){
-  /* Hide the horizontal tnt pill row on mobile — bottom nav owns
-     top-level navigation now. Everything else in the topnav (logo,
-     avatar, LIVE chip, notif bell) stays put. */
-  .topnav{grid-template-areas:'logo right' !important}
-  .topnav .tntabs{display:none !important}
+  /* Owner ask 22 Aug 2026 v7: hide the whole top bar on phones. Bottom
+     nav owns all navigation and the profile tab reaches /me for
+     settings / avatar menu content. Previously we only hid .tntabs;
+     leftover logo + bell + avatar chrome was rendering messy after
+     coming back from an embedded game. */
+  .topnav{display:none !important}
 
   /* Bottom nav shell — owner ask v23: give it a soft grey background
-     so it reads as its own surface, not a white line under the page. */
+     so it reads as its own surface, not a white line under the page.
+     v7 (22 Aug 2026): 5 columns now that Me is here. */
   .msnav{
     position:fixed;left:0;right:0;bottom:0;
-    display:grid;grid-template-columns:repeat(4,1fr);
+    display:grid;grid-template-columns:repeat(5,1fr);
     background:#f4f5f9;border-top:1px solid #e4e6ee;
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));
     z-index:80;
@@ -14428,8 +14405,11 @@ async function openClubFromDeepLinkParam() {
   body[data-tab="member"] .msubbar,
   body[data-tab="chat"] .msubbar{display:none}
 
-  /* Give scroll body enough breathing room to clear the fixed nav. */
-  body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  /* Give scroll body enough breathing room to clear the fixed nav +
+     reserve safe-area-top space now that the sticky topnav is gone
+     (v7 22 Aug 2026). Without this, content would sit behind the
+     iPhone notch / Android status bar inside the TWA. */
+  body{padding-top:env(safe-area-inset-top);padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 }
 
 /* ═══ Flat design pass (owner ask 17 Aug 2026) ═══
@@ -14647,6 +14627,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
             if (typeof showLearnMode === 'function') { try { showLearnMode('exam'); } catch(e){} }
           }}
       ]
+    },
+    // 5th main tab (owner ask 22 Aug 2026 v7): profile is now reachable
+    // from the bottom nav so we can hide the mobile top bar entirely.
+    // No sub-tabs — the /me grouped list already owns its own IA.
+    me: {
+      target: 'me',
+      subs: []
     }
   };
 
@@ -14658,7 +14645,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     games:'play', parties:'play', party:'play',
     chats:'talk', chat:'talk',
     learn:'learn',
-    me:null, member:null
+    me:'me',
+    member:null
   };
 
   function readSub(mainKey){
