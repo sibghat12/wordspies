@@ -2835,12 +2835,65 @@ body.chatlock{overflow:hidden;overflow-x:hidden !important;height:100%;position:
 .composer input,.composer textarea{flex:1;background:#fff;border:1px solid var(--line);border-radius:22px;padding:11px 18px;font-size:16px;min-width:0}
 .composer textarea{resize:none;font-family:inherit;line-height:1.35;min-height:40px;max-height:130px;overflow-y:auto}
 /* + menu — floats above the composer (owner ask 9 Aug 2026 v7). */
+/* Desktop: tiny popover anchored above the + button (unchanged idiom). */
 .plusmenu{position:fixed;left:14px;bottom:calc(70px + 62px + env(safe-area-inset-bottom));background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 40px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06);z-index:14;display:none;flex-direction:column;min-width:180px}
 .plusmenu.show{display:flex;animation:pcinfoFade .14s ease-out}
 .chatfull .plusmenu{bottom:calc(62px + env(safe-area-inset-bottom))}
 .plusmenu button{background:transparent;border:0;padding:10px 12px;border-radius:8px;font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:15px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left;transition:background .08s}
 .plusmenu button:hover{background:var(--caccent-soft)}
 .plusmenu .pmi{font-size:18px;line-height:1;width:22px;text-align:center}
+/* Mobile: proper bottom-sheet (Instagram / iMessage pattern). Owner
+   ask 22 Aug 2026 — the popover was landing "in the middle of the
+   page" because inline bottom:Xpx maths goes stale when iOS Safari
+   URL bar / keyboard collapse and window.innerHeight shifts. Sheet
+   is always anchored to the visual bottom of the viewport with a
+   drag-handle affordance and full-width tappable rows. */
+@media(max-width:700px){
+  .plusmenu{
+    position:fixed !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    top:auto !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    border-radius:20px 20px 0 0;
+    border:0;
+    padding:8px 0 calc(12px + env(safe-area-inset-bottom));
+    box-shadow:0 -12px 40px rgba(0,0,0,.18);
+    z-index:1400;
+    transform:translateY(100%);
+    transition:transform .22s cubic-bezier(.22,.71,.28,1);
+    display:flex !important;
+    flex-direction:column;
+    gap:2px;
+    animation:none;
+  }
+  .plusmenu.show{transform:translateY(0)}
+  /* Drag-handle grip so users read the sheet as tappable/dismissable. */
+  .plusmenu::before{
+    content:"";
+    display:block;
+    width:36px;height:4px;border-radius:99px;
+    background:#d4d7e2;margin:2px auto 10px;
+  }
+  .plusmenu button{
+    padding:14px 22px;font-size:15.5px;font-weight:500;
+    border-radius:0;gap:16px;min-height:52px;
+  }
+  .plusmenu button:active{background:#f2f4f9}
+  .plusmenu .pmi{font-size:20px;width:26px}
+}
+/* Full-viewport backdrop behind the sheet — click anywhere outside
+   the sheet to dismiss. Rendered as a body pseudo-element so no
+   markup change needed. */
+body.plusmenu-open::before{
+  content:"";position:fixed;inset:0;background:rgba(15,17,25,.35);
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  z-index:1399;animation:pcinfoFade .18s ease-out;
+}
+@media(min-width:701px){body.plusmenu-open::before{display:none}}
 /* Flat glyph buttons — no background, no border. Circular tap target
    with a subtle hover tint. Never carry weight themselves, so the
    input stays the visual focus. */
@@ -3511,8 +3564,12 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   .chatfull #tabChat .msgs{padding:2px 8px 12px}
   #tabChat .mb{padding:7px 11px;font-size:14px;line-height:1.38}
   #tabChat .composer{gap:5px;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  /* Composer glyph buttons trimmed 22 Aug 2026 — owner ask "make the
+     plus button more smaller please". Was 34px, now 30px, so the +
+     sits proportionally with the trimmed 36px textarea. */
   #tabChat .composer .cbtn,
-  #tabChat .composer .micrec{min-width:34px;width:34px;height:34px;font-size:17px}
+  #tabChat .composer .micrec{min-width:30px;width:30px;height:30px;font-size:15px}
+  #tabChat .composer #plusBtn svg{width:16px;height:16px}
   #tabChat .composer .cbtn.send svg{width:13px;height:13px}
   /* CRITICAL: font-size:16px minimum on mobile inputs — iOS Safari
      auto-zooms into any <input>/<textarea> with font-size<16px on
@@ -11343,29 +11400,41 @@ function togglePlusMenu(ev){
   if (ev) ev.stopPropagation();
   const m = document.getElementById('plusMenu');
   if (!m) return;
+  const opening = !m.classList.contains('show');
   const btn = document.getElementById('plusBtn');
-  if (btn && !m.classList.contains('show')) {
-    const r = btn.getBoundingClientRect();
-    // Left-align with the button, but keep the menu on-screen if the
-    // window is narrow. Menu opens UPWARD from the button so the
-    // bottom of the menu sits ~6px above the + button.
-    const menuW = 200;
-    const maxLeft = window.innerWidth - menuW - 8;
-    m.style.left = Math.max(8, Math.min(r.left, maxLeft)) + 'px';
-    m.style.bottom = Math.max(8, window.innerHeight - r.top + 6) + 'px';
+  const isMobile = window.innerWidth <= 700;
+  if (opening) {
+    if (isMobile) {
+      // Bottom-sheet: CSS anchors it to bottom:0 always; no inline
+      // maths that can go stale when iOS Safari URL bar / keyboard
+      // collapse and window.innerHeight shifts.
+      m.style.left = ''; m.style.right = ''; m.style.bottom = ''; m.style.top = '';
+      document.body.classList.add('plusmenu-open');
+    } else if (btn) {
+      // Desktop: tiny popover anchored above the + button, clamped
+      // to viewport so it never spills off the left/right edge.
+      const r = btn.getBoundingClientRect();
+      const menuW = 200;
+      const maxLeft = window.innerWidth - menuW - 8;
+      m.style.left = Math.max(8, Math.min(r.left, maxLeft)) + 'px';
+      m.style.bottom = Math.max(8, window.innerHeight - r.top + 6) + 'px';
+    }
+  } else {
+    document.body.classList.remove('plusmenu-open');
   }
   m.classList.toggle('show');
 }
 function closePlusMenu(){
   const m = document.getElementById('plusMenu');
   if (m) m.classList.remove('show');
+  document.body.classList.remove('plusmenu-open');
 }
 // Close on outside click / Escape.
 document.addEventListener('click', ev => {
   const m = document.getElementById('plusMenu');
   if (!m || !m.classList.contains('show')) return;
   if (ev.target.closest('#plusMenu') || ev.target.closest('#plusBtn')) return;
-  m.classList.remove('show');
+  closePlusMenu();
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closePlusMenu(); });
 // Kick off the existing hold-to-record flow from the + menu → Voice.
