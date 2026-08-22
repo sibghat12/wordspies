@@ -717,31 +717,25 @@ body{background:var(--ts-ink);color:var(--ts-text);
 .ts-gametop-brand img{height:26px;width:auto;display:block}
 .ts-gametop-spacer{width:80px}
 body.embed .ts-gametop{ display:none !important }
-/* Owner ask 22 Aug 2026: "the party page background is dark, make it
-   white". Flip the ts-* tokens so background surfaces read light and
-   text reads ink-dark. Accent colours (peri / green / red / gold) stay.
-   Applied at the end of the style block so it overrides the dark
-   defaults above. */
-body,#pMain,.wrap{background:#ffffff !important;color:#14161f !important}
-:root{
-  --ts-ink:#ffffff;
-  --ts-card:#f7f8fb;
-  --ts-border:#e4e6ee;
-  --ts-text:#14161f;
-  --ts-mute:#6b6e7a;
-  --ts-mute2:#4a4d59;
-  --ts-peri-on-dark:#5b6cff;
-  --ts-green-on-dark:#1fb28a;
-  --ts-gold-on-dark:#b98a00;
-}
-/* A handful of hard-coded dark accents that don't go through the
-   token — override to their light equivalents. */
-.phead-txt h1,.psect h3,.speaker .name,.listener .name{color:#14161f !important}
-.phead-txt p,.speaker .lang,.listener .lang{color:#6b6e7a !important}
-.speaker .av,.listener .av{background:#f0f2f7 !important;color:#14161f}
-/* Speaker "ring pulse" when talking - keep green accent, but softer
-   against white so it doesn't overwhelm. */
-.speaker.talking{box-shadow:0 0 0 3px rgba(31,178,138,.35) !important}
+/* Owner ask 22 Aug 2026 v3 - REVERTED the light-theme flip (was
+   breaking mic button visual state; user wanted party "as it was
+   before"). Dark ts-* tokens above remain authoritative. */
+/* Owner ask 22 Aug 2026 v3 - hide the top .phead bar entirely
+   (party name + subtitle + language chips + reconnect + end).
+   The mini phost pill outside already shows the party title, and
+   the red hangup on the mini pill is the End Party path for hosts. */
+.phead{display:none !important}
+/* Owner ask 22 Aug 2026 v3 - remove the big center mic pill button
+   (.micbtn). Users now tap their OWN avatar in the Speakers grid
+   to toggle mic (see .pav.me cursor + onclick wiring in JS). */
+.micbtn{display:none !important}
+/* .pav.me (own avatar) gets a pointer cursor + a hover ring so users
+   read it as "tap to unmute". Only meaningful for speakers/hosts;
+   listeners tapping their avatar becomes a no-op in toggleMyMic(). */
+.pav.me{cursor:pointer}
+.pav.me .circ{transition:box-shadow .12s}
+.pav.me:hover .circ{box-shadow:0 0 0 3px rgba(91,108,255,.28)}
+.pav.me:active .circ{transform:scale(.96)}
 </style>
 </head>
 <body data-ts-no-header data-ts-no-footer>
@@ -1772,13 +1766,20 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
     </div>` : '';
 
   // Avatar-tap semantics (owner ask 15 Aug 2026):
-  //   • My own avatar → NO click handler (mic lives on .micbtn).
+  //   • My own avatar → toggle my mic (owner ask 22 Aug 2026 v3 - the
+  //     big center .micbtn was removed, tapping my own avatar is now
+  //     the mute/unmute affordance). Only meaningful when I'm a
+  //     speaker or host; toggleMyMic() itself already guards against
+  //     listeners trying to unmute.
   //   • Host viewing someone else's avatar → open the host menu
-  //     (promote / demote / kick) — unchanged.
+  //     (promote / demote / kick).
   //   • Everyone else → no click handler; the avatar is a display only.
-  const onclick = (iAmHost && !isMe && !(isHost && m.uid === room.hostUid))
-    ? `onclick="event.stopPropagation();selectMember('${esc(m.id)}')"`
-    : '';
+  let onclick = '';
+  if (isMe && (myRole === 'host' || myRole === 'speaker')) {
+    onclick = `onclick="event.stopPropagation();toggleMyMic()"`;
+  } else if (iAmHost && !isMe && !(isHost && m.uid === room.hostUid)) {
+    onclick = `onclick="event.stopPropagation();selectMember('${esc(m.id)}')"`;
+  }
 
   return `<div class="${cls.join(' ')}" data-id="${esc(m.id)}" ${onclick}>
     <div class="circ">${av}</div>
