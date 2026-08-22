@@ -101,6 +101,14 @@
 .ts-tagline .d2{color:var(--brand-jade);margin:0 6px}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow-x:clip;max-width:100%}
+/* Owner ask 22 Aug 2026: "make it not zoom on the input or active".
+   iOS Safari auto-zooms into any <input>/<textarea>/<select> whose
+   font-size is under 16px on focus. Rule below forces every form
+   control on mobile to render at 16px, blocking the zoom without
+   killing pinch-zoom (which the Play Store review requires). */
+@media(max-width:900px){
+  input,textarea,select{font-size:16px !important}
+}
 /* Owner ask v28: body zero margin + zero padding. Every screen
    surface (top nav, wall bg, footer) sets its own padding + spans
    full width. */
@@ -3880,6 +3888,14 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
 #tabMe .mp-hero{ background:#dfeef2; min-height:172px }
 #tabMe .mp-hero .mp-back{ z-index:4 }
 #tabMe .mp-hero .mp-loc-pill{ z-index:4 }
+/* On mobile /me has 20px side padding on #tabMe — the .mp-hero was
+   inheriting it, so the map sat as a narrow strip instead of a full
+   banner. Owner ask 22 Aug 2026: "map behind is not full, it's just
+   a little on the left — make it full width fixed". Negative margins
+   pull the hero out to the tab's edges regardless of parent padding. */
+@media(max-width:768px){
+  #tabMe .mp-hero{margin-left:-20px;margin-right:-20px;border-radius:0}
+}
 
 /* Photo overlaps the hero by -32px like Speaky / Tandem. On desktop the
    photo sits in the sidebar; nudge it up so it kisses the hero band.
