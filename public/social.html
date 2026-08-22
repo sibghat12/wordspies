@@ -4323,7 +4323,14 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
        profile chip (right). Persistent across every tab so the site header
        is no longer a per-tab afterthought. -->
   <nav class="topnav">
-    <a class="tnlogo" href="/" aria-label="talksibi home" style="text-decoration:none;display:inline-flex;align-items:center">
+    <!-- Owner ask 22 Aug 2026: 'if we click on the talksibi logo from
+         the community please don't go to the landing page please'.
+         Logo used to link to '/' which is the marketing landing. Now
+         it stays inside the app and jumps back to the Community feed
+         — same UX as any social app where tapping the logo takes
+         you home within the app, not to the marketing site. -->
+    <a class="tnlogo" href="#" aria-label="talksibi home" style="text-decoration:none;display:inline-flex;align-items:center"
+       onclick="event.preventDefault(); if (typeof showTab === 'function') showTab('wall'); else location.href = '/app';">
       <img src="/logo.svg?v=24" alt="talksibi" style="height:30px;width:auto;display:block" onerror="this.outerHTML='&lt;span class=&quot;ts-wordmark&quot; style=&quot;font-size:21px;font-family:var(--brand-font);font-weight:600;letter-spacing:-.3px;color:#000&quot;&gt;talksibi&lt;/span&gt;'">
     </a>
     <div class="tntabs" role="tablist">
