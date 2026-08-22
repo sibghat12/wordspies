@@ -464,7 +464,8 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
    at all - the grouped list owns the whole screen just like Tandem's
    Community profile. Applies to desktop AND mobile. Also hide sitefoot
    below so the profile is a clean slate. */
-body[data-tab="me"] .topnav{ display:none !important }
+body[data-tab="me"] .topnav,
+body[data-tab="member"] .topnav{ display:none !important }
 /* Owner ask 22 Aug 2026 v8: rebuild the mobile top bar as
    [avatar left] [title centre] [filter right]. No logo, no bell, no
    duplicated chrome. Bottom nav owns navigation - the top bar just
@@ -7637,10 +7638,9 @@ function scrollWallFiltersIntoView(){
   try {
     if (typeof showTab === 'function') showTab('wall');
     setTimeout(() => {
-      const anchor = document.getElementById('wallFilterChips')
-                  || document.querySelector('#tabWall .wallFilterChips')
-                  || document.querySelector('#tabWall .wall-chips')
-                  || document.querySelector('#tabWall');
+      const anchor = document.querySelector('#tabWall .fchips')
+                  || document.querySelector('#tabWall .fchip')
+                  || document.getElementById('tabWall');
       if (anchor) try { anchor.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e){}
     }, 60);
   } catch(e){}
