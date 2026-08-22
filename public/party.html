@@ -1282,6 +1282,12 @@ function conn(){
     const title = String((data && data.partyTitle) || 'the party');
     const iid   = data && data.inviteId;
     if (!iid) return;
+    // If we're embedded and the parent has minimised the phost, ask
+    // it to expand back to fullscreen - otherwise the modal renders
+    // inside a collapsed iframe and the user never sees it. Owner
+    // ask 22 Aug 2026 clarifier: consent flow needs to work when the
+    // user has the mini-player showing.
+    try { if (EMBED) postToParent({ type: 'party:expand' }); } catch(e){}
     openRoleInvite({ role, from, title, inviteId: iid });
   });
   socket.on('kicked', () => {

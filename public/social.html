@@ -10072,6 +10072,13 @@ window.addEventListener('message', (ev) => {
   } else if (d.type === 'party:mic-state') {
     const mic = document.getElementById('phostMic');
     if (mic) mic.classList.toggle('off', !d.on);
+  } else if (d.type === 'party:expand') {
+    // Iframe wants us to expand to fullscreen (e.g. a role-invite
+    // popup needs to be visible - owner ask 22 Aug 2026).
+    const host = document.getElementById('partyHost');
+    if (host && !host.classList.contains('hidden') && !host.classList.contains('fs')) {
+      try { if (typeof togglePartyExpand === 'function') togglePartyExpand(); } catch(e){}
+    }
   }
 });
 
