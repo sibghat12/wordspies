@@ -5192,86 +5192,312 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
          drops the crowded composer picker. -->
   </div>
 
-  <!-- MY profile — same Speaky-style layout as tabMember (hero + sidebar
-       + cards) but every field is editable in place. IDs preserved so
-       existing JS (saveProfile, chip pickers, upload, settings) keeps
-       working without changes. -->
+  <!-- ═══ /me v3 — Tandem-style grouped list (owner ask 22 Aug 2026 v5,
+       WhatsApp screenshots showing the target look). Map + hero removed
+       entirely; page is a stack of white cards with icon rows, toggles,
+       and chevron tap-throughs. Every editable field lives inside a
+       full-screen "About me" sheet (#meEditSheet below tabMe) that
+       opens when the top row is tapped. All input IDs preserved so
+       paintMe(), saveProfile(), chip pickers, and settings toggles
+       keep working unchanged. ═══════════════════════════════════════ -->
+  <style>
+    #tabMe{padding:0 !important;background:#faf7f2}
+    #tabMe .mep-topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 12px;background:#faf7f2;border-bottom:1px solid #eceef4}
+    #tabMe .mep-topbar .mep-back,#tabMe .mep-topbar .mep-gear{width:38px;height:38px;background:transparent;border:0;color:#14161f;font-size:22px;line-height:1;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0}
+    #tabMe .mep-topbar .mep-back:hover,#tabMe .mep-topbar .mep-gear:hover{background:rgba(20,22,31,.06)}
+    #tabMe .mep-topbar .mep-title{font-size:17px;font-weight:700;letter-spacing:-.3px;color:#14161f;flex:1;text-align:center;margin:0 4px}
+    #tabMe .mep-wrap{max-width:640px;margin:0 auto;padding:14px 16px 96px}
+    #tabMe .mep-card{background:#ffffff;border-radius:14px;overflow:hidden;margin-bottom:18px;box-shadow:0 1px 2px rgba(20,22,31,.04)}
+    #tabMe .mep-row{display:flex;align-items:center;gap:14px;padding:15px 18px;background:transparent;border:0;border-bottom:1px solid #eef0f4;text-align:left;font-family:inherit;color:#14161f;text-decoration:none;cursor:pointer;width:100%}
+    #tabMe .mep-row:last-child{border-bottom:0}
+    #tabMe .mep-row:hover{background:#f9f7f3}
+    #tabMe .mep-row:active{background:#f2eee7}
+    #tabMe .mep-row .mep-ic{width:26px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;color:#5b6cff}
+    #tabMe .mep-row .mep-ic svg{width:22px;height:22px}
+    #tabMe .mep-row .mep-brand{width:38px;height:38px;flex-shrink:0;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:#f4f5f9}
+    #tabMe .mep-row .mep-brand img{width:100%;height:100%;object-fit:cover;display:block}
+    #tabMe .mep-row .mep-brand svg{width:22px;height:22px}
+    #tabMe .mep-row .mep-txt{flex:1;min-width:0}
+    #tabMe .mep-row .mep-txt b{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.15px;color:#14161f;line-height:1.25}
+    #tabMe .mep-row .mep-txt span{display:block;font-size:13px;color:#8a8d99;margin-top:2px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #tabMe .mep-row .mep-chev{color:#c4c7d1;font-size:20px;flex-shrink:0;line-height:1;font-weight:400}
+    #tabMe .mep-row .mep-pill{background:#ff3d5b;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:.4px;text-transform:uppercase;flex-shrink:0}
+    #tabMe .mep-row.avatar-row{padding:20px 18px}
+    #tabMe .mep-row.avatar-row .mep-avatar{width:56px;height:56px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5b6cff,#9b6cff);color:#fff;font-size:22px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;box-shadow:0 2px 8px rgba(20,22,31,.08)}
+    #tabMe .mep-row.avatar-row .mep-avatar img{width:100%;height:100%;object-fit:cover}
+    #tabMe .mep-row.avatar-row .mep-avatar::after{content:"";position:absolute;bottom:0;right:0;width:16px;height:16px;background:#ff3d5b;border-radius:50%;border:2.5px solid #fff}
+    #tabMe .mep-row.destructive .mep-ic,#tabMe .mep-row.destructive .mep-txt b{color:#ff3d5b}
+    #tabMe .mep-row.danger .mep-txt b{color:#c92a2a}
+    /* Toggle switch (matches Tandem's teal). */
+    #tabMe .mep-sw{width:48px;height:28px;border-radius:99px;background:#d4d7e2;position:relative;border:0;padding:0;cursor:pointer;transition:background .18s;flex-shrink:0}
+    #tabMe .mep-sw::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(20,22,31,.18);transition:transform .18s}
+    #tabMe .mep-sw.on{background:#2ecfd4}
+    #tabMe .mep-sw.on::after{transform:translateX(20px)}
+    /* Big promo card (Tandem "Take the test" pattern). */
+    #tabMe .mep-promo{background:linear-gradient(135deg,#0053f0,#4a55c9);color:#fff;border-radius:14px;padding:26px 22px 22px;text-align:center;margin-bottom:18px;position:relative;overflow:hidden}
+    #tabMe .mep-promo::before,#tabMe .mep-promo::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+    #tabMe .mep-promo::before{width:180px;height:180px;background:radial-gradient(circle,rgba(46,207,212,.35),transparent 60%);top:-60px;right:-60px}
+    #tabMe .mep-promo::after{width:120px;height:120px;background:radial-gradient(circle,rgba(90,123,255,.5),transparent 60%);bottom:-40px;left:-30px}
+    #tabMe .mep-promo-badge{width:52px;height:52px;background:#fff;border-radius:50%;color:#0053f0;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;margin:0 auto 12px;position:relative;z-index:1;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+    #tabMe .mep-promo h3{margin:0 0 6px;font-size:19px;font-weight:700;letter-spacing:-.3px;position:relative;z-index:1}
+    #tabMe .mep-promo p{margin:0 0 16px;font-size:13.5px;opacity:.92;line-height:1.45;max-width:280px;margin-left:auto;margin-right:auto;position:relative;z-index:1}
+    #tabMe .mep-promo .mep-promo-btn{background:#fff;color:#0053f0;border:0;border-radius:99px;padding:12px 28px;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;position:relative;z-index:1;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:.15s}
+    #tabMe .mep-promo .mep-promo-btn:hover{transform:translateY(-1px)}
+    /* Full-screen edit sheet (owner ask v5 - About me tap opens all the
+       editable fields). Slides up over /me. */
+    .me-edit-sheet{position:fixed;inset:0;background:#faf7f2;z-index:1400;display:none;flex-direction:column;overflow:hidden}
+    .me-edit-sheet.on{display:flex;animation:meEditIn .28s cubic-bezier(.22,1.1,.28,1)}
+    @keyframes meEditIn{from{transform:translateY(100%);opacity:.5}to{transform:translateY(0);opacity:1}}
+    .me-edit-sheet .mes-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 12px;background:#faf7f2;border-bottom:1px solid #eceef4;flex-shrink:0}
+    .me-edit-sheet .mes-top button{width:38px;height:38px;background:transparent;border:0;color:#14161f;font-size:22px;line-height:1;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0}
+    .me-edit-sheet .mes-top button:hover{background:rgba(20,22,31,.06)}
+    .me-edit-sheet .mes-top .mes-title{font-size:17px;font-weight:700;letter-spacing:-.3px;color:#14161f;flex:1;text-align:center;margin:0 4px}
+    .me-edit-sheet .mes-top .mes-save{background:#5b6cff;color:#fff !important;border-radius:99px;font-family:inherit;font-size:14px;font-weight:700;padding:0 18px;height:38px;width:auto;box-shadow:0 4px 12px rgba(91,108,255,.28)}
+    .me-edit-sheet .mes-top .mes-save:hover{background:#4353e8}
+    .me-edit-sheet .mes-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 96px;max-width:640px;margin:0 auto;width:100%;box-sizing:border-box}
+    .me-edit-sheet section.pm2-card{background:#fff;border-radius:14px;padding:18px 18px 16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(20,22,31,.04);border:0}
+    .me-edit-sheet section.pm2-card h2{margin:0 0 10px;font-size:14.5px;font-weight:700;letter-spacing:-.15px;color:#14161f;text-transform:none;letter-spacing:normal}
+    @media(min-width:769px){#tabMe .mep-wrap{padding-top:20px}}
+  </style>
   <div id="tabMe" class="hidden">
-    <!-- Own profile v2 — matches tabMember's pm2 layout exactly (owner
-         ask 21 Aug 2026: 'make the logged in user and logged in user
-         profile page same layout please'). Every field is still
-         editable in place; the section headings + card visuals mirror
-         the peer-view design so 'this is what everyone sees'
-         genuinely matches. All IDs preserved: paintMe, saveProfile,
-         chip pickers, upload, referral tile, visitors card, follows
-         counters all keep working without a JS change. -->
-    <div class="pm2-hero">
-      <div class="pm2-map" id="meMap"></div>
-      <button type="button" class="pm2-back" onclick="showTab('wall')">← Community</button>
-      <div class="pm2-loc-pill hidden" id="meLocPill"><span>📍</span><span id="meLocPillTxt"></span></div>
+    <!-- Sticky header: back + username + settings gear. Settings gear
+         scrolls to the Notifications card at the bottom. -->
+    <div class="mep-topbar">
+      <button type="button" class="mep-back" onclick="showTab('wall')" aria-label="Back">←</button>
+      <div class="mep-title"><span id="myName">Me</span></div>
+      <button type="button" class="mep-gear" onclick="document.getElementById('mepNotifCard').scrollIntoView({behavior:'smooth',block:'start'})" aria-label="Settings">⚙</button>
     </div>
-    <section class="pm2-id">
-      <span class="pm2-ava me-photo-edit" onclick="$('photoIn').click()" title="Change photo">
-        <span class="pm2-ph" id="myAv"></span>
-        <button class="me-upl" type="button" onclick="event.stopPropagation();$('photoIn').click()" title="Change photo">📷</button>
-      </span>
-      <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" class="hidden">
-      <h1 class="pm2-name"><span id="myName"></span></h1>
-      <div class="pm2-meta"><span id="myLoc"></span></div>
-      <div class="pm2-meta"><span id="myLocalTime"></span></div>
-      <div class="pm2-meta"><span id="myHandle"></span></div>
-      <div class="pm2-active">This is your public profile</div>
-      <button type="button" class="me-addbio hidden" id="myAddBioChip" onclick="focusBioEditor()">+ Add a bio</button>
-      <div class="pm2-actions">
-        <button type="button" class="pm2-btn pm2-btn-out" onclick="logout()">Log out</button>
+    <input type="file" id="photoIn" accept="image/jpeg,image/png,image/webp" class="hidden">
+    <input type="file" id="mePhotoAddIn" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="mePhotoAdd()">
+
+    <div class="mep-wrap">
+      <!-- Card 1: Personal - avatar row + toggles + Preview / Share -->
+      <section class="mep-card">
+        <button type="button" class="mep-row avatar-row" onclick="openMeEditSheet()">
+          <span class="mep-avatar" id="myAv"></span>
+          <div class="mep-txt"><b>About me</b><span>Your photo, name, languages and bio</span></div>
+          <span class="mep-chev">›</span>
+        </button>
+        <button type="button" class="mep-row" onclick="openMemberById(ME&&ME.id)">
+          <span class="mep-ic">👤</span>
+          <div class="mep-txt"><b>Preview profile</b><span>See how others view your profile</span></div>
+          <span class="mep-chev">›</span>
+        </button>
+        <button type="button" class="mep-row" onclick="shareMyProfile()">
+          <span class="mep-ic">🔗</span>
+          <div class="mep-txt"><b>Share profile</b><span>Send a link so friends can follow you</span></div>
+          <span class="mep-chev">›</span>
+        </button>
+      </section>
+
+      <!-- Card 2: Learning / community shortcuts -->
+      <section class="mep-card">
+        <button type="button" class="mep-row" onclick="openMeEditSheet('langs')">
+          <span class="mep-ic">🌍</span>
+          <div class="mep-txt"><b>Languages</b><span>What you speak and what you're learning</span></div>
+          <span class="mep-chev">›</span>
+        </button>
+        <button type="button" class="mep-row" onclick="showTab('learn')">
+          <span class="mep-ic">🎓</span>
+          <div class="mep-txt"><b>Learning plans</b><span>Your personalised lesson plans</span></div>
+          <span class="mep-chev">›</span>
+        </button>
+        <button type="button" class="mep-row" onclick="openFollowsSheet('following')">
+          <span class="mep-ic">👥</span>
+          <div class="mep-txt"><b>Following</b><span>See whom you follow</span></div>
+          <span class="mep-chev">›</span>
+        </button>
+        <button type="button" class="mep-row" onclick="openFollowsSheet('followers')">
+          <span class="mep-ic">💫</span>
+          <div class="mep-txt"><b>Visitors and followers</b><span id="meFollowerSummary">People who follow you and recently visited</span></div>
+          <span class="mep-chev">›</span>
+        </button>
+      </section>
+
+      <!-- Card 3: Referrals (retained from previous /me for founder crown flow) -->
+      <div class="rf-metile hidden" id="rfMeTile" role="button" tabindex="0"
+           onclick="openReferModal()"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openReferModal()}">
+        <span class="rf-metile-crown" aria-hidden="true">👑</span>
+        <div class="rf-metile-mid">
+          <div class="rf-metile-title" id="rfMeTileTitle">Your referrals: 0 / 5</div>
+          <div class="rf-metile-sub" id="rfMeTileSub">Bring 5 friends, unlock Founder status.</div>
+        </div>
+        <span class="rf-metile-cta" id="rfMeTileCta">Invite →</span>
       </div>
+
+      <!-- Card 4: Feedback + community rules -->
+      <section class="mep-card">
+        <a class="mep-row" href="mailto:contact@talksibi.com?subject=talksibi%20-%20Bug%20report">
+          <span class="mep-ic">🐞</span>
+          <div class="mep-txt"><b>Report a bug</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="mailto:contact@talksibi.com?subject=talksibi%20-%20Feature%20request">
+          <span class="mep-ic">💡</span>
+          <div class="mep-txt"><b>Request a feature</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="/child-safety" target="_blank" rel="noopener">
+          <span class="mep-ic">🤝</span>
+          <div class="mep-txt"><b>Community Guidelines</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="/how-to-play" target="_blank" rel="noopener">
+          <span class="mep-ic">❓</span>
+          <div class="mep-txt"><b>FAQs</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="mailto:contact@talksibi.com">
+          <span class="mep-ic">✉</span>
+          <div class="mep-txt"><b>Contact us</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+      </section>
+
+      <!-- Card 5: Social -->
+      <section class="mep-card">
+        <a class="mep-row" href="/blog">
+          <span class="mep-brand" style="background:#fff;border:1px solid #eceef4">
+            <img src="/mark.svg?v=22" alt="" onerror="this.style.display='none'">
+          </span>
+          <div class="mep-txt"><b>Check out the TalkSibi blog</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="https://youtube.com/@talksibi" target="_blank" rel="noopener">
+          <span class="mep-brand" style="background:#ff0000">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M23.5 6.5s-.23-1.63-.94-2.35c-.9-.94-1.9-.95-2.36-1C16.4 3 12 3 12 3s-4.4 0-7.7.15c-.46.05-1.46.06-2.36 1-.7.72-.94 2.35-.94 2.35S.76 8.42.76 10.34v1.8C.76 14.05 1 15.96 1 15.96s.23 1.63.93 2.35c.9.94 2.08.9 2.6 1 1.89.18 7.47.24 7.47.24s4.4 0 7.7-.25c.46-.06 1.46-.07 2.36-1.01.7-.72.94-2.35.94-2.35s.24-1.9.24-3.82v-1.8c0-1.92-.24-3.83-.24-3.83zM9.7 14.85V8.66l6.22 3.1-6.22 3.09z"/></svg>
+          </span>
+          <div class="mep-txt"><b>Subscribe on YouTube</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="https://tiktok.com/@talksibi" target="_blank" rel="noopener">
+          <span class="mep-brand" style="background:#000">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M16.6 5.82C15.9 5.03 15.5 4 15.5 2.9h-3.1v12.4c0 1.4-1.14 2.54-2.55 2.54a2.55 2.55 0 0 1 0-5.1c.26 0 .52.04.76.12V9.7a5.7 5.7 0 0 0-.76-.05 5.66 5.66 0 1 0 5.66 5.66V9.64a7.2 7.2 0 0 0 4.19 1.34V7.9c-1.24 0-2.37-.5-3.1-2.08z"/></svg>
+          </span>
+          <div class="mep-txt"><b>Follow us on TikTok</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="https://instagram.com/talksibi" target="_blank" rel="noopener">
+          <span class="mep-brand" style="background:linear-gradient(135deg,#f9ce34,#ee2a7b 40%,#6228d7)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="#fff"/></svg>
+          </span>
+          <div class="mep-txt"><b>Follow us on Instagram</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+      </section>
+
+      <!-- Card 6: Legal -->
+      <section class="mep-card">
+        <a class="mep-row" href="/about" target="_blank" rel="noopener">
+          <div class="mep-txt"><b>About us</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="/terms" target="_blank" rel="noopener">
+          <div class="mep-txt"><b>Terms of Service</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="/privacy" target="_blank" rel="noopener">
+          <div class="mep-txt"><b>Privacy</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+        <a class="mep-row" href="/child-safety" target="_blank" rel="noopener">
+          <div class="mep-txt"><b>Child Safety Standards</b></div>
+          <span class="mep-chev">›</span>
+        </a>
+      </section>
+
+      <!-- Card 7: Notifications + auto-translate (existing settings JS
+           targets #swSound / #swPush / #swAutoXlat / #autoXlatLang, keep
+           IDs unchanged). -->
+      <section class="mep-card" id="mepNotifCard">
+        <div class="mep-row">
+          <span class="mep-ic">🔔</span>
+          <div class="mep-txt"><b>Sound alerts</b><span>Chime for a new message or follower</span></div>
+          <button type="button" class="mep-sw" id="swSound" onclick="toggleSound()" aria-label="Sound alerts"></button>
+        </div>
+        <div class="mep-row">
+          <span class="mep-ic">📲</span>
+          <div class="mep-txt"><b>Push notifications</b><span id="pushWhy">Get told even when TalkSibi is closed</span></div>
+          <button type="button" class="mep-sw" id="swPush" onclick="togglePush()" aria-label="Push notifications"></button>
+        </div>
+        <div class="mep-row">
+          <span class="mep-ic">🌐</span>
+          <div class="mep-txt"><b>Auto-translate chat</b><span id="autoXlatWhy">Translate every peer message automatically</span></div>
+          <button type="button" class="mep-sw" id="swAutoXlat" onclick="toggleAutoXlat()" aria-label="Auto-translate chat"></button>
+        </div>
+        <div class="mep-row hidden" id="autoXlatLangRow">
+          <span class="mep-ic">🈯</span>
+          <div class="mep-txt" style="flex:1"><b>Translate into</b><span>Chosen language for auto-translate</span></div>
+          <select id="autoXlatLang" onchange="setAutoXlatLang(this.value)" style="flex:0 0 auto;min-width:150px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer"></select>
+        </div>
+        <button type="button" class="mep-row" onclick="showBlocked()">
+          <span class="mep-ic">🚫</span>
+          <div class="mep-txt"><b>Blocked users</b><span>People you've blocked</span></div>
+          <span class="mep-chev">›</span>
+        </button>
+      </section>
+
+      <!-- Card 8: Sign out -->
+      <section class="mep-card">
+        <button type="button" class="mep-row destructive" onclick="logout()">
+          <span class="mep-ic">⇦</span>
+          <div class="mep-txt"><b>Sign out</b></div>
+        </button>
+      </section>
+
+      <!-- Card 9: Delete account (destructive - separate card so it
+           takes visual weight) -->
+      <section class="mep-card">
+        <button type="button" class="mep-row danger" onclick="confirmDelete()">
+          <span class="mep-ic">🗑</span>
+          <div class="mep-txt"><b>Delete account</b><span>This cannot be undone</span></div>
+        </button>
+      </section>
+
       <!-- Legacy hidden shells so paintMe() writes don't error even
-           though the block is retired. -->
+           though those surfaces are gone (loc pill, local time, active
+           status, handle, follows counters). -->
+      <span id="myLoc" class="hidden"></span>
+      <span id="myLocalTime" class="hidden"></span>
+      <span id="myHandle" class="hidden"></span>
       <span id="myGames" class="hidden"></span><span id="myWins" class="hidden"></span>
       <span id="myRate" class="hidden"></span><span id="mySince" class="hidden"></span>
       <div id="myQuote" class="hidden"></div>
-      <!-- Follows / Followers / Blocked counters removed 21 Aug 2026
-           per owner ask; the 3-tab drawer still opens from other
-           surfaces. Hidden shells kept so setN('meNFollowing') etc
-           don't crash in refreshFS(). -->
+      <span id="meMap" class="hidden"></span>
+      <span id="meLocPill" class="hidden"><span id="meLocPillTxt"></span></span>
       <span id="meNFollowing" class="hidden"></span>
       <span id="meNFollowers" class="hidden"></span>
       <span id="meNBlocked" class="hidden"></span>
-    </section>
+      <button id="myAddBioChip" class="hidden" onclick="focusBioEditor()"></button>
+      <div id="meVisitorsCard" class="hidden"><div id="meVisitorsStrip"></div></div>
+      <div id="devBox" class="hidden"><button id="devChatBtn" onclick="chatWithDeveloper()"></button></div>
+      <div id="instBox" class="hidden"><button id="a2hsGo" class="hidden"></button></div>
+    </div>
 
-    <div class="pm2-wrap">
-      <main class="pm2-main">
-        <!-- Extra photos gallery — first card so the whole strip is
-             above the fold, matching tabMember's Photos card. -->
+    <!-- Full-screen "About me" edit sheet - opens when the About me
+         or Languages row is tapped. Contains ALL editable fields;
+         same IDs as before so paintMe + saveProfile work unchanged. -->
+    <div class="me-edit-sheet" id="meEditSheet" role="dialog" aria-modal="true" aria-labelledby="mesTitle">
+      <div class="mes-top">
+        <button type="button" onclick="closeMeEditSheet()" aria-label="Close">←</button>
+        <div class="mes-title" id="mesTitle">About me</div>
+        <button type="button" class="mes-save" onclick="saveProfile();closeMeEditSheet()">Save</button>
+      </div>
+      <div class="mes-body">
+        <!-- Photo tile -->
+        <section class="pm2-card" style="text-align:center">
+          <div class="pm2-ph" style="width:120px;height:120px;margin:6px auto 12px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5b6cff,#9b6cff);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:44px;font-weight:700;cursor:pointer" onclick="$('photoIn').click()" id="mesPhotoTile">
+            <span id="myAvSheet"></span>
+          </div>
+          <button type="button" class="pm2-btn pm2-btn-out" style="border-radius:99px;padding:9px 22px;font-family:inherit;font-weight:600;font-size:14px;background:#f4f5f9;color:#14161f;border:0;cursor:pointer" onclick="$('photoIn').click()">📷 Change photo</button>
+        </section>
+
         <section class="pm2-card">
           <h2>More photos</h2>
           <div class="me-gtiles" id="mePhotoStrip"></div>
-          <input type="file" id="mePhotoAddIn" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="mePhotoAdd()">
         </section>
 
-        <!-- Recent visitors (owner ask 13 Aug 2026 — Tandem-style, free
-             for everyone). Populated by loadMyVisitors() from
-             /api/social/visits. Self-hides when no visitors. -->
-        <section class="pm2-card hidden" id="meVisitorsCard">
-          <h2>👀 Who visited your profile</h2>
-          <div class="me-vis-strip" id="meVisitorsStrip"></div>
-        </section>
-
-        <!-- 👑 Referrals tile (owner ask 14 Aug 2026). -->
-        <div class="rf-metile hidden" id="rfMeTile" role="button" tabindex="0"
-             onclick="openReferModal()"
-             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openReferModal()}">
-          <span class="rf-metile-crown" aria-hidden="true">👑</span>
-          <div class="rf-metile-mid">
-            <div class="rf-metile-title" id="rfMeTileTitle">Your referrals: 0 / 5</div>
-            <div class="rf-metile-sub" id="rfMeTileSub">Bring 5 friends, unlock Founder status.</div>
-          </div>
-          <span class="rf-metile-cta" id="rfMeTileCta">Invite →</span>
-        </div>
-
-        <!-- Editable field cards — each wrapped in pm2-card so the
-             visuals match tabMember. All input IDs unchanged so
-             saveProfile() + chip pickers keep working. -->
         <section class="pm2-card">
           <h2>Your name</h2>
           <input class="me-input" id="fMyName" maxlength="15" placeholder="Your name" autocomplete="off">
@@ -5281,13 +5507,13 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
         <section class="pm2-card">
           <h2>Date of birth</h2>
           <input class="me-input" id="fBirth" type="date">
-          <div class="me-help">TalkSibi is 18+ — Save will confirm you meet the age requirement.</div>
+          <div class="me-help">TalkSibi is 18+ - Save will confirm you meet the age requirement.</div>
         </section>
 
         <section class="pm2-card">
           <h2>City</h2>
           <input class="me-input" id="fLoc" maxlength="40" placeholder="Your city">
-          <div class="me-help">Where you're based. Shows on your profile hero.</div>
+          <div class="me-help">Where you're based.</div>
         </section>
 
         <section class="pm2-card">
@@ -5297,7 +5523,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
 
         <section class="pm2-card">
           <h2>What's your purpose or goal here?</h2>
-          <textarea class="me-input me-area" id="fPurpose" maxlength="500" rows="2" placeholder="e.g. Practise my English for a job move, or just enjoy chatting."></textarea>
+          <textarea class="me-input me-area" id="fPurpose" maxlength="500" rows="2" placeholder="e.g. Practise English for a job move, or just enjoy chatting."></textarea>
         </section>
 
         <section class="pm2-card">
@@ -5324,107 +5550,14 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
 
         <section class="pm2-card">
           <h2>Recommendations</h2>
-          <textarea class="me-input me-area" id="fRecs" maxlength="500" rows="3" placeholder="Books, films, songs, apps — things you'd recommend."></textarea>
+          <textarea class="me-input me-area" id="fRecs" maxlength="500" rows="3" placeholder="Books, films, songs, apps - things you'd recommend."></textarea>
         </section>
-      </main>
-    </div>
-    <!-- Settings sections. Match mp-grid's max-width + padding so the
-         Notifications / Support / Delete-account cards sit under the
-         same left/right edge as the profile cards above them. -->
-    <div class="me-settings-wrap" id="pfSettingsSection">
-    <!-- 🔔 how you'd like to hear about messages and follows -->
-    <div class="setbox">
-      <div class="seth">Notifications</div>
-      <div class="setrow">
-        <div class="sc"><b>Sound</b><span>A soft chime for a new message or follower.</span></div>
-        <button class="sw" id="swSound" onclick="toggleSound()" aria-label="Sound alerts"></button>
       </div>
-      <div class="setrow">
-        <div class="sc"><b>Push notifications</b><span id="pushWhy">Get told even when TalkSibi is closed.</span></div>
-        <button class="sw" id="swPush" onclick="togglePush()" aria-label="Push notifications"></button>
-      </div>
-      <!-- Auto-translate chat messages into a chosen language. Owner ask
-           21 Aug 2026: 'can we make it autotranslate based on the user
-           selected language' + 'give user option to choose many more
-           languages from the list, make a dropdown'. When ON, every
-           new peer message gets translated as soon as it renders — no
-           tap-to-translate needed. OFF (default) keeps the manual tap
-           workflow. The dropdown pulls from the full LANGS list (65+
-           languages) rather than only the pinned xlatLangs. -->
-      <div class="setrow">
-        <div class="sc"><b>Auto-translate chat</b><span id="autoXlatWhy">Translate every peer message into your chosen language automatically.</span></div>
-        <button class="sw" id="swAutoXlat" onclick="toggleAutoXlat()" aria-label="Auto-translate chat"></button>
-      </div>
-      <div class="setrow hidden" id="autoXlatLangRow" style="align-items:center">
-        <div class="sc" style="flex:1"><b>Translate into</b><span>Chat messages will be translated into this language automatically.</span></div>
-        <select id="autoXlatLang" onchange="setAutoXlatLang(this.value)" style="flex:0 0 auto;min-width:160px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer"></select>
-      </div>
-    </div>
-    <!-- 📲 The install offer used to float over the tab bar, on top of the
-         Community button. It lives here now — a settings row you come to when
-         you want it, instead of a thing that lands on what you were tapping.
-         Hidden once the app is installed, or where the browser can't do it. -->
-    <!-- "Add to home screen" install prompt retired per owner ask; when
-         the native App Store / Play Store apps ship the download link
-         will move to the marketing footer. Node kept hidden so the
-         beforeinstallprompt wiring in JS doesn't crash. -->
-    <div class="setbox hidden" id="instBox">
-      <button class="hidden" id="a2hsGo"></button>
-    </div>
-    <!-- App developer — small trust surface. Opens a DM with the app's
-         owner so bug reports + feedback go straight to a human, not an
-         inbox. Hidden if the config endpoint doesn't return a dev. -->
-    <div class="setbox hidden" id="devBox" style="margin-top:16px">
-      <div class="seth">App developer</div>
-      <div class="setrow" style="align-items:center">
-        <div class="sc" style="flex:1">
-          <b>Report a bug or share feedback</b>
-          <span>Chat directly with the person building TalkSibi. Every message is read.</span>
-        </div>
-        <button class="btn btn-dark" id="devChatBtn" style="width:auto;padding:9px 16px;flex:none;font-size:13px" onclick="chatWithDeveloper()">💬 Chat</button>
-      </div>
-      <div class="note" style="padding:6px 4px 0;text-align:left;color:var(--faint);font-size:11.5px">Small solo project — replies usually within a day.</div>
-    </div>
-
-    <!-- Support & safety — required links for App Store / Play Store review
-         plus a visible contact address. Keeps the trust surface obvious
-         without steering users away from the app. -->
-    <div class="setbox" style="margin-top:16px">
-      <div class="seth">Support &amp; safety</div>
-      <div class="setrow" style="display:block">
-        <div class="sc" style="width:100%">
-          <b>Contact</b>
-          <span>General questions: <a href="mailto:contact@talksibi.com">contact@talksibi.com</a></span>
-          <span>Safety &amp; abuse reports: <a href="mailto:safety@talksibi.com">safety@talksibi.com</a></span>
-        </div>
-      </div>
-      <div class="setrow" style="display:block">
-        <div class="sc" style="width:100%">
-          <b>Policies</b>
-          <span>
-            <a href="/terms" target="_blank" rel="noopener">Terms of Use</a> ·
-            <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> ·
-            <a href="/child-safety" target="_blank" rel="noopener">Child Safety Standards</a>
-          </span>
-        </div>
-      </div>
-      <div class="setrow">
-        <div class="sc"><b>Blocked users</b><span>People you've blocked. Tap to unblock.</span></div>
-        <button class="btn btn-line" style="width:auto;padding:8px 14px;flex:none;font-size:12.5px" onclick="showBlocked()">Manage</button>
-      </div>
-    </div>
-    <div style="padding:0 24px;margin-top:20px">
-      <button class="btn btn-line" style="color:var(--err);border-color:var(--err)" onclick="confirmDelete()">Delete account</button>
-      <div class="note" style="color:var(--err);margin-top:10px">This action cannot be undone. You'll lose all your profile data and game history.</div>
-    </div>
-    </div>
-    <!-- Floating Save-profile bar (owner ask 16 Aug 2026 — Save moved
-         from the top slot to a persistent bottom bar so it's always
-         reachable but doesn't clutter the header). Visible only on /me. -->
-    <div class="me-savebar" id="meSaveBar">
-      <button type="button" class="me-savebar-btn" onclick="saveProfile()">💾 Save profile</button>
     </div>
   </div>
+  <!-- Old #pfSettingsSection + duplicate setbox + floating save-profile
+       bar retired 22 Aug 2026 v5 - everything moved into the grouped
+       rows above + the About me edit sheet's own Save button. -->
 
 </div>
 
@@ -7346,10 +7479,33 @@ function handleFor(u){
 // "+ Add a bio" chip on the /me hero. Silent no-op if the textarea
 // isn't mounted (guest mode etc.).
 function focusBioEditor(){
-  const t = document.getElementById('fBio');
-  if (!t) return;
-  try { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){ t.scrollIntoView(); }
-  setTimeout(() => { try { t.focus({ preventScroll: true }); } catch(e){ t.focus(); } }, 260);
+  openMeEditSheet();
+  setTimeout(() => {
+    const t = document.getElementById('fBio');
+    if (!t) return;
+    try { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){ try { t.scrollIntoView(); } catch(e2){} }
+    setTimeout(() => { try { t.focus({ preventScroll: true }); } catch(e){ try { t.focus(); } catch(e2){} } }, 260);
+  }, 200);
+}
+// About-me edit sheet (owner ask 22 Aug 2026 v5 - grouped-list /me).
+// Opens the sheet, optionally scrolls to a specific section.
+function openMeEditSheet(section){
+  const s = document.getElementById('meEditSheet');
+  if (!s) return;
+  s.classList.add('on');
+  document.body.style.overflow = 'hidden';
+  if (section === 'langs') {
+    setTimeout(() => {
+      const el = document.getElementById('pfLangSection');
+      if (el) try { el.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e){}
+    }, 240);
+  }
+}
+function closeMeEditSheet(){
+  const s = document.getElementById('meEditSheet');
+  if (!s) return;
+  s.classList.remove('on');
+  document.body.style.overflow = '';
 }
 // Keep the "local time" rows on /me + tabMember ticking without a full
 // repaint. Runs every 60s (aligned to the next minute) so the HH:MM
@@ -7388,7 +7544,12 @@ function paintMe(){
   // never let a missing element here abort everything that comes after it.
   if ($('meAvSmall')) $('meAvSmall').innerHTML = avatarHtml(ME, 34);
   if ($('meName')) $('meName').innerHTML = esc(ME.name) + tick;
-  $('myAv').innerHTML = avatarHtml(ME, 104, 'big');
+  $('myAv').innerHTML = avatarHtml(ME, 56, 'small');
+  // Grouped-list v3 also paints the big avatar tile inside the About me
+  // edit sheet (owner ask 22 Aug 2026 v5). Guard because #myAvSheet
+  // only exists in the new layout.
+  const _sheetAv = document.getElementById('myAvSheet');
+  if (_sheetAv) _sheetAv.innerHTML = avatarHtml(ME, 120, 'big');
   // Owner ask 16 Aug 2026: 'show name and age like Ali, 22'. Matches
   // the paintMember() render on other people's profiles so /me looks
   // exactly like /user/:id looks to a visitor.
