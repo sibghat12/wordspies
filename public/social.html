@@ -2809,24 +2809,12 @@ body.chatlock{overflow:hidden;overflow-x:hidden !important;height:100%;position:
 /* Chatfull mode: neutralise .wrap's 6px side padding so the chat can
    sit flush edge-to-edge and its 100dvh height maths line up. */
 #vApp.chatfull.wrap{padding-left:0 !important;padding-right:0 !important}
-/* Bulletproof horizontal-overflow guard for iPhone Safari (screenshot
-   06:43 22 Aug 2026: "Hi" bubble + send button both cut off at right
-   edge). Every level in the chat DOM chain is forced to viewport width
-   with box-sizing:border-box + overflow-x:hidden so nothing can lean
-   right of the viewport regardless of parent width miscalculations. */
-#vApp.chatfull,
-#vApp.chatfull #tabChat,
-.chatfull .chathead,
-.chatfull .msgs,
-.chatfull .composer{
-  width:100% !important;
-  max-width:100% !important;
-  box-sizing:border-box !important;
-  overflow-x:hidden !important;
-}
-/* Ensure the composer's last child (send button) can never spill past
-   the container's right edge even if intermediate flex maths drifts. */
-.chatfull .composer > *:last-child{margin-right:0 !important}
+/* Reverted 22 Aug 2026: the "bulletproof" width:100%/!important block
+   here was OVER-constraining .chatfull .composer (which correctly
+   uses position:static; width:auto in flex-column layout), causing
+   the textarea to grow past its slot on focus and push the send
+   button off-screen on iPhone Safari. body.chatlock's overflow-x:
+   hidden + composer box-sizing:border-box are enough. */
 .chatfull .composer .cbtn.send{flex-shrink:0}
 /* Composer — modernised 6 Aug 2026 (owner ask). WhatsApp / Telegram
    idiom: a big pill-shaped input takes almost the whole row, small
@@ -3518,8 +3506,13 @@ h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:600;letter-spaci
   #tabChat .composer .cbtn,
   #tabChat .composer .micrec{min-width:34px;width:34px;height:34px;font-size:17px}
   #tabChat .composer .cbtn.send svg{width:13px;height:13px}
+  /* CRITICAL: font-size:16px minimum on mobile inputs — iOS Safari
+     auto-zooms into any <input>/<textarea> with font-size<16px on
+     focus, which magnifies the field and pushes the send button off
+     the right of the viewport. Was 15px until 22 Aug 2026 (owner
+     screenshot showed the exact zoom-push bug). */
   #tabChat .composer input,
-  #tabChat .composer textarea{padding:8px 12px;font-size:15px}
+  #tabChat .composer textarea{padding:8px 12px;font-size:16px}
   /* Chat archive row internal padding — the ROW gets left/right
      breathing room so the avatar doesn't sit on the card edge.
      Owner ask 19 Aug 2026: "give internal space to the archive
