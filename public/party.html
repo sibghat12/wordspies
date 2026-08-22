@@ -977,6 +977,18 @@ if (EMBED) {
       if (ev.origin !== location.origin) return;
       if (ev.data && ev.data.type === 'party:leave') leaveOrEnd();
       if (ev.data && ev.data.type === 'party:end') { try { socket && socket.emit('closeParty'); } catch(e){} setTimeout(leaveAndGo, 120); }
+      // Mic-toggle proxy from the mini-player pill (owner ask 22 Aug 2026).
+      // Only flip if the user is currently a speaker/host; listeners can't
+      // unmute themselves without raising a hand first.
+      if (ev.data && ev.data.type === 'party:mic-toggle') {
+        if (myRole === 'host' || myRole === 'speaker') {
+          try { toggleMyMic(); } catch(e){}
+          try {
+            const on = !!(window.wsVoice && wsVoice.micOn);
+            postToParent({ type: 'party:mic-state', on });
+          } catch(e){}
+        }
+      }
     });
   });
 }
