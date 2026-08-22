@@ -489,36 +489,93 @@ function mount(app, io, options = {}) {
     // A promote lifts a listener to speaker (or all the way to co-host if
     // data.role === 'host'). A demote drops back to listener.
     const iAmHost = () => me && me.role === 'host';
+    // Owner ask 22 Aug 2026: consent flow for both speaker + co-host
+    // promotions. 'promote' no longer flips the target's role directly
+    // - it sends an invite the target has to accept (see role-invite
+    // event on the client + promote-accept/promote-decline handlers
+    // below). Extra guard: co-host can only be granted to an existing
+    // speaker ("that person should be from the speakers").
     socket.on('promote', (data) => {
       if (!room || !iAmHost()) return;
       const target = room.members.get(String((data && data.id) || ''));
       if (!target) return;
       const to = (data && data.role === 'host') ? 'host' : 'speaker';
-      target.role = to;
-      target.handRaised = false;               // whichever way, drop their hand
-      // On promotion, listener chat cap converts to unlimited (server also
-      // stops rejecting their messages when role !== 'listener').
-      broadcast(room);
-      // Agora Voice: tell the promoted client to re-fetch a token as
-      // PUBLISHER and setClientRole('host') without rejoining the channel.
-      // Coder handoff 21 Aug 2026.
-      if (agoraEnabled()) {
-        const tsock = nsp.sockets.get(target.id);
-        if (tsock) { try { tsock.emit('agora-role', { role: 'publisher' }); } catch (e) {} }
+      if (to === 'host' && target.role !== 'speaker') {
+        socket.emit('toast', 'Only speakers can become co-hosts. Invite them to speak first.');
+        return;
       }
-      // Push to the newly-promoted listener so they don't miss the mic
-      // if they'd tabbed away. sendPush() skips foregrounded devices
-      // internally, so a listener actively watching the party won't
-      // get a duplicate ping. Owner ask 21 Aug 2026.
-      if (options.sendPush && target.uid) {
-        try {
-          options.sendPush(
-            target.uid, 'party-mic',
-            to === 'host' ? 'You are now a host' : 'You have the mic',
-            'Tap to speak in ' + (room.title || 'the party') + '.',
-            '/party?room=' + room.code
-          );
-        } catch (e) {}
+      const tsock = nsp.sockets.get(target.id);
+      if (!tsock) { socket.emit('toast', "That person isn't connected right now."); return; }
+      const inviter = room.members.get(socket.id);
+      room._invites = room._invites || new Map();
+      room._nextInviteId = (room._nextInviteId || 0) + 1;
+      const iid = room._nextInviteId;
+      room._invites.set(iid, {
+        targetSocketId: target.id,
+        targetUid: target.uid,
+        role: to,
+        expires: Date.now() + 60 * 1000
+      });
+      // Cheap sweep - prune any invite older than 5 minutes so this
+      // map can't grow unbounded for long-lived rooms.
+      try {
+        const cutoff = Date.now() - 5 * 60 * 1000;
+        for (const [k, v] of room._invites) if (v.expires < cutoff) room._invites.delete(k);
+      } catch(e){}
+      try {
+        tsock.emit('role-invite', {
+          role: to,
+          from: (inviter && inviter.name) || 'The host',
+          partyTitle: room.title || 'the party',
+          inviteId: iid
+        });
+        socket.emit('toast', 'Invite sent to ' + (target.name || 'them'));
+      } catch (e) {}
+    });
+
+    // Target accepts a role invite - promote them now (same server
+    // logic as the pre-consent flow, just gated by a matching invite).
+    socket.on('promote-accept', (data) => {
+      if (!room) return;
+      const iid = Number((data && data.inviteId) || 0);
+      const inv = room._invites && room._invites.get(iid);
+      if (!inv) return;
+      // Only the target socket can accept, and only until it expires.
+      if (inv.targetSocketId !== socket.id) return;
+      room._invites.delete(iid);
+      if (inv.expires < Date.now()) return;
+      const target = room.members.get(socket.id);
+      if (!target) return;
+      target.role = inv.role;
+      target.handRaised = false;
+      broadcast(room);
+      if (agoraEnabled()) {
+        try { socket.emit('agora-role', { role: 'publisher' }); } catch (e) {}
+      }
+      // Toast the host that the invite was accepted.
+      for (const [sid, m] of room.members) {
+        if (m.role === 'host') {
+          const s = nsp.sockets.get(sid);
+          if (s) try { s.emit('toast', (target.name || 'They') + ' accepted - now a ' + (inv.role === 'host' ? 'co-host' : 'speaker')); } catch (e) {}
+        }
+      }
+    });
+
+    // Target declines a role invite - toast the host so they know.
+    socket.on('promote-decline', (data) => {
+      if (!room) return;
+      const iid = Number((data && data.inviteId) || 0);
+      const inv = room._invites && room._invites.get(iid);
+      if (!inv) return;
+      if (inv.targetSocketId !== socket.id) return;
+      room._invites.delete(iid);
+      const decliner = room.members.get(socket.id);
+      const declinerName = (decliner && decliner.name) || 'They';
+      for (const [sid, m] of room.members) {
+        if (m.role === 'host') {
+          const s = nsp.sockets.get(sid);
+          if (s) try { s.emit('toast', declinerName + ' declined the invite'); } catch (e) {}
+        }
       }
     });
     socket.on('demote', (data) => {

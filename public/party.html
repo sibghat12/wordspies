@@ -910,6 +910,41 @@ body,#pMain,.wrap{background:#ffffff !important;color:#14161f !important}
 
 <div class="ptoast" id="pToast"></div>
 
+<!-- Role-invite modal (owner ask 22 Aug 2026 - "beautiful sweet alert
+     kind of thing" for accepting / declining a speaker or co-host
+     invite). Rendered inline so it works with or without a service
+     worker; state driven by openRoleInvite() / closeRoleInvite(). -->
+<style>
+.riv-back{position:fixed;inset:0;background:rgba(15,17,25,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;animation:rivFade .18s ease-out}
+.riv-back.on{display:flex}
+@keyframes rivFade{from{opacity:0}to{opacity:1}}
+@keyframes rivPop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.riv-card{background:#fff;color:#14161f;border-radius:22px;padding:30px 26px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.32);animation:rivPop .22s cubic-bezier(.22,1.1,.28,1);position:relative;font-family:'Hanken Grotesk','Inter',system-ui,sans-serif}
+.riv-icon{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,#5b6cff,#9b6cff);color:#fff;font-size:38px;line-height:1;display:inline-flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 12px 34px rgba(91,108,255,.34)}
+.riv-icon.host{background:linear-gradient(135deg,#ffb020,#ff7a59)}
+.riv-title{font-size:20px;font-weight:700;letter-spacing:-.3px;margin:0 0 8px}
+.riv-body{font-size:14.5px;color:#4a4d59;line-height:1.55;margin:0 0 22px}
+.riv-body b{color:#14161f;font-weight:700}
+.riv-btns{display:flex;flex-direction:column;gap:8px}
+.riv-accept{background:#5b6cff;color:#fff;border:0;border-radius:99px;padding:14px 22px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(91,108,255,.32);transition:.15s}
+.riv-accept:hover{background:#4353e8;transform:translateY(-1px)}
+.riv-decline{background:#f2f4f9;color:#14161f;border:0;border-radius:99px;padding:12px 22px;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;transition:.15s}
+.riv-decline:hover{background:#e6e8ef}
+.riv-timer{font-size:12px;color:#8a8d99;margin-top:10px;font-weight:500}
+</style>
+<div class="riv-back" id="rivBack" role="dialog" aria-modal="true" aria-labelledby="rivTitle">
+  <div class="riv-card">
+    <div class="riv-icon" id="rivIcon">🎙️</div>
+    <h3 class="riv-title" id="rivTitle">You've been invited</h3>
+    <p class="riv-body" id="rivBody"></p>
+    <div class="riv-btns">
+      <button class="riv-accept" id="rivAccept">Accept</button>
+      <button class="riv-decline" id="rivDecline">No thanks</button>
+    </div>
+    <div class="riv-timer" id="rivTimer">Expires in 60 s</div>
+  </div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script src="/voice.js"></script>
 <!-- Agora Voice SDK — loaded conditionally, and only "wakes up" if the
@@ -1232,6 +1267,23 @@ function conn(){
   socket.on('chatMeta', m => { msgsLeft = m.msgsLeft; paintQuota(); });
   socket.on('chatBlocked', d => toast(d.reason || 'Chat blocked'));
   socket.on('replaced', () => toast('You joined from another tab — this one\'s inactive.'));
+  // Server-side toast relay (owner ask 22 Aug 2026): the host gets a
+  // toast when a target declines a role invite, and gets a nudge if
+  // they try to promote a listener straight to co-host.
+  socket.on('toast', (msg) => { try { toast(String(msg || '')); } catch(e){} });
+  // Role-invite popup (owner ask 22 Aug 2026): "if a host tries to
+  // invite someone as speaker or co-host, they should get a beautiful
+  // sweet-alert kind of thing to accept or reject". Server sends a
+  // 'role-invite' event to the target; target replies with either
+  // 'promote-accept' or 'promote-decline' + the same inviteId.
+  socket.on('role-invite', (data) => {
+    const role  = data && data.role === 'host' ? 'co-host' : 'speaker';
+    const from  = String((data && data.from) || 'The host');
+    const title = String((data && data.partyTitle) || 'the party');
+    const iid   = data && data.inviteId;
+    if (!iid) return;
+    openRoleInvite({ role, from, title, inviteId: iid });
+  });
   socket.on('kicked', () => {
     clearPartySession(); toast('The host removed you from the party.');
     postToParent({ type: 'party:kicked' });
@@ -1707,8 +1759,8 @@ function memberCard(m, isSpeakerPanel, iAmHost, myMicOn){
   // (Real bug that made "Approve" seem to do nothing sometimes.)
   const hostMenu = iAmHost && !isMe && !(isHost && m.uid === room.hostUid) ? `
     <div class="pav-menu">
-      ${m.role === 'listener' ? `<button onclick="event.stopPropagation();promoteMember('${esc(m.id)}','speaker')">🎙 Make speaker</button>` : ''}
-      ${m.role !== 'host'     ? `<button onclick="event.stopPropagation();promoteMember('${esc(m.id)}','host')">👑 Make co-host</button>` : ''}
+      ${m.role === 'listener' ? `<button onclick="event.stopPropagation();promoteMember('${esc(m.id)}','speaker')">🎙 Invite as speaker</button>` : ''}
+      ${m.role === 'speaker'  ? `<button onclick="event.stopPropagation();promoteMember('${esc(m.id)}','host')">👑 Invite as co-host</button>` : ''}
       ${m.role !== 'listener' ? `<button onclick="event.stopPropagation();demoteMember('${esc(m.id)}')">↓ Move to listeners</button>` : ''}
       <button class="danger" onclick="event.stopPropagation();kickMember('${esc(m.id)}')">Remove from party</button>
     </div>` : '';
@@ -1777,6 +1829,59 @@ function addMsg(m){
 // Host actions
 function promoteMember(id, role){ socket && socket.emit('promote', { id, role }); selectedMemberId = null; }
 function demoteMember(id){ socket && socket.emit('demote', { id }); selectedMemberId = null; }
+
+// ── Role-invite modal (owner ask 22 Aug 2026) ─────────────────────
+// Target sees a warm popup when the host invites them as speaker or
+// co-host. Accept / decline emit back to the server with the same
+// inviteId - server validates and either promotes or toasts the host.
+let _rivInviteId = null;
+let _rivTimer    = null;
+function openRoleInvite({ role, from, title, inviteId }){
+  _rivInviteId = inviteId;
+  const isHost = role === 'co-host';
+  const iconEl = document.getElementById('rivIcon');
+  iconEl.textContent = isHost ? '👑' : '🎙️';
+  iconEl.classList.toggle('host', isHost);
+  document.getElementById('rivTitle').textContent =
+    (isHost ? '👑 Invited to be a co-host' : '🎙️ Invited to speak');
+  document.getElementById('rivBody').innerHTML =
+    '<b>' + escHtml(from) + '</b> would like you to join as a ' +
+    escHtml(role) + ' in <b>"' + escHtml(title) + '"</b>.<br><br>' +
+    (isHost
+      ? 'As co-host you can promote, demote, and manage the room.'
+      : 'You\'ll be able to unmute and speak in the room.');
+  document.getElementById('rivBack').classList.add('on');
+  // 60-second countdown (matches server-side invite expiry).
+  let secs = 60;
+  document.getElementById('rivTimer').textContent = 'Expires in ' + secs + ' s';
+  clearInterval(_rivTimer);
+  _rivTimer = setInterval(() => {
+    secs--;
+    document.getElementById('rivTimer').textContent = 'Expires in ' + secs + ' s';
+    if (secs <= 0) { closeRoleInvite(); toast('Invite expired'); }
+  }, 1000);
+}
+function closeRoleInvite(){
+  document.getElementById('rivBack').classList.remove('on');
+  _rivInviteId = null;
+  clearInterval(_rivTimer); _rivTimer = null;
+}
+function escHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+// Wire the accept + decline buttons on DOMContentLoaded so they exist.
+document.addEventListener('DOMContentLoaded', () => {
+  const acc = document.getElementById('rivAccept');
+  const dec = document.getElementById('rivDecline');
+  if (acc) acc.addEventListener('click', () => {
+    if (!_rivInviteId || !socket) { closeRoleInvite(); return; }
+    try { socket.emit('promote-accept', { inviteId: _rivInviteId }); } catch(e){}
+    closeRoleInvite();
+  });
+  if (dec) dec.addEventListener('click', () => {
+    if (!_rivInviteId || !socket) { closeRoleInvite(); return; }
+    try { socket.emit('promote-decline', { inviteId: _rivInviteId }); } catch(e){}
+    closeRoleInvite();
+  });
+});
 function kickMember(id){ if (confirm('Remove this person from the party?')) socket && socket.emit('kick', { id }); selectedMemberId = null; }
 function denyHand(id){
   // Tell the server to clear their raised-hand flag; broadcast repaints
