@@ -458,8 +458,11 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
 .topnav .tnlink{color:var(--sub);text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;transition:background .12s,color .12s;white-space:nowrap}
 .topnav .tnlink:hover{background:#f4f5f7;color:var(--ink)}
 .topnav .mechip{border:1px solid var(--line);flex-shrink:0}
-/* Desktop keeps the logo/tab pills; mobile-only title stays hidden. */
+/* Desktop keeps the logo/tab pills; mobile-only title + filter icon
+   stay hidden. Both only show inside the @media(max-width:640px)
+   rebuild below. */
 .tn-mtitle{display:none}
+.tn-filter{display:none}
 /* Owner ask 22 Aug 2026 v8: on the Profile page there is no top bar
    at all - the grouped list owns the whole screen just like Tandem's
    Community profile. Applies to desktop AND mobile. Also hide sitefoot
@@ -5234,7 +5237,7 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
        keep working unchanged. ═══════════════════════════════════════ -->
   <style>
     #tabMe{padding:0 !important;background:#faf7f2}
-    :is(#tabMe,#tabMember) .mep-topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 12px;background:#faf7f2;border-bottom:1px solid #eceef4}
+    :is(#tabMe,#tabMember) .mep-topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(14px + env(safe-area-inset-top)) 16px 12px;background:#faf7f2;border-bottom:1px solid #eceef4}
     :is(#tabMe,#tabMember) .mep-topbar .mep-back,:is(#tabMe,#tabMember) .mep-topbar .mep-gear{width:38px;height:38px;background:transparent;border:0;color:#14161f;font-size:22px;line-height:1;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0}
     :is(#tabMe,#tabMember) .mep-topbar .mep-back:hover,:is(#tabMe,#tabMember) .mep-topbar .mep-gear:hover{background:rgba(20,22,31,.06)}
     :is(#tabMe,#tabMember) .mep-topbar .mep-title{font-size:17px;font-weight:700;letter-spacing:-.3px;color:#14161f;flex:1;text-align:center;margin:0 4px}
@@ -14538,11 +14541,13 @@ async function openClubFromDeepLinkParam() {
   body[data-tab="member"] .msubbar,
   body[data-tab="chat"] .msubbar{display:none}
 
-  /* Give scroll body enough breathing room to clear the fixed nav +
-     reserve safe-area-top space now that the sticky topnav is gone
-     (v7 22 Aug 2026). Without this, content would sit behind the
-     iPhone notch / Android status bar inside the TWA. */
-  body{padding-top:env(safe-area-inset-top);padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  /* Give scroll body enough breathing room to clear the fixed bottom
+     nav. Safe-area-top is owned by the sticky topbar of whichever tab
+     the user is on: the app's .topnav (with padding-top:calc(10px +
+     env(safe-area-inset-top))) on wall/chats/etc, and the mep-topbar
+     (same trick) on /me + /tabMember. Adding it to body as well was
+     causing double-padding on tabs that have their own topbar. */
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 }
 
 /* ═══ Flat design pass (owner ask 17 Aug 2026) ═══
