@@ -4834,6 +4834,10 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
     :is(#tabMember,#tabMe) .pm2-loc-pill{position:absolute;top:14px;right:20px;z-index:3;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid #e4e6ee;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#4a4d59;display:inline-flex;align-items:center;gap:6px;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 14px rgba(22,24,31,.08)}
     :is(#tabMember,#tabMe) .pm2-loc-pill.hidden{display:none}
     :is(#tabMember,#tabMe) .pm2-id{position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;margin-top:-52px;padding:0 24px}
+    /* v8: /tabMember has no map hero any more - kill the -52px overlap
+       so the pm2-id sits below the sticky topbar instead of ontop of
+       nothing. */
+    #tabMember .pm2-id{margin-top:24px;padding:0 24px}
     :is(#tabMember,#tabMe) .pm2-ava{position:relative}
     :is(#tabMember,#tabMe) .pm2-ph{display:flex;width:104px;height:104px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#5a7bff,#7c5cff);color:#fff;align-items:center;justify-content:center;font-size:38px;font-weight:700;border:4px solid #fff;box-shadow:0 10px 30px rgba(22,24,31,.14)}
     :is(#tabMember,#tabMe) .pm2-ph img,:is(#tabMember,#tabMe) .pm2-ph .av{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
@@ -4891,6 +4895,10 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
       :is(#tabMember,#tabMe) .pm2-back{left:16px;padding:7px 12px;font-size:12.5px}
       :is(#tabMember,#tabMe) .pm2-loc-pill{display:none}
       :is(#tabMember,#tabMe) .pm2-id{margin-top:14px;padding:0 16px}
+      /* v8: no map hero on member view - pull pm2-id back to normal
+         positioning so it doesn't try to overlap a hero that isn't
+         there. */
+      #tabMember .pm2-id{margin-top:20px !important;padding:0 16px}
       :is(#tabMember,#tabMe) .pm2-ph{width:96px;height:96px;font-size:34px}
       :is(#tabMember,#tabMe) .pm2-name{font-size:22px}
       :is(#tabMember,#tabMe) .pm2-btn{padding:11px 18px;font-size:13.5px}
@@ -4900,11 +4908,18 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
     }
   </style>
   <div id="tabMember" class="hidden">
-    <div class="pm2-hero">
-      <div class="pm2-map" id="memberMap"></div>
-      <button type="button" class="pm2-back" onclick="showTab('wall')">← Community</button>
-      <div class="pm2-loc-pill hidden" id="memberLocPill"><span>📍</span><span id="memberLocPillTxt"></span></div>
+    <!-- Map hero retired 22 Aug 2026 v8 (owner ask thread "remove the
+         map and all that stuff"). Replaced by a sticky Tandem-style
+         topbar with back arrow + name. Legacy #memberMap / #memberLocPill
+         kept as hidden shells so paintMember / initProfileMap don't
+         throw when they try to read into them. -->
+    <div class="mep-topbar">
+      <button type="button" class="mep-back" onclick="showTab('wall')" aria-label="Back">←</button>
+      <div class="mep-title"><span id="mHeaderName">Profile</span></div>
+      <span class="mep-gear" style="visibility:hidden">⚙</span>
     </div>
+    <span id="memberMap" class="hidden"></span>
+    <span id="memberLocPill" class="hidden"><span id="memberLocPillTxt"></span></span>
     <section class="pm2-id">
       <span class="pm2-ava"><span class="pm2-ph" id="mAv"></span></span>
       <h1 class="pm2-name" id="mName"></h1>
@@ -5218,10 +5233,10 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
        keep working unchanged. ═══════════════════════════════════════ -->
   <style>
     #tabMe{padding:0 !important;background:#faf7f2}
-    #tabMe .mep-topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 12px;background:#faf7f2;border-bottom:1px solid #eceef4}
-    #tabMe .mep-topbar .mep-back,#tabMe .mep-topbar .mep-gear{width:38px;height:38px;background:transparent;border:0;color:#14161f;font-size:22px;line-height:1;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0}
-    #tabMe .mep-topbar .mep-back:hover,#tabMe .mep-topbar .mep-gear:hover{background:rgba(20,22,31,.06)}
-    #tabMe .mep-topbar .mep-title{font-size:17px;font-weight:700;letter-spacing:-.3px;color:#14161f;flex:1;text-align:center;margin:0 4px}
+    :is(#tabMe,#tabMember) .mep-topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 12px;background:#faf7f2;border-bottom:1px solid #eceef4}
+    :is(#tabMe,#tabMember) .mep-topbar .mep-back,:is(#tabMe,#tabMember) .mep-topbar .mep-gear{width:38px;height:38px;background:transparent;border:0;color:#14161f;font-size:22px;line-height:1;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0}
+    :is(#tabMe,#tabMember) .mep-topbar .mep-back:hover,:is(#tabMe,#tabMember) .mep-topbar .mep-gear:hover{background:rgba(20,22,31,.06)}
+    :is(#tabMe,#tabMember) .mep-topbar .mep-title{font-size:17px;font-weight:700;letter-spacing:-.3px;color:#14161f;flex:1;text-align:center;margin:0 4px}
     #tabMe .mep-wrap{max-width:640px;margin:0 auto;padding:14px 16px 96px}
     #tabMe .mep-card{background:#ffffff;border-radius:14px;overflow:hidden;margin-bottom:18px;box-shadow:0 1px 2px rgba(20,22,31,.04)}
     #tabMe .mep-row{display:flex;align-items:center;gap:14px;padding:15px 18px;background:transparent;border:0;border-bottom:1px solid #eef0f4;text-align:left;font-family:inherit;color:#14161f;text-decoration:none;cursor:pointer;width:100%}
@@ -13494,6 +13509,9 @@ function openMemberObj(m){
   $('mAv').innerHTML = av;
   // Name + age (age inline, faint weight).
   $('mName').innerHTML = esc(m.name) + mark(m) + (m.age ? ` <span style="color:var(--faint);font-weight:500">, ${m.age}</span>` : '');
+  // Sticky-topbar name mirror (v8 rebuild).
+  const _hName = document.getElementById('mHeaderName');
+  if (_hName) _hName.textContent = String(m.name || 'Profile').split(' ')[0];
   // Active status placeholder — replaced by API call below if online.
   $('mActive').textContent = 'Active: recently';
   // Location + handle rows.
