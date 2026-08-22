@@ -972,6 +972,16 @@ if (EMBED) {
   // Hide the standalone back button — the parent owns navigation now.
   document.addEventListener('DOMContentLoaded', () => {
     const back = document.querySelector('.pback'); if (back) back.style.display = 'none';
+    // Android back button INSIDE the embedded party iframe: minimise
+    // back into the community app instead of navigating back through
+    // the iframe's history (which would break the socket + audio).
+    // Push a marker state so popstate has something to fire on. Owner
+    // ask 22 Aug 2026 - back button shouldn't kill live parties.
+    try { history.pushState({ party: CODE }, '', ''); } catch(e){}
+    window.addEventListener('popstate', () => {
+      try { postToParent({ type: 'party:minimize' }); } catch(e){}
+      try { history.pushState({ party: CODE }, '', ''); } catch(e){}
+    });
     // Parent listens for a leave request from inside.
     window.addEventListener('message', (ev) => {
       if (ev.origin !== location.origin) return;

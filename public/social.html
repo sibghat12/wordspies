@@ -7679,6 +7679,24 @@ function showTab(t){
         return;
       }
     }
+    // If the party host is open in fullscreen, back = minimise it
+    // (Tandem / iMessage pattern). Keeps the iframe alive so the
+    // socket + WebRTC + mic state survive, but drops the user back
+    // to whatever tab they were on.
+    const phost = document.getElementById('partyHost');
+    if (phost && phost.classList.contains('fs')) {
+      try { if (typeof minimizePartyInApp === 'function') minimizePartyInApp(); } catch(e){}
+      try { history.pushState({ tab: window.__lastPushedTab || 'wall' }, '', ''); } catch(e){}
+      return;
+    }
+    // If the game host iframe is open, same treatment - minimise the
+    // running game so back doesn't torch a live session.
+    const ghost = document.getElementById('gameHost');
+    if (ghost && !ghost.classList.contains('hidden') && !ghost.classList.contains('mini')) {
+      try { if (typeof minimizeGameInApp === 'function') minimizeGameInApp(); } catch(e){}
+      try { history.pushState({ tab: window.__lastPushedTab || 'wall' }, '', ''); } catch(e){}
+      return;
+    }
     // Sensible fall-throughs from deep tabs to their parent tab.
     const st = ev.state || {};
     const cur = document.body.dataset.tab || '';
