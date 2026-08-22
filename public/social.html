@@ -5260,6 +5260,22 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
     #tabMe .mep-promo p{margin:0 0 16px;font-size:13.5px;opacity:.92;line-height:1.45;max-width:280px;margin-left:auto;margin-right:auto;position:relative;z-index:1}
     #tabMe .mep-promo .mep-promo-btn{background:#fff;color:#0053f0;border:0;border-radius:99px;padding:12px 28px;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;position:relative;z-index:1;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:.15s}
     #tabMe .mep-promo .mep-promo-btn:hover{transform:translateY(-1px)}
+    /* Photos card - 6 fixed square slots in a 3x2 grid. Each slot is
+       either an uploaded photo (with a small X to remove) or a "+"
+       placeholder that opens the file picker. Owner ask 22 Aug 2026
+       v8: "6 images so user click and upload right like that". */
+    #tabMe .mep-photos-card{padding:16px 18px 18px}
+    #tabMe .mep-photos-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    #tabMe .mep-photos-h b{font-family:'Fredoka','Inter',system-ui,sans-serif;font-size:15px;font-weight:600;letter-spacing:-.1px;color:#14161f}
+    #tabMe .mep-photos-count{font-family:'Inter',system-ui,sans-serif;font-size:12px;color:#8a8d99;font-weight:600}
+    #tabMe .mep-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    #tabMe .mep-photo-slot{position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:#f4f5f9;border:1px dashed #d4d8e1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+    #tabMe .mep-photo-slot:hover{background:#eef0f5;border-color:#5b6cff}
+    #tabMe .mep-photo-slot.filled{border:0;background:#000;cursor:zoom-in}
+    #tabMe .mep-photo-slot img{width:100%;height:100%;object-fit:cover;display:block}
+    #tabMe .mep-photo-slot .mep-photo-plus{font-size:32px;color:#5b6cff;font-weight:400;line-height:1;pointer-events:none}
+    #tabMe .mep-photo-slot .mep-photo-x{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(20,22,31,.7);color:#fff;border:0;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1}
+    #tabMe .mep-photo-slot .mep-photo-x:hover{background:rgba(20,22,31,.9)}
     /* Full-screen edit sheet (owner ask v5 - About me tap opens all the
        editable fields). Slides up over /me. */
     .me-edit-sheet{position:fixed;inset:0;background:#faf7f2;z-index:1400;display:none;flex-direction:column;overflow:hidden}
@@ -5300,6 +5316,17 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
           <div class="mep-txt"><b>Share profile</b><span>Send a link so friends can follow you</span></div>
           <span class="mep-chev">›</span>
         </button>
+      </section>
+
+      <!-- Card 1b: Photos - 6 fixed slots, tap empty slot to upload,
+           tap filled photo to remove. Owner ask 22 Aug 2026 v8:
+           "6 images so user click and upload right like that". -->
+      <section class="mep-card mep-photos-card">
+        <div class="mep-photos-h">
+          <b>Photos</b>
+          <span id="mePhotoCount" class="mep-photos-count">0 / 6</span>
+        </div>
+        <div class="mep-photo-grid" id="mePhotoGrid"></div>
       </section>
 
       <!-- Card 2: Learning / community shortcuts -->
@@ -7749,20 +7776,45 @@ function paintMe(){
   try { refPaintMeTile(); } catch(e){}
 }
 
-// Extra-photos strip on the /me tab (owner ask 10 Aug 2026).
+// Extra-photos strip - lives INSIDE the About-me edit sheet AND on the
+// main /me grouped list as a 6-slot fixed grid (owner ask 22 Aug 2026
+// v8). Same underlying data (ME.photos), same upload/remove endpoints.
 function paintMePhotoStrip(){
-  const host = document.getElementById('mePhotoStrip');
-  if (!host) return;
   const list = (ME && Array.isArray(ME.photos)) ? ME.photos : [];
-  const tiles = list.map(url => `
-    <div class="me-gtile">
-      <img src="${esc(url)}" alt="photo" onclick="openImgZoom('${esc(url)}')">
-      <button type="button" class="me-gx" title="Remove" onclick="mePhotoRemove('${esc(url)}')">×</button>
-    </div>`).join('');
-  const canAdd = list.length < 6;
-  host.innerHTML = tiles + (canAdd
-    ? `<button type="button" class="me-gadd" title="Add a photo" onclick="document.getElementById('mePhotoAddIn').click()">＋</button>`
-    : '');
+  // Legacy strip inside the edit sheet (unchanged behaviour).
+  const host = document.getElementById('mePhotoStrip');
+  if (host) {
+    const tiles = list.map(url => `
+      <div class="me-gtile">
+        <img src="${esc(url)}" alt="photo" onclick="openImgZoom('${esc(url)}')">
+        <button type="button" class="me-gx" title="Remove" onclick="mePhotoRemove('${esc(url)}')">×</button>
+      </div>`).join('');
+    const canAdd = list.length < 6;
+    host.innerHTML = tiles + (canAdd
+      ? `<button type="button" class="me-gadd" title="Add a photo" onclick="document.getElementById('mePhotoAddIn').click()">＋</button>`
+      : '');
+  }
+  // 6-slot fixed grid on the main /me page.
+  const grid = document.getElementById('mePhotoGrid');
+  if (grid) {
+    let html = '';
+    for (let i = 0; i < 6; i++) {
+      const url = list[i];
+      if (url) {
+        html += `<div class="mep-photo-slot filled" onclick="openImgZoom('${esc(url)}')">`
+              + `<img src="${esc(url)}" alt="photo">`
+              + `<button type="button" class="mep-photo-x" title="Remove" onclick="event.stopPropagation();mePhotoRemove('${esc(url)}')">×</button>`
+              + `</div>`;
+      } else {
+        html += `<div class="mep-photo-slot" onclick="document.getElementById('mePhotoAddIn').click()">`
+              + `<span class="mep-photo-plus">＋</span>`
+              + `</div>`;
+      }
+    }
+    grid.innerHTML = html;
+    const cnt = document.getElementById('mePhotoCount');
+    if (cnt) cnt.textContent = list.length + ' / 6';
+  }
 }
 async function mePhotoAdd(){
   const inp = document.getElementById('mePhotoAddIn');
