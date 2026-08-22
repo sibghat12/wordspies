@@ -233,28 +233,45 @@
       var rec = JSON.parse(raw);
       if (!rec || !rec.path || !rec.code) return;
       var age = Date.now() - (rec.t || 0);
-      if (age > 6 * 60 * 60 * 1000) {
+      // Age cap tightened 22 Aug 2026: was 6h, now 30min. Owner ask:
+      // "it said 1 game happening but there is no game — banner keeps
+      // showing after rooms end". 30min matches the typical party /
+      // game session length.
+      if (age > 30 * 60 * 1000) {
         try { localStorage.removeItem('wsActiveGame'); } catch(e){}
         return;
       }
       // If we're already on the game page itself, don't show the pill.
       var hereGame = (location.pathname.split('/')[1] || '').toLowerCase();
       if (hereGame === String(rec.game).toLowerCase()) return;
-      if (document.querySelector('a.ts-resume')) return;
-      var a = document.createElement('a');
-      a.className = 'ts-resume';
-      a.href = rec.path;
-      a.setAttribute('aria-label', 'Resume ' + (rec.title || 'game'));
-      a.innerHTML = '<span class="ts-resume-dot" aria-hidden="true"></span>' +
-        '<span>▶ Resume ' + String(rec.title || 'game').replace(/[<>]/g, '') + ' · ' + String(rec.code).replace(/[^A-Z0-9]/gi, '') + '</span>' +
-        '<span class="ts-resume-x" role="button" aria-label="Dismiss">×</span>';
-      // The little × dismisses locally without ending the room.
-      a.querySelector('.ts-resume-x').addEventListener('click', function(ev){
-        ev.preventDefault(); ev.stopPropagation();
-        var host = ev.currentTarget.parentNode;
-        if (host && host.parentNode) host.parentNode.removeChild(host);
-      });
-      document.body.appendChild(a);
+      // Server-verify: only surface the pill if the server confirms
+      // the user is still ACTUALLY in a room / game. If not, clear
+      // the stale localStorage entry silently and don't show the
+      // pill. Prevents the "1 game happening but there is no game"
+      // false positive owner reported 22 Aug 2026.
+      fetch('/api/user/active-game', { credentials: 'same-origin' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){
+          if (!j || !j.active) {
+            try { localStorage.removeItem('wsActiveGame'); } catch(e){}
+            return;
+          }
+          if (document.querySelector('a.ts-resume')) return;
+          var a = document.createElement('a');
+          a.className = 'ts-resume';
+          a.href = rec.path;
+          a.setAttribute('aria-label', 'Resume ' + (rec.title || 'game'));
+          a.innerHTML = '<span class="ts-resume-dot" aria-hidden="true"></span>' +
+            '<span>▶ Resume ' + String(rec.title || 'game').replace(/[<>]/g, '') + ' · ' + String(rec.code).replace(/[^A-Z0-9]/gi, '') + '</span>' +
+            '<span class="ts-resume-x" role="button" aria-label="Dismiss">×</span>';
+          a.querySelector('.ts-resume-x').addEventListener('click', function(ev){
+            ev.preventDefault(); ev.stopPropagation();
+            var host = ev.currentTarget.parentNode;
+            if (host && host.parentNode) host.parentNode.removeChild(host);
+          });
+          document.body.appendChild(a);
+        })
+        .catch(function(){ /* network hiccup: fail quiet, don't show */ });
     } catch (e) {}
   }
 

@@ -5670,13 +5670,15 @@ function readLive(){
   } catch(e){ return null; }
 }
 function paintLive(){
+  // Retired 22 Aug 2026 (owner ask). The "🎮 Your game is still
+  // running" top banner was Codenames-only and fired off a 6-hour-old
+  // localStorage entry with no server verification, so it kept
+  // showing "1 game happening" hours after the room had ended.
+  // Users found it confusing / unprofessional. Bar is now always
+  // hidden and stale localStorage is cleared so nothing lingers.
   const bar = $('liveBar');
-  if (!bar) return;
-  const j = readLive();
-  if (!j) { bar.classList.add('hidden'); return; }
-  $('liveBarT').textContent = j.state === 'playing' ? '🎮 Your game is still running' : '🎮 You are still in a room';
-  $('liveBarS').textContent = 'Room ' + j.code + ' · tap to go back to it';
-  bar.classList.remove('hidden');
+  if (bar) bar.classList.add('hidden');
+  try { localStorage.removeItem(LIVE_KEY); } catch(e){}
 }
 // The other tab writing or clearing the note fires this in here, so the bar
 // appears and disappears in step with the game without anybody refreshing.
