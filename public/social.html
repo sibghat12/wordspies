@@ -458,76 +458,79 @@ body.authmodal .auth .btn{width:100%;min-height:48px;font-size:15px;font-weight:
 .topnav .tnlink{color:var(--sub);text-decoration:none;font-weight:700;font-size:13px;padding:8px 10px;border-radius:10px;transition:background .12s,color .12s;white-space:nowrap}
 .topnav .tnlink:hover{background:#f4f5f7;color:var(--ink)}
 .topnav .mechip{border:1px solid var(--line);flex-shrink:0}
-/* Mobile-only title element is unused now that the whole top bar is
-   hidden on phones. Keeping the selector as a no-op so the id-based
-   JS (setTopnavTitle) can still write to it without erroring. */
+/* Desktop keeps the logo/tab pills; mobile-only title stays hidden. */
 .tn-mtitle{display:none}
-/* Owner ask 22 Aug 2026 v7: the mobile top bar was rendering messy
-   after coming back from a game (duplicate chrome from the game shell,
-   'Community' title floating on the right). Bottom nav already owns
-   navigation and now includes 'Me' - so kill the top bar entirely on
-   phones. Desktop keeps the logo + tab pills exactly as before.  */
+/* Owner ask 22 Aug 2026 v8: on the Profile page there is no top bar
+   at all - the grouped list owns the whole screen just like Tandem's
+   Community profile. Applies to desktop AND mobile. Also hide sitefoot
+   below so the profile is a clean slate. */
+body[data-tab="me"] .topnav{ display:none !important }
+/* Owner ask 22 Aug 2026 v8: rebuild the mobile top bar as
+   [avatar left] [title centre] [filter right]. No logo, no bell, no
+   duplicated chrome. Bottom nav owns navigation - the top bar just
+   gives context ("Community"/"Chats"/...) + one-tap access to the
+   avatar menu. */
 @media(max-width:640px){
-  .topnav{ display:none !important }
-  .topnav .tntabs{
-    grid-area:tabs;
-    /* justify-self:stretch alone wasn't reliably filling the grid
-       area on iOS Safari — belt-and-braces with width:100% so the
-       flex row genuinely spans the entire nav width. Owner report
-       1 Aug 2026: 'tabs are still show in the middle not sure how'. */
-    justify-self:stretch;
-    width:100%;
-    display:flex;
-    gap:6px;
-    justify-content:flex-start;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-    margin:2px 0 0;
-    /* Owner ask 1 Aug 2026: 'give the community or all tabs little
-       space from left and right so it not look so edges'. 8px inset
-       on each side pulls the first + last tabs off the nav edge
-       without breaking the equal 1/4-width distribution. */
-    padding:0 8px 4px;
+  .topnav{
+    display:grid !important;
+    grid-template-columns:40px 1fr 40px !important;
+    grid-template-areas:'mleft mtitle mright' !important;
+    padding:calc(10px + env(safe-area-inset-top)) 20px 10px !important;
+    gap:8px !important;
+    min-height:0 !important;
+    align-items:center !important;
   }
-  .topnav .tntabs::-webkit-scrollbar{display:none}
-  .topnav .tntabs .tnt{
-    /* Owner ask 1 Aug 2026: 'divide the space in 4 and start from the
-       start' — each tab takes an equal 1/4 of the row starting at the
-       left edge. flex:1 1 0 = equal share. */
-    flex:1 1 0;
-    min-width:0;
-    flex-direction:row;
-    gap:5px;
-    /* padding: extra horizontal room so the active-tab pill
-       background doesn't touch 'Community' (the longest label) on
-       either side. Owner ask 1 Aug 2026. */
-    padding:9px 14px;
-    /* Owner ask 1 Aug 2026: 'text look so much edging' — reduced from
-       14 → 13 so labels sit comfortably inside the active-pill without
-       pressing on its rounded corners. Padding bumped 12→14 for the
-       same breathing-room reason. */
-    font-size:13px;
-    font-weight:600;
-    justify-content:center;
-    line-height:1.2;
-    border-radius:99px;
+  /* Hide the logo + horizontal tab pills on phones - bottom nav owns
+     navigation, top bar is contextual only. */
+  .topnav .tnlogo{display:none !important}
+  .topnav .tntabs{display:none !important}
+  /* .tnright uses display:contents so its children (mechip, bell,
+     LIVE, filter) become direct grid participants and can be placed
+     into the mleft / mright cells individually. */
+  .topnav .tnright{display:contents !important}
+  /* Avatar chip on the LEFT (owner ask v8) - 34x34 circle, taps to
+     open the avatar menu / my profile. */
+  .topnav .mechip{
+    grid-area:mleft;justify-self:start;
+    padding:0;border:0;background:transparent;border-radius:50%;
+    overflow:hidden;line-height:0;width:34px;height:34px;
+    display:inline-block;
   }
-  .topnav .tntabs .tnt .ico{font-size:14px;line-height:1}
-  .topnav .tntabs .tnt .badge{position:static;transform:none;font-size:9.5px;padding:1px 5px;min-width:14px;margin-left:2px}
-  /* Mobile profile chip = JUST the avatar, sized cleanly.
-     Owner reports 1 Aug 2026: 'user profile on the top left corner i
-     see the border away from the image as the image is big' + 'profile
-     picture still broke on the right corner on the header'.
-     Root cause: the chip had padding + border + background wrapping
-     an inline-natural-sized img, leaving a visible pill around a
-     small photo. Now the chip itself is a fixed 34×34 circle, the
-     inner <span> wrapper fills it, and the <img> inside fills the
-     wrapper — one clean circle, no ring, no border. */
-  .topnav .mechip{padding:0;border:0;background:transparent;border-radius:50%;overflow:hidden;line-height:0;width:34px;height:34px;display:inline-block}
   .topnav .mechip .mename{display:none}
   .topnav .mechip > span{display:block;width:100%;height:100%}
-  .topnav .mechip img,.topnav .mechip .av,.topnav .mechip .avph{width:100% !important;height:100% !important;display:block;border-radius:50%;object-fit:cover}
+  .topnav .mechip img,.topnav .mechip .av,.topnav .mechip .avph{
+    width:100% !important;height:100% !important;display:block;
+    border-radius:50%;object-fit:cover;
+  }
+  /* Title dead-centre. */
+  .topnav .tn-mtitle{
+    grid-area:mtitle;
+    display:block;
+    justify-self:center;
+    text-align:center;
+    font-family:'Fredoka','Inter',system-ui,sans-serif;
+    font-size:18px;
+    font-weight:600;
+    letter-spacing:-.3px;
+    color:#14161f;
+    line-height:1.1;
+    min-width:0;max-width:100%;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  /* Filter/search icon on the RIGHT. Hidden by default; showTab
+     un-hides it on tabs that support filtering (Community wall). */
+  .topnav .tn-filter{
+    grid-area:mright;justify-self:end;
+    width:34px;height:34px;border-radius:50%;
+    background:#f4f5f9;border:1px solid #e4e6ee;
+    color:#4a4d59;padding:0;cursor:pointer;
+    display:none;align-items:center;justify-content:center;
+  }
+  .topnav .tn-filter.on{display:inline-flex}
+  /* Notif bell removed on mobile per owner ask 22 Aug 2026 v8 -
+     unread SMS surfaces on the bottom-nav Chat tab instead. */
+  .topnav .tnbell{display:none !important}
+  .topnav .tnlive{display:none !important}
 }
 @media(max-width:380px){
   /* Extra tight — hide the icon inside each tab, keep the label. */
@@ -4371,20 +4374,30 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
       <button class="tnlive" id="tnLive" onclick="showTab('live')" title="Live games right now">
         <span class="tnlivedot"></span>LIVE<span class="tnlivecnt" id="tnLiveCnt">0</span>
       </button>
-      <!-- 🔔 Notifications bell — opens a dropdown listing the last 20
-           in-app notifications (club mentions today; extend to more kinds
-           later). Hidden for guests; only enters the DOM as visible once
-           `enterApp()` unlocks the shell. -->
-      <button class="tnbell hidden" id="tnBell" onclick="toggleNotifMenu(event)" aria-label="Notifications">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.09a3 3 0 0 1-.88 2.12L4 15.34V16h16v-.66l-1.12-1.13A3 3 0 0 1 18 12.09V9a6 6 0 0 0-6-6Zm-2 15a2 2 0 0 0 4 0Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <!-- Notifications bell retired 22 Aug 2026 v8 - unread SMS
+           now surfaces on the bottom-nav Chat tab badge (owner ask:
+           "if someone has sms please show in the chat in the bottom
+           right"). Legacy notif menu shell kept hidden so any earlier
+           code that toggles it doesn't error. -->
+      <button class="tnbell hidden" id="tnBell" aria-label="Notifications" style="display:none">
         <span class="badge tnbell-b hidden" id="tnBellBadge"></span>
       </button>
-      <div class="notifmenu" id="notifMenu" role="menu" aria-hidden="true">
+      <div class="notifmenu" id="notifMenu" role="menu" aria-hidden="true" style="display:none">
         <div class="notifmenu-h">Notifications</div>
         <div class="notifmenu-list" id="notifList">
           <div class="notifmenu-empty">Nothing new yet.</div>
         </div>
       </div>
+      <!-- Filter/search icon on the mobile topbar right - hidden by
+           default; showTab flips .on when the current tab supports
+           filtering (currently just the Community wall). Clicking scrolls
+           to the wall's filter chips (All / Nearby / AI Chat / search). -->
+      <button type="button" class="tn-filter" id="tnFilter" aria-label="Filter"
+              onclick="scrollWallFiltersIntoView()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+          <path d="M3 5h18M6 12h12M10 19h4"/>
+        </svg>
+      </button>
       <!-- Blog + How-to-play were living here as top-nav chrome. Moved to
            the marketing footer per owner ask; kept out of the app to
            reduce clutter. -->
@@ -4954,10 +4967,10 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
         </section>
       </main>
       <aside class="pm2-rail">
-        <section class="pm2-card">
-          <h2>Recommendations</h2>
-          <p class="pm2-body" id="mRecs">This user doesn't have any recommendations yet</p>
-        </section>
+        <!-- Recommendations card removed 22 Aug 2026 v8. Legacy #mRecs
+             kept below as a hidden shell so paintMember writes don't
+             throw. -->
+        <span id="mRecs" class="hidden"></span>
         <section class="pm2-card hidden" id="mInterestsBox">
           <h2>Interests</h2>
           <div class="pm2-chips" id="mInterests"></div>
@@ -5559,10 +5572,10 @@ body.authmodal #vAuth #authGo{ border-radius:99px !important }
           <textarea class="me-input me-area" id="fBio" maxlength="200" rows="3" placeholder="Say something about yourself…"></textarea>
         </section>
 
-        <section class="pm2-card">
-          <h2>Recommendations</h2>
-          <textarea class="me-input me-area" id="fRecs" maxlength="500" rows="3" placeholder="Books, films, songs, apps - things you'd recommend."></textarea>
-        </section>
+        <!-- Recommendations field removed 22 Aug 2026 v8 - owner ask.
+             Hidden shell so saveProfile()'s ($('fRecs')||{}).value read
+             still returns '' without erroring. -->
+        <textarea id="fRecs" class="hidden" tabindex="-1" aria-hidden="true"></textarea>
       </div>
     </div>
   </div>
@@ -5627,7 +5640,13 @@ body.authmodal footer.sitefoot{ display:none }
    tab and on mobile (< 720 px) where users expect app chrome, not
    marketing chrome. Desktop keeps the footer on Community + Games
    for SEO / discovery reasons. */
-body[data-tab="me"] footer.sitefoot{ display:none }
+body[data-tab="me"] footer.sitefoot,
+body[data-tab="member"] footer.sitefoot,
+body[data-tab="chats"] footer.sitefoot,
+body[data-tab="chat"] footer.sitefoot,
+body[data-tab="learn"] footer.sitefoot,
+body[data-tab="parties"] footer.sitefoot,
+body[data-tab="party"] footer.sitefoot{ display:none !important }
 @media(max-width:720px){ footer.sitefoot{ display:none !important } }
 </style>
 <footer class="sitefoot"><div class="fwrap">
@@ -5811,16 +5830,12 @@ body[data-tab="me"] footer.sitefoot{ display:none }
     <span class="msnav-lbl">Play</span>
   </button>
   <button type="button" class="msnav-btn" data-msnav="talk" onclick="selectMainTab('talk')">
-    <span class="msnav-ico" aria-hidden="true">💬</span>
+    <span class="msnav-ico" aria-hidden="true">💬<span class="msnav-badge hidden" id="msnavChatBadge"></span></span>
     <span class="msnav-lbl">Chat</span>
   </button>
   <button type="button" class="msnav-btn" data-msnav="learn" onclick="selectMainTab('learn')">
     <span class="msnav-ico" aria-hidden="true">🎓</span>
     <span class="msnav-lbl">Learn</span>
-  </button>
-  <button type="button" class="msnav-btn" data-msnav="me" onclick="selectMainTab('me')">
-    <span class="msnav-ico" aria-hidden="true">👤</span>
-    <span class="msnav-lbl">Me</span>
   </button>
 </nav>
 
@@ -7562,9 +7577,31 @@ const _TN_TITLES = {
 };
 function setTopnavTitle(tab){
   const el = document.getElementById('tnMobileTitle');
-  if (!el) return;
-  const label = _TN_TITLES[tab];
-  if (label) el.textContent = label;
+  if (el) {
+    const label = _TN_TITLES[tab];
+    if (label) el.textContent = label;
+  }
+  // Filter icon only makes sense on the Community wall (has the
+  // All / Nearby / AI Chat chips + search magnifier). Hide on
+  // every other tab.
+  const f = document.getElementById('tnFilter');
+  if (f) f.classList.toggle('on', tab === 'wall');
+}
+// Owner ask 22 Aug 2026 v8: mobile top-right filter button scrolls
+// the community wall's own filter chips into view + focuses the
+// search input if the user is already on it. Not a new surface -
+// just a shortcut to the existing controls.
+function scrollWallFiltersIntoView(){
+  try {
+    if (typeof showTab === 'function') showTab('wall');
+    setTimeout(() => {
+      const anchor = document.getElementById('wallFilterChips')
+                  || document.querySelector('#tabWall .wallFilterChips')
+                  || document.querySelector('#tabWall .wall-chips')
+                  || document.querySelector('#tabWall');
+      if (anchor) try { anchor.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e){}
+    }, 60);
+  } catch(e){}
 }
 // Feedback-card helpers (owner ask 22 Aug 2026).
 // openHelpLink: static help pages (guidelines, FAQs) open in a new
@@ -10511,9 +10548,20 @@ setInterval(() => { if (!document.hidden) refreshLive(); }, 20000);
 // ---------- presence + notifications ----------
 function updateBadge(n){
   if (n === undefined) return;
+  const txt = n > 9 ? '9+' : String(n);
+  // Desktop topnav pill badge.
   const b = $('chatBadge');
-  b.textContent = n > 9 ? '9+' : n;
-  b.classList.toggle('hidden', !n);
+  if (b) {
+    b.textContent = txt;
+    b.classList.toggle('hidden', !n);
+  }
+  // Mobile bottom-nav Chat badge (owner ask 22 Aug 2026 v8: "if
+  // someone has sms please show in the chat in the bottom right").
+  const mb = document.getElementById('msnavChatBadge');
+  if (mb) {
+    mb.textContent = txt;
+    mb.classList.toggle('hidden', !n);
+  }
 }
 function askNotify(){ if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }
 
@@ -14323,10 +14371,12 @@ async function openClubFromDeepLinkParam() {
 
   /* Bottom nav shell — owner ask v23: give it a soft grey background
      so it reads as its own surface, not a white line under the page.
-     v7 (22 Aug 2026): 5 columns now that Me is here. */
+     v8 (22 Aug 2026): back to 4 columns - Me tab pulled out per
+     owner ask "dont add the me tab please". Profile lives inside the
+     mobile topnav avatar chip on the left instead. */
   .msnav{
     position:fixed;left:0;right:0;bottom:0;
-    display:grid;grid-template-columns:repeat(5,1fr);
+    display:grid;grid-template-columns:repeat(4,1fr);
     background:#f4f5f9;border-top:1px solid #e4e6ee;
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));
     z-index:80;
@@ -14349,6 +14399,19 @@ async function openClubFromDeepLinkParam() {
   }
   .msnav-btn.on{color:#5b6cff}
   .msnav-btn.on::after{background:#5b6cff}
+  /* Unread-SMS pill on the Chat button. Sits top-right of the emoji.
+     Hidden until updateBadge(n>0). */
+  .msnav-btn .msnav-badge{
+    position:absolute;top:-2px;right:-8px;
+    background:#ff2f4c;color:#fff;
+    font-family:'Inter',system-ui,sans-serif;
+    font-size:10px;font-weight:800;line-height:1;
+    padding:2px 5px;border-radius:99px;
+    min-width:14px;text-align:center;
+    box-shadow:0 0 0 2px #f4f5f9;
+  }
+  .msnav-btn .msnav-ico{position:relative}
+  .msnav-btn .msnav-badge.hidden{display:none}
 
   /* Sub-tab segmented pill — one shared bar toggles its two labels
      per main. Sits under the topnav; sticky so it stays reachable. */
@@ -14627,13 +14690,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
             if (typeof showLearnMode === 'function') { try { showLearnMode('exam'); } catch(e){} }
           }}
       ]
-    },
-    // 5th main tab (owner ask 22 Aug 2026 v7): profile is now reachable
-    // from the bottom nav so we can hide the mobile top bar entirely.
-    // No sub-tabs — the /me grouped list already owns its own IA.
-    me: {
-      target: 'me',
-      subs: []
     }
   };
 
@@ -14645,8 +14701,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
     games:'play', parties:'play', party:'play',
     chats:'talk', chat:'talk',
     learn:'learn',
-    me:'me',
-    member:null
+    me:null, member:null
   };
 
   function readSub(mainKey){
