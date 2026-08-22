@@ -717,6 +717,31 @@ body{background:var(--ts-ink);color:var(--ts-text);
 .ts-gametop-brand img{height:26px;width:auto;display:block}
 .ts-gametop-spacer{width:80px}
 body.embed .ts-gametop{ display:none !important }
+/* Owner ask 22 Aug 2026: "the party page background is dark, make it
+   white". Flip the ts-* tokens so background surfaces read light and
+   text reads ink-dark. Accent colours (peri / green / red / gold) stay.
+   Applied at the end of the style block so it overrides the dark
+   defaults above. */
+body,#pMain,.wrap{background:#ffffff !important;color:#14161f !important}
+:root{
+  --ts-ink:#ffffff;
+  --ts-card:#f7f8fb;
+  --ts-border:#e4e6ee;
+  --ts-text:#14161f;
+  --ts-mute:#6b6e7a;
+  --ts-mute2:#4a4d59;
+  --ts-peri-on-dark:#5b6cff;
+  --ts-green-on-dark:#1fb28a;
+  --ts-gold-on-dark:#b98a00;
+}
+/* A handful of hard-coded dark accents that don't go through the
+   token — override to their light equivalents. */
+.phead-txt h1,.psect h3,.speaker .name,.listener .name{color:#14161f !important}
+.phead-txt p,.speaker .lang,.listener .lang{color:#6b6e7a !important}
+.speaker .av,.listener .av{background:#f0f2f7 !important;color:#14161f}
+/* Speaker "ring pulse" when talking - keep green accent, but softer
+   against white so it doesn't overwhelm. */
+.speaker.talking{box-shadow:0 0 0 3px rgba(31,178,138,.35) !important}
 </style>
 </head>
 <body data-ts-no-header data-ts-no-footer>
@@ -1084,6 +1109,20 @@ function conn(){
       wsVoice.setCanPublish(myRole === 'host' || myRole === 'speaker');
       wsVoice.init({ socket, myId, canPublish: (myRole === 'host' || myRole === 'speaker'), roomCode: CODE });
       wsVoice.on('mic', () => paint());       // avatar ring reflects mic state
+      // If we were unmuted before a refresh, nudge the user to tap
+      // the mic button again (browsers won't auto-request permission
+      // on load - a user gesture is required). Owner ask 22 Aug 2026:
+      // "when I refresh my mic goes mute itself".
+      try {
+        const wasOn = localStorage.getItem(_partyMicKey()) === '1';
+        if (wasOn && (myRole === 'host' || myRole === 'speaker')) {
+          setTimeout(() => {
+            if (window.wsVoice && !wsVoice.micOn) {
+              toast('🎤 Tap the mic to unmute (browsers reset it on refresh)');
+            }
+          }, 1200);
+        }
+      } catch(e){}
       // Loud publish-failure feedback: if the Cloudflare push silently fails
       // the user thinks they're speaking but the room hears nothing. Toast +
       // nudge to the Reconnect button. (Owner bug 15 Aug 2026.)
@@ -1471,6 +1510,11 @@ function toggleReactionsMenu(ev){
   openEmoPop();
 }
 
+// Persist mic intent so a page-refresh can prompt the user to unmute
+// again on rejoin (browsers won't auto-request mic without a gesture).
+// Cleared when the user explicitly leaves the party.
+function _partyMicKey(){ return 'pty_wasmic:' + (CODE || ''); }
+function _rememberMicOn(on){ try { on ? localStorage.setItem(_partyMicKey(), '1') : localStorage.removeItem(_partyMicKey()); } catch(e){} }
 async function toggleMyMic(){
   if (!window.wsVoice) return;
   if (!(myRole === 'host' || myRole === 'speaker')) {
@@ -1479,6 +1523,7 @@ async function toggleMyMic(){
   }
   try {
     await wsVoice.setMic(!wsVoice.micOn);
+    _rememberMicOn(!!wsVoice.micOn);
     paint();
   } catch(e){ toast(e.message || 'Microphone failed.'); }
 }
@@ -1760,6 +1805,9 @@ function leaveAndGo(){
   try { socket && socket.emit('leave'); } catch(e){}
   releaseWakeLock();   // let the phone screen dim again once we're out
   clearPartySession();
+  // Clear the persisted mic-was-on flag so a fresh join later doesn't
+  // toast "tap the mic to unmute" when it isn't relevant.
+  _rememberMicOn(false);
   if (EMBED) { postToParent({ type: 'party:left' }); return; }
   location.href = '/social';
 }
@@ -1825,7 +1873,7 @@ async function reconnectPartyAudio(){
 <!-- No shared brand strip on the party page — owner: "remove the tab
      header". Audio rooms are their own immersive surface. -->
 <script>document.documentElement.setAttribute('data-nochrome','1');</script>
-<script src="/talksibi-chrome.js?v=26" defer></script>
+<script src="/talksibi-chrome.js?v=27" defer></script>
 
 </body>
 </html>

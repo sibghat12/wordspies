@@ -2172,6 +2172,19 @@ body.authmodal .fab-create{display:none !important}
    in view (chatfull mode). It re-appears the moment the user leaves
    the chat. Also hidden inside the game host to avoid layering. */
 body:has(#vApp.chatfull) .phost.mini,#vApp.chatfull ~ .phost.mini{display:none !important}
+/* Hide the mini-player on ANY chat surface (list + open chat) so it
+   doesn't sit over the composer / archive rows. Owner ask 22 Aug 2026
+   ".elyn" screenshots: mini-player was blocking the message input. */
+body[data-tab="chat"] .phost.mini,
+body[data-tab="chats"] .phost.mini{display:none !important}
+/* Kill the ts-resume "In a party" pill from talksibi-chrome.js whenever
+   the proper phost mini-player is already visible (two black pills
+   stacked was owner ask 22 Aug 2026 fix). Also hide it on chat surfaces
+   so it doesn't cover the composer. */
+body[data-tab="chat"] a.ts-resume,
+body[data-tab="chats"] a.ts-resume{display:none !important}
+body:has(#partyHost:not(.hidden)) a.ts-resume,
+body:has(#gameHost:not(.hidden)) a.ts-resume{display:none !important}
 /* Avatar stack in the mini strip (owner ask 11 Aug 2026 — 'show
    user profiles in the strip'). */
 .phost.mini .phost-avs{display:flex;flex-shrink:0}
@@ -10166,12 +10179,13 @@ function paintLiveGames(j){
     }
   });
 
+  // "1 game happening right now" nudge retired 22 Aug 2026 per owner
+  // ask (beta tester screenshots showed it firing when no game was
+  // actually in progress + it was cluttering the community feed).
+  // Killed here; the banner element stays in the DOM so any other
+  // painter that touches lvNudge doesn't error, but it never shows.
   const nudge = $('lvNudge');
-  if (nudge) {
-    nudge.classList.toggle('hidden', !playing);
-    if (playing) $('lvNudgeT').textContent =
-      playing === 1 ? '1 game happening right now — look in' : playing + ' games happening right now — look in';
-  }
+  if (nudge) nudge.classList.add('hidden');
 
   const list = $('lvList'), empty = $('lvEmpty'), stats = $('lvStats');
   if (!list) return;
